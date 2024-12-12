@@ -25,7 +25,8 @@
 \*****************************************************************************/
 
 #import <Foundation/Foundation.h>
-#import <SDL3/SDL.h>
+
+struct SDL_Window;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -43,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 |* Return the contentView for any given SDL_Window. If one does not exist it
 |* will be created and returned
 \*****************************************************************************/
-+ (AZView *) contentViewForWindow:(SDL_Window *)window;
++ (AZView *) contentViewForWindow:(struct SDL_Window *)window;
 
 /*****************************************************************************\
 |* Properties

@@ -5,6 +5,8 @@
 //  Created by Simon Gornall on 12/11/24.
 //
 
+#import <SDL3/SDL.h>
+
 #import "AZRect.h"
 #import "AZView.h"
 

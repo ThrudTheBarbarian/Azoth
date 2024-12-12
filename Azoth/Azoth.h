@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <SDL3/SDL3.h>
 
 //! Project version number for Azoth.
 FOUNDATION_EXPORT double AzothVersionNumber;
