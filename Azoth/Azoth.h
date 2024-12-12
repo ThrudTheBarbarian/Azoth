@@ -6,7 +6,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <SDL3/SDL3.h>
 
 //! Project version number for Azoth.
 FOUNDATION_EXPORT double AzothVersionNumber;
@@ -16,6 +15,6 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 
 // In this header, you should import all the public headers of your framework
 // using statements like #import <Azoth/PublicHeader.h>
-#import <Azoth/AZRect.h>
+#import <Azoth/AZApp.h>
 #import <Azoth/AZView.h>
 

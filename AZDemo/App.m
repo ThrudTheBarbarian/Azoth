@@ -1,18 +1,23 @@
 //
-//  App.m
-//  AZDemo
+//  app.m
+//  Azoth
 //
 //  Created by Simon Gornall on 12/11/24.
 //
 
-#import "App.h"
+
+#define SDL_MAIN_USE_CALLBACKS 1
+#import <SDL3/SDL.h>
+#import <SDL3/SDL_main.h>
+
+#import <Azoth/Azoth.h>
 
 /*****************************************************************************\
 |* File-private variables
 \*****************************************************************************/
 static SDL_Window *		_window 	= NULL;
 static SDL_Renderer *	_renderer 	= NULL;
-static App *			_app		= NULL;
+static AZApp *			_app		= NULL;
 
 
 /*****************************************************************************\
@@ -37,8 +42,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     |* Create the window
     \*************************************************************************/
     if (!SDL_CreateWindowAndRenderer("Map and layer generator",
-									 640,
-									 480,
+									 1280,
+									 960,
 									 SDL_WINDOW_RESIZABLE,
 									 &_window,
 									 &_renderer))
@@ -50,7 +55,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 	/*************************************************************************\
     |* Create the application
     \*************************************************************************/
-	_app = [App sharedInstance];
+	_app = [AZApp sharedInstance];
+	_app.window 	= _window;
+	_app.renderer	= _renderer;
 
 	/*************************************************************************\
     |* .. and carry on with the program
@@ -83,82 +90,3 @@ void SDL_AppQuit(void *appState, SDL_AppResult result)
 
     /* SDL will clean up the window/renderer for us. */
 	}
-
-@implementation App
-
-/*****************************************************************************\
-|* Constructor
-\*****************************************************************************/
-- (instancetype) init
-	{
-	if (self = [super init])
-		{}
-	return self;
-	}
-
-/*****************************************************************************\
-|* Constructor
-\*****************************************************************************/
-+ (App *) sharedInstance
-	{
-	static App *instance;
-	static dispatch_once_t onceToken;
-
-	dispatch_once(&onceToken,
-		^{
-		instance = [App new];
-		});
-
-	return instance;
-	}
-
-/*****************************************************************************\
-|* Handle events
-\*****************************************************************************/
-- (SDL_AppResult) handleEvent:(SDL_Event *)e withAppState:(void *)state
-	{
-    if (e->type == SDL_EVENT_QUIT)
-		{
-		/* end the program, reporting success to the OS. */
-        return SDL_APP_SUCCESS;
-		}
-
-	/* carry on with the program! */
-    return SDL_APP_CONTINUE;
-	}
-
-/*****************************************************************************\
-|* Handle events
-\*****************************************************************************/
-- (SDL_AppResult) nextFrameWithAppState:(void *)state
-	{
-	/* convert from milliseconds to seconds. */
-    const double now = ((double)SDL_GetTicks()) / 1000.0;
-
-    /* choose the color for the frame we will draw.
-       The sine wave trick makes it fade between colors smoothly. */
-    const float red = (float) (0.5 + 0.5 * SDL_sin(now));
-    const float green = (float) (0.5 + 0.5 * SDL_sin(now + SDL_PI_D * 2 / 3));
-    const float blue = (float) (0.5 + 0.5 * SDL_sin(now + SDL_PI_D * 4 / 3));
-
-    /* new color, full alpha. */
-    SDL_SetRenderDrawColorFloat(_renderer, red, green, blue, SDL_ALPHA_OPAQUE_FLOAT);
-
-    /* clear the window to the draw color. */
-    SDL_RenderClear(_renderer);
-
-    /* put the newly-cleared rendering on the screen. */
-    SDL_RenderPresent(_renderer);
-
-    /* carry on with the program! */
-    return SDL_APP_CONTINUE;
-	}
-
-/*****************************************************************************\
-|* Die gracefully
-\*****************************************************************************/
-- (void) terminateBecause:(SDL_AppResult)reason withAppState:(void *)state
-	{}
-	
-@end
-

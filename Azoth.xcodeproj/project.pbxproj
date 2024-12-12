@@ -45,7 +45,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			publicHeaders = (
 				Azoth.h,
-				Classes/Util/AZRect.h,
+				Classes/Application/AZApp.h,
 				Classes/Views/AZView.h,
 			);
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;

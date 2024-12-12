@@ -26,35 +26,68 @@
 
 #import <Foundation/Foundation.h>
 
+union SDL_Event;
+struct SDL_MouseButtonEvent;
+struct SDL_MouseMotionEvent;
+struct SDL_MouseWheelEvent;
 struct SDL_Window;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class AZRect;
-
 @interface AZView : NSObject
+
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/
-- (instancetype) initWithFrame:(AZRect*)frame;
-+ (AZView *) viewWithFrame:(AZRect *)frame;
+- (instancetype) initWithFrame:(NSRect)frame;
++ (AZView *) viewWithFrame:(NSRect)frame;
+
+
+
+// MARK: Event handling
 
 
 /*****************************************************************************\
-|* Return the contentView for any given SDL_Window. If one does not exist it
-|* will be created and returned
+|* Mouse-button-down event, return YES if we consume the event
 \*****************************************************************************/
-+ (AZView *) contentViewForWindow:(struct SDL_Window *)window;
+- (BOOL) mouseDown:(struct SDL_MouseButtonEvent *)e;
 
 /*****************************************************************************\
-|* Properties
+|* Mouse-button-down event, return YES if we consume the event
 \*****************************************************************************/
+- (BOOL) mouseUp:(struct SDL_MouseButtonEvent *)e;
+
+/*****************************************************************************\
+|* Mouse-button-down event, return YES if we consume the event
+\*****************************************************************************/
+- (BOOL) mouseMoved:(struct SDL_MouseMotionEvent *)e;
+
+/*****************************************************************************\
+|* Mouse-button-down event, return YES if we consume the event
+\*****************************************************************************/
+- (BOOL) mouseWheeled:(struct SDL_MouseWheelEvent *)e;
+
+
+/*****************************************************************************\
+|* Determine if we even want mouse events. This allows a subview to limit its
+|* control of the event. By default we answer unconditional YES
+\*****************************************************************************/
+- (BOOL) hitTestAtPoint:(NSPoint)p;
+
+
+// MARK: Properties
 
 // The position and size of the view in its parent
-@property(strong, nonatomic) AZRect * 		frame;
+@property(assign, nonatomic) NSRect 							frame;
 
 // The position and size of the view's local co-ordinate space
-@property(strong, nonatomic) AZRect	*		bounds;
+@property(assign, nonatomic) NSRect								bounds;
+
+// The list of all views that are children to this view
+@property(strong, nonatomic) NSMutableArray<AZView *> *			subviews;;
+
+// Identifier, purely for debugging
+@property(strong, nonatomic) NSString *							identifier;
 @end
 
 NS_ASSUME_NONNULL_END
