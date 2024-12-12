@@ -12,6 +12,15 @@
 
 #import <Azoth/Azoth.h>
 
+#import "IdentifiedView.h"
+
+/*****************************************************************************\
+|* Function declarations
+\*****************************************************************************/
+void _testMouseEvents(void);
+
+
+
 /*****************************************************************************\
 |* File-private variables
 \*****************************************************************************/
@@ -41,7 +50,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 	/*************************************************************************\
     |* Create the window
     \*************************************************************************/
-    if (!SDL_CreateWindowAndRenderer("Map and layer generator",
+    if (!SDL_CreateWindowAndRenderer("Demo app",
 									 1280,
 									 960,
 									 SDL_WINDOW_RESIZABLE,
@@ -58,6 +67,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 	_app = [AZApp sharedInstance];
 	_app.window 	= _window;
 	_app.renderer	= _renderer;
+
+	_testMouseEvents();
 
 	/*************************************************************************\
     |* .. and carry on with the program
@@ -89,4 +100,27 @@ void SDL_AppQuit(void *appState, SDL_AppResult result)
 	[_app terminateBecause:result withAppState:appState];
 
     /* SDL will clean up the window/renderer for us. */
+	}
+
+
+// MARK: Testing routines
+
+/*****************************************************************************\
+|* Set up some frames, wait for clicks and report
+\*****************************************************************************/
+void _testMouseEvents(void)
+	{
+	AZView *cv		= [AZView contentViewForWindow:_window];
+	[cv setIdentifier:@"content-view"];
+
+	IdentifiedView *v1 = [[IdentifiedView alloc]
+							initWithFrame:NSMakeRect(100,100, 200, 200)
+								  andName:@"view1"];
+	[cv addSubview:v1];
+
+	IdentifiedView *v2 = [[IdentifiedView alloc]
+							initWithFrame:NSMakeRect(100,100, 100, 100)
+								  andName:@"view2"];
+	[v1 addSubview:v2];
+
 	}

@@ -12,14 +12,6 @@
 
 @interface AZView(Internal)
 
-// MARK: View processing
-
-/*****************************************************************************\
-|* Return the contentView for any given SDL_Window. If one does not exist it
-|* will be created and returned
-\*****************************************************************************/
-+ (AZView *) contentViewForWindow:(struct SDL_Window *)window;
-
 
 
 // MARK: Event handling
