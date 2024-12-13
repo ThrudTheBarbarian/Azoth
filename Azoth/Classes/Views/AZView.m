@@ -10,6 +10,7 @@
 #import "AZApp.h"
 #import "AZColour.h"
 #import "AZGeometry.h"
+#import "AZPainter.h"
 #import "AZView.h"
 #import "AZView+Internal.h"
 
@@ -172,6 +173,7 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 		contentView 			= [AZView viewWithFrame:frame];
 		contentView.window		= window;
 		_contentViews[windowId] = contentView;
+		contentView.isOpaque 	= YES;
 		[contentView _installBackingTexture];
 		}
 	return contentView;
@@ -274,9 +276,8 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 |* to be perfectly aligned. By default the view is cleared to its background
 |* colour
 \*****************************************************************************/
-- (void) drawInRect:(NSRect)dirtyRect
+- (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
-	NSLog(@"%@: drawInRect(%@)", self.identifier, NSStringFromRect(dirtyRect));
 	SDL_Renderer *renderer = SDL_GetRenderer(self.window);
 
 	SDL_SetRenderDrawColor(renderer, self.bgColour.red,

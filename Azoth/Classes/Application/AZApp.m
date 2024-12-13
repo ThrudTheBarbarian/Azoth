@@ -90,6 +90,10 @@
 \*****************************************************************************/
 - (SDL_AppResult) nextFrameWithAppState:(void *)state
 	{
+	// Before we render anything into the *textures* make sure there is
+	// no outstanding blending effect from the last cycle around
+	SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_NONE);
+
 	// Redraw any of the subviews that need it into their own textures
 	AZView *view = [AZView contentViewForWindow:_window];
 	if (!NSEqualRects(view.dirty, NSZeroRect))
@@ -98,18 +102,12 @@
 
 	// Get the top-level view, draw it as the background
 	SDL_FRect rect = SDLFRectFromNSRect(view.bounds);
-	SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_NONE);
 	SDL_RenderTexture(_renderer, view.bg, &rect, &rect);
 
 	// Run through the views in reverse order, telling them to render their
 	// subviews to the screen
 	for (AZView *subview in [view.subviews reverseObjectEnumerator])
-		{
-		SDL_BlendMode mode = subview.isOpaque ? SDL_BLENDMODE_NONE
-											  : SDL_BLENDMODE_ADD_PREMULTIPLIED;
-		SDL_SetRenderDrawBlendMode(_renderer, mode);
-		[subview _render];
-		}
+		[subview _renderToScreen];
 
 	// Tell the renderer we're done
 	SDL_RenderPresent(_renderer);

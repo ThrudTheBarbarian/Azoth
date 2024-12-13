@@ -33,7 +33,7 @@ union SDL_Event;
 /*****************************************************************************\
 |* Rendering: Render the texture to the screen.
 \*****************************************************************************/
-- (void) _render;
+- (void) _renderToScreen;
 
 /*****************************************************************************\
 |* Update the current view and then all its subviews in-order

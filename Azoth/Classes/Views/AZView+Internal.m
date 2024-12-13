@@ -11,6 +11,7 @@
 #import "AZApp.h"
 #import "AZColour.h"
 #import "AZGeometry.h"
+#import "AZPainter.h"
 #import "AZView.h"
 #import "AZView+Internal.h"
 
@@ -208,23 +209,39 @@
 /*****************************************************************************\
 |* Rendering: Render the texture to the screen.
 \*****************************************************************************/
-- (void) _render
+- (void) _renderToScreen
 	{
 	SDL_Renderer *renderer = AZApp.sharedInstance.renderer;
 
 	/*************************************************************************\
-	|* Draw ourselves first...
+	|* Draw to the screen
 	\*************************************************************************/
 	SDL_SetRenderTarget(renderer, NULL);
+
+	/*************************************************************************\
+	|* Set up the frame correctly
+	\*************************************************************************/
 	NSRect frame  	= self.frame;
 	NSPoint p		= [self convertPoint:frame.origin toView:nil];
 	frame.origin	= p;
 
+	/*************************************************************************\
+	|* Work out source, destination and clip
+	\*************************************************************************/
 	SDL_FRect src 	= SDLFRectFromNSRect(self.bounds);
 	SDL_FRect dst	= SDLFRectFromNSRect(frame);
 	SDL_Rect clip	= SDLRectFromNSRect(frame);
 
-	//NSLog(@"Render to screen: %@ (%@)", self.identifier, NSStringFromRect(frame));
+	/*************************************************************************\
+	|* Handle the transparency of alpha
+	\*************************************************************************/
+	SDL_BlendMode mode = self.isOpaque ? SDL_BLENDMODE_NONE
+									   : SDL_BLENDMODE_ADD_PREMULTIPLIED;
+	SDL_SetRenderDrawBlendMode(renderer, mode);
+
+	/*************************************************************************\
+	|* Draw ourselves first...
+	\*************************************************************************/
 	SDL_SetRenderClipRect(renderer, &clip);
 	SDL_RenderTexture(renderer, self.bg, &src, &dst);
 	SDL_SetRenderClipRect(renderer, NULL);
@@ -233,7 +250,12 @@
 	|* ... then call the subviews recursively in reverse order
 	\*************************************************************************/
 	for (AZView *subview in [self.subviews reverseObjectEnumerator])
-		[subview _render];
+		{
+		SDL_BlendMode mode = subview.isOpaque ? SDL_BLENDMODE_NONE
+											  : SDL_BLENDMODE_ADD_PREMULTIPLIED;
+		SDL_SetRenderDrawBlendMode(renderer, mode);
+		[subview _renderToScreen];
+		}
 	}
 
 
@@ -254,15 +276,8 @@
 \*****************************************************************************/
 - (void) _drawDirtyRect
 	{
-	SDL_Renderer *renderer = [AZApp sharedInstance].renderer;
-	SDL_Rect bounds = SDLRectFromNSRect(self.dirty);
-
-	SDL_SetRenderTarget(renderer, self.bg);
-	SDL_SetRenderClipRect(renderer, &bounds);
-	[self drawInRect:self.dirty];
-	self.dirty = NSZeroRect;
-	SDL_SetRenderClipRect(renderer, NULL);
-	SDL_SetRenderTarget(renderer, NULL);
+	AZPainter *painter = [AZPainter painterForView:self];
+	[painter execute];
 	}
 
 @end

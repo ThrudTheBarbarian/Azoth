@@ -38,6 +38,7 @@ struct SDL_Texture;
 struct SDL_Window;
 
 @class AZColour;
+@class AZPainter;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -83,7 +84,7 @@ NS_ASSUME_NONNULL_BEGIN
 |* local texture, so is at (0,0) wrt to that texture. Pixel positioning ought
 |* to be perfectly aligned
 \*****************************************************************************/
-- (void) drawInRect:(NSRect)dirtyRect;
+- (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter;
 
 
 // MARK: Event handling
