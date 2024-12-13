@@ -104,7 +104,12 @@
 	// Run through the views in reverse order, telling them to render their
 	// subviews to the screen
 	for (AZView *subview in [view.subviews reverseObjectEnumerator])
+		{
+		SDL_BlendMode mode = subview.isOpaque ? SDL_BLENDMODE_NONE
+											  : SDL_BLENDMODE_ADD_PREMULTIPLIED;
+		SDL_SetRenderDrawBlendMode(_renderer, mode);
 		[subview _render];
+		}
 
 	// Tell the renderer we're done
 	SDL_RenderPresent(_renderer);
