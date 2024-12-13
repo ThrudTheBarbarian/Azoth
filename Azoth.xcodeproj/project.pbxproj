@@ -51,6 +51,7 @@
 				Classes/Views/AZView.h,
 				Utility/AZColour.h,
 				Utility/AZGeometry.h,
+				Utility/AZPainter.h,
 			);
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
 		};

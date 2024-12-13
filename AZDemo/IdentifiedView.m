@@ -63,4 +63,19 @@
 	return YES;
 	}
 
+/*****************************************************************************\
+|* What to override in subclasses to get a view to draw. This renders into the
+|* local texture, so is at (0,0) wrt to that texture. Pixel positioning ought
+|* to be perfectly aligned. By default the view is cleared to its background
+|* colour
+\*****************************************************************************/
+- (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
+	{
+	[super drawInRect:dirtyRect withPainter:painter];
+
+	[painter rectangleWithRect:NSInsetRect(dirtyRect, 10, 10)
+						radius:20 filled:YES
+						colour:[AZColour whiteColour]];
+	}
+
 @end
