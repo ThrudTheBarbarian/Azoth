@@ -9,6 +9,7 @@
 #import <SDL3/SDL.h>
 
 #import "AZApp.h"
+#import "AZColour.h"
 #import "AZGeometry.h"
 #import "AZView.h"
 #import "AZView+Internal.h"
@@ -185,7 +186,10 @@
 		|* presentation happens
 		\*********************************************************************/
 		SDL_SetRenderTarget(renderer, self.bg);
-		SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00);
+		SDL_SetRenderDrawColor(renderer, self.bgColour.red,
+										 self.bgColour.green,
+										 self.bgColour.blue,
+										 1.f);
 		SDL_RenderClear(renderer);
 		SDL_FRect area = SDLFRectFromNSRect(self.bounds);
 		SDL_RenderRect(renderer,&area);
@@ -220,6 +224,7 @@
 	SDL_FRect dst	= SDLFRectFromNSRect(frame);
 	SDL_Rect clip	= SDLRectFromNSRect(frame);
 
+	//NSLog(@"Render to screen: %@ (%@)", self.identifier, NSStringFromRect(frame));
 	SDL_SetRenderClipRect(renderer, &clip);
 	SDL_RenderTexture(renderer, self.bg, &src, &dst);
 	SDL_SetRenderClipRect(renderer, NULL);
@@ -229,6 +234,35 @@
 	\*************************************************************************/
 	for (AZView *subview in [self.subviews reverseObjectEnumerator])
 		[subview _render];
+	}
+
+
+/*****************************************************************************\
+|* Update the current view and then all its subviews in-order
+\*****************************************************************************/
+- (void) _redrawViewAndSubviews
+	{
+	if (!NSEqualRects(self.dirty, NSZeroRect))
+		[self _drawDirtyRect];
+
+	for (AZView *view in self.subviews)
+		[view _redrawViewAndSubviews];
+	}
+
+/*****************************************************************************\
+|* Actually draw the dirty-rect
+\*****************************************************************************/
+- (void) _drawDirtyRect
+	{
+	SDL_Renderer *renderer = [AZApp sharedInstance].renderer;
+	SDL_Rect bounds = SDLRectFromNSRect(self.dirty);
+
+	SDL_SetRenderTarget(renderer, self.bg);
+	SDL_SetRenderClipRect(renderer, &bounds);
+	[self drawInRect:self.dirty];
+	self.dirty = NSZeroRect;
+	SDL_SetRenderClipRect(renderer, NULL);
+	SDL_SetRenderTarget(renderer, NULL);
 	}
 
 @end

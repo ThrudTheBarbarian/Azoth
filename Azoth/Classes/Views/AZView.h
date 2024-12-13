@@ -37,6 +37,8 @@ struct SDL_MouseWheelEvent;
 struct SDL_Texture;
 struct SDL_Window;
 
+@class AZColour;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface AZView : NSObject
@@ -163,6 +165,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Aggregated dirty-rect (where needs to be redrawn)
 @property(assign, nonatomic) NSRect 							dirty;
+
+// Background colour if nothing else supplied to draw
+@property(assign, nonatomic) AZColour *							bgColour;
+
+// Is this view opaque - affects the blending mode, default is NO
+@property(assign, nonatomic) BOOL								isOpaque;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -90,27 +90,10 @@
 \*****************************************************************************/
 - (SDL_AppResult) nextFrameWithAppState:(void *)state
 	{
-
-//	/* convert from milliseconds to seconds. */
-//    const double now = ((double)SDL_GetTicks()) / 1000.0;
-//
-//    /* choose the color for the frame we will draw.
-//       The sine wave trick makes it fade between colors smoothly. */
-//    const float red = (float) (0.5 + 0.5 * SDL_sin(now));
-//    const float green = (float) (0.5 + 0.5 * SDL_sin(now + SDL_PI_D * 2 / 3));
-//    const float blue = (float) (0.5 + 0.5 * SDL_sin(now + SDL_PI_D * 4 / 3));
-//
-//    /* new color, full alpha. */
-//    SDL_SetRenderDrawColorFloat(_renderer, red, green, blue, SDL_ALPHA_OPAQUE_FLOAT);
-//
-//    /* clear the window to the draw color. */
-//    SDL_RenderClear(_renderer);
-//
-//    /* put the newly-cleared rendering on the screen. */
-//    SDL_RenderPresent(_renderer);
-//
 	// Redraw any of the subviews that need it into their own textures
 	AZView *view = [AZView contentViewForWindow:_window];
+	if (!NSEqualRects(view.dirty, NSZeroRect))
+		[view _drawDirtyRect];
 	[view redrawSubViewsIfNecessary];
 
 	// Get the top-level view, draw it as the background

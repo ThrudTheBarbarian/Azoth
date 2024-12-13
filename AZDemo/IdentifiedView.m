@@ -17,27 +17,9 @@
 	if (self = [super initWithFrame:frame])
 		{
 		self.identifier = name;
-		r = rand() % 255;
-		g = rand() % 255;
-		b = rand() % 255;
-		a = 255;
 		}
 	return self;
 	}
-
-
-/*****************************************************************************\
-|* Draw rect
-\*****************************************************************************/
-- (void) drawInRect:(NSRect)dirtyRect
-	{
-	SDL_Renderer *renderer = SDL_GetRenderer(self.window);
-
-	SDL_SetRenderDrawColor(renderer, r, g, b, a);
-	SDL_FRect bounds = SDLFRectFromNSRect(dirtyRect);
-	SDL_RenderFillRect(renderer, &bounds);
-	}
-
 
 /*****************************************************************************\
 |* Mouse-button-down event, return YES if we consume the event
@@ -63,6 +45,7 @@
 
 	NSLog(@"Up in %@ at (%d,%d) (from %d,%d)",
 		self.identifier, (int)p.x, (int)p.y, (int)e->x, (int)e->y);
+	[[AZView contentViewForWindow:self.window] setNeedsDisplay:YES];
 	return YES;
 	}
 

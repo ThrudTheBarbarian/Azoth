@@ -8,6 +8,7 @@
 #import <SDL3/SDL.h>
 
 #import "AZApp.h"
+#import "AZColour.h"
 #import "AZGeometry.h"
 #import "AZView.h"
 #import "AZView+Internal.h"
@@ -39,6 +40,8 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 		_identifier		= @"";
 		_superview		= nil;
 		_bg 			= NULL;
+		_bgColour		= [AZColour blackColour];
+		_isOpaque		= NO;
 		}
 
 	return self;
@@ -252,6 +255,13 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 - (void) setNeedsDisplayInRect:(NSRect)rect
 	{
 	_dirty = NSUnionRect(_dirty, rect);
+
+	for (AZView *subview in _subviews)
+		{
+		NSRect intersect = NSIntersectionRect(rect, subview.frame);
+		intersect.origin = [subview convertPoint:intersect.origin fromView:self];
+		[subview setNeedsDisplayInRect:intersect];
+		}
 	}
 
 
@@ -261,10 +271,21 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 /*****************************************************************************\
 |* What to override in subclasses to get a view to draw. This renders into the
 |* local texture, so is at (0,0) wrt to that texture. Pixel positioning ought
-|* to be perfectly aligned
+|* to be perfectly aligned. By default the view is cleared to its background
+|* colour
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect
-	{}
+	{
+	NSLog(@"%@: drawInRect(%@)", self.identifier, NSStringFromRect(dirtyRect));
+	SDL_Renderer *renderer = SDL_GetRenderer(self.window);
+
+	SDL_SetRenderDrawColor(renderer, self.bgColour.red,
+									 self.bgColour.green,
+									 self.bgColour.blue,
+									 self.bgColour.alpha);
+	SDL_FRect rect =	SDLFRectFromNSRect(dirtyRect);
+	SDL_RenderFillRect(renderer, &rect);
+	}
 
 
 /*****************************************************************************\
@@ -275,34 +296,7 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 - (void) redrawSubViewsIfNecessary
 	{
 	for (AZView *view in self.subviews)
-		[view _update];
-	}
-
-/*****************************************************************************\
-|* Update the current view and then all its subviews in-order
-\*****************************************************************************/
-- (void) _update
-	{
-	if (!NSEqualRects(self.dirty, NSZeroRect))
-		[self _drawDirtyRect];
-
-	for (AZView *view in self.subviews)
-		[view _update];
-	}
-
-/*****************************************************************************\
-|* Actually draw the dirty-rect
-\*****************************************************************************/
-- (void) _drawDirtyRect
-	{
-	SDL_Renderer *renderer = [AZApp sharedInstance].renderer;
-	SDL_Rect bounds = SDLRectFromNSRect(self.dirty);
-
-	SDL_SetRenderTarget(renderer, self.bg);
-	SDL_SetRenderClipRect(renderer, &bounds);
-	[self drawInRect:self.dirty];
-	self.dirty = NSZeroRect;
-	SDL_SetRenderClipRect(renderer, NULL);
+		[view _redrawViewAndSubviews];
 	}
 
 @end
