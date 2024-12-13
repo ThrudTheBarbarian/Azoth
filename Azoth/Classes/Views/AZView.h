@@ -26,10 +26,15 @@
 
 #import <Foundation/Foundation.h>
 
+/*****************************************************************************\
+|* Declare the types we're using from SDL3, because we can't import the
+|* header file and keep framework modularity
+\*****************************************************************************/
 union SDL_Event;
 struct SDL_MouseButtonEvent;
 struct SDL_MouseMotionEvent;
 struct SDL_MouseWheelEvent;
+struct SDL_Texture;
 struct SDL_Window;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -43,7 +48,14 @@ NS_ASSUME_NONNULL_BEGIN
 + (AZView *) viewWithFrame:(NSRect)frame;
 
 
-// MARK: View processing
+// MARK: View processing and redraw
+
+/*****************************************************************************\
+|* Called by a top-level contentView, check if any of the subviews needs
+|* to be redrawn to their backing textures. Note that the contentView
+|* itself will always be fully drawn first, so no need to check that one
+\*****************************************************************************/
+- (void) redrawSubViewsIfNecessary;
 
 /*****************************************************************************\
 |* Return the contentView for any given SDL_Window. If one does not exist it
@@ -58,7 +70,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL) addSubview:(AZView *)view after:(AZView *)other;
 - (BOOL) addSubview:(AZView *)view before:(AZView *)other;
 
+/*****************************************************************************\
+|* Tell the view it needs to redraw itself. Will happen on the next render-pass
+\*****************************************************************************/
+- (void) setNeedsDisplay:(BOOL)yn;
+- (void) setNeedsDisplayInRect:(NSRect)rect;
 
+/*****************************************************************************\
+|* What to override in subclasses to get a view to draw. This renders into the
+|* local texture, so is at (0,0) wrt to that texture. Pixel positioning ought
+|* to be perfectly aligned
+\*****************************************************************************/
+- (void) drawInRect:(NSRect)dirtyRect;
 
 
 // MARK: Event handling
@@ -99,11 +122,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL) hitTestAtPoint:(NSPoint)p;
 
 /*****************************************************************************\
-|* Convert a point from another window's co-ordinate system to our own. Calling
+|* Convert a point from another view's co-ordinate system to our own. Calling
 |* this with nil will convert from window co-ordinates. The view must be in
 |* the superview-hierarchy otherwise.
 \*****************************************************************************/
 - (NSPoint) convertPoint:(NSPoint)p1 fromView:(nullable AZView *)otherView;
+
+/*****************************************************************************\
+|* Convert a point from our own view's co-ordinate system to another. Calling
+|* this with nil will convert to window co-ordinates. The view must be in
+|* the superview-hierarchy otherwise.
+\*****************************************************************************/
+- (NSPoint) convertPoint:(NSPoint)p1 toView:(nullable AZView *)otherView;
 
 
 
@@ -127,6 +157,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Identifier, purely for debugging
 @property(strong, nonatomic) NSString *							identifier;
+
+// Backing texture for drawing into
+@property(assign, nonatomic, nullable) struct SDL_Texture *		bg;
+
+// Aggregated dirty-rect (where needs to be redrawn)
+@property(assign, nonatomic) NSRect 							dirty;
 @end
 
 NS_ASSUME_NONNULL_END

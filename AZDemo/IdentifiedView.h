@@ -10,7 +10,10 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface IdentifiedView : AZView
-
+	{
+	float r, g, b, a;
+	}
+	
 - (instancetype) initWithFrame:(NSRect)frame andName:(NSString *)name;
 
 @end

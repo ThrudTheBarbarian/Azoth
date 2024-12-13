@@ -7,6 +7,8 @@
 
 #import <SDL3/SDL.h>
 
+#import "AZApp.h"
+#import "AZGeometry.h"
 #import "AZView.h"
 #import "AZView+Internal.h"
 
@@ -36,6 +38,7 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 		_subviews		= [NSMutableArray new];
 		_identifier		= @"";
 		_superview		= nil;
+		_bg 			= NULL;
 		}
 
 	return self;
@@ -46,6 +49,15 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 	return [[AZView alloc] initWithFrame:frame];
 	}
 
+
+/*****************************************************************************\
+|* Clean up on deallocation
+\*****************************************************************************/
+- (void) dealloc
+	{
+	if (_bg != NULL)
+		SDL_DestroyTexture(_bg);
+	}
 
 // MARK: Event manipulation
 
@@ -66,11 +78,31 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 	AZView *view = self;
 	while (view != otherView)
 		{
+		p.x -= view.frame.origin.x;
+		p.y -= view.frame.origin.y;
+		view = view.superview;
+		if (view == nil)
+			break;
+		}
+
+	return p;
+	}
+
+/*****************************************************************************\
+|* Convert a point from our own view's co-ordinate system to another. Calling
+|* this with nil will convert to window co-ordinates. The view must be in
+|* the superview-hierarchy otherwise.
+\*****************************************************************************/
+- (NSPoint) convertPoint:(NSPoint)p toView:(nullable AZView *)otherView
+	{
+	AZView *view = self.superview;
+	while (view != otherView)
+		{
 		if (view == nil)
 			break;
 
-		p.x -= view.frame.origin.x;
-		p.y -= view.frame.origin.y;
+		p.x += view.frame.origin.x;
+		p.y += view.frame.origin.y;
 		view = view.superview;
 		}
 
@@ -137,6 +169,7 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 		contentView 			= [AZView viewWithFrame:frame];
 		contentView.window		= window;
 		_contentViews[windowId] = contentView;
+		[contentView _installBackingTexture];
 		}
 	return contentView;
 	}
@@ -149,7 +182,7 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 	[_subviews addObject:view];
 	view.superview 	= self;
 	view.window		= _window;
-
+	[view _installBackingTexture];
 	return YES;
 	}
 
@@ -172,6 +205,7 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 		[_subviews addObject:view];
 
 	view.superview = self;
+	[view _installBackingTexture];
 	return ok;
 	}
 
@@ -197,98 +231,78 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 		[_subviews addObject:view];
 
 	view.superview = self;
+	[view _installBackingTexture];
 	return ok;
 	}
 
-
-
-// MARK: Internal methods
+/*****************************************************************************\
+|* Tell the view it needs to redraw itself (or not)
+\*****************************************************************************/
+- (void) setNeedsDisplay:(BOOL)yn
+	{
+	if (yn)
+		_dirty = [self bounds];
+	else
+		_dirty = NSZeroRect;
+	}
 
 /*****************************************************************************\
-|* Process a mouse event through the subview list recursively, seeing if the
-|* view wants to handle it
+|* Tell the view it needs to redraw a section of itself
 \*****************************************************************************/
-- (BOOL) processMouseEvent:(SDL_Event *)e atPoint:(NSPoint)p 
+- (void) setNeedsDisplayInRect:(NSRect)rect
 	{
-	static AZView * dragView = nil;
-
-	/*************************************************************************\
-	|* We do a depth-first search (so all subviews first), procedure is:
-	|*  - Does the event co-ordinate lie within the subview
-	|*  - if so, does -hitTest() respond back with YES (does by default)
-	|*  - if so, does the specific mouse-handler return YES ?
-	|*  - if so, we're done
-	|*  - if not, loop to next subview
-	|*  - if all subviews deny the event, then try ourselves (since this is a
-	|*    recursive call)
-	|*  - return whether handled
-	\*************************************************************************/
-
-	BOOL done 	= NO;
-	for (AZView *subview in _subviews)
-		{
-		NSPoint local = NSMakePoint(p.x - subview.frame.origin.x,
-									p.y - subview.frame.origin.y);
-		done = [subview processMouseEvent:e atPoint:local];
-		if (done)
-			break;
-		}
-
-	/*************************************************************************\
-	|* This is where the 1st view without subviews will start affecting 'done'
-	\*************************************************************************/
-	if (!done)
-		{
-		if (NSPointInRect(p, [self frame]))
-			{
-			if ([self hitTestAtPoint:p])
-				{
-				SDL_MouseMotionEvent *mme = (SDL_MouseMotionEvent *)e;
-				SDL_MouseButtonEvent *mbe = (SDL_MouseButtonEvent *)e;
-				SDL_MouseWheelEvent  *mwe = (SDL_MouseWheelEvent *)e;
-
-				switch (e->type)
-					{
-					case SDL_EVENT_MOUSE_BUTTON_DOWN:
-						done = [self mouseDown:mbe];
-						dragView = self;
-						break;
-
-					case SDL_EVENT_MOUSE_BUTTON_UP:
-						done = (dragView != nil)
-							 ? [dragView mouseUp:mbe]
-							 : [self mouseUp:mbe];
-						dragView = nil;
-						break;
-
-					case SDL_EVENT_MOUSE_MOTION:
-						// If we're no longer pressing the button, we might
-						// have dragged out of window and released it. Zero out
-						// the dragging-view
-						if ((mme->state & SDL_BUTTON_LEFT) == 0)
-							dragView = nil;
-
-						done = (dragView != nil)
-							 ? [dragView mouseDragged:mme]
-							 : [self mouseMoved:mme];
-						break;
-
-					case SDL_EVENT_MOUSE_WHEEL:
-						done = [self mouseWheeled:mwe];
-						break;
-
-					default:
-						// FIXME: SDL Log here
-						break;
-					}
-				}
-			}
-		}
-
-	return done;
+	_dirty = NSUnionRect(_dirty, rect);
 	}
 
 
-// MARK: Private methods
+// MARK: Redraw
+
+
+/*****************************************************************************\
+|* What to override in subclasses to get a view to draw. This renders into the
+|* local texture, so is at (0,0) wrt to that texture. Pixel positioning ought
+|* to be perfectly aligned
+\*****************************************************************************/
+- (void) drawInRect:(NSRect)dirtyRect
+	{}
+
+
+/*****************************************************************************\
+|* Called by a top-level contentView, check if any of the subviews needs
+|* to be redrawn to their backing textures. Note that the contentView
+|* itself will always be fully drawn first, so no need to check that one
+\*****************************************************************************/
+- (void) redrawSubViewsIfNecessary
+	{
+	for (AZView *view in self.subviews)
+		[view _update];
+	}
+
+/*****************************************************************************\
+|* Update the current view and then all its subviews in-order
+\*****************************************************************************/
+- (void) _update
+	{
+	if (!NSEqualRects(self.dirty, NSZeroRect))
+		[self _drawDirtyRect];
+
+	for (AZView *view in self.subviews)
+		[view _update];
+	}
+
+/*****************************************************************************\
+|* Actually draw the dirty-rect
+\*****************************************************************************/
+- (void) _drawDirtyRect
+	{
+	SDL_Renderer *renderer = [AZApp sharedInstance].renderer;
+	SDL_Rect bounds = SDLRectFromNSRect(self.dirty);
+
+	SDL_SetRenderTarget(renderer, self.bg);
+	SDL_SetRenderClipRect(renderer, &bounds);
+	[self drawInRect:self.dirty];
+	self.dirty = NSZeroRect;
+	SDL_SetRenderClipRect(renderer, NULL);
+	}
 
 @end

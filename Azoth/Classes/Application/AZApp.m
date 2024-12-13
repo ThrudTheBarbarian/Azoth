@@ -8,6 +8,7 @@
 #import <SDL3/SDL.h>
 
 #import "AZApp.h"
+#import "AZGeometry.h"
 #import "AZView.h"
 #import "AZView+Internal.h"
 
@@ -85,27 +86,45 @@
 	}
 
 /*****************************************************************************\
-|* Handle events
+|* Handle redraw
 \*****************************************************************************/
 - (SDL_AppResult) nextFrameWithAppState:(void *)state
 	{
-	/* convert from milliseconds to seconds. */
-    const double now = ((double)SDL_GetTicks()) / 1000.0;
 
-    /* choose the color for the frame we will draw.
-       The sine wave trick makes it fade between colors smoothly. */
-    const float red = (float) (0.5 + 0.5 * SDL_sin(now));
-    const float green = (float) (0.5 + 0.5 * SDL_sin(now + SDL_PI_D * 2 / 3));
-    const float blue = (float) (0.5 + 0.5 * SDL_sin(now + SDL_PI_D * 4 / 3));
+//	/* convert from milliseconds to seconds. */
+//    const double now = ((double)SDL_GetTicks()) / 1000.0;
+//
+//    /* choose the color for the frame we will draw.
+//       The sine wave trick makes it fade between colors smoothly. */
+//    const float red = (float) (0.5 + 0.5 * SDL_sin(now));
+//    const float green = (float) (0.5 + 0.5 * SDL_sin(now + SDL_PI_D * 2 / 3));
+//    const float blue = (float) (0.5 + 0.5 * SDL_sin(now + SDL_PI_D * 4 / 3));
+//
+//    /* new color, full alpha. */
+//    SDL_SetRenderDrawColorFloat(_renderer, red, green, blue, SDL_ALPHA_OPAQUE_FLOAT);
+//
+//    /* clear the window to the draw color. */
+//    SDL_RenderClear(_renderer);
+//
+//    /* put the newly-cleared rendering on the screen. */
+//    SDL_RenderPresent(_renderer);
+//
+	// Redraw any of the subviews that need it into their own textures
+	AZView *view = [AZView contentViewForWindow:_window];
+	[view redrawSubViewsIfNecessary];
 
-    /* new color, full alpha. */
-    SDL_SetRenderDrawColorFloat(_renderer, red, green, blue, SDL_ALPHA_OPAQUE_FLOAT);
+	// Get the top-level view, draw it as the background
+	SDL_FRect rect = SDLFRectFromNSRect(view.bounds);
+	SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_NONE);
+	SDL_RenderTexture(_renderer, view.bg, &rect, &rect);
 
-    /* clear the window to the draw color. */
-    SDL_RenderClear(_renderer);
+	// Run through the views in reverse order, telling them to render their
+	// subviews to the screen
+	for (AZView *subview in [view.subviews reverseObjectEnumerator])
+		[subview _render];
 
-    /* put the newly-cleared rendering on the screen. */
-    SDL_RenderPresent(_renderer);
+	// Tell the renderer we're done
+	SDL_RenderPresent(_renderer);
 
     /* carry on with the program! */
     return SDL_APP_CONTINUE;
