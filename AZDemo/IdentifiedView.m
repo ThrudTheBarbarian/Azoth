@@ -76,6 +76,19 @@
 	[painter rectangleWithRect:NSInsetRect(dirtyRect, 10, 10)
 						radius:20 filled:YES
 						colour:[AZColour whiteColour]];
+
+	[painter setUsingAntiAliasing:YES];
+//	[painter lineAtX:20 y:20 toX:90 y:70 withR:100 g:200 b:50 a:200];
+//	[painter ellipseWithRect:NSMakeRect(200, 200, 300, 100)
+//			 filled:YES colour:[AZColour purpleColour]];
+//
+//	int vx[5] = {50, 100, 200, 100, 100};
+//	int vy[5] = {350, 350, 500, 500, 450};
+//	[painter polygonWith:5 x:vx y:vy filled:YES withR:240 g:20 b:100 a:255];
+
+	[painter pieAtX:300 y:300 radius:100 start:0 end:180
+			 filled:YES colour:[AZColour purpleColour]];
+
 	}
 
 @end

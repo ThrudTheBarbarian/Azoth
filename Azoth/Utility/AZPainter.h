@@ -114,12 +114,84 @@ NS_ASSUME_NONNULL_BEGIN
 |* 0 degrees is the X axis, extents are measured clockwise
 \*****************************************************************************/
 
-// Draw arc-of-circle, with blending if a<255
 - (int) arcAtX:(int)x y:(int)y radius:(int)radius start:(int)start end:(int)end
 		colour:(AZColour *)colour;
 - (int) arcAtX:(int)x y:(int)y radius:(int)radius start:(int)start end:(int)end
 		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
 
+/*****************************************************************************\
+|* pie-of-circle routines
+|* 0 degrees is the X axis, extents are measured clockwise
+\*****************************************************************************/
+
+- (int) pieAtX:(int)x y:(int)y radius:(int)radius start:(int)start end:(int)end
+		filled:(BOOL)yn colour:(AZColour *)colour;
+- (int) pieAtX:(int)x y:(int)y radius:(int)radius start:(int)start end:(int)end
+		filled:(BOOL)yn withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
+
+/*****************************************************************************\
+|* circle routines (not filled)
+\*****************************************************************************/
+
+- (int) circleAtX:(int)x y:(int)y r:(int)rx colour:(AZColour *)colour;
+- (int) circleAtX:(int)x y:(int)y r:(int)rx
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
+
+/*****************************************************************************\
+|* circle routines
+\*****************************************************************************/
+
+- (int) circleAtX:(int)x y:(int)y r:(int)rx filled:(BOOL)yn
+		colour:(AZColour *)colour;
+- (int) circleAtX:(int)x y:(int)y r:(int)rx filled:(BOOL)yn
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
+
+/*****************************************************************************\
+|* ellipse routines (not filled)
+\*****************************************************************************/
+
+- (int) ellipseWithRect:(NSRect)r colour:(AZColour *)colour;
+- (int) ellipseAtX:(int)x y:(int)y rx:(int)rx ry:(int)ry
+		colour:(AZColour *)colour;
+- (int) ellipseAtX:(int)x y:(int)y rx:(int)rx ry:(int)ry
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
+
+/*****************************************************************************\
+|* ellipse routines
+\*****************************************************************************/
+
+- (int) ellipseWithRect:(NSRect)r filled:(BOOL)yn colour:(AZColour *)colour;
+- (int) ellipseAtX:(int)x y:(int)y rx:(int)rx ry:(int)ry
+		filled:(BOOL)yn colour:(AZColour *)colour;
+- (int) ellipseAtX:(int)x y:(int)y rx:(int)rx ry:(int)ry filled:(BOOL)yn
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
+
+
+/*****************************************************************************\
+|* polygon routines (not filled)
+\*****************************************************************************/
+// Neither of these two will do alpha-blending of a colour, they just use
+// the one already configured in the renderer
+- (int) polygonWith:(int)num points:(NSPoint*)pts;
+- (int) polygonWith:(int)num x:(int *)xc y:(int *)yc;
+
+// Alpha blending
+- (int) polygonWith:(int)num x:(int *)xc y:(int *)y
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
+
+/*****************************************************************************\
+|* polygon routines (filled)
+\*****************************************************************************/
+- (int) polygonWith:(int)num x:(int *)xc y:(int *)y filled:(BOOL)yn
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
+
+// Set to draw with the (slower, but nicer looking) anti-aliased line drawing
+// routines
+@property(assign, nonatomic) BOOL usingAntiAliasing;
+
+// Set YES if this is the last line being drawn during anti-aliased draw. If
+// (x2,y2) is a mid-point of a set of lines in a line-series, then set to NO
+@property(assign, nonatomic) BOOL drawAAEndpoint;
 @end
 
 NS_ASSUME_NONNULL_END

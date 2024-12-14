@@ -7,11 +7,29 @@
 
 #import <SDL3/SDL.h>
 
+#if defined(_MSC_VER)
+/* Detect 64bit and use intrinsic version */
+#ifdef _M_X64
+#include <emmintrin.h>
+static __inline long 
+	lrint(float f) 
+{
+	return _mm_cvtss_si32(_mm_load_ss(&f));
+}
+#else
+#warning Cannot find lrint
+#endif // _M_X64
+#endif // _MSC_VER
+
+
 #import "AZApp.h"
 #import "AZColour.h"
 #import "AZGeometry.h"
 #import "AZPainter.h"
 #import "AZView.h"
+
+#define AAlevels 256
+#define AAbits 8
 
 /*****************************************************************************\
 |* Structures used
@@ -24,6 +42,13 @@ typedef struct
 	int dx, dy, s1, s2, swapdir, error;
 	Uint32 count;
 	} SDL2_gfxBresenhamIterator;
+
+
+/*****************************************************************************\
+|* File-static variables
+\*****************************************************************************/
+static int * _polyInts 		= NULL;			// Global polygon cache for sorting
+static int _polyIntsSize 	= 0;			// Size of polygon cache
 
 
 /*****************************************************************************\
@@ -43,7 +68,9 @@ typedef struct
 	{
 	if (self = [super init])
 		{
-		_view = view;
+		_view 				= view;
+		_usingAntiAliasing	= NO;
+		_drawAAEndpoint		= NO;
 		}
 	return self;
 	}
@@ -171,6 +198,12 @@ typedef struct
 - (int) lineAtX:(int)x1 y:(int)y1 toX:(int)x2 y:(int)y2
 		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
 	{
+	if (x1 == x2)
+		return [self _vLineFromY1:y1 toY2:y2 atX:x1 withR:r g:g b:b a:a];
+	if (y1 == y2)
+		return [self _hLineFromX1:x1 toX2:x2 atY:y1 withR:r g:g b:b a:a];
+	if (_usingAntiAliasing)
+		return [self _aaLineAtX:x1 y:y1 toX:x2 y:y2 withR:r g:g b:b a:a];
 	int result = 0;
 	if (a != 255)
 		result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
@@ -248,7 +281,7 @@ typedef struct
 	return result;
 	}
 
-// MARK: Rounded Rectangle Drawing routines
+// MARK: Rounded Rectangle drawing routines
 
 /*****************************************************************************\
 |* Rounded rectangle routines (not filled)
@@ -353,7 +386,8 @@ typedef struct
 	return result;
 	}
 
-// MARK: Filled rectangle Drawing routines
+// MARK: Filled rectangle drawing routines
+
 /*****************************************************************************\
 |* Filled rectangle routines
 \*****************************************************************************/
@@ -424,7 +458,8 @@ typedef struct
 	}
 
 
-// MARK: Rounded filled rectangle Drawing routines
+// MARK: Rounded filled rectangle drawing routines
+
 /*****************************************************************************\
 |* Rounded filled rectangle routines
 \*****************************************************************************/
@@ -594,7 +629,7 @@ typedef struct
 	}
 
 
-// MARK: Circular arc Drawing routines
+// MARK: Circular arc drawing routines
 
 /*****************************************************************************\
 |* arc-of-circle routines (not filled)
@@ -876,6 +911,728 @@ typedef struct
 	return result;
 	}
 
+/*****************************************************************************\
+|* Circular arc drawing routines (filled)
+\*****************************************************************************/
+- (int) pieAtX:(int)x y:(int)y radius:(int)radius start:(int)start end:(int)end
+		filled:(BOOL)yn colour:(AZColour *)colour
+	{
+		return [self pieAtX:x
+		                  y:y
+					 radius:radius
+					  start:start
+					    end:end
+					 filled:yn
+					  withR:colour.red
+						  g:colour.green
+						  b:colour.blue
+						  a:colour.alpha];
+	}
+
+- (int) pieAtX:(int)x y:(int)y radius:(int)radius start:(int)start end:(int)end
+		filled:(BOOL)yn withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
+	{
+	int i;
+
+	// Radius sanity check
+	if (radius < 0)
+		return -1;
+
+	// Fix up any angle problems
+	start %= 360;
+	end   %= 360;
+
+	// Special case for rad=0 - draw a point
+	if (radius == 0)
+		return [self pixelAtX:x y:y withR:r g:g b:b a:a];
+
+	// Variable setup
+	double dr 			= (double) radius;
+	double deltaAngle 	= 3.0 / dr;
+	double startAngle 	= (double) start *(2.0 * M_PI / 360.0);
+	double endAngle 	= (double) end *(2.0 * M_PI / 360.0);
+	if (start > end)
+		endAngle += (2.0 * M_PI);
+
+	// We will always have at least 2 points
+	int numpoints = 2;
+
+	// Count points (rather than calculating it)
+	double angle = startAngle;
+	while (angle < endAngle)
+		{
+		angle += deltaAngle;
+		numpoints++;
+		}
+
+	// Allocate combined vertex array
+	int *vx = (int *) malloc(2 * sizeof(int) * numpoints);
+	if (vx == NULL)
+		return (-1);
+	int *vy = vx + numpoints;
+
+	// Center
+	vx[0] = x;
+	vy[0] = y;
+
+	// First vertex
+	angle = startAngle;
+	vx[1] = x + (int) (dr * SDL_cos(angle));
+	vy[1] = y + (int) (dr * SDL_sin(angle));
+
+	int result = 0;
+	if (numpoints<3)
+		result |= [self lineAtX:vx[0] y:vy[0] toX:vx[1] y:vy[1]
+						  withR:r g:g b:b a:a];
+	else
+		{
+		// Calculate other vertices
+		int i = 2;
+		angle = startAngle;
+		while (angle < endAngle)
+			{
+			angle += deltaAngle;
+			if (angle > endAngle)
+				angle = endAngle;
+
+			vx[i] = x + (int) (dr * SDL_cos(angle));
+			vy[i] = y + (int) (dr * SDL_sin(angle));
+			i++;
+			}
+
+		// Draw
+		result = [self polygonWith:numpoints
+								 x:vx
+								 y:vy
+							filled:yn
+							 withR:r
+								 g:g
+								 b:b
+								 a:a];
+
+		}
+
+	// Free combined vertex array
+	free(vx);
+	return result;
+	}
+
+// MARK: circle drawing routines
+
+/*****************************************************************************\
+|* circle routines (not filled)
+\*****************************************************************************/
+- (int) circleAtX:(int)x y:(int)y r:(int)rx colour:(AZColour *)colour
+	{
+	return [self ellipseAtX:x
+						  y:y
+						 rx:rx
+						 ry:rx
+					  withR:colour.red
+						  g:colour.green
+						  b:colour.blue
+						  a:colour.alpha];
+	}
+
+- (int) circleAtX:(int)x y:(int)y r:(int)rx
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
+	{
+	return [self ellipseAtX:x y:y rx:rx ry:rx withR:r g:g b:b a:a];
+	}
+
+/*****************************************************************************\
+|* circle routines (filled)
+\*****************************************************************************/
+- (int) circleAtX:(int)x y:(int)y r:(int)rx filled:(BOOL)yn
+	    colour:(AZColour *)colour
+	{
+	return [self ellipseAtX:x
+						  y:y
+						 rx:rx
+						 ry:rx
+					 filled:yn
+					  withR:colour.red
+						  g:colour.green
+						  b:colour.blue
+						  a:colour.alpha];
+	}
+
+- (int) circleAtX:(int)x y:(int)y r:(int)rx filled:(BOOL)yn
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
+	{
+	return [self ellipseAtX:x y:y rx:rx ry:rx filled:yn withR:r g:g b:b a:a];
+	}
+
+// MARK: ellipse drawing routines
+
+/*****************************************************************************\
+|* ellipse routines (not filled)
+\*****************************************************************************/
+- (int) ellipseWithRect:(NSRect)r colour:(AZColour *)colour;
+	{
+	int xr = r.size.width/2;
+	int yr = r.size.height/2;
+	int xc = r.origin.x + xr;
+	int yc = r.origin.x + yr;
+
+	return [self ellipseAtX:xc
+						  y:yc
+						 rx:xr
+						 ry:yr
+					  withR:colour.red
+					      g:colour.green
+					      b:colour.blue
+					      a:colour.alpha];
+	}
+
+- (int) ellipseAtX:(int)x y:(int)y rx:(int)xr ry:(int)yr
+		colour:(AZColour *)colour
+	{
+	return [self ellipseAtX:x
+						  y:y
+						 rx:xr
+						 ry:yr
+					  withR:colour.red
+					      g:colour.green
+					      b:colour.blue
+					      a:colour.alpha];
+	}
+
+- (int) ellipseAtX:(int)x y:(int)y rx:(int)rx ry:(int)ry
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
+	{
+	int h, i, j, k;
+	int xmh, xph, ypk, ymk;
+	int xmi, xpi, ymj, ypj;
+	int xmj, xpj, ymi, ypi;
+	int xmk, xpk, ymh, yph;
+
+	// Sanity check radii
+	if ((rx < 0) || (ry < 0))
+		return (-1);
+
+	// Special case for rx=0 - draw a vline
+	if (rx == 0)
+		return [self _vLineFromY1:y-ry toY2:y+ry atX:x withR:r g:g b:b a:a];
+
+	// Special case for ry=0 - draw a hline
+	if (ry == 0)
+		return [self _hLineFromX1:x-rx toX2:x+rx atY:y withR:r g:g b:b a:a];
+
+	// Check for anti-aliasing
+	if (_usingAntiAliasing)
+		return [self _aaEllipseAtX:x y:y rx:rx ry:ry withR:r g:g b:b a:a];
+
+	// Set color
+	int result = 0;
+	if (a != 255)
+		result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
+	result |= SDL_SetRenderDrawColor(_renderer, r, g, b, a);
+
+	// Init vars
+	int oh = 0xffff;
+	int oi = 0xffff;
+	int oj = 0xffff;
+	int ok = 0xffff;
+
+	// Draw
+	if (rx > ry)
+		{
+		int ix = 0;
+		int iy = rx * 64;
+
+		do
+			{
+			h = (ix + 32) >> 6;
+			i = (iy + 32) >> 6;
+			j = (h * ry) / rx;
+			k = (i * ry) / rx;
+
+			if (((ok != k) && (oj != k)) || ((oj != j) && (ok != j)) || (k != j))
+				{
+				xph = x + h;
+				xmh = x - h;
+				if (k > 0)
+					{
+					ypk = y + k;
+					ymk = y - k;
+					result |= [self pixelAtX:xmh y:ypk];
+					result |= [self pixelAtX:xph y:ypk];
+					result |= [self pixelAtX:xmh y:ymk];
+					result |= [self pixelAtX:xph y:ymk];
+					}
+				else
+					{
+					result |= [self pixelAtX:xmh y:y];
+					result |= [self pixelAtX:xph y:y];
+					}
+				ok = k;
+				xpi = x + i;
+				xmi = x - i;
+				if (j > 0)
+					{
+					ypj = y + j;
+					ymj = y - j;
+					result |= [self pixelAtX:xmi y:ypj];
+					result |= [self pixelAtX:xpi y:ypj];
+					result |= [self pixelAtX:xmi y:ymj];
+					result |= [self pixelAtX:xpi y:ymj];
+					}
+				else
+					{
+					result |= [self pixelAtX:xmi y:y];
+					result |= [self pixelAtX:xpi y:y];
+					}
+				oj = j;
+				}
+
+			ix = ix + iy / rx;
+			iy = iy - ix / rx;
+			}
+		while (i > h);
+		}
+	else
+		{
+		int ix = 0;
+		int iy = ry * 64;
+
+		do
+			{
+			h = (ix + 32) >> 6;
+			i = (iy + 32) >> 6;
+			j = (h * rx) / ry;
+			k = (i * rx) / ry;
+
+			if (((oi != i) && (oh != i)) || ((oh != h) && (oi != h) && (i != h)))
+				{
+				xmj = x - j;
+				xpj = x + j;
+				if (i > 0)
+					{
+					ypi = y + i;
+					ymi = y - i;
+					result |= [self pixelAtX:xmj y:ypi];
+					result |= [self pixelAtX:xpj y:ypi];
+					result |= [self pixelAtX:xmj y:ymi];
+					result |= [self pixelAtX:xpj y:ymi];
+					}
+				else
+					{
+					result |= [self pixelAtX:xmj y:y];
+					result |= [self pixelAtX:xpj y:y];
+					}
+
+				oi = i;
+				xmk = x - k;
+				xpk = x + k;
+				if (h > 0)
+					{
+					yph = y + h;
+					ymh = y - h;
+					result |= [self pixelAtX:xmk y:yph];
+					result |= [self pixelAtX:xpk y:yph];
+					result |= [self pixelAtX:xmk y:ymh];
+					result |= [self pixelAtX:xpk y:ymh];
+					}
+				else
+					{
+					result |= [self pixelAtX:xmk y:y];
+					result |= [self pixelAtX:xpk y:y];
+					}
+				oh = h;
+				}
+
+			ix = ix + iy / ry;
+			iy = iy - ix / ry;
+
+			}
+		while (i > h);
+		}
+
+	return result;
+	}
+
+
+/*****************************************************************************\
+|* ellipse routines (filled)
+\*****************************************************************************/
+- (int) ellipseWithRect:(NSRect)r filled:(BOOL)yn colour:(AZColour *)colour
+	{
+	int xr = r.size.width/2;
+	int yr = r.size.height/2;
+	int xc = r.origin.x + xr;
+	int yc = r.origin.x + yr;
+
+	return [self ellipseAtX:xc
+						  y:yc
+						 rx:xr
+						 ry:yr
+					 filled:yn
+					  withR:colour.red
+					      g:colour.green
+					      b:colour.blue
+					      a:colour.alpha];
+	}
+
+- (int) ellipseAtX:(int)x y:(int)y rx:(int)rx ry:(int)ry
+		filled:(BOOL)yn colour:(AZColour *)colour
+	{
+	return [self ellipseAtX:x
+						  y:y
+						 rx:rx
+						 ry:ry
+					 filled:yn
+					  withR:colour.red
+					      g:colour.green
+					      b:colour.blue
+					      a:colour.alpha];
+	}
+
+- (int) ellipseAtX:(int)x y:(int)y rx:(int)rx ry:(int)ry filled:(BOOL)yn
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
+	{
+	int ix, iy;
+	int h, i, j, k;
+	int xmh, xph;
+	int xmi, xpi;
+	int xmj, xpj;
+	int xmk, xpk;
+
+	// Check we're actually filling the ellipse
+	if (!yn)
+		return [self ellipseAtX:x y:y rx:rx ry:ry withR:r g:g b:b a:a];
+
+	// Radius sanity check
+	if ((rx < 0) || (ry < 0))
+		return -1;
+
+	// Special case for rx=0 - draw a vline
+	if (rx == 0)
+		return [self _vLineFromY1:y-ry toY2:y+ry atX:x withR:r g:g b:b a:a];
+
+	// Special case for ry=0 - draw a hline
+	if (ry == 0)
+		return [self _hLineFromX1:x-rx toX2:x+rx atY:y withR:r g:g b:b a:a];
+
+	// Set color
+	int result = 0;
+	if (a != 255)
+		result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
+	result |= SDL_SetRenderDrawColor(_renderer, r, g, b, a);
+
+	// Init vars
+	int oh = 0xffff;
+	int oi = 0xffff;
+	int oj = 0xffff;
+	int ok = 0xffff;
+
+	// Draw
+	if (rx > ry)
+		{
+		ix = 0;
+		iy = rx * 64;
+
+		do
+			{
+			h = (ix + 32) >> 6;
+			i = (iy + 32) >> 6;
+			j = (h * ry) / rx;
+			k = (i * ry) / rx;
+
+			if ((ok != k) && (oj != k))
+				{
+				xph = x + h;
+				xmh = x - h;
+				if (k > 0)
+					{
+					result |= [self _hLineFromX1:xmh toX2:xph atY:y+k];
+					result |= [self _hLineFromX1:xmh toX2:xph atY:y-k];
+					}
+				else
+					result |= [self _hLineFromX1:xmh toX2:xph atY:y];
+				ok = k;
+				}
+
+			if ((oj != j) && (ok != j) && (k != j))
+				{
+				xmi = x - i;
+				xpi = x + i;
+				if (j > 0)
+					{
+					result |= [self _hLineFromX1:xmi toX2:xpi atY:y+j];
+					result |= [self _hLineFromX1:xmi toX2:xpi atY:y-j];
+					}
+				else
+					result |= [self _hLineFromX1:xmi toX2:xpi atY:y];
+
+				oj = j;
+				}
+
+			ix = ix + iy / rx;
+			iy = iy - ix / rx;
+			}
+		while (i > h);
+		}
+	else
+		{
+		ix = 0;
+		iy = ry * 64;
+
+		do
+			{
+			h = (ix + 32) >> 6;
+			i = (iy + 32) >> 6;
+			j = (h * rx) / ry;
+			k = (i * rx) / ry;
+
+			if ((oi != i) && (oh != i))
+				{
+				xmj = x - j;
+				xpj = x + j;
+				if (i > 0)
+					{
+					result |= [self _hLineFromX1:xmj toX2:xpj atY:y+i];
+					result |= [self _hLineFromX1:xmj toX2:xpj atY:y-i];
+					}
+				else
+					result |= [self _hLineFromX1:xmj toX2:xpj atY:y];
+
+				oi = i;
+				}
+
+			if ((oh != h) && (oi != h) && (i != h))
+				{
+				xmk = x - k;
+				xpk = x + k;
+				if (h > 0)
+					{
+					result |= [self _hLineFromX1:xmk toX2:xpk atY:y+h];
+					result |= [self _hLineFromX1:xmk toX2:xpk atY:y-h];
+					}
+				else
+					result |= [self _hLineFromX1:xmk toX2:xpk atY:y];
+
+				oh = h;
+				}
+
+			ix = ix + iy / ry;
+			iy = iy - ix / ry;
+			}
+		while (i > h);
+		}
+
+	return result;
+	}
+
+
+// MARK: Polygon drawing methods
+
+
+/*****************************************************************************\
+|* Provide a list of points to draw, non-alpha-blended, not anti-aliased
+\*****************************************************************************/
+- (int) polygonWith:(int)num points:(NSPoint*)pts
+	{
+	// Vertex array NULL check
+	if (pts == NULL)
+		return (-1);
+
+	// Sanity check
+	if (num < 3)
+		return (-1);
+
+	// Create array of points
+	SDL_FPoint points[num+1];
+	int nn = num + 1;
+
+	for (int i=0; i<num; i++)
+		{
+		points[i].x = pts[i].x;
+		points[i].y = pts[i].y;
+		}
+	points[num].x = pts[0].x;
+	points[num].y = pts[0].y;
+
+	// Draw
+	return SDL_RenderLines(_renderer, points, nn);
+	}
+
+- (int) polygonWith:(int)num x:(int *)vx y:(int *)vy
+	{
+	// Vertex array NULL check
+	if (vx == NULL)
+		return (-1);
+
+	if (vy == NULL)
+		return (-1);
+
+	// Sanity check
+	if (num < 3)
+		return (-1);
+
+	// Create array of points
+	SDL_FPoint points[num+1];
+	int nn = num + 1;
+
+	for (int i=0; i<num; i++)
+		{
+		points[i].x = vx[i];
+		points[i].y = vy[i];
+		}
+	points[num].x = vx[0];
+	points[num].y = vy[0];
+
+	// Draw
+	return SDL_RenderLines(_renderer, points, nn);
+	}
+
+/*****************************************************************************\
+|* Provide a list of points to draw, alpha-blended
+\*****************************************************************************/
+- (int) polygonWith:(int)num x:(int *)vx y:(int *)vy
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
+	{
+	// Vertex array NULL check
+	if (vx == NULL)
+		return (-1);
+
+	if (vy == NULL)
+		return (-1);
+
+	// Sanity check
+	if (num < 3)
+		return (-1);
+
+	// Set color
+	int result = 0;
+	if (a != 255)
+		result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
+	result |= SDL_SetRenderDrawColor(_renderer, r, g, b, a);
+
+	// Draw
+	return [self _polygonWith:num vx:vx vy:vy withR:r g:g b:b a:a];
+	}
+
+/*****************************************************************************\
+|* Filled polygon drawing.
+\*****************************************************************************/
+- (int) polygonWith:(int)num x:(int *)vx y:(int *)vy filled:(BOOL)yn
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
+	{
+	if (!yn)
+		return [self polygonWith:num x:vx y:vy withR:r g:g b:b a:a];
+
+	// Vertex array NULL check
+	if (vx == NULL)
+		return (-1);
+
+	if (vy == NULL)
+		return (-1);
+
+	// Sanity check
+	if (num < 3)
+		return (-1);
+
+	// Set up the polygon cache. Only grow the cache
+	if (!_polyIntsSize)
+		{
+		_polyInts 		= (int *) malloc(sizeof(int) * num);
+		_polyIntsSize 	= num;
+		}
+	else
+		{
+		if (_polyIntsSize < num)
+			{
+			int * polyIntsNew = (int *) realloc(_polyInts, sizeof(int) * num);
+			if (!polyIntsNew)
+				{
+				if (_polyInts)
+					{
+					free(_polyInts);
+					_polyInts = NULL;
+					}
+				_polyIntsSize = 0;
+				}
+			else
+				{
+				_polyInts = polyIntsNew;
+				_polyIntsSize = num;
+				}
+			}
+		}
+
+	// Check temp array size
+	if (_polyInts == NULL)
+		_polyIntsSize = 0;
+
+	// Sanity check
+	if (_polyInts == NULL)
+		return(-1);
+
+	// Determine Y minima, maxima
+	int miny = vy[0];
+	int maxy = vy[0];
+	for (int i = 1; (i < num); i++)
+		if (vy[i] < miny)
+			miny = vy[i];
+		else if (vy[i] > maxy)
+			maxy = vy[i];
+
+	// Draw, scanning y
+	int result = 0;
+	for (int y = miny; (y <= maxy); y++)
+		{
+		int ints = 0;
+		for (int i = 0; i < num; i++)
+			{
+			int ind1 = (!i) ? num-1 : i-1;
+			int ind2 = (!i) ? 0     : i;
+			int x1, x2;
+
+			int y1 = vy[ind1];
+			int y2 = vy[ind2];
+			if (y1 < y2)
+				{
+				x1 = vx[ind1];
+				x2 = vx[ind2];
+				}
+			else if (y1 > y2)
+				{
+				y2 = vy[ind1];
+				y1 = vy[ind2];
+				x2 = vx[ind1];
+				x1 = vx[ind2];
+				}
+			else
+				continue;
+
+			if ( ((y >= y1) && (y < y2)) || ((y == maxy) && (y > y1) && (y <= y2)) )
+				_polyInts[ints++] = ((65536 * (y - y1)) / (y2 - y1))
+								   * (x2 - x1) + (65536 * x1);
+
+			}
+
+		qsort(_polyInts, ints, sizeof(int), _qsortInts);
+
+		// Set color
+		result = 0;
+	    if (a != 255)
+			result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
+		result |= SDL_SetRenderDrawColor(_renderer, r, g, b, a);
+
+		for (int i = 0; (i < ints); i += 2)
+			{
+			int xa 	= _polyInts[i] + 1;
+			xa 		= (xa >> 16) + ((xa & 32768) >> 15);
+			int xb 	= _polyInts[i+1] - 1;
+			xb 		= (xb >> 16) + ((xb & 32768) >> 15);
+			result |= [self _hLineFromX1:xa toX2:xb atY:y];
+			}
+		}
+
+	return result;
+	}
+
 
 // MARK: Private methods
 
@@ -958,5 +1715,399 @@ typedef struct
 	return result;
 	}
 
+
+/*****************************************************************************\
+|* Anti-aliased line drawing.
+\*****************************************************************************/
+- (int) _aaLineAtX:(int)x1 y:(int)y1 toX:(int)x2 y:(int)y2
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
+	{
+	Sint32 xx0, yy0, xx1, yy1;
+	Uint32 erradj;
+	Uint32  wgt;
+	int xdir;
+
+	// Keep on working with 32bit numbers
+	xx0 = x1;
+	yy0 = y1;
+	xx1 = x2;
+	yy1 = y2;
+
+	// Reorder points to make dy positive
+	if (yy0 > yy1)
+		{
+		int tmp = yy0;
+		yy0 = yy1;
+		yy1 = tmp;
+
+		tmp = xx0;
+		xx0 = xx1;
+		xx1 = tmp;
+		}
+
+	// Calculate distance
+	int dx = xx1 - xx0;
+	int dy = yy1 - yy0;
+
+	// Adjust for negative dx and set xdir
+	if (dx >= 0)
+		xdir = 1;
+	else
+		{
+		xdir = -1;
+		dx = (-dx);
+		}
+
+	// Check for special cases
+	if (dx == 0)
+		{
+		// Vertical line
+		if (_drawAAEndpoint)
+			return [self _vLineFromY1:y1 toY2:y2 atX:x1 withR:r g:g b:b a:a];
+		else
+			{
+			if (dy > 0)
+				return [self _vLineFromY1:yy0 toY2:yy0+dy atX:x1
+									withR:r g:g b:b a:a];
+			return [self pixelAtX:x1 y:y1 withR:r g:g b:b a:a];
+			}
+		}
+	else if (dy == 0)
+		{
+		// Horizontal line
+		if (_drawAAEndpoint)
+			return [self _hLineFromX1:x1 toX2:x2 atY:y1 withR:r g:g b:b a:a];
+		else
+			{
+			if (dx > 0)
+				return [self _hLineFromX1:xx0 toX2:xx0+(xdir*dx) atY:y1
+									withR:r g:g b:b a:a];
+			return [self pixelAtX:x1 y:y1 withR:r g:g b:b a:a];
+			}
+		}
+	else if ((dx == dy) && (_drawAAEndpoint))
+		{
+		// Diagonal line (with endpoint)
+		return [self lineAtX:x1 y:y1 toX:x2 y:y2 withR:r g:g b:b a:a];
+		}
+
+	// Line is not horizontal, vertical or diagonal (with endpoint)
+	int result = 0;
+
+	// Zero accumulator
+	uint32_t erracc = 0;
+
+	// # of bits by which to shift erracc to get intensity level
+	uint32_t intshift = 32 - AAbits;
+
+	// Draw the initial pixel in the foreground color
+	result |= [self pixelAtX:x1 y:y1 withR:r g:g b:b a:a];
+
+	// x-major or y-major?
+	if (dy > dx)
+		{
+		// y-major.  Calculate 16-bit fixed point fractional part of a pixel that
+		// X advances every time Y advances 1 pixel, truncating the result so that
+		// we won't overrun the endpoint along the X axis
+		//
+		// Not-so-portable version: erradj = ((Uint64)dx << 32) / (Uint64)dy;
+		//
+		erradj = ((dx << 16) / dy) << 16;
+
+		// draw all pixels other than the first and last
+		int x0pxdir = xx0 + xdir;
+		while (--dy)
+			{
+			uint32_t erracctmp = erracc;
+			erracc += erradj;
+			if (erracc <= erracctmp)
+				{
+				// rollover in error accumulator, x coord advances
+				xx0 = x0pxdir;
+				x0pxdir += xdir;
+				}
+			yy0++;		// y-major so always advance Y
+
+			// the AAbits most significant bits of erracc give us the intensity
+			// weighting for this pixel, and the complement of the weighting for
+			// the paired pixel.
+			int wgt = (erracc >> intshift) & 255;
+			result |= [self pixelAtX:xx0 y:yy0 alphaWeight:255-wgt
+							   withR:r g:g b:b a:a];
+			result |= [self pixelAtX:x0pxdir y:yy0 alphaWeight:wgt
+							   withR:r g:g b:b a:a];
+			}
+		}
+	else
+		{
+		// x-major line.  Calculate 16-bit fixed-point fractional part of a pixel
+		// that Y advances each time X advances 1 pixel, truncating the result so
+		// that we won't overrun the endpoint along the X axis.
+		//
+		// Not-so-portable version: erradj = ((Uint64)dy << 32) / (Uint64)dx;
+		erradj = ((dy << 16) / dx) << 16;
+
+		// draw all pixels other than the first and last
+		int y0p1 = yy0 + 1;
+		while (--dx)
+			{
+			uint32_t erracctmp = erracc;
+			erracc += erradj;
+			if (erracc <= erracctmp)
+				{
+				// Accumulator turned over, advance y
+				yy0 = y0p1;
+				y0p1++;
+				}
+			xx0 += xdir;	// x-major so always advance X
+
+			// the AAbits most significant bits of erracc give us the intensity
+			// weighting for this pixel, and the complement of the weighting for
+			// the paired pixel.
+			wgt = (erracc >> intshift) & 255;
+			result |= [self pixelAtX:xx0 y:yy0 alphaWeight:255-wgt
+							   withR:r g:g b:b a:a];
+			result |= [self pixelAtX:xx0 y:y0p1 alphaWeight:wgt
+							   withR:r g:g b:b a:a];
+			}
+		}
+
+	// Check whether we're drawing the endpoint
+	if (_drawAAEndpoint)
+		{
+		// Draw final pixel, always exactly intersected by the line and doesn't
+		// need to be weighted.
+		result |= [self pixelAtX:x2 y:y2 withR:r g:g b:b a:a];
+		}
+	return result;
+	}
+
+
+/*****************************************************************************\
+|* Anti-aliased ellipse drawing.
+\*****************************************************************************/
+- (int) _aaEllipseAtX:(int)x y:(int)y rx:(int)rx ry:(int)ry
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
+	{
+	Sint16 xs, ys, dyt;
+	float cp;
+
+	/* Variable setup */
+	int a2 		= rx * rx;
+	int b2 		= ry * ry;
+
+	int ds 		= 2 * a2;
+	int dt 		= 2 * b2;
+
+	Sint16 xc2 	= 2 * x;
+	Sint16 yc2 	= 2 * y;
+
+	// introduce some overdraw
+	double sab 	= SDL_sqrt(a2 + b2);
+	Sint16 od 	= (Sint16)lrint(sab*0.01) + 1;
+	int dxt 	= (Sint16)lrint((double)a2 / sab) + od;
+
+	int t = 0;
+	int s = -2 * a2 * ry;
+	int d = 0;
+
+	Sint16 xp = x;
+	Sint16 yp = y - ry;
+
+	// Draw
+	int result = 0;
+	if (a != 255)
+		result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
+
+	// "End points"
+	result |= [self pixelAtX:xp y:yp withR:r g:g b:b a:a];
+	result |= [self pixelAtX:xc2 - xp y:yp withR:r g:g b:b a:a];
+	result |= [self pixelAtX:xp y:yc2 - yp withR:r g:g b:b a:a];
+	result |= [self pixelAtX:xc2 - xp y:yc2 - yp withR:r g:g b:b a:a];
+
+	for (int i = 1; i <= dxt; i++)
+		{
+		xp--;
+		d += t - b2;
+
+		if (d >= 0)
+			ys = yp - 1;
+		else if ((d - s - a2) > 0)
+			{
+			if ((2 * d - s - a2) >= 0)
+				ys = yp + 1;
+			else
+				{
+				ys = yp;
+				yp++;
+				d -= s + a2;
+				s += ds;
+				}
+			}
+		else
+			{
+			yp++;
+			ys = yp + 1;
+			d -= s + a2;
+			s += ds;
+			}
+
+		t -= dt;
+
+		// Calculate alpha
+		if (s != 0)
+			{
+			cp = (float) SDL_abs(d) / (float) SDL_abs(s);
+			if (cp > 1.0)
+				cp = 1.0;
+			}
+		else
+			cp = 1.0;
+
+
+		// Calculate weights
+		Uint8 weight = (Uint8) (cp * 255);
+		Uint8 iweight = 255 - weight;
+
+		// Upper half
+		Sint16 xx = xc2 - xp;
+		result |= [self pixelAtX:xp y:yp alphaWeight:iweight withR:r g:g b:b a:a];
+		result |= [self pixelAtX:xx y:yp alphaWeight:iweight withR:r g:g b:b a:a];
+
+		result |= [self pixelAtX:xp y:ys alphaWeight:weight withR:r g:g b:b a:a];
+		result |= [self pixelAtX:xx y:ys alphaWeight:weight withR:r g:g b:b a:a];
+
+		// Lower half
+		Sint16 yy = yc2 - yp;
+		result |= [self pixelAtX:xp y:yy alphaWeight:iweight withR:r g:g b:b a:a];
+		result |= [self pixelAtX:xx y:yy alphaWeight:iweight withR:r g:g b:b a:a];
+
+		yy = yc2 - ys;
+		result |= [self pixelAtX:xp y:yy alphaWeight:weight withR:r g:g b:b a:a];
+		result |= [self pixelAtX:xx y:yy alphaWeight:weight withR:r g:g b:b a:a];
+		}
+
+	// Replaces original approximation code dyt = abs(yp - yc);
+	dyt = (Sint16)lrint((double)b2 / sab ) + od;
+
+	for (int i = 1; i <= dyt; i++)
+		{
+		yp++;
+		d -= s + a2;
+
+		if (d <= 0)
+			xs = xp + 1;
+		else if ((d + t - b2) < 0)
+			{
+			if ((2 * d + t - b2) <= 0)
+				xs = xp - 1;
+			else
+				{
+				xs = xp;
+				xp--;
+				d += t - b2;
+				t -= dt;
+				}
+			}
+		else
+			{
+			xp--;
+			xs = xp - 1;
+			d += t - b2;
+			t -= dt;
+			}
+
+		s += ds;
+
+		// Calculate alpha
+		if (t != 0)
+			{
+			cp = (float) SDL_abs(d) / (float) SDL_abs(t);
+			if (cp > 1.0)
+				cp = 1.0;
+			}
+		else
+			cp = 1.0;
+
+		// Calculate weight
+		Uint8 weight = (Uint8) (cp * 255);
+		Uint8 iweight = 255 - weight;
+
+		/* Left half */
+		Sint16 xx = xc2 - xp;
+		Sint16 yy = yc2 - yp;
+		result |= [self pixelAtX:xp y:yp alphaWeight:iweight withR:r g:g b:b a:a];
+		result |= [self pixelAtX:xx y:yp alphaWeight:iweight withR:r g:g b:b a:a];
+
+		result |= [self pixelAtX:xp y:yy alphaWeight:iweight withR:r g:g b:b a:a];
+		result |= [self pixelAtX:xx y:yy alphaWeight:iweight withR:r g:g b:b a:a];
+
+		/* Right half */
+		xx = xc2 - xs;
+		result |= [self pixelAtX:xs y:yp alphaWeight:weight withR:r g:g b:b a:a];
+		result |= [self pixelAtX:xx y:yp alphaWeight:weight withR:r g:g b:b a:a];
+
+		result |= [self pixelAtX:xs y:yy alphaWeight:weight withR:r g:g b:b a:a];
+		result |= [self pixelAtX:xx y:yy alphaWeight:weight withR:r g:g b:b a:a];
+		}
+
+	return result;
+	}
+
+/*****************************************************************************\
+|* Anti-aliased (or not) polygon drawing.
+\*****************************************************************************/
+- (int) _polygonWith:(int)num vx:(int *)vx vy:(int *)vy
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
+	{
+	if (!_usingAntiAliasing)
+		{
+		// Create array of points
+		SDL_FPoint points[num+1];
+		int nn = num + 1;
+
+		for (int i=0; i<num; i++)
+			{
+			points[i].x = vx[i];
+			points[i].y = vy[i];
+			}
+		points[num].x = vx[0];
+		points[num].y = vy[0];
+
+		return SDL_RenderLines(_renderer, points, nn);
+		}
+
+	// Pointer setup
+	const int *x1 = vx;
+	const int *x2 = vx; x2 ++;
+	const int *y1 = vy;
+	const int *y2 = vy; y2 ++;
+
+	// Draw
+	_drawAAEndpoint = NO;
+	int result = 0;
+	for (int i = 1; i < num; i++)
+		{
+		result |= [self _aaLineAtX:*x1 y:*y1 toX:*x2 y:*y2 withR:r g:g b:b a:a];
+
+		x1 = x2;
+		y1 = y2;
+		x2++;
+		y2++;
+		}
+	result |= [self _aaLineAtX:*x1 y:*y1 toX:*vx y:*vy withR:r g:g b:b a:a];
+
+	return result;
+	}
+
+
+/*****************************************************************************\
+|* Helper function for polygon qsort
+|* Returns 0 if a==b, a negative number if a < b or a positive number if a > b.
+\*****************************************************************************/
+static int _qsortInts(const void *a, const void *b)
+	{
+	return (*(const int *) a) - (*(const int *) b);
+	}
 
 @end
