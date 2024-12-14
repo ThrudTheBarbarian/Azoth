@@ -56,6 +56,16 @@
 			);
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
 		};
+		F4B6A3692D0D4ADD0033580D /* Exceptions for "Azoth" folder in "AZDemo" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Frameworks/avif.xcframework,
+				Frameworks/jxl.xcframework,
+				Frameworks/SDL3_image.xcframework,
+				Frameworks/webp.xcframework,
+			);
+			target = F41BC69B2D0A71FD00E61EDD /* AZDemo */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
@@ -71,6 +81,22 @@
 				Frameworks/SDL3.framework,
 			);
 		};
+		F4B6A3642D0D4AD10033580D /* Exceptions for "Azoth" folder in "Embed Frameworks" phase from "AZDemo" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			attributesByRelativePath = {
+				Frameworks/SDL3_image.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
+				Frameworks/avif.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
+				Frameworks/jxl.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
+				Frameworks/webp.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
+			};
+			buildPhase = F41BC6B12D0A720700E61EDD /* Embed Frameworks */;
+			membershipExceptions = (
+				Frameworks/avif.xcframework,
+				Frameworks/jxl.xcframework,
+				Frameworks/SDL3_image.xcframework,
+				Frameworks/webp.xcframework,
+			);
+		};
 /* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -78,6 +104,8 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				F41BC6572D0A61BA00E61EDD /* Exceptions for "Azoth" folder in "Azoth" target */,
+				F4B6A3692D0D4ADD0033580D /* Exceptions for "Azoth" folder in "AZDemo" target */,
+				F4B6A3642D0D4AD10033580D /* Exceptions for "Azoth" folder in "Embed Frameworks" phase from "AZDemo" target */,
 			);
 			path = Azoth;
 			sourceTree = "<group>";

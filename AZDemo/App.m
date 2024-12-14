@@ -9,6 +9,7 @@
 #define SDL_MAIN_USE_CALLBACKS 1
 #import <SDL3/SDL.h>
 #import <SDL3/SDL_main.h>
+#import <SDL3_image/SDL_image.h>
 
 #import <Azoth/Azoth.h>
 
@@ -46,6 +47,10 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
 		}
+
+	/*************************************************************************\
+    |* Initialise the image library
+    \*************************************************************************/
 
 	/*************************************************************************\
     |* Create the window

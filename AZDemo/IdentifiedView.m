@@ -7,8 +7,14 @@
 
 #import <Azoth/Azoth.h>
 #import <SDL3/SDL.h>
+#import <SDL3_image/SDL_image.h>
 
 #import "IdentifiedView.h"
+
+@interface IdentifiedView()
+@property (strong, nonatomic) NSString * rsrcDir;
+@property (assign, nonatomic) SDL_Surface * surface;
+@end
 
 @implementation IdentifiedView
 
@@ -17,6 +23,10 @@
 	if (self = [super initWithFrame:frame])
 		{
 		self.identifier = name;
+		_rsrcDir = [[NSBundle bundleForClass:[self class]] resourcePath];
+
+		NSString *path = [_rsrcDir stringByAppendingFormat:@"/texture.png"];
+		_surface = IMG_Load([path fileSystemRepresentation]);
 		}
 	return self;
 	}
@@ -91,7 +101,9 @@
 
 	int vx[5] = {50, 100, 200, 100, 100};
 	int vy[5] = {350, 350, 500, 500, 450};
-	
+		[painter texturedPolygonWith:5 x:vx y:vy texture:_surface textureDx:5 textureDy:5];
+		
+
 	}
 
 @end
