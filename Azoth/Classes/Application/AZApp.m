@@ -9,8 +9,16 @@
 
 #import "AZApp.h"
 #import "AZGeometry.h"
+#import "AZObject.h"
 #import "AZView.h"
 #import "AZView+Internal.h"
+
+NSString * const kTextureType	= @"texture";
+
+
+@interface AZApp()
+@property(strong, nonatomic) NSMutableArray<AZObject *> * 		bin;
+@end
 
 @implementation AZApp
 
@@ -20,7 +28,9 @@
 - (instancetype) init
 	{
 	if (self = [super init])
-		{}
+		{
+		_bin = [NSMutableArray new];
+		}
 	return self;
 	}
 
@@ -112,7 +122,10 @@
 	// Tell the renderer we're done
 	SDL_RenderPresent(_renderer);
 
-    /* carry on with the program! */
+	// If there's anything in the bin, get rid of it safely now
+	[self _purgeBin];
+
+    // carry on with the program!
     return SDL_APP_CONTINUE;
 	}
 
@@ -121,6 +134,31 @@
 \*****************************************************************************/
 - (void) terminateBecause:(SDL_AppResult)reason withAppState:(void *)state
 	{}
-	
+
+
+/*****************************************************************************\
+|* Application service: dispose of things after renderPresent called
+\*****************************************************************************/
+- (void) registerTextureForDisposal:(SDL_Texture *)texture
+	{
+	AZObject *obj = [AZObject objectWithPointer:texture andHint:kTextureType];
+	[_bin addObject:obj];
+	}
+
+
+// MARK: Private methods
+
+- (void) _purgeBin
+	{
+	for (AZObject *obj in _bin)
+		{
+		if ([obj.hint isEqualToString:kTextureType])
+			SDL_DestroyTexture(obj.ptr);
+		else
+			SDL_Log("Found unknown type '%s' in bin!", obj.hint.UTF8String);
+		}
+	[_bin removeAllObjects];
+	}
+
 @end
 

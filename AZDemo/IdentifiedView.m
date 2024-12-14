@@ -89,6 +89,9 @@
 	[painter pieAtX:300 y:300 radius:100 start:0 end:180
 			 filled:YES colour:[AZColour purpleColour]];
 
+	int vx[5] = {50, 100, 200, 100, 100};
+	int vy[5] = {350, 350, 500, 500, 450};
+	
 	}
 
 @end

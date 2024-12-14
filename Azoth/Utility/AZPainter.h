@@ -12,6 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 @class AZColour;
 @class AZView;
 
+struct SDL_Surface;
+
 @interface AZPainter : NSObject
 
 /*****************************************************************************\
@@ -65,6 +67,24 @@ NS_ASSUME_NONNULL_BEGIN
 // Draw a line with blending enabled if a<255, using r,g,b,a
 - (int) lineAtX:(int)x y:(int)y toX:(int)x2 y:(int)y2
 		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
+
+/*****************************************************************************\
+|* triangle routines (not filled)
+\*****************************************************************************/
+
+- (int) triangleWithX:(int)x1 y:(int)y1 x:(int)x2 y:(int)y2 x:(int)x3 y:(int)y3
+		colour:(AZColour *)colour;
+- (int) triangleWithX:(int)x1 y:(int)y1 x:(int)x2 y:(int)y2 x:(int)x3 y:(int)y3
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
+
+/*****************************************************************************\
+|* triangle routines (filled)
+\*****************************************************************************/
+
+- (int) triangleWithX:(int)x1 y:(int)y1 x:(int)x2 y:(int)y2 x:(int)x3 y:(int)y3
+		filled:(BOOL)yn colour:(AZColour *)colour;
+- (int) triangleWithX:(int)x1 y:(int)y1 x:(int)x2 y:(int)y2 x:(int)x3 y:(int)y3
+		filled:(BOOL)yn withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
 
 /*****************************************************************************\
 |* Rectangle routines (not filled)
@@ -166,12 +186,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (int) ellipseAtX:(int)x y:(int)y rx:(int)rx ry:(int)ry filled:(BOOL)yn
 		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
 
-
 /*****************************************************************************\
 |* polygon routines (not filled)
 \*****************************************************************************/
-// Neither of these two will do alpha-blending of a colour, they just use
-// the one already configured in the renderer
+// Without alpha-blending
 - (int) polygonWith:(int)num points:(NSPoint*)pts;
 - (int) polygonWith:(int)num x:(int *)xc y:(int *)yc;
 
@@ -179,11 +197,20 @@ NS_ASSUME_NONNULL_BEGIN
 - (int) polygonWith:(int)num x:(int *)xc y:(int *)y
 		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
 
+
 /*****************************************************************************\
 |* polygon routines (filled)
 \*****************************************************************************/
+
+// Coloured fill
 - (int) polygonWith:(int)num x:(int *)xc y:(int *)y filled:(BOOL)yn
 		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
+
+// Textured fill
+- (int) texturedPolygonWith:(int)num x:(int *)vx y:(int *)vy
+		texture:(struct SDL_Surface *)surface
+		textureDx:(int)tdx textureDy:(int)tdy;
+
 
 // Set to draw with the (slower, but nicer looking) anti-aliased line drawing
 // routines

@@ -9,9 +9,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+extern NSString * const kTextureType;
+
 enum SDL_AppResult;
 union SDL_Event;
 struct SDL_Renderer;
+struct SDL_Texture;
 struct SDL_Window;
 
 @interface AZApp : NSObject
@@ -36,6 +39,11 @@ struct SDL_Window;
 \*****************************************************************************/
 - (void) terminateBecause:(enum SDL_AppResult)reason withAppState:(void *)state;
 
+
+/*****************************************************************************\
+|* Application service: dispose of things after renderPresent called
+\*****************************************************************************/
+- (void) registerTextureForDisposal:(struct SDL_Texture *)texture;
 
 /*****************************************************************************\
 |* Properties

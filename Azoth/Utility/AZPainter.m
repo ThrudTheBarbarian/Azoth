@@ -25,6 +25,7 @@ static __inline long
 #import "AZApp.h"
 #import "AZColour.h"
 #import "AZGeometry.h"
+#import "AZObject.h"
 #import "AZPainter.h"
 #import "AZView.h"
 
@@ -932,8 +933,6 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 - (int) pieAtX:(int)x y:(int)y radius:(int)radius start:(int)start end:(int)end
 		filled:(BOOL)yn withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
 	{
-	int i;
-
 	// Radius sanity check
 	if (radius < 0)
 		return -1;
@@ -1425,6 +1424,74 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	}
 
 
+// MARK: Triangle drawing methods
+
+/*****************************************************************************\
+|* Draw a coloured triangle (not filled)
+\*****************************************************************************/
+
+- (int) triangleWithX:(int)x1 y:(int)y1 x:(int)x2 y:(int)y2 x:(int)x3 y:(int)y3
+		colour:(AZColour *)colour
+	{
+	int xc[3] = {x1, x2, x3};
+	int yc[3] = {y1, y2, y3};
+
+	return [self polygonWith:3
+						   x:xc
+						   y:yc
+					   withR:colour.red
+						   g:colour.green
+						   b:colour.blue
+						   a:colour.alpha];
+	}
+
+- (int) triangleWithX:(int)x1 y:(int)y1 x:(int)x2 y:(int)y2 x:(int)x3 y:(int)y3
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
+	{
+	int xc[3] = {x1, x2, x3};
+	int yc[3] = {y1, y2, y3};
+
+	// Anti-aliasing taken care of in the _polygonWith... call
+	return [self polygonWith:3 x:xc y:yc withR:r g:g b:b a:a];
+	}
+
+
+/*****************************************************************************\
+|* Draw a coloured triangle (filled)
+\*****************************************************************************/
+- (int) triangleWithX:(int)x1 y:(int)y1 x:(int)x2 y:(int)y2 x:(int)x3 y:(int)y3
+		filled:(BOOL)yn colour:(AZColour *)colour
+	{
+	int xc[3] = {x1, x2, x3};
+	int yc[3] = {y1, y2, y3};
+
+	return [self polygonWith:3
+						   x:xc
+						   y:yc
+					  filled:yn
+					   withR:colour.red
+						   g:colour.green
+						   b:colour.blue
+						   a:colour.alpha];
+	}
+
+- (int) triangleWithX:(int)x1 y:(int)y1 x:(int)x2 y:(int)y2 x:(int)x3 y:(int)y3
+		filled:(BOOL)yn withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
+	{
+	int xc[3] = {x1, x2, x3};
+	int yc[3] = {y1, y2, y3};
+
+	return [self polygonWith:3
+						   x:xc
+						   y:yc
+					  filled:yn
+					   withR:r
+						   g:g
+						   b:b
+						   a:a];
+	}
+
+
 // MARK: Polygon drawing methods
 
 
@@ -1631,6 +1698,148 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		}
 
 	return result;
+	}
+
+
+/*****************************************************************************\
+|* Textured polygon drawing.
+\*****************************************************************************/
+- (int) texturedPolygonWith:(int)num x:(int *)vx y:(int *)vy
+		texture:(SDL_Surface *)surface textureDx:(int)tdx textureDy:(int)tdy
+	{
+	int x1, y1;
+	int x2, y2;
+	int ints;
+
+	// Vertex array NULL check
+	if (vx == NULL)
+		return (-1);
+
+	if (vy == NULL)
+		return (-1);
+
+	// Sanity check
+	if (num < 3)
+		return (-1);
+
+	// Set up the polygon cache. Only grow the cache
+	if (!_polyIntsSize)
+		{
+		_polyInts 		= (int *) malloc(sizeof(int) * num);
+		_polyIntsSize 	= num;
+		}
+	else
+		{
+		if (_polyIntsSize < num)
+			{
+			int * polyIntsNew = (int *) realloc(_polyInts, sizeof(int) * num);
+			if (!polyIntsNew)
+				{
+				if (_polyInts)
+					{
+					free(_polyInts);
+					_polyInts = NULL;
+					}
+				_polyIntsSize = 0;
+				}
+			else
+				{
+				_polyInts = polyIntsNew;
+				_polyIntsSize = num;
+				}
+			}
+		}
+
+	// Check temp array size
+	if (_polyInts == NULL)
+		_polyIntsSize = 0;
+
+	// Sanity check
+	if (_polyInts == NULL)
+		return(-1);
+
+	// Determine Y minima, maxima
+	int minx = vx[0];
+	int maxx = vx[0];
+	int miny = vy[0];
+	int maxy = vy[0];
+	for (int i = 1; (i < num); i++)
+		{
+		if (vy[i] < miny)
+			miny = vy[i];
+		else if (vy[i] > maxy)
+			maxy = vy[i];
+		if (vx[i] < minx)
+			minx = vx[i];
+		else if (vx[i] > maxx)
+			maxx = vx[i];
+		}
+
+    // Create texture for drawing
+	SDL_Texture *texture = SDL_CreateTextureFromSurface(_renderer, surface);
+	if (texture == NULL)
+		return -1;
+
+	SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+	
+	// Draw, scanning y
+
+	int result = 0;
+	for (int y = miny; y <= maxy; y++)
+		{
+		ints = 0;
+		for (int i = 0; (i < num); i++)
+			{
+			int ind1 = (!i) ? num-1 : i-1;
+			int ind2 = (!i) ? 0     : i;
+
+			y1 = vy[ind1];
+			y2 = vy[ind2];
+			if (y1 < y2)
+				{
+				x1 = vx[ind1];
+				x2 = vx[ind2];
+				}
+			else if (y1 > y2)
+				{
+				y2 = vy[ind1];
+				y1 = vy[ind2];
+				x2 = vx[ind1];
+				x1 = vx[ind2];
+				}
+			else
+				continue;
+
+			if (((y >= y1) && (y < y2)) || ((y == maxy) && (y > y1) && (y <= y2)))
+				_polyInts[ints++] = ((65536 * (y - y1)) / (y2 - y1))
+								  * (x2 - x1) + (65536 * x1);
+			}
+
+		qsort(_polyInts, ints, sizeof(int), _qsortInts);
+
+		for (int i = 0; (i < ints); i += 2)
+			{
+			int xa = _polyInts[i] + 1;
+			    xa = (xa >> 16) + ((xa & 32768) >> 15);
+			int xb = _polyInts[i+1] - 1;
+			    xb = (xb >> 16) + ((xb & 32768) >> 15);
+			result |= [self _texturedHLineAtX:xa
+										  toX:xb
+										  atY:y
+									  texture:texture
+									 textureW:surface->w
+									 textureH:surface->h
+									textureDx:tdx
+									textureDy:tdy];
+			}
+		}
+
+	//SDL_RenderPresent(_renderer);
+	//SDL_DestroyTexture(texture);
+	AZApp *app = [AZApp sharedInstance];
+	[app registerTextureForDisposal:texture];
+
+	return (result);
 	}
 
 
@@ -2109,5 +2318,90 @@ static int _qsortInts(const void *a, const void *b)
 	{
 	return (*(const int *) a) - (*(const int *) b);
 	}
+
+
+/*****************************************************************************\
+|* Internal function to draw a textured horizontal line.
+\*****************************************************************************/
+- (int) _texturedHLineAtX:(int)x1
+					  toX:(int)x2
+					  atY:(int)y
+				  texture:(SDL_Texture*)texture
+				 textureW:(int)textureW
+				 textureH:(int)textureH
+				textureDx:(int)textureDx
+				textureDy:(int)textureDy
+	{
+	// Swap x1, x2 if required to ensure x1<=x2
+	if (x1 > x2)
+		{
+		int xtmp = x1;
+		x1 = x2;
+		x2 = xtmp;
+		}
+
+	// Calculate width to draw
+	int w = x2 - x1 + 1;
+
+	// Determine where in the texture we start drawing
+	int textureX =   (x1 - textureDx) % textureW;
+	if (textureX < 0)
+		textureX = textureW + textureX;
+
+	int textureY = (y + textureDy) % textureH;
+	if (textureY < 0)
+		textureY = textureH + textureY;
+
+	// set up the source rectangle; we are only drawing one horizontal line
+	SDL_FRect src;
+	src.y = textureY;
+	src.x = textureX;
+	src.h = 1;
+
+	// we will draw to the current y
+	SDL_FRect dst;
+	dst.y = y;
+	dst.h = 1;
+
+	// if there are enough pixels left in the current row of the texture
+	// draw it all at once
+	int result = 0;
+	if (w <= textureW -textureX)
+		{
+		src.w = w;
+		src.x = textureX;
+		dst.x= x1;
+		dst.w = src.w;
+		result = (SDL_RenderTexture(_renderer, texture, &src, &dst) == 0);
+		}
+	else
+		{
+		/* we need to draw multiple times */
+		/* draw the first segment */
+		int pixelsWritten = textureW  - textureX;
+		src.w = pixelsWritten;
+		src.x = textureX;
+		dst.x= x1;
+		dst.w = src.w;
+		result |= (SDL_RenderTexture(_renderer, texture, &src, &dst) ==0);
+		int writeWidth = textureW;
+
+		// now draw the rest, set the source x to 0
+		src.x = 0;
+		while (pixelsWritten < w)
+			{
+			if (writeWidth >= w - pixelsWritten)
+				writeWidth =  w - pixelsWritten;
+
+			src.w = writeWidth;
+			dst.x = x1 + pixelsWritten;
+			dst.w = src.w;
+			result |= (SDL_RenderTexture(_renderer, texture, &src, &dst) ==0);
+			pixelsWritten += writeWidth;
+			}
+		}
+	return result;
+	}
+
 
 @end
