@@ -91,22 +91,60 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/
-- (instancetype) initWithRenderer:(struct SDL_Renderer *)renderer
+- (instancetype) init
 	{
 	if (self = [super init])
 		{
-		_renderer		= renderer;
+		_renderer		= AZApp.sharedInstance.renderer;
 		_extents 		= [NSMutableDictionary new];
 		_glyphs			= [NSMutableArray new];
-		_lastGlyph		= [AZGlyphData dataWithRect:NSZeroRect andCacheId:0];
+		_lastGlyph		= [AZGlyphData new];
 		[self _initialiseFont];
 		}
 	return self;
 	}
 
-+ (AZFont *) fontWithRenderer:(struct SDL_Renderer *)renderer
++ (AZFont *) font
 	{
-	return [[AZFont alloc] initWithRenderer:renderer];
+	return [[AZFont alloc] init];
+	}
+
++ (nullable AZFont *) fontWithName:(NSString *)name size:(int)points
+	{
+	AZFont *font = [[AZFont alloc] init];
+	AZFontStyle style =
+		{
+		.size 	= points,
+		.name 	= name,
+		.style 	= AZFONT_STYLE_NORMAL
+		};
+	if ([font load:style])
+		return font;
+	return nil;
+	}
+
++ (nullable AZFont *) systemFontWithsize:(int)points
+	{
+	AZApp *app 	 = [AZApp sharedInstance];
+	AZFont *font = [[AZFont alloc] init];
+	AZFontStyle style =
+		{
+		.size 	= points,
+		.name 	= app.systemFontInfo.name,
+		.style 	= AZFONT_STYLE_NORMAL
+		};
+	if ([font load:style])
+		return font;
+	return nil;
+	}
+
++ (nullable AZFont *) fontWithStyle:(AZFontStyle)style
+	{
+	AZApp *app 	 = [AZApp sharedInstance];
+	AZFont *font = [[AZFont alloc] init];
+	if ([font load:style])
+		return font;
+	return nil;
 	}
 
 /*****************************************************************************\
@@ -126,7 +164,16 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 		}
 	else
 		{
-		const char *path = style.path.fileSystemRepresentation;
+		NSString *fullpath = [self _fetchPathFor:style.name];
+		if (fullpath == nil)
+			{
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+						 "Cannot find truetype font '%s'",
+						 fullpath.fileSystemRepresentation);
+			return NO;
+			}
+
+		const char *path = fullpath.fileSystemRepresentation;
 		TTF_Font *ttf = TTF_OpenFont(path, style.size);
 		if (ttf == NULL)
 			{
@@ -138,19 +185,18 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 			/*****************************************************************\
 			|* Check to see if we want it outlined, then set the style
 			\*****************************************************************/
-			BOOL outline = (style.stylebits & AZFONT_STYLE_OUTLINE) != 0;
+			BOOL outline = (style.style & AZFONT_STYLE_OUTLINE) != 0;
 			if (outline)
 				{
-				style.stylebits &= ~AZFONT_STYLE_OUTLINE;
+				style.style &= ~AZFONT_STYLE_OUTLINE;
 				TTF_SetFontOutline(ttf, 1);
 				}
-			TTF_SetFontStyle(ttf, style.stylebits);
+			TTF_SetFontStyle(ttf, style.style);
 			
 			/*****************************************************************\
 			|* Instantiate the font, now it's been loaded
 			\*****************************************************************/
-			SDL_Color c = (SDL_Color){style.r, style.g, style.b, style.a};
-			result = [self load:ttf colour:c];
+			result = [self loadFont:ttf];
 			if (result)
 				_ownsTTF = true;
 			}
@@ -159,9 +205,54 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 	}
 
 /*****************************************************************************\
+|* Find a path for the font, or return nil
+\*****************************************************************************/
+- (nullable NSString *) _fetchPathFor:(NSString *)name
+	{
+	NSFileManager *fm = NSFileManager.defaultManager;
+
+	/*************************************************************************\
+	|* If it's an absolute path, use it
+	\*************************************************************************/
+	if ([name hasPrefix:@"/"])
+		return name;
+
+	/*************************************************************************\
+	|* If it's an Azoth-provided font, use it
+	\*************************************************************************/
+	NSString *rsrc = [[NSBundle bundleForClass:[self class]] resourcePath];
+	NSString *path = [NSString stringWithFormat:@"%@/%@.ttf", rsrc, name];
+	if ([fm fileExistsAtPath:path])
+		return path;
+
+	/*************************************************************************\
+	|* If it's a user-app-provided font, use it
+	\*************************************************************************/
+	AZApp *app = AZApp.sharedInstance;
+	if (app.delegate)
+		{
+		NSObject *delegate = (NSObject *)app.delegate;
+		rsrc = [[NSBundle bundleForClass:[delegate class]] resourcePath];
+		NSString *path = [NSString stringWithFormat:@"%@/%@.ttf", rsrc, name];
+		if ([fm fileExistsAtPath:path])
+			return path;
+		}
+
+	/*************************************************************************\
+	|* If it's in the user's Library/Fonts folder, use it
+	\*************************************************************************/
+	path = [NSString stringWithFormat:@"%@/Library/Fonts/%@.ttf",
+			NSHomeDirectory(), name];
+	if ([fm fileExistsAtPath:path])
+		return path;
+
+	return nil;
+	}
+
+/*****************************************************************************\
 |* Load a font, for real this time
 \*****************************************************************************/
-- (BOOL) load:(TTF_Font *)ttf colour:(SDL_Color)colour
+- (BOOL) loadFont:(TTF_Font *)ttf
 	{
     BOOL ok = (ttf != NULL);
 	if (ok)
@@ -173,8 +264,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 		_height 		= TTF_GetFontHeight(ttf);
     	_ascent 		= TTF_GetFontAscent(ttf);
     	_descent 		= -TTF_GetFontDescent(ttf);
-    	_defaultColour 	= colour;
-    	
+
 		/*********************************************************************\
 		|* Handle fonts lying about their statistics
 		\*********************************************************************/
@@ -438,17 +528,6 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 		}
 	else
 		{
-		// bug: this might be the wrong color!
-		//      most functions use set_color_for_all_caches()
-		//      workaround: use setDefaultColor(), before using draw functions
-		
-		SDL_SetTextureColorMod(cache,
-							   _defaultColour.r,
-							   _defaultColour.g,
-							   _defaultColour.b);
-		SDL_SetTextureAlphaMod(cache, _defaultColour.a);
-
-		
 		SDL_Texture* previous = SDL_GetRenderTarget(_renderer);
 		TargetState s;
 		
@@ -493,7 +572,6 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 	_descent		= 0;
 	_lineSpacing	= 0;
 	_letterSpacing	= 0;
-	_defaultColour 	= mkColour(255, 0, 0, 255);
 
 	/*************************************************************************\
 	|* Create the default string of chars-to-cache (the ASCII set)

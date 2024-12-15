@@ -27,14 +27,16 @@ struct TTF_Font;
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/
-- (instancetype) initWithRenderer:(struct SDL_Renderer *)renderer;
-+ (AZFont *) fontWithRenderer:(struct SDL_Renderer *)renderer;
++ (AZFont *) font;
++ (nullable AZFont *) fontWithStyle:(AZFontStyle)style;
++ (nullable AZFont *) fontWithName:(NSString *)name size:(int)points;
++ (nullable AZFont *) systemFontWithsize:(int)points;
 
 /*****************************************************************************\
 |* Load a font
 \*****************************************************************************/
 - (BOOL) load:(AZFontStyle)style;
-- (BOOL) load:(struct TTF_Font *)font colour:(struct SDL_Color)colour;
+- (BOOL) loadFont:(struct TTF_Font *)font;
 
 /*****************************************************************************\
 |* Set the default colour to use, for all the caches
@@ -69,9 +71,6 @@ struct TTF_Font;
 
 // Can we delete the TTF font, or does someone else own it
 @property(assign, nonatomic) BOOL 							ownsTTF;
-
-// Default drawing colour
-@property(assign, nonatomic) struct SDL_Color				defaultColour;
 
 // Height of font in points
 @property(assign, nonatomic) int							height;

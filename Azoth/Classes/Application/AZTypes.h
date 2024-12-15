@@ -24,14 +24,17 @@ enum
 
 /*****************************************************************************\
 |* Structure that defines a font's look and feel. The 'stylebits' corresponds
-|* to the enum above
+|* to the enum above. The name should not include the .ttf extension
+|*
+|* The font will be searched for in the framework resources directory, the
+|* app-delegate's resource directory, and in the user's Library/Fonts folder
+|* unless it starts with a / and then it has to be an absolute path.
 \*****************************************************************************/
 typedef struct AZFontStyle
 	{
-	NSString *path;				// Location on disk
+	NSString *name;				// Font name
 	int size;					// In points
-	uint8_t r,g,b,a;			// Default colour to paint with
-	int stylebits;				// Collection of above enums
+	int style;					// Collection of above enums
 	} AZFontStyle;
 
 
