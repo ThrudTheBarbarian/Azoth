@@ -13,19 +13,10 @@
 #import "AZFont.h"
 #import "AZGlyphData.h"
 #import "AZObject.h"
+#import "AZTypes.h"
 
 #define LOAD_MAX_SURFACES 		10
 #define CACHE_PADDING			1
-
-/*****************************************************************************\
-|* 2D scaling factor
-\*****************************************************************************/
-typedef struct Scale
-	{
-	float x;
-	float y;
-	} Scale;
-
 
 /*****************************************************************************\
 |* Target state preservation and restoration helpers
@@ -38,8 +29,7 @@ typedef struct TargetState
 	int 								lHeight;		// logical height
 	SDL_RendererLogicalPresentation		lMode;			// logical mode
 	bool								clipEnabled;	// are we clipping
-	float								scaleX;			// scaling factors
-	float 								scaleY;
+	AZScale								scale;			// scaling factors
 	} TargetState;
 
 static void _preserveTargetState(TargetState *state, SDL_Renderer *renderer)
@@ -49,7 +39,7 @@ static void _preserveTargetState(TargetState *state, SDL_Renderer *renderer)
 		SDL_GetRenderClipRect(renderer, &(state->clip));
 
 	SDL_GetRenderViewport(renderer, &(state->viewport));
-	SDL_GetRenderScale(renderer, &(state->scaleX), &(state->scaleY));
+	SDL_GetRenderScale(renderer, &(state->scale.x), &(state->scale.y));
 	SDL_GetRenderLogicalPresentation(renderer,
 									 &(state->lWidth),
 									 &(state->lHeight),
@@ -68,7 +58,7 @@ static void _restoreTargetState(TargetState *state, SDL_Renderer *renderer)
 	else
 		{
 		SDL_SetRenderViewport(renderer, &(state->viewport));
-		SDL_SetRenderScale(renderer, state->scaleX, state->scaleY);
+		SDL_SetRenderScale(renderer, state->scale.x, state->scale.y);
 		}
 	}
 
@@ -79,12 +69,6 @@ static inline SDL_Rect mkRect(int x, int y, int w, int h)
 	{
 	SDL_Rect r = {x, y, w, h};
 	return r;
-	}
-
-static inline Scale mkScale(float x, float y)
-	{
-	Scale s = {x, y};
-	return s;
 	}
 
 static inline SDL_Color mkColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a)

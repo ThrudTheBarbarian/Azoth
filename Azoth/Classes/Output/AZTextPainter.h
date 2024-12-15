@@ -34,18 +34,7 @@ struct SDL_Texture;
 /*****************************************************************************\
 |* Draw inside a clipping rectangle, moving words to make everything fit
 \*****************************************************************************/
-- (NSRect) drawInBox:(NSRect)box format:(NSString *)fmt, ...;
-- (NSRect) drawInBox:(NSRect)box colour:(AZColour *)colour
-		   format:(NSString *)fmt, ...;
-- (NSRect) drawInBox:(NSRect)box r:(uint8_t)r g:(uint8_t)g b:(uint8_t)b
-		   a:(uint8_t)a format:(NSString *)fmt, ...;
-- (NSRect) drawInBox:(NSRect)box hAlign:(AZFontHAlign)hAlign
-		   format:(NSString *)fmt, ...;
-- (NSRect) drawInBox:(NSRect)box hAlign:(AZFontHAlign)hAlign
-		   colour:(AZColour *)colour format:(NSString *)fmt, ...;
-- (NSRect) drawInBox:(NSRect)box hAlign:(AZFontHAlign)hAlign
-		   r:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
-		   format:(NSString *)fmt, ...;
+- (NSRect) drawInBox:(NSRect)box text:(NSString *)text;
 
 /*****************************************************************************\
 |* Return the width, height of any text string in the current font
@@ -57,7 +46,7 @@ struct SDL_Texture;
 |* Rendering method
 \*****************************************************************************/
 - (NSRect) renderFrom:(NSRect)rect in:(struct SDL_Texture *)src
-		   at:(NSPoint)p xscale:(float)xscale yscale:(float)yscale;
+		   at:(NSPoint)p;
 
 
 /*****************************************************************************\
@@ -65,8 +54,6 @@ struct SDL_Texture;
 \*****************************************************************************/
 + (AZFontEffect) mkEffect:(AZFontHAlign)hAlign
 				   vAlign:(AZFontVAlign)vAlign
-				   scaleX:(float)sx
-				   scaleY:(float)sy
 					    r:(uint8_t)r
 					    g:(uint8_t)g
 					    b:(uint8_t)b
@@ -87,6 +74,9 @@ struct SDL_Texture;
 
 // Text alignment
 @property(assign, nonatomic) AZFontHAlign					hAlign;
+
+// Text scaling factors
+@property(assign, nonatomic) AZScale						scale;
 
 // Angle to draw at (0, 90, 180, 270)
 @property(assign, nonatomic) int							angle;

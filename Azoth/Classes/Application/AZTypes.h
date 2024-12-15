@@ -58,15 +58,34 @@ typedef enum
 	} AZFontHAlign;
 
 /*****************************************************************************\
+|* Scale factor
+\*****************************************************************************/
+typedef struct
+	{
+	float x;	// X-scaling
+	float y;	// Y-scaling
+	} AZScale;
+
+/*****************************************************************************\
 |* Font effects
 \*****************************************************************************/
 typedef struct
 	{
 	AZFontHAlign hAlign;
 	AZFontVAlign vAlign;
-	float xScale;
-	float yScale;
 	uint8_t r, g, b, a;
 	} AZFontEffect;
+
+/*****************************************************************************\
+|* Conversion macros
+\*****************************************************************************/
+#define SDL_RECT(nsrect)													\
+	(SDL_Rect){nsrect.origin.x,												\
+			   nsrect.origin.y,												\
+			   nsrect.size.width,											\
+			   nsrect.size.height}
+
+#define NS_RECT(sdlrect)													\
+	NSMakeRect(sdlrect.x, sdlrect.y, sdlrect.w, sdlrect.h)
 
 #endif // ! __AZTypes_header__

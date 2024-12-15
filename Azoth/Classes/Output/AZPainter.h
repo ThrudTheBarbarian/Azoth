@@ -229,6 +229,9 @@ struct SDL_Surface;
 - (NSRect) drawAtX:(float)x y:(float)y text:(NSString *)text;
 - (NSRect) drawAtX:(float)x y:(float)y format:(NSString *)fmt, ...;
 
+- (NSRect) drawInBox:(NSRect)box text:(NSString *)text;
+- (NSRect) drawInBox:(NSRect)box format:(NSString *)fmt, ...;
+
 /*****************************************************************************\
 |* Set text colour, separate from drawing colour
 \*****************************************************************************/
@@ -244,6 +247,11 @@ struct SDL_Surface;
 |* Set text angle (cardinal angles only for now, 0, 90, 180, 270)
 \*****************************************************************************/
 - (void) setTextAngle:(int)degrees;
+
+/*****************************************************************************\
+|* Set text scale (for effects, use different sized fonts for "normal" use)
+\*****************************************************************************/
+- (void) setTextScale:(AZScale)scale;
 
 // Set to draw with the (slower, but nicer looking) anti-aliased line drawing
 // routines

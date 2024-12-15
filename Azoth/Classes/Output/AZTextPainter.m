@@ -35,6 +35,7 @@
 		_renderer 	= renderer;
 		_colour 	= [AZColour colourWithR:0.f g:0.f b:0.f a:1.f];
 		_hAlign		= AZFONT_HALIGN_LEFT;
+		_scale		= (AZScale){1.f, 1.f};
 		}
 	return self;
 	}
@@ -49,8 +50,6 @@
 \*****************************************************************************/
 + (AZFontEffect) mkEffect:(AZFontHAlign)hAlign
 				   vAlign:(AZFontVAlign)vAlign
-				   scaleX:(float)sx
-				   scaleY:(float)sy
 					    r:(uint8_t)r
 					    g:(uint8_t)g
 					    b:(uint8_t)b
@@ -60,8 +59,6 @@
 		{
 		.hAlign = hAlign,
 		.vAlign = vAlign,
-		.xScale = sx,
-		.yScale = sy,
 		.r		= r,
 		.g		= g,
 		.b		= b,
@@ -116,35 +113,82 @@
 \*****************************************************************************/
 - (NSRect) drawAtX:(float)x y:(float)y text:(NSString *)text
 	{
-	return [self _drawAtX:x
-						y:y
-				   scaleX:1.f
-				   scaleY:1.f
-				      msg:text];
+	if ((_font == nil) || (text == nil))
+		return NSZeroRect;
+	[_font setColourForAllCaches:_colour];
+
+	NSRect result = NSZeroRect;
+	switch (_hAlign)
+		{
+		case AZFONT_HALIGN_LEFT:
+			result = [self _renderLeftAtX:x y:y msg:text];
+			break;
+		case AZFONT_HALIGN_CENTER:
+			result = [self _renderCenterAtX:x y:y msg:text];
+			break;
+		case AZFONT_HALIGN_RIGHT:
+			result = [self _renderRightAtX:x y:y msg:text];
+			break;
+		default:
+			break;
+		}
+	return result;
+	}
+
+/*****************************************************************************\
+|* Draw text within a limiting box, making words wrap appropriately
+|* - with colour
+|* - with horizontal alignment
+|* - with scale
+\*****************************************************************************/
+- (NSRect) drawInBox:(NSRect)box text:(NSString *)text
+	{
+	bool useClip = SDL_RenderClipEnabled(_renderer);
+
+    SDL_Rect oldclip, newclip;
+    if (useClip)
+		{
+		SDL_GetRenderClipRect(_renderer, &oldclip);
+		NSRect oldNS 		= NS_RECT(oldclip);
+		NSRect intersect	= NSIntersectionRect(oldNS, box);
+        newclip 			= SDL_RECT(intersect);
+		}
+    else
+        newclip = SDL_RECT(box);
+
+    SDL_SetRenderClipRect(_renderer, &newclip);
+	[_font setColourForAllCaches:_colour];
+	[self _drawColumnFor:text inBox:box];
+
+    if (useClip)
+        SDL_SetRenderClipRect(_renderer, &oldclip);
+    else
+        SDL_SetRenderClipRect(_renderer, NULL);
+
+    return box;
 	}
 
 /*****************************************************************************\
 |* Renderer method - override in a subclass to change how it's rendered
 \*****************************************************************************/
-- (NSRect) renderFrom:(NSRect)srcRect
-				   in:(SDL_Texture *)src
-				   at:(NSPoint)p
-			   xscale:(float)xscale
-			   yscale:(float)yscale
+- (NSRect) renderFrom:(NSRect)srcRect in:(SDL_Texture *)src at:(NSPoint)p
 	{
-    float w = srcRect.size.width * xscale;
-    float h = srcRect.size.height * yscale;
+	// Take a local copy since we modify it here
+	AZScale scale = _scale;
+
+    float w = srcRect.size.width * scale.x;
+    float h = srcRect.size.height * scale.y;
     NSRect result;
 
 	SDL_FlipMode flip = SDL_FLIP_NONE;
-	if (xscale < 0)
+	if (scale.x < 0)
 		{
-		xscale = -xscale;
+		scale.x = -scale.x;
 		flip = (SDL_FlipMode) ((int)flip | (int)SDL_FLIP_HORIZONTAL);
 		}
-	if (yscale < 0)
+	if (scale.y < 0)
 		{
-		yscale = -yscale;
+		scale.y = -scale.y;
 		flip = (SDL_FlipMode) ((int)flip | (int)SDL_FLIP_VERTICAL);
 		}
 
@@ -155,7 +199,7 @@
 				  srcRect.size.height
 				  };
 
-	SDL_FRect dr = {p.x, p.y, (int)(xscale * r.w), (int)(yscale * r.h)};
+	SDL_FRect dr = {p.x, p.y, (int)(scale.x * r.w), (int)(scale.y * r.h)};
 	SDL_RenderTextureRotated(_renderer, src, &r, &dr, _angle, &_rotateAbout, flip);
 
 	result.origin = p;
@@ -165,53 +209,95 @@
 	}
 
 // Private Methods
-/*****************************************************************************\
-|* Simple drawing breakout
-|* - with colour
-|* - with horizontal alignment
-|* - with scale
-\*****************************************************************************/
-- (NSRect) _drawAtX:(float)x y:(float)y
-		   scaleX:(float)sx scaleY:(float)sy
-		   msg:(NSString *)text
-	{
-	if ((_font == nil) || (text == nil))
-		return NSZeroRect;
-	[_font setColourForAllCaches:_colour];
 
-	NSRect result = NSZeroRect;
+/*****************************************************************************\
+|* Draw column-based text which fits words into a horizontal space
+\*****************************************************************************/
+- (NSInteger) _drawColumnFor:(NSString *)text inBox:(NSRect)box
+	{
+    int y = box.origin.y;
+	int x = box.origin.x;
 	switch (_hAlign)
 		{
-		case AZFONT_HALIGN_LEFT:
-			result = [self _renderLeftAtX:x y:y scaleX:sx scaleY:sy msg:text];
-			break;
 		case AZFONT_HALIGN_CENTER:
-			result = [self _renderCenterAtX:x y:y scaleX:sx scaleY:sy msg:text];
+			x += box.size.width/2;
 			break;
 		case AZFONT_HALIGN_RIGHT:
-			result = [self _renderRightAtX:x y:y scaleX:sx scaleY:sy msg:text];
+			x += box.size.width;
 			break;
 		default:
 			break;
 		}
-	return result;
+	NSArray<NSString *> *list = [self _fitText:text
+									   toWidth:box.size.width
+								  keepNewlines:NO];
+	for (NSString *line in list)
+		{
+		[self drawAtX:x y:y text:line];
+		y += _font.height * _scale.y;
+		}
+
+
+    return y - box.origin.y;
+	}
+
+/*****************************************************************************\
+|* Fit words into lines so that they don't go over a limit
+\*****************************************************************************/
+- (NSArray<NSString *> *) _fitText:(NSString *)text
+						   toWidth:(int)width
+					  keepNewlines:(BOOL)keep
+	{
+	int w 							  = 0;
+	NSMutableArray<NSString *> *lines = [NSMutableArray new];
+	NSMutableString *line 			  = [NSMutableString new];
+	NSArray<NSString *> *words 		  = [text componentsSeparatedByString:@" "];
+	int spaceWidth					  = [self textWidthFor:@" "];
+
+	for (NSString *word in words)
+		{
+		int wordWidth 		= [self textWidthFor:word];
+
+		if (w == 0)
+			{
+			[line appendString:word];
+			w += wordWidth;
+			}
+		else if (w + wordWidth + spaceWidth < width)
+			{
+			[line appendString:@" "];
+			[line appendString:word];
+			w += wordWidth + spaceWidth;
+			}
+		else
+			{
+			[lines addObject:[line copy]];
+			[line setString:word];
+			w = wordWidth;
+			if (keep)
+				[lines addObject:@""];
+			}
+		}
+	if (line.length > 0)
+		[lines addObject:line];
+
+	return lines;
 	}
 
 /*****************************************************************************\
 |* Render center-justified text
 \*****************************************************************************/
-- (NSRect) _renderCenterAtX:(float)x y:(float)y scaleX:(float)sx scaleY:(float)sy
-		   msg:(NSString *)text
+- (NSRect) _renderCenterAtX:(float)x y:(float)y msg:(NSString *)text
 	{
-    NSRect result = {x, y, 0, 0};
+    NSRect result 	= {x, y, 0, 0};
+	NSArray *split 	= [text componentsSeparatedByString:@"\n"];
 
-	NSArray *split = [text componentsSeparatedByString:@"\n"];
 	for (NSString *string in split)
 		{
-		int w 	 = x - sx * [self textWidthFor:string]/2.f;
-		NSRect r = [self _renderLeftAtX:w y:y scaleX:sx scaleY:sy msg:string];
+		int w 	 = x - _scale.x * [self textWidthFor:string]/2.f;
+		NSRect r = [self _renderLeftAtX:w y:y msg:string];
 		result 	 = NSUnionRect(result, r);
-		y       += sy * _font.height;
+		y       += _scale.y * _font.height;
 		}
 
     return result;
@@ -220,18 +306,16 @@
 /*****************************************************************************\
 |* Render right-justified text
 \*****************************************************************************/
-- (NSRect) _renderRightAtX:(float)x y:(float)y scaleX:(float)sx scaleY:(float)sy
-		   msg:(NSString *)text
+- (NSRect) _renderRightAtX:(float)x y:(float)y msg:(NSString *)text
 	{
-    NSRect result = {x, y, 0, 0};
-
-	NSArray *split = [text componentsSeparatedByString:@"\n"];
+    NSRect result 	= {x, y, 0, 0};
+	NSArray *split 	= [text componentsSeparatedByString:@"\n"];
 	for (NSString *string in split)
 		{
-		int w 	 = x - sx * [self textWidthFor:string];
-		NSRect r = [self _renderLeftAtX:w y:y scaleX:sx scaleY:sy msg:string];
+		int w 	 = x - _scale.x * [self textWidthFor:string];
+		NSRect r = [self _renderLeftAtX:w y:y msg:string];
 		result 	 = NSUnionRect(result, r);
-		y       += sy * _font.height;
+		y       += _scale.y * _font.height;
 		}
 
     return result;
@@ -240,8 +324,7 @@
 /*****************************************************************************\
 |* Render left-justified text
 \*****************************************************************************/
-- (NSRect) _renderLeftAtX:(float)x y:(float)y scaleX:(float)sx scaleY:(float)sy
-		   msg:(NSString *)text
+- (NSRect) _renderLeftAtX:(float)x y:(float)y msg:(NSString *)text
 	{
 	NSRect dirtyRect 	= NSMakeRect(x, y, 0, 0);
     if (_font == NULL)
@@ -252,10 +335,10 @@
 
     float destX 			= x;
     float destY 			= y;
-    float destH				= _font.height * sy;
+    float destH				= _font.height * _scale.y;
     float destLetterSpacing	= ((_angle == 90) || (_angle == 270))
-							? _font.letterSpacing * sy
-							: _font.letterSpacing * sx;
+							? _font.letterSpacing * _scale.y
+							: _font.letterSpacing * _scale.x;
     int newlineX 			= x;
     int newlineY 			= y;
 	NSInteger length		= text.length;
@@ -269,22 +352,22 @@
 				{
 				case 90:
 					destY = newlineY;
-					destX -= (destH + _font.lineSpacing * sx);
+					destX -= (destH + _font.lineSpacing * _scale.x);
 					break;
 				case 180:
 					destX = newlineX;
-					destY -= (destH + _font.lineSpacing * sy);
+					destY -= (destH + _font.lineSpacing * _scale.y);
 					break;
 					
 				case 270:
 					destY = newlineY;
-					destX += destH + _font.lineSpacing * sx;
+					destX += destH + _font.lineSpacing * _scale.x;
 					break;
 				
 				case 0:
 				default:
 					destX = newlineX;
-					destY += destH + _font.lineSpacing * sy;
+					destY += destH + _font.lineSpacing * _scale.y;
 					break;
 				}
             continue;
@@ -302,9 +385,7 @@
         NSRect srcRect = glyphData.rect;
 		NSRect dstRect = [self renderFrom:srcRect
 										 in:[_font glyphsFor:glyphData.cacheId]
-										 at:NSMakePoint(destX, destY)
-									 xscale:sx
-									 yscale:sy];
+										 at:NSMakePoint(destX, destY)];
 
 
         if (dirtyRect.size.width == 0 || dirtyRect.size.height == 0)
@@ -316,20 +397,20 @@
 		switch (_angle)
 			{
 			case 90:
-				destY += width * sy + destLetterSpacing;
+				destY += width * _scale.y + destLetterSpacing;
 				break;
 				
 			case 180:
-				destX -= (width * sx + destLetterSpacing);
+				destX -= (width * _scale.x + destLetterSpacing);
 				break;
 
 			case 270:
-				destY -= (width * sy + destLetterSpacing);
+				destY -= (width * _scale.y + destLetterSpacing);
 				break;
 
 			case 0:
 			default:
-				destX += width * sx + destLetterSpacing;
+				destX += width * _scale.x + destLetterSpacing;
 				break;
 			}
 		}

@@ -96,26 +96,38 @@
 //	int vy[5] = {350, 350, 500, 500, 450};
 //	[painter polygonWith:5 x:vx y:vy filled:YES withR:240 g:20 b:100 a:255];
 
-	[painter pieAtX:300 y:300 radius:100 start:0 end:210
-			 filled:YES colour:[AZColour purpleColour]];
+//	[painter pieAtX:300 y:300 radius:100 start:0 end:210
+//			 filled:YES colour:[AZColour purpleColour]];
+//
+//	int vx[5] = {50, 100, 200, 100, 100};
+//	int vy[5] = {350, 350, 500, 500, 450};
+//	[painter texturedPolygonWith:5 x:vx y:vy texture:_surface textureDx:5 textureDy:5];
+//
+//	int bx[5] = {300, 350, 400, 450, 500};
+//	int by[5] = {100, 150, 50, 150, 100};
+//	[painter bezierWithPoints:5 x:bx y:by steps:10 colour:[AZColour blackColour]];
+//
+//	[painter setTextColour:[AZColour orangeColour]];
+//
+//	[painter setTextAlignment:AZFONT_HALIGN_CENTER];
+//	[painter drawAtX:250 y:130
+//			format:@"The quick brown fox\njumped over the\nlazy dog"];
+//
+//	[painter setTextAngle:180];
+//	[painter setTextScale:(AZScale){2.f, 1.f}];
+//	[painter setTextColour:[AZColour redColour]];
+//	[painter drawAtX:450 y:300 format:@"Aiiiiiie! says %@", @"Simon"];
 
-	int vx[5] = {50, 100, 200, 100, 100};
-	int vy[5] = {350, 350, 500, 500, 450};
-	[painter texturedPolygonWith:5 x:vx y:vy texture:_surface textureDx:5 textureDy:5];
+	[painter setTextAlignment:AZFONT_HALIGN_RIGHT];
+	NSString * text = @"The quick brown fox jumped over the lazy dog who "
+					   "barely batted an eye let alone ran after the fox, "
+					   "and who are we to say that this is not the correct "
+					   "behaviour, I mean the dog still lives and the fox is "
+					   "happy too so ... Maybe it's all for the best";
 
-	int bx[5] = {300, 350, 400, 450, 500};
-	int by[5] = {100, 150, 50, 150, 100};
-	[painter bezierWithPoints:5 x:bx y:by steps:10 colour:[AZColour blackColour]];
-
-	[painter setTextColour:[AZColour orangeColour]];
-
-	[painter setTextAlignment:AZFONT_HALIGN_CENTER];
-	[painter drawAtX:250 y:130
-			format:@"The quick brown fox\njumped over the\nlazy dog"];
-
-	[painter setTextAngle:180];
-	[painter setTextColour:[AZColour greenColour]];
-	[painter drawAtX:450 y:300 format:@"Aiiiiiie! says %@", @"Simon"];
+	NSRect r = NSMakeRect(250, 50, 250, 300);
+	[painter rectangleWithRect:r colour:[AZColour redColour]];
+	[painter drawInBox:r text:text];
 	}
 
 @end

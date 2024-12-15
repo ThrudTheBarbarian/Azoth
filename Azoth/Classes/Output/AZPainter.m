@@ -1928,13 +1928,13 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 \*****************************************************************************/
 - (void) setTextColour:(AZColour *)colour
 	{
-	[_textPainter setColour:colour];
+	_textPainter.colour = colour;
 	}
 
 - (void) setTextColourWithR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
 	{
 	AZColour *colour = [AZColour colourWithByteR:r g:g b:b a:a];
-	[_textPainter setColour:colour];
+	_textPainter.colour = colour;
 	}
 
 /*****************************************************************************\
@@ -1942,7 +1942,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 \*****************************************************************************/
 - (void) setTextAlignment:(AZFontHAlign)align
 	{
-	[_textPainter setHAlign:align];
+	_textPainter.hAlign = align;
 	}
 
 /*****************************************************************************\
@@ -1950,7 +1950,15 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 \*****************************************************************************/
 - (void) setTextAngle:(int)degrees
 	{
-	[_textPainter setAngle:degrees];
+	_textPainter.angle = degrees;
+	}
+
+/*****************************************************************************\
+|* Set text scale (for effects, use different sized fonts for "normal" use)
+\*****************************************************************************/
+- (void) setTextScale:(AZScale)scale
+	{
+	_textPainter.scale = scale;
 	}
 
 /*****************************************************************************\
@@ -1965,6 +1973,17 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	{
 	EXTRACT_VARARGS(text, fmt);
 	return [_textPainter drawAtX:x y:y text:text];
+	}
+
+- (NSRect) drawInBox:(NSRect)box text:(NSString *)text
+	{
+	return [_textPainter drawInBox:box text:text];
+	}
+
+- (NSRect) drawInBox:(NSRect)box format:(NSString *)fmt, ...
+	{
+	EXTRACT_VARARGS(text, fmt);
+	return [_textPainter drawInBox:box text:text];
 	}
 
 
