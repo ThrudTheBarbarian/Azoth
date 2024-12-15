@@ -1921,6 +1921,8 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	return (result);
 	}
 
+// MARK: Text drawing
+
 /*****************************************************************************\
 |* Text drawing
 \*****************************************************************************/
@@ -1935,6 +1937,26 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	return [_textPainter drawAtX:x y:y text:text];
 	}
 
+- (NSRect) drawAtX:(float)x y:(float)y colour:(AZColour *)colour
+		   format:(NSString *)fmt, ...
+	{
+	EXTRACT_VARARGS(text, fmt);
+	return [_textPainter drawAtX:x y:y colour:colour text:text];
+	}
+
+- (NSRect) drawAtX:(float)x y:(float)y withR:(uint8_t)r g:(uint8_t)g
+		   b:(uint8_t)b a:(uint8_t)a format:(NSString *)fmt, ...
+	{
+	EXTRACT_VARARGS(text, fmt);
+	return [_textPainter drawAtX:x y:y withR:r g:g b:b a:a text:text];
+	}
+
+- (NSRect) drawAtX:(float)x y:(float)y hAlign:(AZFontHAlign)hAlign
+		   format:(NSString *)fmt, ...
+	{
+	EXTRACT_VARARGS(text, fmt);
+	return [_textPainter drawAtX:x y:y hAlign:hAlign text:text];
+	}
 
 
 // MARK: Private methods

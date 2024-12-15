@@ -228,6 +228,12 @@ struct SDL_Surface;
 \*****************************************************************************/
 - (NSRect) drawAtX:(float)x y:(float)y text:(NSString *)text;
 - (NSRect) drawAtX:(float)x y:(float)y format:(NSString *)fmt, ...;
+- (NSRect) drawAtX:(float)x y:(float)y colour:(AZColour *)colour
+		   format:(NSString *)fmt, ...;
+- (NSRect) drawAtX:(float)x y:(float)y withR:(uint8_t)r g:(uint8_t)g
+		   b:(uint8_t)b a:(uint8_t)a format:(NSString *)fmt, ...;
+- (NSRect) drawAtX:(float)x y:(float)y hAlign:(AZFontHAlign)hAlign
+		   format:(NSString *)fmt, ...;
 
 
 // Set to draw with the (slower, but nicer looking) anti-aliased line drawing

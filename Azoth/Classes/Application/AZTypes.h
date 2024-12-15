@@ -35,4 +35,38 @@ typedef struct AZFontStyle
 	} AZFontStyle;
 
 
+/*****************************************************************************\
+|* Alignment constants
+\*****************************************************************************/
+typedef enum
+	{
+	AZFONT_VALIGN_BASE = 0,
+	AZFONT_VALIGN_HALF,
+	AZFONT_VALIGN_ASCENT,
+	AZFONT_VALIGN_BOTTOM,
+	AZFONT_VALIGN_DESCENT,
+	AZFONT_VALIGN_TOP,
+	AZFONT_VALIGN_MAX
+	} AZFontVAlign; // Currently not implemented
+
+typedef enum
+	{
+	AZFONT_HALIGN_LEFT = 0,
+	AZFONT_HALIGN_CENTER,
+	AZFONT_HALIGN_RIGHT,
+	AZFONT_HALIGN_MAX
+	} AZFontHAlign;
+
+/*****************************************************************************\
+|* Font effects
+\*****************************************************************************/
+typedef struct
+	{
+	AZFontHAlign hAlign;
+	AZFontVAlign vAlign;
+	float xScale;
+	float yScale;
+	uint8_t r, g, b, a;
+	} AZFontEffect;
+
 #endif // ! __AZTypes_header__

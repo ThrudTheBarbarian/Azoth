@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <Azoth/AZTypes.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -17,40 +18,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 struct SDL_Renderer;
 struct SDL_Texture;
-
-/*****************************************************************************\
-|* Alignment constants
-\*****************************************************************************/
-typedef enum
-	{
-	AZFONT_VALIGN_BASE = 0,
-	AZFONT_VALIGN_HALF,
-	AZFONT_VALIGN_ASCENT,
-	AZFONT_VALIGN_BOTTOM,
-	AZFONT_VALIGN_DESCENT,
-	AZFONT_VALIGN_TOP,
-	AZFONT_VALIGN_MAX
-	} AZFontVAlign; // Currently not implemented
-
-typedef enum
-	{
-	AZFONT_HALIGN_LEFT = 0,
-	AZFONT_HALIGN_CENTER,
-	AZFONT_HALIGN_RIGHT,
-	AZFONT_HALIGN_MAX
-	} AZFontHAlign;
-
-/*****************************************************************************\
-|* Font effects
-\*****************************************************************************/
-typedef struct
-	{
-	AZFontHAlign hAlign;
-	AZFontVAlign vAlign;
-	float xScale;
-	float yScale;
-	uint8_t r, g, b, a;
-	} AZFontEffect;
 
 @interface AZTextPainter : NSObject
 /*****************************************************************************\
@@ -64,11 +31,11 @@ typedef struct
 \*****************************************************************************/
 - (NSRect) drawAtX:(float)x y:(float)y text:(NSString *)text;
 - (NSRect) drawAtX:(float)x y:(float)y colour:(AZColour *)colour
-		   format:(NSString *)fmt, ...;
-- (NSRect) drawAtX:(float)x y:(float)y r:(uint8_t)r g:(uint8_t)g b:(uint8_t)b
-		   a:(uint8_t)a format:(NSString *)fmt, ...;
+		   text:(NSString *)text;
+- (NSRect) drawAtX:(float)x y:(float)y withR:(uint8_t)r g:(uint8_t)g
+		   b:(uint8_t)b a:(uint8_t)a text:(NSString *)text;
 - (NSRect) drawAtX:(float)x y:(float)y hAlign:(AZFontHAlign)hAlign
-		   format:(NSString *)fmt, ...;
+		   text:(NSString *)text;
 - (NSRect) drawAtX:(float)x y:(float)y hAlign:(AZFontHAlign)hAlign
 		   colour:(AZColour *)colour format:(NSString *)fmt, ...;
 - (NSRect) drawAtX:(float)x y:(float)y hAlign:(AZFontHAlign)hAlign

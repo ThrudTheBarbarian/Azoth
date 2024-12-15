@@ -14,6 +14,16 @@
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/
+- (instancetype) init
+	{
+	if (self = [super init])
+		{
+		_rect = NSZeroRect;
+		_cacheId = 0;
+		}
+	return self;
+	}
+
 - (instancetype) initWithRect:(NSRect)rect andCacheId:(int)cacheId
 	{
 	if (self = [super init])

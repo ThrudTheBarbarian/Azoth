@@ -9,6 +9,7 @@
 #import <SDL3_ttf/SDL_ttf.h>
 
 #import "AZApp.h"
+#import "AZColour.h"
 #import "AZFont.h"
 #import "AZGlyphData.h"
 #import "AZTextPainter.h"
@@ -68,13 +69,51 @@
 	}
 
 /*****************************************************************************\
+|* Return the text width of (possibly) multi-line text
+\*****************************************************************************/
+- (int) textWidthFor:(NSString *)fmt, ...
+	{
+	if ((_font == nil) || (fmt == nil))
+		{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+					"No font, or fmt=nil in -textWidthFor...");
+		return 0;
+		}
+
+	EXTRACT_VARARGS(text, fmt);
+	int width 		= 0;
+	int lineWidth	= 0;
+	NSInteger len	= text.length;
+
+	for (NSInteger i=0; i<len; i++)
+		{
+		unichar c = [text characterAtIndex:i];
+
+		if (c == '\n')
+			{
+			lineWidth = (lineWidth > width) ? lineWidth : width;
+			width = 0;
+			continue;
+			}
+		AZGlyphData *glyph = [_font glyphDataFor:c];
+		if (glyph)
+			width += glyph.rect.size.width;
+		else
+			{
+			glyph = [_font glyphDataFor:' '];
+			width += glyph.rect.size.width;
+			}
+		}
+	lineWidth = (lineWidth > width) ? lineWidth : width;
+	return lineWidth;
+	}
+
+/*****************************************************************************\
 |* Basic drawing routines
+|* @(x,y)
 \*****************************************************************************/
 - (NSRect) drawAtX:(float)x y:(float)y text:(NSString *)text
 	{
-	if (_font == nil)
-		return NSZeroRect;
-
 	SDL_Color c = _font.defaultColour;
 	return [self _drawAtX:x
 						y:y
@@ -85,6 +124,58 @@
 				      msg:text];
 	}
 
+/*****************************************************************************\
+|* Basic drawing routines
+|* @(x,y)
+|* colour
+\*****************************************************************************/
+- (NSRect) drawAtX:(float)x y:(float)y colour:(AZColour *)colour
+		   text:(NSString *)text
+	{
+	SDL_Color c = (SDL_Color) {
+					colour.red,
+					colour.green,
+					colour.blue,
+					colour.alpha};
+
+	return [self _drawAtX:x
+						y:y
+				   colour:c
+				   hAlign:AZFONT_HALIGN_LEFT
+				   scaleX:1.f
+				   scaleY:1.f
+				      msg:text];
+	}
+
+- (NSRect) drawAtX:(float)x y:(float)y withR:(uint8_t)r g:(uint8_t)g
+		   b:(uint8_t)b a:(uint8_t)a text:(NSString *)text
+	{
+	return [self _drawAtX:x
+						y:y
+				   colour:(SDL_Color) {r, g, b, a}
+				   hAlign:AZFONT_HALIGN_LEFT
+				   scaleX:1.f
+				   scaleY:1.f
+				      msg:text];
+	}
+
+/*****************************************************************************\
+|* Basic drawing routines
+|* @(x,y)
+|* alignment
+\*****************************************************************************/
+- (NSRect) drawAtX:(float)x y:(float)y hAlign:(AZFontHAlign)hAlign
+		   text:(NSString *)text
+	{
+	SDL_Color c = _font.defaultColour;
+	return [self _drawAtX:x
+						y:y
+				   colour:c
+				   hAlign:hAlign
+				   scaleX:1.f
+				   scaleY:1.f
+				      msg:text];
+	}
 
 /*****************************************************************************\
 |* Renderer method - override in a subclass to change how it's rendered
@@ -138,7 +229,7 @@
 		   hAlign:(AZFontHAlign)hAlign scaleX:(float)sx scaleY:(float)sy
 		   msg:(NSString *)text
 	{
-	if (_font == nil)
+	if ((_font == nil) || (text == nil))
 		return NSZeroRect;
 	[_font setColourForAllCaches:colour];
 
@@ -149,15 +240,55 @@
 			result = [self _renderLeftAtX:x y:y scaleX:sx scaleY:sy msg:text];
 			break;
 		case AZFONT_HALIGN_CENTER:
-			//result = [self _renderCenterAtX:x y:y scaleX:sx scaleY:sy msg:text];
+			result = [self _renderCenterAtX:x y:y scaleX:sx scaleY:sy msg:text];
 			break;
 		case AZFONT_HALIGN_RIGHT:
-			//result = [self _renderRightAtX:x y:y scaleX:sx scaleY:sy msg:text];
+			result = [self _renderRightAtX:x y:y scaleX:sx scaleY:sy msg:text];
 			break;
 		default:
 			break;
 		}
 	return result;
+	}
+
+/*****************************************************************************\
+|* Render center-justified text
+\*****************************************************************************/
+- (NSRect) _renderCenterAtX:(float)x y:(float)y scaleX:(float)sx scaleY:(float)sy
+		   msg:(NSString *)text
+	{
+    NSRect result = {x, y, 0, 0};
+
+	NSArray *split = [text componentsSeparatedByString:@"\n"];
+	for (NSString *string in split)
+		{
+		int w 	 = x - sx * [self textWidthFor:string]/2.f;
+		NSRect r = [self _renderLeftAtX:w y:y scaleX:sx scaleY:sy msg:string];
+		result 	 = NSUnionRect(result, r);
+		y       += sy * _font.height;
+		}
+
+    return result;
+	}
+
+/*****************************************************************************\
+|* Render right-justified text
+\*****************************************************************************/
+- (NSRect) _renderRightAtX:(float)x y:(float)y scaleX:(float)sx scaleY:(float)sy
+		   msg:(NSString *)text
+	{
+    NSRect result = {x, y, 0, 0};
+
+	NSArray *split = [text componentsSeparatedByString:@"\n"];
+	for (NSString *string in split)
+		{
+		int w 	 = x - sx * [self textWidthFor:string];
+		NSRect r = [self _renderLeftAtX:w y:y scaleX:sx scaleY:sy msg:string];
+		result 	 = NSUnionRect(result, r);
+		y       += sy * _font.height;
+		}
+
+    return result;
 	}
 
 /*****************************************************************************\
