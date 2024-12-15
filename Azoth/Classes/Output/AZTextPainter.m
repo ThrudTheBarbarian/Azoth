@@ -32,7 +32,9 @@
 	{
 	if (self = [super init])
 		{
-		_renderer = renderer;
+		_renderer 	= renderer;
+		_colour 	= [AZColour colourWithR:0.f g:0.f b:0.f a:1.f];
+		_hAlign		= AZFONT_HALIGN_LEFT;
 		}
 	return self;
 	}
@@ -114,64 +116,8 @@
 \*****************************************************************************/
 - (NSRect) drawAtX:(float)x y:(float)y text:(NSString *)text
 	{
-	SDL_Color c = _font.defaultColour;
 	return [self _drawAtX:x
 						y:y
-				   colour:c
-				   hAlign:AZFONT_HALIGN_LEFT
-				   scaleX:1.f
-				   scaleY:1.f
-				      msg:text];
-	}
-
-/*****************************************************************************\
-|* Basic drawing routines
-|* @(x,y)
-|* colour
-\*****************************************************************************/
-- (NSRect) drawAtX:(float)x y:(float)y colour:(AZColour *)colour
-		   text:(NSString *)text
-	{
-	SDL_Color c = (SDL_Color) {
-					colour.red,
-					colour.green,
-					colour.blue,
-					colour.alpha};
-
-	return [self _drawAtX:x
-						y:y
-				   colour:c
-				   hAlign:AZFONT_HALIGN_LEFT
-				   scaleX:1.f
-				   scaleY:1.f
-				      msg:text];
-	}
-
-- (NSRect) drawAtX:(float)x y:(float)y withR:(uint8_t)r g:(uint8_t)g
-		   b:(uint8_t)b a:(uint8_t)a text:(NSString *)text
-	{
-	return [self _drawAtX:x
-						y:y
-				   colour:(SDL_Color) {r, g, b, a}
-				   hAlign:AZFONT_HALIGN_LEFT
-				   scaleX:1.f
-				   scaleY:1.f
-				      msg:text];
-	}
-
-/*****************************************************************************\
-|* Basic drawing routines
-|* @(x,y)
-|* alignment
-\*****************************************************************************/
-- (NSRect) drawAtX:(float)x y:(float)y hAlign:(AZFontHAlign)hAlign
-		   text:(NSString *)text
-	{
-	SDL_Color c = _font.defaultColour;
-	return [self _drawAtX:x
-						y:y
-				   colour:c
-				   hAlign:hAlign
 				   scaleX:1.f
 				   scaleY:1.f
 				      msg:text];
@@ -225,16 +171,16 @@
 |* - with horizontal alignment
 |* - with scale
 \*****************************************************************************/
-- (NSRect) _drawAtX:(float)x y:(float)y colour:(SDL_Color)colour
-		   hAlign:(AZFontHAlign)hAlign scaleX:(float)sx scaleY:(float)sy
+- (NSRect) _drawAtX:(float)x y:(float)y
+		   scaleX:(float)sx scaleY:(float)sy
 		   msg:(NSString *)text
 	{
 	if ((_font == nil) || (text == nil))
 		return NSZeroRect;
-	[_font setColourForAllCaches:colour];
+	[_font setColourForAllCaches:_colour];
 
 	NSRect result = NSZeroRect;
-	switch (hAlign)
+	switch (_hAlign)
 		{
 		case AZFONT_HALIGN_LEFT:
 			result = [self _renderLeftAtX:x y:y scaleX:sx scaleY:sy msg:text];

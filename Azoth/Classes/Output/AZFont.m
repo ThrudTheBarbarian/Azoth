@@ -9,6 +9,7 @@
 #import <SDL3_image/SDL_image.h>
 
 #import "AZApp.h"
+#import "AZColour.h"
 #import "AZFont.h"
 #import "AZGlyphData.h"
 #import "AZObject.h"
@@ -297,15 +298,15 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 |* Set the colour to use (for all the texture-caches) when drawing with this
 |* font
 \*****************************************************************************/
-- (void) setColourForAllCaches:(struct SDL_Color)c
+- (void) setColourForAllCaches:(AZColour *)c
 	{
 	for (AZObject *obj in _glyphs)
 		{
 		if ([obj.hint isEqualToString:kTextureType])
 			{
 			SDL_Texture *texture = (SDL_Texture *)obj.ptr;
-			SDL_SetTextureColorMod(texture, c.r, c.g, c.b);
-			SDL_SetTextureAlphaMod(texture, c.a);
+			SDL_SetTextureColorMod(texture, c.red, c.green, c.blue);
+			//SDL_SetTextureAlphaMod(texture, c.alpha);
 			}
 		}
 	}

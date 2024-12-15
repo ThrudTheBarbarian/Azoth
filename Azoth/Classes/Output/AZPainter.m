@@ -1924,6 +1924,36 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 // MARK: Text drawing
 
 /*****************************************************************************\
+|* Set text colour, separate from drawing colour
+\*****************************************************************************/
+- (void) setTextColour:(AZColour *)colour
+	{
+	[_textPainter setColour:colour];
+	}
+
+- (void) setTextColourWithR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
+	{
+	AZColour *colour = [AZColour colourWithByteR:r g:g b:b a:a];
+	[_textPainter setColour:colour];
+	}
+
+/*****************************************************************************\
+|* Set horizontal text alignment
+\*****************************************************************************/
+- (void) setTextAlignment:(AZFontHAlign)align
+	{
+	[_textPainter setHAlign:align];
+	}
+
+/*****************************************************************************\
+|* Set text angle (cardinal angles only for now, 0, 90, 180, 270)
+\*****************************************************************************/
+- (void) setTextAngle:(int)degrees
+	{
+	[_textPainter setAngle:degrees];
+	}
+
+/*****************************************************************************\
 |* Text drawing
 \*****************************************************************************/
 - (NSRect) drawAtX:(float)x y:(float)y text:(NSString *)text
@@ -1935,27 +1965,6 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	{
 	EXTRACT_VARARGS(text, fmt);
 	return [_textPainter drawAtX:x y:y text:text];
-	}
-
-- (NSRect) drawAtX:(float)x y:(float)y colour:(AZColour *)colour
-		   format:(NSString *)fmt, ...
-	{
-	EXTRACT_VARARGS(text, fmt);
-	return [_textPainter drawAtX:x y:y colour:colour text:text];
-	}
-
-- (NSRect) drawAtX:(float)x y:(float)y withR:(uint8_t)r g:(uint8_t)g
-		   b:(uint8_t)b a:(uint8_t)a format:(NSString *)fmt, ...
-	{
-	EXTRACT_VARARGS(text, fmt);
-	return [_textPainter drawAtX:x y:y withR:r g:g b:b a:a text:text];
-	}
-
-- (NSRect) drawAtX:(float)x y:(float)y hAlign:(AZFontHAlign)hAlign
-		   format:(NSString *)fmt, ...
-	{
-	EXTRACT_VARARGS(text, fmt);
-	return [_textPainter drawAtX:x y:y hAlign:hAlign text:text];
 	}
 
 

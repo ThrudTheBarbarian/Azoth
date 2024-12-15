@@ -107,9 +107,15 @@
 	int by[5] = {100, 150, 50, 150, 100};
 	[painter bezierWithPoints:5 x:bx y:by steps:10 colour:[AZColour blackColour]];
 
-	[painter drawAtX:250 y:100 format:@"Aiiiiiie! says %@", @"Simon"];
-		[painter drawAtX:250 y:130 hAlign:AZFONT_HALIGN_RIGHT
+	[painter setTextColour:[AZColour orangeColour]];
+
+	[painter setTextAlignment:AZFONT_HALIGN_CENTER];
+	[painter drawAtX:250 y:130
 			format:@"The quick brown fox\njumped over the\nlazy dog"];
+
+	[painter setTextAngle:180];
+	[painter setTextColour:[AZColour greenColour]];
+	[painter drawAtX:450 y:300 format:@"Aiiiiiie! says %@", @"Simon"];
 	}
 
 @end

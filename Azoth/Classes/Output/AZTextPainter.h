@@ -27,20 +27,9 @@ struct SDL_Texture;
 + (AZTextPainter *) painterWithRenderer:(struct SDL_Renderer *)renderer;
 
 /*****************************************************************************\
-|* Basic drawing routines
+|* Basic drawing routine
 \*****************************************************************************/
 - (NSRect) drawAtX:(float)x y:(float)y text:(NSString *)text;
-- (NSRect) drawAtX:(float)x y:(float)y colour:(AZColour *)colour
-		   text:(NSString *)text;
-- (NSRect) drawAtX:(float)x y:(float)y withR:(uint8_t)r g:(uint8_t)g
-		   b:(uint8_t)b a:(uint8_t)a text:(NSString *)text;
-- (NSRect) drawAtX:(float)x y:(float)y hAlign:(AZFontHAlign)hAlign
-		   text:(NSString *)text;
-- (NSRect) drawAtX:(float)x y:(float)y hAlign:(AZFontHAlign)hAlign
-		   colour:(AZColour *)colour format:(NSString *)fmt, ...;
-- (NSRect) drawAtX:(float)x y:(float)y hAlign:(AZFontHAlign)hAlign
-		   r:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
-		   format:(NSString *)fmt, ...;
 
 /*****************************************************************************\
 |* Draw inside a clipping rectangle, moving words to make everything fit
@@ -92,6 +81,12 @@ struct SDL_Texture;
 
 // Font to use
 @property(strong, nonatomic) AZFont *						font;
+
+// Colour to draw in
+@property(strong, nonatomic) AZColour *						colour;
+
+// Text alignment
+@property(assign, nonatomic) AZFontHAlign					hAlign;
 
 // Angle to draw at (0, 90, 180, 270)
 @property(assign, nonatomic) int							angle;

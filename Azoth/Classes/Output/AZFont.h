@@ -16,7 +16,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 struct SDL_Renderer;
 struct SDL_Color;
+struct TTF_Font;
 
+@class AZColour;
 @class AZGlyphData;
 @class AZObject;
 
@@ -37,7 +39,7 @@ struct SDL_Color;
 /*****************************************************************************\
 |* Set the default colour to use, for all the caches
 \*****************************************************************************/
-- (void) setColourForAllCaches:(struct SDL_Color)colour;
+- (void) setColourForAllCaches:(AZColour *)colour;
 
 /*****************************************************************************\
 |* Get the data for a glyph

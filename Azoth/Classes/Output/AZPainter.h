@@ -228,13 +228,22 @@ struct SDL_Surface;
 \*****************************************************************************/
 - (NSRect) drawAtX:(float)x y:(float)y text:(NSString *)text;
 - (NSRect) drawAtX:(float)x y:(float)y format:(NSString *)fmt, ...;
-- (NSRect) drawAtX:(float)x y:(float)y colour:(AZColour *)colour
-		   format:(NSString *)fmt, ...;
-- (NSRect) drawAtX:(float)x y:(float)y withR:(uint8_t)r g:(uint8_t)g
-		   b:(uint8_t)b a:(uint8_t)a format:(NSString *)fmt, ...;
-- (NSRect) drawAtX:(float)x y:(float)y hAlign:(AZFontHAlign)hAlign
-		   format:(NSString *)fmt, ...;
 
+/*****************************************************************************\
+|* Set text colour, separate from drawing colour
+\*****************************************************************************/
+- (void) setTextColour:(AZColour *)colour;
+- (void) setTextColourWithR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
+
+/*****************************************************************************\
+|* Set horizontal text alignment
+\*****************************************************************************/
+- (void) setTextAlignment:(AZFontHAlign)align;
+
+/*****************************************************************************\
+|* Set text angle (cardinal angles only for now, 0, 90, 180, 270)
+\*****************************************************************************/
+- (void) setTextAngle:(int)degrees;
 
 // Set to draw with the (slower, but nicer looking) anti-aliased line drawing
 // routines
