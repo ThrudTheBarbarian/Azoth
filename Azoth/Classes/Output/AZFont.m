@@ -6,6 +6,7 @@
 //
 #import <SDL3/SDL.h>
 #import <SDL3_ttf/SDL_ttf.h>
+#import <SDL3_image/SDL_image.h>
 
 #import "AZApp.h"
 #import "AZFont.h"
@@ -112,6 +113,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 		_renderer		= renderer;
 		_extents 		= [NSMutableDictionary new];
 		_glyphs			= [NSMutableArray new];
+		_lastGlyph		= [AZGlyphData dataWithRect:NSZeroRect andCacheId:0];
 		[self _initialiseFont];
 		}
 	return self;
@@ -151,10 +153,10 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 			/*****************************************************************\
 			|* Check to see if we want it outlined, then set the style
 			\*****************************************************************/
-			BOOL outline = (style.stylebits & STYLE_OUTLINE) != 0;
+			BOOL outline = (style.stylebits & AZFONT_STYLE_OUTLINE) != 0;
 			if (outline)
 				{
-				style.stylebits &= ~STYLE_OUTLINE;
+				style.stylebits &= ~AZFONT_STYLE_OUTLINE;
 				TTF_SetFontOutline(ttf, 1);
 				}
 			TTF_SetFontStyle(ttf, style.stylebits);
@@ -162,7 +164,8 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 			/*****************************************************************\
 			|* Instantiate the font, now it's been loaded
 			\*****************************************************************/
-			result = [self load:ttf colour:style.colour];
+			SDL_Color c = (SDL_Color){style.r, style.g, style.b, style.a};
+			result = [self load:ttf colour:c];
 			if (result)
 				_ownsTTF = true;
 			}
@@ -205,7 +208,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
         int numSurfs = 1;
 		surfaces[0] = [self _createSurfaceOfWidth:w height:h];
 
-		_lastGlyph.rect = (SDL_Rect){CACHE_PADDING, CACHE_PADDING, 0, _height+1};
+		_lastGlyph.rect = NSMakeRect(CACHE_PADDING,CACHE_PADDING,0,_height+1);
 
 		SDL_Color white = {255, 255, 255, 255};
 		int max 		= (int) _loadingString.length;
@@ -268,7 +271,10 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 				{
                 SDL_SetSurfaceBlendMode(glyph, SDL_BLENDMODE_NONE);
                 SDL_Rect src = {0, 0, glyph->w, glyph->h};
-                SDL_Rect dst = _lastGlyph.rect;
+                SDL_Rect dst = {_lastGlyph.rect.origin.x,
+								_lastGlyph.rect.origin.y,
+								_lastGlyph.rect.size.width,
+								_lastGlyph.rect.size.height};
                 SDL_BlitSurface(glyph, &src, surfaces[numSurfs-1], &dst);
 				}
 
@@ -333,7 +339,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 		float w, h;
 		SDL_Color white = {255, 255, 255, 255};
 
-		SDL_Texture *cacheImage = [self glyphsFor:codepoint];
+		SDL_Texture *cacheImage = [self glyphsFor:_lastGlyph.cacheId];
 		if (cacheImage == NULL)
 			{
 			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -409,9 +415,10 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 
 			SDL_Texture *img = SDL_CreateTextureFromSurface(_renderer, glyph);
 
-			SDL_Rect dst = _lastGlyph.rect;
-			SDL_FRect destrect;
-			SDL_RectToFRect(&dst, &destrect);
+			SDL_FRect destrect = {_lastGlyph.rect.origin.x,
+								  _lastGlyph.rect.origin.y,
+								  _lastGlyph.rect.size.width,
+								  _lastGlyph.rect.size.height};
 			SDL_SetRenderTarget(_renderer, dest);
 			SDL_RenderTexture(_renderer, img, NULL, &destrect);
 			SDL_SetRenderTarget(_renderer, previous);
@@ -549,40 +556,43 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 						           maxWidth:(int)maxW
 						          maxHeight:(int)maxH
 	{
-	int X = _lastGlyph.rect.x;
-	int H = _lastGlyph.rect.h;
-	int Y = _lastGlyph.rect.y;
-	int W = _lastGlyph.rect.w;
+	int X = _lastGlyph.rect.origin.x;
+	int Y = _lastGlyph.rect.origin.y;
+	int W = _lastGlyph.rect.size.width;
+	int H = _lastGlyph.rect.size.height;
 
     // TAB is special!
     if (codepoint == '\t')
 		{
 		AZGlyphData *spaceGlyph = [self glyphDataFor:' '];
-        width = _tabWidth * spaceGlyph.rect.w;
+        width = _tabWidth * spaceGlyph.rect.size.width;
 		}
 
-    if (_lastGlyph.rect.x + _lastGlyph.rect.w + width >= maxW - CACHE_PADDING)
+    if (X + W + width >= maxW - CACHE_PADDING)
 		{
-		int height = _lastGlyph.rect.h;
-
-        if (_lastGlyph.rect.y + height + height >= maxH - CACHE_PADDING)
+        if (Y + H + H >= maxH - CACHE_PADDING)
 			{
             // Get ready to pack on the next cache level when it is ready
 			_lastGlyph.cacheId = (int) _glyphs.count;
-			_lastGlyph.rect	= (SDL_Rect){CACHE_PADDING, CACHE_PADDING, 0, H};
+			_lastGlyph.rect	= NSMakeRect(CACHE_PADDING, CACHE_PADDING, 0, H);
             return NULL;
 			}
         else
 			{
             // Go to next row
-			_lastGlyph.rect = (SDL_Rect){CACHE_PADDING, H+height, 0, H};
+			_lastGlyph.rect = NSMakeRect(CACHE_PADDING, Y+H, 0, H);
 			}
 		}
+		
+	X = _lastGlyph.rect.origin.x;
+	Y = _lastGlyph.rect.origin.y;
+	W = _lastGlyph.rect.size.width;
+	H = _lastGlyph.rect.size.height;
 
     // Move to next space
-	_lastGlyph.rect = (SDL_Rect){X+W+1+CACHE_PADDING, Y, width, H};
+	_lastGlyph.rect = NSMakeRect(X+W+1+CACHE_PADDING, Y, width, H);
 
-	_extents[@(codepoint)] = _lastGlyph;
+	_extents[@(codepoint)] = [_lastGlyph copy];
 	return [_extents objectForKey:@(codepoint)];
 	}
 
@@ -592,6 +602,10 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 - (BOOL) _uploadGlyphCache:(int)cacheId surface:(SDL_Surface*)data_surface
 	{
 	BOOL ok = (data_surface != NULL);
+
+//	if (!IMG_SavePNG(data_surface, "/tmp/letters.png"))
+//		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't save surface %s",
+//					 SDL_GetError());
 
 	if (ok)
 		{

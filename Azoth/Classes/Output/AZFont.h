@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <Azoth/AZTypes.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -18,31 +19,6 @@ struct SDL_Color;
 
 @class AZGlyphData;
 @class AZObject;
-
-/*****************************************************************************\
-|* Style definitions for font creation
-\*****************************************************************************/
-enum
-	{
-	STYLE_NORMAL 			= TTF_STYLE_NORMAL,
-	STYLE_BOLD   			= TTF_STYLE_BOLD,
-	STYLE_ITALIC			= TTF_STYLE_ITALIC,
-	STYLE_UNDERLINE			= TTF_STYLE_UNDERLINE,
-	STYLE_STRIKETHROUGH		= TTF_STYLE_STRIKETHROUGH,
-	STYLE_OUTLINE			= 16
-	};
-
-/*****************************************************************************\
-|* Structure that defines a font's look and feel. The 'stylebits' corresponds
-|* to the enum above
-\*****************************************************************************/
-typedef struct AZFontStyle
-	{
-	NSString *path;				// Location on disk
-	int size;					// In points
-	struct SDL_Color colour;	// Default colour to paint with
-	int stylebits;				// Collection of above enums
-	} AZFontStyle;
 
 @interface AZFont : NSObject
 

@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <Azoth/AZTypes.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -16,7 +17,8 @@ union SDL_Event;
 struct SDL_Renderer;
 struct SDL_Texture;
 struct SDL_Window;
-struct TTF_Font;
+
+@class AZFont;
 
 @protocol AZAppDelegate;
 
@@ -72,8 +74,13 @@ struct TTF_Font;
 // The application viability - whether it can continue
 @property(assign, nonatomic) int						viability;
 
-// The system font filename, set this to override before calling -start
-@property(assign, nonatomic) NSString *					systemFontName;
+// The system font info, the app provides default values
+// before notifying the delegate that it has been started
+// so the delegate can override these at that point
+@property(assign, nonatomic) AZFontStyle				systemFontInfo;
+
+// The system font itself
+@property(strong, nonatomic) AZFont *					systemFont;
 @end
 
 NS_ASSUME_NONNULL_END

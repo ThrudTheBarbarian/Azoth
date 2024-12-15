@@ -9,22 +9,19 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-struct SDL_Rect;
-
-
-@interface AZGlyphData : NSObject
+@interface AZGlyphData : NSObject <NSCopying>
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/
-- (instancetype) initWithRect:(struct SDL_Rect)rect andCacheId:(int)cacheId;
-+ (AZGlyphData *) dataWithRect:(struct SDL_Rect)rect andCacheId:(int)cacheId;
+- (instancetype) initWithRect:(NSRect)rect andCacheId:(int)cacheId;
++ (AZGlyphData *) dataWithRect:(NSRect)rect andCacheId:(int)cacheId;
 
 /*****************************************************************************\
 |* Properties
 \*****************************************************************************/
 
 // The rectangle to render a glyph within
-@property(assign, nonatomic) struct SDL_Rect 				rect;
+@property(assign, nonatomic) NSRect			 				rect;
 
 // The id within the cache for this glyph
 @property(assign, nonatomic) int							cacheId;

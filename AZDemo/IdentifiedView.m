@@ -106,6 +106,8 @@
 	int bx[5] = {300, 350, 400, 450, 500};
 	int by[5] = {100, 150, 50, 150, 100};
 	[painter bezierWithPoints:5 x:bx y:by steps:10 colour:[AZColour blackColour]];
+
+	[painter drawAtX:150 y:100 text:@"hi there"];
 	}
 
 @end

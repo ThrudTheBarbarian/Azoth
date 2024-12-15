@@ -14,7 +14,7 @@
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/
-- (instancetype) initWithRect:(struct SDL_Rect)rect andCacheId:(int)cacheId
+- (instancetype) initWithRect:(NSRect)rect andCacheId:(int)cacheId
 	{
 	if (self = [super init])
 		{
@@ -24,10 +24,15 @@
 	return self;
 	}
 
-+ (AZGlyphData *) dataWithRect:(struct SDL_Rect)rect andCacheId:(int)cacheId
++ (AZGlyphData *) dataWithRect:(NSRect)rect andCacheId:(int)cacheId
 	{
 	return [[AZGlyphData alloc] initWithRect:rect andCacheId:cacheId];
 	}
 
+
+- (nonnull id)copyWithZone:(nullable NSZone *)zone
+	{
+	return [AZGlyphData dataWithRect:_rect andCacheId:_cacheId];
+	}
 
 @end

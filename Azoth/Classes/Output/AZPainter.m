@@ -7,30 +7,24 @@
 
 #import <SDL3/SDL.h>
 
-#if defined(_MSC_VER)
-/* Detect 64bit and use intrinsic version */
-#ifdef _M_X64
-#include <emmintrin.h>
-static __inline long 
-	lrint(float f) 
-{
-	return _mm_cvtss_si32(_mm_load_ss(&f));
-}
-#else
-#warning Cannot find lrint
-#endif // _M_X64
-#endif // _MSC_VER
-
-
 #import "AZApp.h"
 #import "AZColour.h"
 #import "AZGeometry.h"
 #import "AZObject.h"
 #import "AZPainter.h"
+#import "AZTextPainter.h"
 #import "AZView.h"
 
 #define AAlevels 256
 #define AAbits 8
+
+#ifndef EXTRACT_VARARGS
+#  define EXTRACT_VARARGS(string, fmt)		 								\
+    va_list lst; 															\
+    va_start(lst, fmt); 													\
+    NSString *string = [[NSString alloc] initWithFormat:fmt arguments:lst];	\
+    va_end(lst)
+#endif
 
 /*****************************************************************************\
 |* Structures used
@@ -87,12 +81,15 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 \*****************************************************************************/
 - (BOOL) execute
 	{
-	_renderer 		= [AZApp sharedInstance].renderer;
+	AZApp *app		= [AZApp sharedInstance];
+	_renderer 		= app.renderer;
 	if (_renderer == NULL)
 		{
 		SDL_LogError(SDL_LOG_CATEGORY_GPU, "Cannot get window renderer");
 		return NO;
 		}
+	_textPainter		= [AZTextPainter painterWithRenderer:_renderer];
+	_textPainter.font	= app.systemFont;
 
 	SDL_Rect bounds	= SDLRectFromNSRect(_view.dirty);
 
@@ -1865,7 +1862,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
 	{
 	double *x, *y;
-	
+
 	// Sanity check
 	if (num < 3)
 		return (-1);
@@ -1922,6 +1919,20 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	free(y);
 
 	return (result);
+	}
+
+/*****************************************************************************\
+|* Text drawing
+\*****************************************************************************/
+- (NSRect) drawAtX:(float)x y:(float)y text:(NSString *)text
+	{
+	return [_textPainter drawAtX:x y:y text:text];
+	}
+
+- (NSRect) drawAtX:(float)x y:(float)y format:(NSString *)fmt, ...
+	{
+	EXTRACT_VARARGS(text, fmt);
+	return [_textPainter drawAtX:x y:y text:text];
 	}
 
 
@@ -2196,8 +2207,8 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 
 	// introduce some overdraw
 	double sab 	= SDL_sqrt(a2 + b2);
-	Sint16 od 	= (Sint16)lrint(sab*0.01) + 1;
-	int dxt 	= (Sint16)lrint((double)a2 / sab) + od;
+	Sint16 od 	= (Sint16)SDL_round(sab*0.01) + 1;
+	int dxt 	= (Sint16)SDL_round((double)a2 / sab) + od;
 
 	int t = 0;
 	int s = -2 * a2 * ry;
@@ -2280,7 +2291,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		}
 
 	// Replaces original approximation code dyt = abs(yp - yc);
-	dyt = (Sint16)lrint((double)b2 / sab ) + od;
+	dyt = (Sint16)SDL_round((double)b2 / sab ) + od;
 
 	for (int i = 1; i <= dyt; i++)
 		{

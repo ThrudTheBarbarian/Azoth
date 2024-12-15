@@ -10,6 +10,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class AZColour;
+@class AZTextPainter;
 @class AZView;
 
 struct SDL_Surface;
@@ -222,14 +223,24 @@ struct SDL_Surface;
 		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
 
 
+/*****************************************************************************\
+|* Draw text
+\*****************************************************************************/
+- (NSRect) drawAtX:(float)x y:(float)y text:(NSString *)text;
+- (NSRect) drawAtX:(float)x y:(float)y format:(NSString *)fmt, ...;
+
 
 // Set to draw with the (slower, but nicer looking) anti-aliased line drawing
 // routines
-@property(assign, nonatomic) BOOL usingAntiAliasing;
+@property(assign, nonatomic) BOOL 							usingAntiAliasing;
 
 // Set YES if this is the last line being drawn during anti-aliased draw. If
 // (x2,y2) is a mid-point of a set of lines in a line-series, then set to NO
-@property(assign, nonatomic) BOOL drawAAEndpoint;
+@property(assign, nonatomic) BOOL 							drawAAEndpoint;
+
+// Delegate all the text rendering to a separate object since it's quite the
+// task in and of itself
+@property(strong, nonatomic) AZTextPainter *				textPainter;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -10,6 +10,7 @@
 
 #import "AZApp.h"
 #import "AZAppDelegate.h"
+#import "AZFont.h"
 #import "AZGeometry.h"
 #import "AZObject.h"
 #import "AZView.h"
@@ -32,7 +33,6 @@ NSString * const kTextureType	= @"texture";
 	if (self = [super init])
 		{
 		_bin 			= [NSMutableArray new];
-		_systemFontName = @"NotoSans-Medium";
 		}
 	return self;
 	}
@@ -62,6 +62,23 @@ NSString * const kTextureType	= @"texture";
 	SEL launch 		= NSSelectorFromString(name);
 	if (_delegate && [_delegate respondsToSelector:launch])
 		{
+		/*********************************************************************\
+		|* Set up the system-font info with reasonable defaults
+		\*********************************************************************/
+		NSString *rsrc	= [[NSBundle bundleForClass:[self class]] resourcePath];
+		_systemFontInfo.path = [NSString stringWithFormat:
+								@"%@/NotoSans-Medium.ttf", rsrc];
+		_systemFontInfo.size = 14;
+		_systemFontInfo.r 	 = 0;
+		_systemFontInfo.g 	 = 0;
+		_systemFontInfo.b 	 = 0;
+		_systemFontInfo.a 	 = 255;
+
+		_systemFontInfo.stylebits = AZFONT_STYLE_NORMAL;
+
+		/*********************************************************************\
+		|* Tell the delegate we're about to launch
+		\*********************************************************************/
 		NSMutableDictionary *args = [NSMutableDictionary new];
 		for (int i=0; i<argc; i++)
 			args[@(i)] = [NSString stringWithUTF8String:argv[i]];
@@ -74,6 +91,18 @@ NSString * const kTextureType	= @"texture";
 														  object:self
 														userInfo:info];
 		[_delegate applicationDidFinishLaunching:n];
+
+		/*********************************************************************\
+		|* Load the system font after notifying the delegate, so it has a
+		|* chance to change the system font name
+		\*********************************************************************/
+		_systemFont = [AZFont fontWithRenderer:_renderer];
+		if (![_systemFont load:_systemFontInfo])
+			{
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+						  "Failed to load system font at %s!",
+						  _systemFontInfo.path.fileSystemRepresentation);
+			}
 		}
 	}
 
