@@ -16,13 +16,23 @@ union SDL_Event;
 struct SDL_Renderer;
 struct SDL_Texture;
 struct SDL_Window;
+struct TTF_Font;
+
+@protocol AZAppDelegate;
 
 @interface AZApp : NSObject
-
+	
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/
 + (AZApp *) sharedInstance;
+
+/*****************************************************************************\
+|* Startup code
+\*****************************************************************************/
+- (void) startWithArgc:(int)argc
+				  argv:(char *_Nonnull *_Nonnull)argv
+				 state:(void * _Nullable)state;
 
 /*****************************************************************************\
 |* Handle SDL events as they come in
@@ -41,7 +51,8 @@ struct SDL_Window;
 
 
 /*****************************************************************************\
-|* Application service: dispose of things after renderPresent called
+|* Application service: dispose of things after renderPresent called. Useful
+|* when the renderer has to hang onto a resource in order to process something
 \*****************************************************************************/
 - (void) registerTextureForDisposal:(struct SDL_Texture *)texture;
 
@@ -50,9 +61,19 @@ struct SDL_Window;
 \*****************************************************************************/
 
 // The main window, where the rendering happens
-@property (assign, nonatomic) struct SDL_Window *		window;
+@property(assign, nonatomic) struct SDL_Window *		window;
 
-@property (assign, nonatomic) struct SDL_Renderer *		renderer;
+// The renderer for the window
+@property(assign, nonatomic) struct SDL_Renderer *		renderer;
+
+// The delegate for the application
+@property(strong, nonatomic) id<AZAppDelegate>			delegate;
+
+// The application viability - whether it can continue
+@property(assign, nonatomic) int						viability;
+
+// The system font filename, set this to override before calling -start
+@property(assign, nonatomic) NSString *					systemFontName;
 @end
 
 NS_ASSUME_NONNULL_END

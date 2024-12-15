@@ -1843,6 +1843,89 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	}
 
 
+// MARK: Bezier curves
+
+/*****************************************************************************\
+|* Bezier curve enumeration
+\*****************************************************************************/
+- (int) bezierWithPoints:(int)num x:(int *)xc y:(int *)yc steps:(int)steps
+		colour:(AZColour *)colour
+	{
+	return [self bezierWithPoints:num
+								x:xc
+								y:yc
+							steps:steps
+							withR:colour.red
+								g:colour.green
+								b:colour.blue
+								a:colour.alpha];
+	}
+
+- (int) bezierWithPoints:(int)num x:(int *)vx y:(int *)vy steps:(int)steps
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
+	{
+	double *x, *y;
+	
+	// Sanity check
+	if (num < 3)
+		return (-1);
+
+	if (steps < 2)
+		return (-1);
+
+	// Variable setup
+	double stepsize=(double)1.0/(double)steps;
+
+	/* Transfer vertices into float arrays */
+	if ((x=(double *)malloc(sizeof(double)*(num+1)))==NULL)
+		return(-1);
+
+	if ((y=(double *)malloc(sizeof(double)*(num+1)))==NULL)
+		{
+		free(x);
+		return(-1);
+		}
+
+	for (int i=0; i < num; i++)
+		{
+		x[i]=(double)vx[i];
+		y[i]=(double)vy[i];
+		}
+
+	x[num]=(double)vx[0];
+	y[num]=(double)vy[0];
+
+	// Set color
+	int result = 0;
+	if (a != 255)
+		result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
+	result |= SDL_SetRenderDrawColor(_renderer, r, g, b, a);
+
+	// Draw
+	double t=0.0;
+	int x1=(int)SDL_round(_evaluateBezier(x,num+1,t));
+	int y1=(int)SDL_round(_evaluateBezier(y,num+1,t));
+
+	int total = num * steps;
+	for (int i = 0; i <= total; i++)
+		{
+		t += stepsize;
+		int x2=(int)_evaluateBezier(x,num,t);
+		int y2=(int)_evaluateBezier(y,num,t);
+			result |= [self lineAtX:x1 y:y1 toX:x2 y:y2];
+		x1 = x2;
+		y1 = y2;
+		}
+
+	// Clean up temporary array
+	free(x);
+	free(y);
+
+	return (result);
+	}
+
+
+
 // MARK: Private methods
 
 
@@ -2321,7 +2404,7 @@ static int _qsortInts(const void *a, const void *b)
 
 
 /*****************************************************************************\
-|* Internal function to draw a textured horizontal line.
+|* Internal method to draw a textured horizontal line.
 \*****************************************************************************/
 - (int) _texturedHLineAtX:(int)x1
 					  toX:(int)x2
@@ -2403,5 +2486,57 @@ static int _qsortInts(const void *a, const void *b)
 	return result;
 	}
 
+
+/*****************************************************************************\
+|* Internal function to calculate bezier interpolator of data array with ndata
+|* values at position 't'.
+\*****************************************************************************/
+static double _evaluateBezier(double *data, int num, double t)
+	{
+	// Sanity check bounds
+	if (t < 0.0)
+		return data[0];
+
+	if (t >= (double)num)
+		return data[num-1];
+
+	// Adjust t to the range 0.0 to 1.0
+	double mu = t/(double)num;
+
+	/* Calculate interpolate */
+	int n 			= num-1;
+	double result	= 0.0;
+	double muk 		= 1.0;
+	double munk 	= SDL_pow(1-mu,(double)n);
+
+	for (int k=0; k <= n; k++)
+		{
+		int nn 			= n;
+		int kn 			= k;
+		int nkn 		= n - k;
+		double blend 	= muk * munk;
+		muk *= mu;
+		munk /= (1-mu);
+		while (nn >= 1)
+			{
+			blend *= nn;
+			nn--;
+			if (kn > 1)
+				{
+				blend /= (double)kn;
+				kn--;
+				}
+
+			if (nkn > 1)
+				{
+				blend /= (double)nkn;
+				nkn--;
+				}
+			}
+		result += data[k] * blend;
+		}
+
+	return result;
+	}
 
 @end

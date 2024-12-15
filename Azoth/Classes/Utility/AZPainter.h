@@ -212,6 +212,17 @@ struct SDL_Surface;
 		textureDx:(int)tdx textureDy:(int)tdy;
 
 
+/*****************************************************************************\
+|* bezier lines
+\*****************************************************************************/
+- (int) bezierWithPoints:(int)num x:(int *)xc y:(int *)y steps:(int)steps
+		colour:(AZColour *)colour;
+
+- (int) bezierWithPoints:(int)num x:(int *)xc y:(int *)y steps:(int)steps
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
+
+
+
 // Set to draw with the (slower, but nicer looking) anti-aliased line drawing
 // routines
 @property(assign, nonatomic) BOOL usingAntiAliasing;

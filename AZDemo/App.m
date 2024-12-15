@@ -13,6 +13,7 @@
 
 #import <Azoth/Azoth.h>
 
+#import "AppDelegate.h"
 #import "IdentifiedView.h"
 
 /*****************************************************************************\
@@ -25,8 +26,6 @@ void _testMouseEvents(void);
 /*****************************************************************************\
 |* File-private variables
 \*****************************************************************************/
-static SDL_Window *		_window 	= NULL;
-static SDL_Renderer *	_renderer 	= NULL;
 static AZApp *			_app		= NULL;
 
 
@@ -40,45 +39,22 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 					   "com.moebius-tech.qstest");
 
 	/*************************************************************************\
-    |* Make sure we can initialise
+    |* Create the application. SDL initialisation is done in the app-delegate
     \*************************************************************************/
-    if (!SDL_Init(SDL_INIT_VIDEO))
+	_app 			= [AZApp sharedInstance];
+	_app.delegate	= [AppDelegate new];
+
+	[_app startWithArgc:argc argv:argv state:*appstate];
+
+	if (_app.viability == SDL_APP_CONTINUE)
 		{
-        SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
+		_testMouseEvents();
+
+		/*********************************************************************\
+		|* .. and carry on with the program
+		\*********************************************************************/
 		}
-
-	/*************************************************************************\
-    |* Initialise the image library
-    \*************************************************************************/
-
-	/*************************************************************************\
-    |* Create the window
-    \*************************************************************************/
-    if (!SDL_CreateWindowAndRenderer("Demo app",
-									 1280,
-									 960,
-									 SDL_WINDOW_RESIZABLE,
-									 &_window,
-									 &_renderer))
-		{
-        SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
-		}
-
-	/*************************************************************************\
-    |* Create the application
-    \*************************************************************************/
-	_app = [AZApp sharedInstance];
-	_app.window 	= _window;
-	_app.renderer	= _renderer;
-
-	_testMouseEvents();
-
-	/*************************************************************************\
-    |* .. and carry on with the program
-    \*************************************************************************/
-    return SDL_APP_CONTINUE;
+    return _app.viability;
 	}
 
 /*****************************************************************************\
@@ -115,7 +91,8 @@ void SDL_AppQuit(void *appState, SDL_AppResult result)
 \*****************************************************************************/
 void _testMouseEvents(void)
 	{
-	AZView *cv		= [AZView contentViewForWindow:_window];
+	AZApp *app		= [AZApp sharedInstance];
+	AZView *cv		= [AZView contentViewForWindow:app.window];
 	[cv setIdentifier:@"content-view"];
 
 	IdentifiedView *v1 = [[IdentifiedView alloc]

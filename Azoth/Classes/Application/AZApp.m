@@ -6,8 +6,10 @@
 //
 
 #import <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 #import "AZApp.h"
+#import "AZAppDelegate.h"
 #import "AZGeometry.h"
 #import "AZObject.h"
 #import "AZView.h"
@@ -29,7 +31,8 @@ NSString * const kTextureType	= @"texture";
 	{
 	if (self = [super init])
 		{
-		_bin = [NSMutableArray new];
+		_bin 			= [NSMutableArray new];
+		_systemFontName = @"NotoSans-Medium";
 		}
 	return self;
 	}
@@ -48,6 +51,30 @@ NSString * const kTextureType	= @"texture";
 		});
 
 	return instance;
+	}
+
+/*****************************************************************************\
+|* Application startup code
+\*****************************************************************************/
+- (void) startWithArgc:(int)argc argv:(char **)argv state:(void *)state
+	{
+	NSString *name 	= @"applicationDidFinishLaunching:";
+	SEL launch 		= NSSelectorFromString(name);
+	if (_delegate && [_delegate respondsToSelector:launch])
+		{
+		NSMutableDictionary *args = [NSMutableDictionary new];
+		for (int i=0; i<argc; i++)
+			args[@(i)] = [NSString stringWithUTF8String:argv[i]];
+		NSDictionary *info =
+			@{
+			@"args" : args
+			};
+
+		NSNotification *n = [NSNotification notificationWithName:name
+														  object:self
+														userInfo:info];
+		[_delegate applicationDidFinishLaunching:n];
+		}
 	}
 
 /*****************************************************************************\

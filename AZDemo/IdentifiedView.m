@@ -96,14 +96,16 @@
 //	int vy[5] = {350, 350, 500, 500, 450};
 //	[painter polygonWith:5 x:vx y:vy filled:YES withR:240 g:20 b:100 a:255];
 
-	[painter pieAtX:300 y:300 radius:100 start:0 end:180
+	[painter pieAtX:300 y:300 radius:100 start:0 end:210
 			 filled:YES colour:[AZColour purpleColour]];
 
 	int vx[5] = {50, 100, 200, 100, 100};
 	int vy[5] = {350, 350, 500, 500, 450};
-		[painter texturedPolygonWith:5 x:vx y:vy texture:_surface textureDx:5 textureDy:5];
-		
+	[painter texturedPolygonWith:5 x:vx y:vy texture:_surface textureDx:5 textureDy:5];
 
+	int bx[5] = {300, 350, 400, 450, 500};
+	int by[5] = {100, 150, 50, 150, 100};
+	[painter bezierWithPoints:5 x:bx y:by steps:10 colour:[AZColour blackColour]];
 	}
 
 @end

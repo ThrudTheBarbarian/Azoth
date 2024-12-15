@@ -48,11 +48,12 @@
 			publicHeaders = (
 				Azoth.h,
 				Classes/Application/AZApp.h,
+				Classes/Application/AZAppDelegate.h,
+				Classes/Utility/AZColour.h,
+				Classes/Utility/AZGeometry.h,
+				Classes/Utility/AZObject.h,
+				Classes/Utility/AZPainter.h,
 				Classes/Views/AZView.h,
-				Utility/AZColour.h,
-				Utility/AZGeometry.h,
-				Utility/AZObject.h,
-				Utility/AZPainter.h,
 			);
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
 		};
@@ -62,6 +63,7 @@
 				Frameworks/avif.xcframework,
 				Frameworks/jxl.xcframework,
 				Frameworks/SDL3_image.xcframework,
+				Frameworks/SDL3_ttf.xcframework,
 				Frameworks/webp.xcframework,
 			);
 			target = F41BC69B2D0A71FD00E61EDD /* AZDemo */;
@@ -85,6 +87,7 @@
 			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
 			attributesByRelativePath = {
 				Frameworks/SDL3_image.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
+				Frameworks/SDL3_ttf.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
 				Frameworks/avif.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
 				Frameworks/jxl.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
 				Frameworks/webp.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
@@ -94,6 +97,7 @@
 				Frameworks/avif.xcframework,
 				Frameworks/jxl.xcframework,
 				Frameworks/SDL3_image.xcframework,
+				Frameworks/SDL3_ttf.xcframework,
 				Frameworks/webp.xcframework,
 			);
 		};
