@@ -34,15 +34,16 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 	{
 	if (self = [super init])
 		{
-		_frame 			= frame;
-		_bounds			= frame;
-		_bounds.origin 	= (NSPoint){0,0};
-		_subviews		= [NSMutableArray new];
-		_identifier		= @"";
-		_superview		= nil;
-		_bg 			= NULL;
-		_bgColour		= [AZColour blackColour];
-		_isOpaque		= NO;
+		_frame 					= frame;
+		_bounds					= frame;
+		_bounds.origin 			= (NSPoint){0,0};
+		_subviews				= [NSMutableArray new];
+		_identifier				= @"";
+		_superview				= nil;
+		_bg 					= NULL;
+		_bgColour				= [AZColour blackColour];
+		_isOpaque				= NO;
+		_autoresizesSubviews	= YES;
 		}
 
 	return self;
@@ -301,4 +302,84 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 		[view _redrawViewAndSubviews];
 	}
 
+
+// MARK: Resize
+
+- (void) setFrame:(NSRect)frame
+	{
+	NSSize oldSize = self.frame.size;
+	_frame = frame;
+	_bounds.size = _frame.size;
+
+	if (self.autoresizesSubviews)
+		[self resizeSubviewsWithOldSize:oldSize];
+	[self setNeedsDisplay:YES];
+	}
+
+- (void) resizeSubviewsWithOldSize:(NSSize)size
+	{
+	for (AZView *subview in self.subviews)
+		{
+		if ([subview resizeWithOldSuperviewSize:size])
+			[subview resizeSubviewsWithOldSize:subview.frame.size];
+		}
+	}
+
+- (BOOL) resizeWithOldSuperviewSize:(NSSize)size
+	{
+	if (self.autoresizingMask == AZViewNotSizable)
+		return NO;
+
+	int dx = self.superview.frame.size.width  - size.width;
+	int dy = self.superview.frame.size.height - size.height;
+
+	BOOL left 	= (self.autoresizingMask & AZViewMinXMargin);
+	BOOL center	= (self.autoresizingMask & AZViewWidthSizable);
+	BOOL right	= (self.autoresizingMask & AZViewMaxXMargin);
+
+	NSRect frame = self.frame;
+
+	// Distribute the gains fairly, so see how many <--> areas can change
+	int count 	= (left ? 1 : 0) + (center ? 1 : 0)  + (right ? 1 : 0);
+	int done  	= 0;
+	if (count > 0)
+		{
+		int ddx = dx/count;
+		if (left)
+			{
+			frame.origin.x -= ddx;
+			frame.size.width += ddx;
+			done ++;
+			dx -= ddx;
+			}
+		int delta = (done == count) ? dx : ddx;
+
+		if (center)
+			{
+			frame.size.width += delta;
+			done ++;
+			dx -= delta;
+			}
+		delta = (done == count) ? dx : ddx;
+
+		if (right)
+			{
+			frame.size.width += delta;
+			dx -= delta;
+			}
+		if (dx != 0)
+			NSLog(@"Error in width calcs (dx=%d)", dx);
+		}
+
+	// Finally, set the frame
+	if (!NSEqualRects(frame, _frame))
+		{
+		_frame 		 = frame;
+		_bounds.size = _frame.size;
+		[self _installBackingTexture];
+		}
+		
+	[self setNeedsDisplay:YES];
+	return YES;
+	}
 @end

@@ -23,6 +23,8 @@
 	if (self = [super initWithFrame:frame])
 		{
 		self.identifier = name;
+		self.autoresizingMask = AZViewWidthSizable;
+
 		_rsrcDir = [[NSBundle bundleForClass:[self class]] resourcePath];
 
 		NSString *path = [_rsrcDir stringByAppendingFormat:@"/texture.png"];

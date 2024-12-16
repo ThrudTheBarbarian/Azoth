@@ -80,6 +80,20 @@ typedef struct
 	} AZFontEffect;
 
 /*****************************************************************************\
+|* Autoresizing mask
+\*****************************************************************************/
+enum AZAutoresizingMaskOptions
+	{
+	AZViewNotSizable	= 0x00,	// No changes to be made to the frame
+	AZViewMinXMargin	= 0x01,	// Left margin is flexible
+	AZViewWidthSizable	= 0x02,	// The width is flexible
+	AZViewMaxXMargin	= 0x04,	// Right margin is flexible
+	AZViewMinYMargin	= 0x08,	// Bottom margin is flexible
+	AZViewHeightSizable	= 0x10,	// The height is flexible
+	AZViewMaxYMargin	= 0x20	// Top margin is flexible
+	};
+
+/*****************************************************************************\
 |* Conversion macros
 \*****************************************************************************/
 #define SDL_RECT(nsrect)													\

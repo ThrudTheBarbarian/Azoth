@@ -13,6 +13,7 @@
 #import "AZAppDelegate.h"
 #import "AZFont.h"
 #import "AZGeometry.h"
+#import "AZNotifications.h"
 #import "AZObject.h"
 #import "AZView.h"
 #import "AZView+Internal.h"
@@ -133,7 +134,7 @@ NSString * const kTextureType	= @"texture";
 			SDL_DestroySurface(atlasSurface);
 			atlasPath = [NSString stringWithFormat:@"%@/atlas.plist", rsrc];
 			_uiMap = [NSDictionary dictionaryWithContentsOfFile:atlasPath];
-			NSLog(@"uimap:%@", _uiMap);
+			//NSLog(@"uimap:%@", _uiMap);
 			}
 		}
 	}
@@ -195,6 +196,23 @@ NSString * const kTextureType	= @"texture";
 			p.y = ((SDL_MouseMotionEvent *)e)->y;
 			[cv processMouseEvent:e atPoint:p];
 			break;
+
+		/*********************************************************************\
+		|* Handle resize events
+		\*********************************************************************/
+		case SDL_EVENT_WINDOW_RESIZED:
+			{
+			SDL_Window *win = SDL_GetWindowFromID(e->window.windowID);
+			AZView *cv = [AZView contentViewForWindow:win];
+			int w = e->window.data1;
+			int h = e->window.data2;
+
+			NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
+			[nc postNotificationName:AZRootViewWillResizeNotification object:cv];
+			[cv setFrame:NSMakeRect(0,0,w,h)];
+
+			break;
+			}
 		}
 
 	/* carry on with the program! */

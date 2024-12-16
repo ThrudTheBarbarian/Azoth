@@ -61,6 +61,7 @@
 				Classes/Application/AZApp.h,
 				Classes/Application/AZAppDelegate.h,
 				Classes/Application/AZTypes.h,
+				Classes/Base/AZControl.h,
 				Classes/Output/AZFont.h,
 				Classes/Output/AZGlyphData.h,
 				Classes/Output/AZPainter.h,
@@ -68,9 +69,8 @@
 				Classes/Utility/AZColour.h,
 				Classes/Utility/AZGeometry.h,
 				Classes/Utility/AZObject.h,
+				Classes/Views/AZButton.h,
 				Classes/Views/AZView.h,
-				Classes/Views/Base/AZButton.h,
-				Classes/Views/Base/AZControl.h,
 			);
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
 		};

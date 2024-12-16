@@ -5,8 +5,7 @@
 //  Created by Simon Gornall on 12/15/24.
 //
 
-#import <Azoth/AZObject.h>
-#import <Azoth/AZView.h>
+#import <Foundation/Foundation.h>
 
 typedef enum
 	{
@@ -17,7 +16,7 @@ typedef enum
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AZControl : AZView
+@interface AZControl : NSObject
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/

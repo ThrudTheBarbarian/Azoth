@@ -176,6 +176,9 @@
 	if (w*h > 0)
 		{
 		SDL_Renderer *renderer = AZApp.sharedInstance.renderer;
+		if (self.bg)
+			SDL_DestroyTexture(self.bg);
+			
 		self.bg		 = SDL_CreateTexture(renderer,
 										 SDL_PIXELFORMAT_RGBA8888,
 										 SDL_TEXTUREACCESS_TARGET,

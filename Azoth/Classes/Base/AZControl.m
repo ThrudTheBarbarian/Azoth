@@ -14,12 +14,13 @@
 \*****************************************************************************/
 - (instancetype) initWithFrame:(NSRect)frame
 	{
-	if (self = [super initWithFrame:frame])
+	if (self = [super init])
 		{
 		self.stringValue 	= @"";
 		self.state		 	= ControlStateNormal;
 		}
 	return self;
 	}
+
 
 @end

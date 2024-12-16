@@ -25,6 +25,8 @@
 \*****************************************************************************/
 
 #import <Foundation/Foundation.h>
+#import <Azoth/AZControl.h>
+#import <Azoth/AZTypes.h>
 
 /*****************************************************************************\
 |* Declare the types we're using from SDL3, because we can't import the
@@ -42,7 +44,7 @@ struct SDL_Window;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AZView : NSObject
+@interface AZView : AZControl
 
 /*****************************************************************************\
 |* Initialisation
@@ -144,34 +146,44 @@ NS_ASSUME_NONNULL_BEGIN
 // MARK: Properties
 
 // The position and size of the view in its parent
-@property(assign, nonatomic) NSRect 							frame;
+@property(assign, nonatomic) NSRect 						frame;
 
-// The position and size of the view's local co-ordinate space
-@property(assign, nonatomic) NSRect								bounds;
+// The position and size of the view's local co-ordinates
+@property(assign, nonatomic) NSRect							bounds;
 
 // The list of all views that are children to this view
-@property(strong, nonatomic) NSMutableArray<AZView *> *			subviews;
+@property(strong, nonatomic) NSMutableArray<AZView *> *		subviews;
 
-// The view that this view is a child of, or nil for contentView
-@property(strong, nonatomic, nullable) AZView *					superview;
+// The view that this view is a child of, or nil
+// for contentView
+@property(strong, nonatomic, nullable) AZView *				superview;
 
 // The window that this view is attached to
-@property(assign, nonatomic, nullable) struct SDL_Window *		window;
+@property(assign, nonatomic, nullable) struct SDL_Window *	window;
 
 // Identifier, purely for debugging
-@property(strong, nonatomic) NSString *							identifier;
+@property(strong, nonatomic) NSString *						identifier;
 
 // Backing texture for drawing into
-@property(assign, nonatomic, nullable) struct SDL_Texture *		bg;
+@property(assign, nonatomic, nullable) struct SDL_Texture *	bg;
 
 // Aggregated dirty-rect (where needs to be redrawn)
-@property(assign, nonatomic) NSRect 							dirty;
+@property(assign, nonatomic) NSRect 						dirty;
 
 // Background colour if nothing else supplied to draw
-@property(assign, nonatomic) AZColour *							bgColour;
+@property(assign, nonatomic) AZColour *						bgColour;
 
-// Is this view opaque - affects the blending mode, default is NO
-@property(assign, nonatomic) BOOL								isOpaque;
+// Is this view opaque - affects the blending mode,
+// default is NO
+@property(assign, nonatomic) BOOL							isOpaque;
+
+// Does this view resize its subviews on having its
+// frame set, default is YES
+@property(assign, nonatomic) BOOL							autoresizesSubviews;
+
+// The bit-mask of AZAutoresizingMaskOptions that defines
+// how auto-resizing will work
+@property(assign, nonatomic) enum AZAutoresizingMaskOptions	autoresizingMask;
 @end
 
 NS_ASSUME_NONNULL_END
