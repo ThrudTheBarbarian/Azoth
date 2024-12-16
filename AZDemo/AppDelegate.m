@@ -56,7 +56,6 @@
         SDL_Log("Couldn't initialize TTF: %s\n",SDL_GetError());
         AZApp.sharedInstance.viability =  SDL_APP_FAILURE;
 		}
-	
 	}
 
 @end

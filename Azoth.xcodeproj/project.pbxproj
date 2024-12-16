@@ -34,12 +34,23 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F4B6A3D02D0F86C70033580D /* Embed frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		F41BC6522D0A61BA00E61EDD /* Azoth.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Azoth.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F41BC69C2D0A71FD00E61EDD /* AZDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F4B6A1402D0BB0E80033580D /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		F4B6A3B62D0F84C00033580D /* genRsrc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = genRsrc.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -58,6 +69,8 @@
 				Classes/Utility/AZGeometry.h,
 				Classes/Utility/AZObject.h,
 				Classes/Views/AZView.h,
+				Classes/Views/Base/AZButton.h,
+				Classes/Views/Base/AZControl.h,
 			);
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
 		};
@@ -71,6 +84,14 @@
 				Frameworks/webp.xcframework,
 			);
 			target = F41BC69B2D0A71FD00E61EDD /* AZDemo */;
+		};
+		F4B6A3CB2D0F85600033580D /* Exceptions for "Azoth" folder in "genRsrc" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Frameworks/SDL3_image.xcframework,
+				Frameworks/SDL3.framework,
+			);
+			target = F4B6A3B52D0F84C00033580D /* genRsrc */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -105,6 +126,20 @@
 				Frameworks/webp.xcframework,
 			);
 		};
+		F4B6A3D22D0F86D70033580D /* Exceptions for "Azoth" folder in "Embed frameworks" phase from "genRsrc" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			attributesByRelativePath = {
+				Frameworks/SDL3.framework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
+				Frameworks/SDL3_image.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
+				Frameworks/SDL3_test.framework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
+			};
+			buildPhase = F4B6A3D02D0F86C70033580D /* Embed frameworks */;
+			membershipExceptions = (
+				Frameworks/SDL3_image.xcframework,
+				Frameworks/SDL3_test.framework,
+				Frameworks/SDL3.framework,
+			);
+		};
 /* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -114,6 +149,8 @@
 				F41BC6572D0A61BA00E61EDD /* Exceptions for "Azoth" folder in "Azoth" target */,
 				F4B6A3692D0D4ADD0033580D /* Exceptions for "Azoth" folder in "AZDemo" target */,
 				F4B6A3642D0D4AD10033580D /* Exceptions for "Azoth" folder in "Embed Frameworks" phase from "AZDemo" target */,
+				F4B6A3CB2D0F85600033580D /* Exceptions for "Azoth" folder in "genRsrc" target */,
+				F4B6A3D22D0F86D70033580D /* Exceptions for "Azoth" folder in "Embed frameworks" phase from "genRsrc" target */,
 			);
 			path = Azoth;
 			sourceTree = "<group>";
@@ -124,6 +161,11 @@
 				F4B6A1252D0A9CDB0033580D /* Exceptions for "AZDemo" folder in "Embed Frameworks" phase from "AZDemo" target */,
 			);
 			path = AZDemo;
+			sourceTree = "<group>";
+		};
+		F4B6A3B72D0F84C00033580D /* genRsrc */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = genRsrc;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -144,6 +186,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F4B6A3B32D0F84C00033580D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -153,6 +202,7 @@
 				F4B6A1402D0BB0E80033580D /* README.md */,
 				F41BC6542D0A61BA00E61EDD /* Azoth */,
 				F41BC69D2D0A71FD00E61EDD /* AZDemo */,
+				F4B6A3B72D0F84C00033580D /* genRsrc */,
 				F4B6A11B2D0A977D0033580D /* Frameworks */,
 				F41BC6532D0A61BA00E61EDD /* Products */,
 			);
@@ -163,6 +213,7 @@
 			children = (
 				F41BC6522D0A61BA00E61EDD /* Azoth.framework */,
 				F41BC69C2D0A71FD00E61EDD /* AZDemo.app */,
+				F4B6A3B62D0F84C00033580D /* genRsrc.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -234,6 +285,29 @@
 			productReference = F41BC69C2D0A71FD00E61EDD /* AZDemo.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F4B6A3B52D0F84C00033580D /* genRsrc */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F4B6A3C32D0F84C10033580D /* Build configuration list for PBXNativeTarget "genRsrc" */;
+			buildPhases = (
+				F4B6A3B22D0F84C00033580D /* Sources */,
+				F4B6A3B32D0F84C00033580D /* Frameworks */,
+				F4B6A3B42D0F84C00033580D /* Resources */,
+				F4B6A3D02D0F86C70033580D /* Embed frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F4B6A3B72D0F84C00033580D /* genRsrc */,
+			);
+			name = genRsrc;
+			packageProductDependencies = (
+			);
+			productName = genRsrc;
+			productReference = F4B6A3B62D0F84C00033580D /* genRsrc.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -249,6 +323,9 @@
 					F41BC69B2D0A71FD00E61EDD = {
 						CreatedOnToolsVersion = 16.1;
 						LastSwiftMigration = 1610;
+					};
+					F4B6A3B52D0F84C00033580D = {
+						CreatedOnToolsVersion = 16.1;
 					};
 				};
 			};
@@ -268,6 +345,7 @@
 			targets = (
 				F41BC6512D0A61BA00E61EDD /* Azoth */,
 				F41BC69B2D0A71FD00E61EDD /* AZDemo */,
+				F4B6A3B52D0F84C00033580D /* genRsrc */,
 			);
 		};
 /* End PBXProject section */
@@ -288,6 +366,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F4B6A3B42D0F84C00033580D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -299,6 +384,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F41BC6982D0A71FD00E61EDD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4B6A3B22D0F84C00033580D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -562,6 +654,62 @@
 			};
 			name = Release;
 		};
+		F4B6A3C42D0F84C10033580D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = genRsrc/genRsrc.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Azoth/Frameworks",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainNibFile = MainMenu;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.moebius-tech.genRsrc";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Debug;
+		};
+		F4B6A3C52D0F84C10033580D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = genRsrc/genRsrc.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Azoth/Frameworks",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainNibFile = MainMenu;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.moebius-tech.genRsrc";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -588,6 +736,15 @@
 			buildConfigurations = (
 				F41BC6A92D0A71FE00E61EDD /* Debug */,
 				F41BC6AA2D0A71FE00E61EDD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F4B6A3C32D0F84C10033580D /* Build configuration list for PBXNativeTarget "genRsrc" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F4B6A3C42D0F84C10033580D /* Debug */,
+				F4B6A3C52D0F84C10033580D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -6,7 +6,8 @@
 //
 
 #import <SDL3/SDL.h>
-#include <SDL3_ttf/SDL_ttf.h>
+#import <SDL3_image/SDL_image.h>
+#import <SDL3_ttf/SDL_ttf.h>
 
 #import "AZApp.h"
 #import "AZAppDelegate.h"
@@ -20,7 +21,13 @@ NSString * const kTextureType	= @"texture";
 
 
 @interface AZApp()
+// This is a place to temporarily store things that the renderer (for example)
+// still needs to be alive up until [renderer present] is called, at which
+// time they will be deleted
 @property(strong, nonatomic) NSMutableArray<AZObject *> * 		bin;
+
+// This provides the x,y,w,h metadata for graphical UI items
+@property(strong, nonatomic) NSDictionary *						uiMap;
 @end
 
 @implementation AZApp
@@ -90,14 +97,64 @@ NSString * const kTextureType	= @"texture";
 		|* chance to change the system font path
 		\*********************************************************************/
 		_systemFont = [AZFont systemFontWithsize:_systemFontInfo.size];
-		if (![_systemFont load:_systemFontInfo])
+		if (!_systemFont)
 			{
 			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
 						  "Failed to load system font at %s!",
 						  _systemFontInfo.name.fileSystemRepresentation);
 			}
+
+		/*********************************************************************\
+		|* Similarly the control font
+		\*********************************************************************/
+		_controlFont = [AZFont systemFontWithsize:16];
+		if (!_controlFont)
+			{
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+						  "Failed to load control font at %s!",
+						  _systemFontInfo.name.fileSystemRepresentation);
+			}
+
+		/*********************************************************************\
+		|* Get the texture atlas for the UI and put it into a GPU texture
+		\*********************************************************************/
+		NSString *rsrc = [[NSBundle bundleForClass:[self class]] resourcePath];
+		NSString *atlasPath = [NSString stringWithFormat:@"%@/atlas.png", rsrc];
+		SDL_Surface *atlasSurface = IMG_Load(atlasPath.fileSystemRepresentation);
+		if (!atlasSurface)
+			{
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+						  "Failed to load UI atlas at %s!",
+						  atlasPath.fileSystemRepresentation);
+			}
+		else
+			{
+			_ui = SDL_CreateTextureFromSurface(_renderer, atlasSurface);
+			SDL_DestroySurface(atlasSurface);
+			atlasPath = [NSString stringWithFormat:@"%@/atlas.plist", rsrc];
+			_uiMap = [NSDictionary dictionaryWithContentsOfFile:atlasPath];
+			NSLog(@"uimap:%@", _uiMap);
+			}
 		}
 	}
+
+/*****************************************************************************\
+|* Fill out a box that defines a particular named piece of the UI texture atlas
+\*****************************************************************************/
+- (NSRect) srcRectFor:(NSString *)uiName
+	{
+	NSRect rect = NSZeroRect;
+	NSDictionary *info = [_uiMap objectForKey:uiName];
+	if (info)
+		{
+		rect.origin.x	 	= ((NSNumber *)info[@"x"]).floatValue;
+		rect.origin.y 		= ((NSNumber *)info[@"y"]).floatValue;
+		rect.size.width 	= ((NSNumber *)info[@"w"]).floatValue;
+		rect.size.height	= ((NSNumber *)info[@"h"]).floatValue;
+		}
+	return rect;
+	}
+
 
 /*****************************************************************************\
 |* Handle events

@@ -230,7 +230,15 @@
 	\*************************************************************************/
 	SDL_FRect src 	= SDLFRectFromNSRect(self.bounds);
 	SDL_FRect dst	= SDLFRectFromNSRect(frame);
-	SDL_Rect clip	= SDLRectFromNSRect(frame);
+
+	// We also want to clip to the parent view's frame
+	NSRect parent	= self.superview.frame;
+	p 				= [self.superview convertPoint:parent.origin toView:nil];
+	parent.origin	= p;
+	parent 			= NSIntersectionRect(parent, frame);
+
+	SDL_Rect clip	= SDLRectFromNSRect(parent);
+
 
 	/*************************************************************************\
 	|* Handle the transparency of alpha

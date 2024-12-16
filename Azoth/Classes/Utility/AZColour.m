@@ -256,6 +256,21 @@
 	return colour;
 	}
 
+/*****************************************************************************\
+|* Predefined colours : clear
+\*****************************************************************************/
++ (AZColour *) clearColour
+	{
+	static AZColour *colour = nil;
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken,
+		^{
+		colour = [[AZColour alloc] initWithR:0.f g:0.f b:0.f a:0.f];
+		});
+	return colour;
+	}
+
 
 // MARK: uint8_t accessors
 

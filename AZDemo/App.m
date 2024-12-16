@@ -101,12 +101,15 @@ void _testMouseEvents(void)
 	[v1 setBgColour:[AZColour redColour]];
 	[cv addSubview:v1];
 
-	IdentifiedView *v2 = [[IdentifiedView alloc]
-							initWithFrame:NSMakeRect(100,100, 100, 100)
-								  andName:@"view2"];
-	[v2 setBgColour:[AZColour greenColour]];
-	v2.bgColour.a = 0.5;
-	[v1 addSubview:v2];
+//	IdentifiedView *v2 = [[IdentifiedView alloc]
+//							initWithFrame:NSMakeRect(100,100, 100, 100)
+//								  andName:@"view2"];
+//	[v2 setBgColour:[AZColour greenColour]];
+//	v2.bgColour.a = 0.5;
+//	[v1 addSubview:v2];
 
 	[cv setBgColour:[AZColour orangeColour]];
+
 	}
+
+

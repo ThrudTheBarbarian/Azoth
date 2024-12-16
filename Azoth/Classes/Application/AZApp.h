@@ -14,6 +14,7 @@ extern NSString * const kTextureType;
 
 enum SDL_AppResult;
 union SDL_Event;
+struct SDL_FRect;
 struct SDL_Renderer;
 struct SDL_Texture;
 struct SDL_Window;
@@ -58,6 +59,12 @@ struct SDL_Window;
 \*****************************************************************************/
 - (void) registerTextureForDisposal:(struct SDL_Texture *)texture;
 
+
+/*****************************************************************************\
+|* Fill out a box that defines a particular named piece of the UI texture atlas
+\*****************************************************************************/
+- (NSRect) srcRectFor:(NSString *)uiName;
+
 /*****************************************************************************\
 |* Properties
 \*****************************************************************************/
@@ -81,6 +88,12 @@ struct SDL_Window;
 
 // The system font itself
 @property(strong, nonatomic) AZFont *					systemFont;
+
+// And an appropriately sized control font
+@property(strong, nonatomic) AZFont *					controlFont;
+
+// The UI texture atlas
+@property(assign, nonatomic) struct SDL_Texture *		ui;
 @end
 
 NS_ASSUME_NONNULL_END

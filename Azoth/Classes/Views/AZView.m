@@ -278,6 +278,7 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
+
 	SDL_Renderer *renderer = SDL_GetRenderer(self.window);
 
 	SDL_SetRenderDrawColor(renderer, self.bgColour.red,

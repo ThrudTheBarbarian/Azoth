@@ -140,7 +140,6 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 
 + (nullable AZFont *) fontWithStyle:(AZFontStyle)style
 	{
-	AZApp *app 	 = [AZApp sharedInstance];
 	AZFont *font = [[AZFont alloc] init];
 	if ([font load:style])
 		return font;
@@ -202,51 +201,6 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 			}
 		}
 	return result;
-	}
-
-/*****************************************************************************\
-|* Find a path for the font, or return nil
-\*****************************************************************************/
-- (nullable NSString *) _fetchPathFor:(NSString *)name
-	{
-	NSFileManager *fm = NSFileManager.defaultManager;
-
-	/*************************************************************************\
-	|* If it's an absolute path, use it
-	\*************************************************************************/
-	if ([name hasPrefix:@"/"])
-		return name;
-
-	/*************************************************************************\
-	|* If it's an Azoth-provided font, use it
-	\*************************************************************************/
-	NSString *rsrc = [[NSBundle bundleForClass:[self class]] resourcePath];
-	NSString *path = [NSString stringWithFormat:@"%@/%@.ttf", rsrc, name];
-	if ([fm fileExistsAtPath:path])
-		return path;
-
-	/*************************************************************************\
-	|* If it's a user-app-provided font, use it
-	\*************************************************************************/
-	AZApp *app = AZApp.sharedInstance;
-	if (app.delegate)
-		{
-		NSObject *delegate = (NSObject *)app.delegate;
-		rsrc = [[NSBundle bundleForClass:[delegate class]] resourcePath];
-		NSString *path = [NSString stringWithFormat:@"%@/%@.ttf", rsrc, name];
-		if ([fm fileExistsAtPath:path])
-			return path;
-		}
-
-	/*************************************************************************\
-	|* If it's in the user's Library/Fonts folder, use it
-	\*************************************************************************/
-	path = [NSString stringWithFormat:@"%@/Library/Fonts/%@.ttf",
-			NSHomeDirectory(), name];
-	if ([fm fileExistsAtPath:path])
-		return path;
-
-	return nil;
 	}
 
 /*****************************************************************************\
@@ -366,6 +320,45 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
         }
 
     return ok;
+	}
+
+/*****************************************************************************\
+|* Return the width of a text string in this font
+\*****************************************************************************/
+- (int) textWidthFor:(NSString *)text
+	{
+	if (text == nil)
+		{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+					"text=nil in -textWidthFor...");
+		return 0;
+		}
+
+	int width 		= 0;
+	int lineWidth	= 0;
+	NSInteger len	= text.length;
+
+	for (NSInteger i=0; i<len; i++)
+		{
+		unichar c = [text characterAtIndex:i];
+
+		if (c == '\n')
+			{
+			lineWidth = (lineWidth > width) ? lineWidth : width;
+			width = 0;
+			continue;
+			}
+		AZGlyphData *glyph = [self glyphDataFor:c];
+		if (glyph)
+			width += glyph.rect.size.width;
+		else
+			{
+			glyph = [self glyphDataFor:' '];
+			width += glyph.rect.size.width;
+			}
+		}
+	lineWidth = (lineWidth > width) ? lineWidth : width;
+	return lineWidth;
 	}
 
 /*****************************************************************************\
@@ -754,6 +747,51 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 		ok = NO;
 
     return ok;
+	}
+
+/*****************************************************************************\
+|* Find a path for the font, or return nil
+\*****************************************************************************/
+- (nullable NSString *) _fetchPathFor:(NSString *)name
+	{
+	NSFileManager *fm = NSFileManager.defaultManager;
+
+	/*************************************************************************\
+	|* If it's an absolute path, use it
+	\*************************************************************************/
+	if ([name hasPrefix:@"/"])
+		return name;
+
+	/*************************************************************************\
+	|* If it's an Azoth-provided font, use it
+	\*************************************************************************/
+	NSString *rsrc = [[NSBundle bundleForClass:[self class]] resourcePath];
+	NSString *path = [NSString stringWithFormat:@"%@/%@.ttf", rsrc, name];
+	if ([fm fileExistsAtPath:path])
+		return path;
+
+	/*************************************************************************\
+	|* If it's a user-app-provided font, use it
+	\*************************************************************************/
+	AZApp *app = AZApp.sharedInstance;
+	if (app.delegate)
+		{
+		NSObject *delegate = (NSObject *)app.delegate;
+		rsrc = [[NSBundle bundleForClass:[delegate class]] resourcePath];
+		NSString *path = [NSString stringWithFormat:@"%@/%@.ttf", rsrc, name];
+		if ([fm fileExistsAtPath:path])
+			return path;
+		}
+
+	/*************************************************************************\
+	|* If it's in the user's Library/Fonts folder, use it
+	\*************************************************************************/
+	path = [NSString stringWithFormat:@"%@/Library/Fonts/%@.ttf",
+			NSHomeDirectory(), name];
+	if ([fm fileExistsAtPath:path])
+		return path;
+
+	return nil;
 	}
 
 @end

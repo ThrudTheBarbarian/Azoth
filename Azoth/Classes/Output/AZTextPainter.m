@@ -80,31 +80,7 @@
 		}
 
 	EXTRACT_VARARGS(text, fmt);
-	int width 		= 0;
-	int lineWidth	= 0;
-	NSInteger len	= text.length;
-
-	for (NSInteger i=0; i<len; i++)
-		{
-		unichar c = [text characterAtIndex:i];
-
-		if (c == '\n')
-			{
-			lineWidth = (lineWidth > width) ? lineWidth : width;
-			width = 0;
-			continue;
-			}
-		AZGlyphData *glyph = [_font glyphDataFor:c];
-		if (glyph)
-			width += glyph.rect.size.width;
-		else
-			{
-			glyph = [_font glyphDataFor:' '];
-			width += glyph.rect.size.width;
-			}
-		}
-	lineWidth = (lineWidth > width) ? lineWidth : width;
-	return lineWidth;
+	return [_font textWidthFor:text];
 	}
 
 /*****************************************************************************\

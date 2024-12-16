@@ -88,6 +88,12 @@ typedef struct
 			   nsrect.size.width,											\
 			   nsrect.size.height}
 
+#define SDL_FRECT(nsrect)													\
+	(SDL_FRect){nsrect.origin.x,											\
+			    nsrect.origin.y,											\
+			    nsrect.size.width,											\
+			    nsrect.size.height}
+
 #define NS_RECT(sdlrect)													\
 	NSMakeRect(sdlrect.x, sdlrect.y, sdlrect.w, sdlrect.h)
 
