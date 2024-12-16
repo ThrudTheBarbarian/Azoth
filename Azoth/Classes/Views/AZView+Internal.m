@@ -14,6 +14,7 @@
 #import "AZPainter.h"
 #import "AZView.h"
 #import "AZView+Internal.h"
+#import "AZWindow.h"
 
 @implementation AZView (Internal)
 
@@ -136,7 +137,7 @@
 	if (self.superview == nil)
 		{
 		BOOL resize = NO;
-		NSUInteger windowFlags = SDL_GetWindowFlags(self.window);
+		NSUInteger windowFlags = SDL_GetWindowFlags(self.window.window);
 		if (windowFlags & SDL_WINDOW_RESIZABLE)
 			resize = YES;
 
@@ -151,7 +152,7 @@
 			}
 		else
 			{
-			if (!SDL_GetWindowMaximumSize(self.window, &w, &h))
+			if (!SDL_GetWindowMaximumSize(self.window.window, &w, &h))
 				{
 				ok = NO;
 				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -175,10 +176,10 @@
 	\*************************************************************************/
 	if (w*h > 0)
 		{
-		SDL_Renderer *renderer = AZApp.sharedInstance.renderer;
+		SDL_Renderer *renderer = AZApp.sharedInstance.window.renderer;
 		if (self.bg)
 			SDL_DestroyTexture(self.bg);
-			
+
 		self.bg		 = SDL_CreateTexture(renderer,
 										 SDL_PIXELFORMAT_RGBA8888,
 										 SDL_TEXTUREACCESS_TARGET,
@@ -214,7 +215,7 @@
 \*****************************************************************************/
 - (void) _renderToScreen
 	{
-	SDL_Renderer *renderer = AZApp.sharedInstance.renderer;
+	SDL_Renderer *renderer = AZApp.sharedInstance.window.renderer;
 
 	/*************************************************************************\
 	|* Draw to the screen

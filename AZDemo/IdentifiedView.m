@@ -23,13 +23,31 @@
 	if (self = [super initWithFrame:frame])
 		{
 		self.identifier = name;
-		self.autoresizingMask = AZViewHeightSizable|AZViewMinYMargin;
+		self.autoresizingMask = AZViewHeightSizable|AZViewWidthSizable;
 
 		_rsrcDir = [[NSBundle bundleForClass:[self class]] resourcePath];
 
 		NSString *path = [_rsrcDir stringByAppendingFormat:@"/texture.png"];
 		_surface = IMG_Load([path fileSystemRepresentation]);
 		}
+
+	AZButton *btn = [AZButton buttonWithText:@"Button test" at:NSMakePoint(30,220)];
+	[btn setTarget:self];
+	[btn setAction:@selector(buttonPressed:)];
+	[self addSubview:btn];
+
+	NSRect r = NSMakeRect(30, 250, 100, 29);
+	AZTextField *tf = [AZTextField textfieldWithFrame:r];
+	[tf setTarget:self];
+	[tf setAction:@selector(buttonPressed:)];
+	[self addSubview:tf];
+
+	r = NSMakeRect(30, 280, 100, 29);
+	tf = [AZTextField textfieldWithFrame:r];
+	[tf setTarget:self];
+	[tf setAction:@selector(buttonPressed:)];
+	[self addSubview:tf];
+
 	return self;
 	}
 
@@ -57,7 +75,7 @@
 
 	NSLog(@"Up in %@ at (%d,%d) (from %d,%d)",
 		self.identifier, (int)p.x, (int)p.y, (int)e->x, (int)e->y);
-	[[AZView contentViewForWindow:self.window] setNeedsDisplay:YES];
+	[[AZWindow contentViewForWindow:self.window] setNeedsDisplay:YES];
 	return YES;
 	}
 
@@ -131,23 +149,6 @@
 	NSRect r = NSMakeRect(35, 15, 250, 190);
 	[painter rectangleWithRect:r colour:[AZColour redColour]];
 	[painter drawInBox:r text:text];
-
-	AZButton *btn = [AZButton buttonWithText:@"Button test" at:NSMakePoint(30,220)];
-	[btn setTarget:self];
-	[btn setAction:@selector(buttonPressed:)];
-	[self addSubview:btn];
-
-	r = NSMakeRect(30, 250, 100, 29);
-	AZTextField *tf = [AZTextField textfieldWithFrame:r];
-	[tf setTarget:self];
-	[tf setAction:@selector(buttonPressed:)];
-	[self addSubview:tf];
-
-	r = NSMakeRect(30, 280, 100, 29);
-	tf = [AZTextField textfieldWithFrame:r];
-	[tf setTarget:self];
-	[tf setAction:@selector(buttonPressed:)];
-	[self addSubview:tf];
 	}
 
 

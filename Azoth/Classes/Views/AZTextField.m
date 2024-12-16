@@ -12,6 +12,7 @@
 #import "AZNotifications.h"
 #import "AZTextField.h"
 #import "AZTypes.h"
+#import "AZWindow.h"
 
 enum
 	{
@@ -143,7 +144,7 @@ static int 			_lineHeight = 29;
 	SDL_FRect dBR		= {W-sBR.w, 0, sBR.w, sBR.h};
 
 	SDL_Texture *src	= AZApp.sharedInstance.ui;
-	SDL_Renderer *rndr	= AZApp.sharedInstance.renderer;
+	SDL_Renderer *rndr	= AZApp.sharedInstance.window.renderer;
 
 	SDL_SetRenderDrawBlendMode(rndr, SDL_BLENDMODE_ADD);
 

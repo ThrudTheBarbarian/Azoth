@@ -14,7 +14,7 @@
 \*****************************************************************************/
 - (instancetype) initWithFrame:(NSRect)frame
 	{
-	if (self = [super init])
+	if (self = [super initWithFrame:frame])
 		{
 		self.stringValue 	= @"";
 		self.state		 	= ControlStateNormal;

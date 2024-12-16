@@ -12,6 +12,7 @@
 #import "AZColour.h"
 #import "AZFont.h"
 #import "AZPainter.h"
+#import "AZWindow.h"
 
 #define BUTTON_HEIGHT 		25
 #define BUTTON_LEADING   	12
@@ -96,7 +97,7 @@ static SDL_FRect	_bRight[STATE_NUM];
 	SDL_FRect dstR		= {srcL.w+stretch, 0, srcR.w, srcR.h};
 
 	SDL_Texture *src	= AZApp.sharedInstance.ui;
-	SDL_Renderer *rndr	= AZApp.sharedInstance.renderer;
+	SDL_Renderer *rndr	= AZApp.sharedInstance.window.renderer;
 
 	SDL_SetRenderDrawBlendMode(rndr, SDL_BLENDMODE_ADD);
 	SDL_RenderTexture(rndr , src, &srcL, &dstL);

@@ -61,6 +61,7 @@
 				Classes/Application/AZApp.h,
 				Classes/Application/AZAppDelegate.h,
 				Classes/Application/AZTypes.h,
+				Classes/Application/AZWindow.h,
 				Classes/Base/AZControl.h,
 				Classes/Base/AZResponder.h,
 				Classes/Output/AZFont.h,
@@ -95,6 +96,13 @@
 				Frameworks/SDL3.framework,
 			);
 			target = F4B6A3B52D0F84C00033580D /* genRsrc */;
+		};
+		F4B6AD8F2D10D5080033580D /* Exceptions for "AZDemo" folder in "AZDemo" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				app.no,
+			);
+			target = F41BC69B2D0A71FD00E61EDD /* AZDemo */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -143,6 +151,13 @@
 				Frameworks/SDL3.framework,
 			);
 		};
+		F4B6AD902D10D5080033580D /* Exceptions for "AZDemo" folder in "Compile Sources" phase from "AZDemo" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = F41BC6982D0A71FD00E61EDD /* Sources */;
+			membershipExceptions = (
+				app.no,
+			);
+		};
 /* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -161,6 +176,8 @@
 		F41BC69D2D0A71FD00E61EDD /* AZDemo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				F4B6AD8F2D10D5080033580D /* Exceptions for "AZDemo" folder in "AZDemo" target */,
+				F4B6AD902D10D5080033580D /* Exceptions for "AZDemo" folder in "Compile Sources" phase from "AZDemo" target */,
 				F4B6A1252D0A9CDB0033580D /* Exceptions for "AZDemo" folder in "Embed Frameworks" phase from "AZDemo" target */,
 			);
 			path = AZDemo;

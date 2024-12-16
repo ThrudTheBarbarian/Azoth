@@ -17,6 +17,7 @@
 #import "AZObject.h"
 #import "AZView.h"
 #import "AZView+Internal.h"
+#import "AZWindow.h"
 
 NSString * const kTextureType	= @"texture";
 
@@ -64,8 +65,52 @@ NSString * const kTextureType	= @"texture";
 /*****************************************************************************\
 |* Application startup code
 \*****************************************************************************/
-- (void) startWithArgc:(int)argc argv:(char **)argv state:(void *)state
+- (void) startWithArgc:(int)argc argv:(char **)argv
 	{
+	/*************************************************************************\
+    |* Create the window
+    \*************************************************************************/
+	_window = [AZWindow windowWithContentRect:_initialFrame
+									styleMask:_windowFlags];
+    if (_window == nil)
+		{
+        SDL_Log("Couldn't create main window: %s", SDL_GetError());
+		_viability = SDL_APP_FAILURE;
+		}
+	else
+		[_window installContentView];
+
+	/*************************************************************************\
+	|* Get the texture atlas for the UI and put it into a GPU texture
+	\*************************************************************************/
+	NSString *rsrc = [[NSBundle bundleForClass:[self class]] resourcePath];
+	NSString *atlasPath = [NSString stringWithFormat:@"%@/atlas.png", rsrc];
+	SDL_Surface *atlasSurface = IMG_Load(atlasPath.fileSystemRepresentation);
+	if (!atlasSurface)
+		{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+					  "Failed to load UI atlas at %s!",
+					  atlasPath.fileSystemRepresentation);
+        _viability =  SDL_APP_FAILURE;
+		}
+	else
+		{
+		_ui = SDL_CreateTextureFromSurface(_window.renderer, atlasSurface);
+		SDL_DestroySurface(atlasSurface);
+		atlasPath = [NSString stringWithFormat:@"%@/atlas.plist", rsrc];
+		_uiMap = [NSDictionary dictionaryWithContentsOfFile:atlasPath];
+		if (!_uiMap)
+			{
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+						  "Failed to load UI atlas metdata at %s!",
+						  atlasPath.fileSystemRepresentation);
+			_viability =  SDL_APP_FAILURE;
+			}
+		}
+
+	/*************************************************************************\
+    |* Let the delegate say what the system font is going to be
+    \*************************************************************************/
 	NSString *name 	= @"applicationDidFinishLaunching:";
 	SEL launch 		= NSSelectorFromString(name);
 	if (_delegate && [_delegate respondsToSelector:launch])
@@ -115,27 +160,6 @@ NSString * const kTextureType	= @"texture";
 						  "Failed to load control font at %s!",
 						  _systemFontInfo.name.fileSystemRepresentation);
 			}
-
-		/*********************************************************************\
-		|* Get the texture atlas for the UI and put it into a GPU texture
-		\*********************************************************************/
-		NSString *rsrc = [[NSBundle bundleForClass:[self class]] resourcePath];
-		NSString *atlasPath = [NSString stringWithFormat:@"%@/atlas.png", rsrc];
-		SDL_Surface *atlasSurface = IMG_Load(atlasPath.fileSystemRepresentation);
-		if (!atlasSurface)
-			{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-						  "Failed to load UI atlas at %s!",
-						  atlasPath.fileSystemRepresentation);
-			}
-		else
-			{
-			_ui = SDL_CreateTextureFromSurface(_renderer, atlasSurface);
-			SDL_DestroySurface(atlasSurface);
-			atlasPath = [NSString stringWithFormat:@"%@/atlas.plist", rsrc];
-			_uiMap = [NSDictionary dictionaryWithContentsOfFile:atlasPath];
-			//NSLog(@"uimap:%@", _uiMap);
-			}
 		}
 	}
 
@@ -162,7 +186,7 @@ NSString * const kTextureType	= @"texture";
 - (SDL_AppResult) handleEvent:(SDL_Event *)e withAppState:(void *)state
 	{
 	SDL_AppResult result 	= SDL_APP_CONTINUE;
-	AZView *cv 				= [AZView contentViewForWindow:_window];
+	AZView *cv 				= [AZWindow contentViewForWindow:_window];
 	NSPoint p				= (NSPoint){-1,-1};
 
 	switch (e->type)
@@ -202,7 +226,7 @@ NSString * const kTextureType	= @"texture";
 		case SDL_EVENT_WINDOW_RESIZED:
 			{
 			SDL_Window *win = SDL_GetWindowFromID(e->window.windowID);
-			AZView *cv = [AZView contentViewForWindow:win];
+			AZView *cv = [AZWindow contentViewForSDLWindow:win];
 			int w = e->window.data1;
 			int h = e->window.data2;
 
@@ -223,19 +247,21 @@ NSString * const kTextureType	= @"texture";
 \*****************************************************************************/
 - (SDL_AppResult) nextFrameWithAppState:(void *)state
 	{
+	SDL_Renderer *R = _window.renderer;
+
 	// Before we render anything into the *textures* make sure there is
 	// no outstanding blending effect from the last cycle around
-	SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_NONE);
+	SDL_SetRenderDrawBlendMode(R, SDL_BLENDMODE_NONE);
 
 	// Redraw any of the subviews that need it into their own textures
-	AZView *view = [AZView contentViewForWindow:_window];
+	AZView *view = [AZWindow contentViewForWindow:_window];
 	if (!NSEqualRects(view.dirty, NSZeroRect))
 		[view _drawDirtyRect];
 	[view redrawSubViewsIfNecessary];
 
 	// Get the top-level view, draw it as the background
 	SDL_FRect rect = SDLFRectFromNSRect(view.bounds);
-	SDL_RenderTexture(_renderer, view.bg, &rect, &rect);
+	SDL_RenderTexture(R, view.bg, &rect, &rect);
 
 	// Run through the views in reverse order, telling them to render their
 	// subviews to the screen
@@ -243,7 +269,7 @@ NSString * const kTextureType	= @"texture";
 		[subview _renderToScreen];
 
 	// Tell the renderer we're done
-	SDL_RenderPresent(_renderer);
+	SDL_RenderPresent(R);
 
 	// If there's anything in the bin, get rid of it safely now
 	[self _purgeBin];
@@ -266,6 +292,37 @@ NSString * const kTextureType	= @"texture";
 	{
 	AZObject *obj = [AZObject objectWithPointer:texture andHint:kTextureType];
 	[_bin addObject:obj];
+	}
+
+// MARK: SDL callbacks
+
+/*****************************************************************************\
+|* Callback: This function runs when a new event occurs
+\*****************************************************************************/
+SDL_AppResult SDL_AppEvent(void *appState, SDL_Event *event)
+	{
+	AZApp *app = AZApp.sharedInstance;
+	return [app handleEvent:event withAppState:appState];
+	}
+
+/*****************************************************************************\
+|* Callback: process the next frame
+\*****************************************************************************/
+SDL_AppResult SDL_AppIterate(void *appState)
+	{
+	AZApp *app = AZApp.sharedInstance;
+	return [app nextFrameWithAppState:appState];
+	}
+
+/*****************************************************************************\
+|* Callback: handle death gracefully
+\*****************************************************************************/
+void SDL_AppQuit(void *appState, SDL_AppResult result)
+	{
+	AZApp *app = AZApp.sharedInstance;
+	[app terminateBecause:result withAppState:appState];
+
+    /* SDL will clean up the window/renderer for us. */
 	}
 
 

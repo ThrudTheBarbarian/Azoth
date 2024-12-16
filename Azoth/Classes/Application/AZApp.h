@@ -20,6 +20,7 @@ struct SDL_Texture;
 struct SDL_Window;
 
 @class AZFont;
+@class AZWindow;
 
 @protocol AZAppDelegate;
 
@@ -33,9 +34,7 @@ struct SDL_Window;
 /*****************************************************************************\
 |* Startup code
 \*****************************************************************************/
-- (void) startWithArgc:(int)argc
-				  argv:(char *_Nonnull *_Nonnull)argv
-				 state:(void * _Nullable)state;
+- (void) startWithArgc:(int)argc argv:(char *_Nonnull *_Nonnull)argv;
 
 /*****************************************************************************\
 |* Handle SDL events as they come in
@@ -69,11 +68,8 @@ struct SDL_Window;
 |* Properties
 \*****************************************************************************/
 
-// The main window, where the rendering happens
-@property(assign, nonatomic) struct SDL_Window *		window;
-
-// The renderer for the window
-@property(assign, nonatomic) struct SDL_Renderer *		renderer;
+// The main application window
+@property(strong, nonatomic) AZWindow *					window;
 
 // The delegate for the application
 @property(strong, nonatomic) id<AZAppDelegate>			delegate;
@@ -94,6 +90,14 @@ struct SDL_Window;
 
 // The UI texture atlas
 @property(assign, nonatomic) struct SDL_Texture *		ui;
+
+// The Initial frame at startup. If not set, a default
+// 640x480 size will be used
+@property(assign, nonatomic) NSRect						initialFrame;
+
+// Any window flags to be passed to the call
+// SDL_CreateWindowAndRenderer
+@property(assign, nonatomic) NSInteger					windowFlags;
 @end
 
 NS_ASSUME_NONNULL_END

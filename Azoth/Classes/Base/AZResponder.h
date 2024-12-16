@@ -9,7 +9,60 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/*****************************************************************************\
+|* SDL event structures/unions
+\*****************************************************************************/
+union SDL_Event;
+struct SDL_MouseButtonEvent;
+struct SDL_MouseMotionEvent;
+struct SDL_MouseWheelEvent;
+
 @interface AZResponder : NSObject
+
+
+// MARK: First responder
+
+/*****************************************************************************\
+|* indicates whether we accept first responder status
+\*****************************************************************************/
+- (BOOL) acceptsFirstResponder;
+
+
+// MARK: Event handling
+
+/*****************************************************************************\
+|* Mouse-button-down event, return YES if we consume the event
+\*****************************************************************************/
+- (BOOL) mouseDown:(struct SDL_MouseButtonEvent *)e;
+
+/*****************************************************************************\
+|* Mouse-button-up event, return YES if we consume the event
+\*****************************************************************************/
+- (BOOL) mouseUp:(struct SDL_MouseButtonEvent *)e;
+
+/*****************************************************************************\
+|* Mouse-moved event, return YES if we consume the event
+\*****************************************************************************/
+- (BOOL) mouseMoved:(struct SDL_MouseMotionEvent *)e;
+
+/*****************************************************************************\
+|* Mouse-dragged event, return YES if we consume the event
+\*****************************************************************************/
+- (BOOL) mouseDragged:(struct SDL_MouseMotionEvent *)e;
+
+/*****************************************************************************\
+|* Mouse-wheel event, return YES if we consume the event
+\*****************************************************************************/
+- (BOOL) mouseWheeled:(struct SDL_MouseWheelEvent *)e;
+
+
+
+/*****************************************************************************\
+|* Properties
+\*****************************************************************************/
+
+// Identifier, purely for debugging
+@property(strong, nonatomic) NSString *						identifier;
 
 @end
 

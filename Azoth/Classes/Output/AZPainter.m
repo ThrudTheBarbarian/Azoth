@@ -14,6 +14,7 @@
 #import "AZPainter.h"
 #import "AZTextPainter.h"
 #import "AZView.h"
+#import "AZWindow.h"
 
 #define AAlevels 256
 #define AAbits 8
@@ -82,7 +83,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 - (BOOL) execute
 	{
 	AZApp *app		= [AZApp sharedInstance];
-	_renderer 		= app.renderer;
+	_renderer 		= app.window.renderer;
 	if (_renderer == NULL)
 		{
 		SDL_LogError(SDL_LOG_CATEGORY_GPU, "Cannot get window renderer");

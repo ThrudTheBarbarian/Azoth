@@ -28,19 +28,17 @@
 #import <Azoth/AZResponder.h>
 #import <Azoth/AZTypes.h>
 
+
 /*****************************************************************************\
 |* Declare the types we're using from SDL3, because we can't import the
 |* header file and keep framework modularity
 \*****************************************************************************/
-union SDL_Event;
-struct SDL_MouseButtonEvent;
-struct SDL_MouseMotionEvent;
-struct SDL_MouseWheelEvent;
 struct SDL_Texture;
 struct SDL_Window;
 
 @class AZColour;
 @class AZPainter;
+@class AZWindow;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -63,12 +61,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void) redrawSubViewsIfNecessary;
 
 /*****************************************************************************\
-|* Return the contentView for any given SDL_Window. If one does not exist it
-|* will be created and returned
-\*****************************************************************************/
-+ (AZView *) contentViewForWindow:(struct SDL_Window *)window;
-
-/*****************************************************************************\
 |* Add a subview to the current view
 \*****************************************************************************/
 - (BOOL) addSubview:(AZView *)view;
@@ -88,33 +80,6 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter;
 
-
-// MARK: Event handling
-
-/*****************************************************************************\
-|* Mouse-button-down event, return YES if we consume the event
-\*****************************************************************************/
-- (BOOL) mouseDown:(struct SDL_MouseButtonEvent *)e;
-
-/*****************************************************************************\
-|* Mouse-button-up event, return YES if we consume the event
-\*****************************************************************************/
-- (BOOL) mouseUp:(struct SDL_MouseButtonEvent *)e;
-
-/*****************************************************************************\
-|* Mouse-moved event, return YES if we consume the event
-\*****************************************************************************/
-- (BOOL) mouseMoved:(struct SDL_MouseMotionEvent *)e;
-
-/*****************************************************************************\
-|* Mouse-dragged event, return YES if we consume the event
-\*****************************************************************************/
-- (BOOL) mouseDragged:(struct SDL_MouseMotionEvent *)e;
-
-/*****************************************************************************\
-|* Mouse-wheel event, return YES if we consume the event
-\*****************************************************************************/
-- (BOOL) mouseWheeled:(struct SDL_MouseWheelEvent *)e;
 
 
 
@@ -142,8 +107,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 
-
-// MARK: Properties
+/*****************************************************************************\
+|* Properties
+\*****************************************************************************/
 
 // The position and size of the view in its parent
 @property(assign, nonatomic) NSRect 						frame;
@@ -159,10 +125,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(strong, nonatomic, nullable) AZView *				superview;
 
 // The window that this view is attached to
-@property(assign, nonatomic, nullable) struct SDL_Window *	window;
-
-// Identifier, purely for debugging
-@property(strong, nonatomic) NSString *						identifier;
+@property(assign, nonatomic, nullable) AZWindow	*			window;
 
 // Backing texture for drawing into
 @property(assign, nonatomic, nullable) struct SDL_Texture *	bg;

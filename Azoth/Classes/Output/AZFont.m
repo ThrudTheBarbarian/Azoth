@@ -14,6 +14,7 @@
 #import "AZGlyphData.h"
 #import "AZObject.h"
 #import "AZTypes.h"
+#import "AZWindow.h"
 
 #define LOAD_MAX_SURFACES 		10
 #define CACHE_PADDING			1
@@ -95,7 +96,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 	{
 	if (self = [super init])
 		{
-		_renderer		= AZApp.sharedInstance.renderer;
+		_renderer		= AZApp.sharedInstance.window.renderer;
 		_extents 		= [NSMutableDictionary new];
 		_glyphs			= [NSMutableArray new];
 		_lastGlyph		= [AZGlyphData new];

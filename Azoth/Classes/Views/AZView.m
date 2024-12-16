@@ -13,11 +13,7 @@
 #import "AZPainter.h"
 #import "AZView.h"
 #import "AZView+Internal.h"
-
-/*****************************************************************************\
-|* Store the top-level content-views for each window we know about
-\*****************************************************************************/
-static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
+#import "AZWindow.h"
 
 /*****************************************************************************\
 |* "Private" properties
@@ -38,7 +34,6 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 		_bounds					= frame;
 		_bounds.origin 			= (NSPoint){0,0};
 		_subviews				= [NSMutableArray new];
-		_identifier				= @"";
 		_superview				= nil;
 		_bg 					= NULL;
 		_bgColour				= [AZColour blackColour];
@@ -116,69 +111,8 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 
 
 
-// MARK: Event handling
-
-/*****************************************************************************\
-|* Mouse-button-down event, return YES if we consume the event
-\*****************************************************************************/
-- (BOOL) mouseDown:(struct SDL_MouseButtonEvent *)e
-	{ return NO; }
-
-/*****************************************************************************\
-|* Mouse-button-up event, return YES if we consume the event
-\*****************************************************************************/
-- (BOOL) mouseUp:(struct SDL_MouseButtonEvent *)e
-	{ return NO; }
-
-/*****************************************************************************\
-|* Mouse-moved event, return YES if we consume the event
-\*****************************************************************************/
-- (BOOL) mouseMoved:(struct SDL_MouseMotionEvent *)e
-	{ return NO; }
-
-/*****************************************************************************\
-|* Mouse-dragged event, return YES if we consume the event
-\*****************************************************************************/
-- (BOOL) mouseDragged:(struct SDL_MouseMotionEvent *)e
-	{ return NO; }
-
-/*****************************************************************************\
-|* Mouse-wheel event, return YES if we consume the event
-\*****************************************************************************/
-- (BOOL) mouseWheeled:(struct SDL_MouseWheelEvent *)e;
-	{ return NO; }
-
-
-
 // MARK: View processing
 
-/*****************************************************************************\
-|* Return the contentView for any given SDL_Window. If one does not exist it
-|* will be created and returned
-\*****************************************************************************/
-+ (AZView *) contentViewForWindow:(SDL_Window *)window
-	{
-	static dispatch_once_t onceToken;
-	dispatch_once(&onceToken,
-		^{
-		_contentViews = [NSMutableDictionary new];
-		});
-
-	NSNumber *windowId 		= @(SDL_GetWindowID(window));
-	AZView * contentView 	= [_contentViews objectForKey:windowId];
-	if (contentView == nil)
-		{
-		int w, h;
-		SDL_GetWindowSize(window, &w, &h);
-		NSRect frame			= (NSRect){{0,0}, {w,h}};
-		contentView 			= [AZView viewWithFrame:frame];
-		contentView.window		= window;
-		_contentViews[windowId] = contentView;
-		contentView.isOpaque 	= YES;
-		[contentView _installBackingTexture];
-		}
-	return contentView;
-	}
 
 /*****************************************************************************\
 |* Add a subview to the list of views
@@ -279,8 +213,7 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
-
-	SDL_Renderer *renderer = SDL_GetRenderer(self.window);
+	SDL_Renderer *renderer = SDL_GetRenderer(self.window.window);
 
 	SDL_SetRenderDrawColor(renderer, self.bgColour.red,
 									 self.bgColour.green,
