@@ -23,7 +23,7 @@
 	if (self = [super initWithFrame:frame])
 		{
 		self.identifier = name;
-		self.autoresizingMask = AZViewWidthSizable;
+		self.autoresizingMask = AZViewHeightSizable|AZViewMinYMargin;
 
 		_rsrcDir = [[NSBundle bundleForClass:[self class]] resourcePath];
 
@@ -120,18 +120,19 @@
 //	[painter setTextColour:[AZColour redColour]];
 //	[painter drawAtX:450 y:300 format:@"Aiiiiiie! says %@", @"Simon"];
 
-	[painter setTextAlignment:AZFONT_HALIGN_RIGHT];
-	NSString * text = @"The quick brown fox jumped over the lazy dog who "
+	[painter setTextAlignment:AZFONT_HALIGN_LEFT];
+	NSString * text = @"Just a test of reformatting text to be in a column\n\n"
+					   "The quick brown fox jumped over the lazy dog who "
 					   "barely batted an eye let alone ran after the fox, "
 					   "and who are we to say that this is not the correct "
 					   "behaviour, I mean the dog still lives and the fox is "
 					   "happy too so ... Maybe it's all for the best";
 
-	NSRect r = NSMakeRect(250, 50, 250, 300);
+	NSRect r = NSMakeRect(35, 15, 250, 190);
 	[painter rectangleWithRect:r colour:[AZColour redColour]];
 	[painter drawInBox:r text:text];
 
-	AZButton *btn = [AZButton buttonWithText:@"Hi how are we doing today ? !!!" at:NSMakePoint(430,360)];
+	AZButton *btn = [AZButton buttonWithText:@"Button test" at:NSMakePoint(30,220)];
 	[btn setTarget:self];
 	[btn setAction:@selector(buttonPressed:)];
 	[self addSubview:btn];

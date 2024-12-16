@@ -33,8 +33,8 @@
 	SDL_Renderer *renderer;
 
     if (!SDL_CreateWindowAndRenderer("Demo app",
-									 1280,
-									 960,
+									 640,
+									 480,
 									 SDL_WINDOW_RESIZABLE,
 									 &window,
 									 &renderer))

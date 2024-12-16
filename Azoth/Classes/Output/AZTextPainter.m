@@ -227,14 +227,29 @@
 	int w 							  = 0;
 	NSMutableArray<NSString *> *lines = [NSMutableArray new];
 	NSMutableString *line 			  = [NSMutableString new];
-	NSArray<NSString *> *words 		  = [text componentsSeparatedByString:@" "];
+	NSArray *linebroken				  = [text componentsSeparatedByString:@"\n"];
+	NSMutableArray *words			  = [NSMutableArray new];
+	for (NSString *txt in linebroken)
+		{
+		NSArray<NSString *> *txtWords   = [txt componentsSeparatedByString:@" "];
+		[words addObjectsFromArray:txtWords];
+		if (keep)
+			[words addObject:@"\n"];
+		}
+
 	int spaceWidth					  = [self textWidthFor:@" "];
 
 	for (NSString *word in words)
 		{
 		int wordWidth 		= [self textWidthFor:word];
 
-		if (w == 0)
+		if ([word isEqualToString:@"\n"])
+			{
+			[lines addObject:[line copy]];
+			[line setString:@""];
+			w = 0;
+			}
+		else if (w == 0)
 			{
 			[line appendString:word];
 			w += wordWidth;
@@ -250,8 +265,6 @@
 			[lines addObject:[line copy]];
 			[line setString:word];
 			w = wordWidth;
-			if (keep)
-				[lines addObject:@""];
 			}
 		}
 	if (line.length > 0)

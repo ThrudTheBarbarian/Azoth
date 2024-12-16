@@ -156,7 +156,6 @@ NSString * const kTextureType	= @"texture";
 	return rect;
 	}
 
-
 /*****************************************************************************\
 |* Handle events
 \*****************************************************************************/
@@ -210,7 +209,6 @@ NSString * const kTextureType	= @"texture";
 			NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
 			[nc postNotificationName:AZRootViewWillResizeNotification object:cv];
 			[cv setFrame:NSMakeRect(0,0,w,h)];
-
 			break;
 			}
 		}
@@ -218,6 +216,7 @@ NSString * const kTextureType	= @"texture";
 	/* carry on with the program! */
 	return result;
 	}
+
 
 /*****************************************************************************\
 |* Handle redraw

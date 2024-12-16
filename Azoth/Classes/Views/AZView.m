@@ -319,10 +319,8 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 - (void) resizeSubviewsWithOldSize:(NSSize)size
 	{
 	for (AZView *subview in self.subviews)
-		{
 		if ([subview resizeWithOldSuperviewSize:size])
 			[subview resizeSubviewsWithOldSize:subview.frame.size];
-		}
 	}
 
 - (BOOL) resizeWithOldSuperviewSize:(NSSize)size
@@ -339,7 +337,7 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 
 	NSRect frame = self.frame;
 
-	// Distribute the gains fairly, so see how many <--> areas can change
+	// Distribute the gains fairly, so see how many LCR areas can change
 	int count 	= (left ? 1 : 0) + (center ? 1 : 0)  + (right ? 1 : 0);
 	int done  	= 0;
 	if (count > 0)
@@ -347,8 +345,7 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 		int ddx = dx/count;
 		if (left)
 			{
-			frame.origin.x -= ddx;
-			frame.size.width += ddx;
+			frame.origin.x += ddx;
 			done ++;
 			dx -= ddx;
 			}
@@ -363,12 +360,48 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 		delta = (done == count) ? dx : ddx;
 
 		if (right)
-			{
-			frame.size.width += delta;
 			dx -= delta;
-			}
+
 		if (dx != 0)
-			NSLog(@"Error in width calcs (dx=%d)", dx);
+			SDL_Log("Error in width resizing calculation (dx=%d,%s%s%s)",
+					dx, (left ? "L" : "-"), (center ? "C" : "-"),
+					(right ? "R" : "-"));
+		}
+
+	// Same story for the TCB areas
+	BOOL top 	= (self.autoresizingMask & AZViewMaxYMargin);
+	center		= (self.autoresizingMask & AZViewHeightSizable);
+	BOOL bottom	= (self.autoresizingMask & AZViewMinYMargin);
+
+	count 		= (top ? 1 : 0) + (center ? 1 : 0)  + (bottom ? 1 : 0);
+	done  		= 0;
+
+	if (count > 0)
+		{
+		int ddy = dy/count;
+		if (bottom)
+			{
+			frame.origin.y += ddy;
+			done ++;
+			dy -= ddy;
+			}
+		int delta = (done == count-1) ? dy : ddy;
+
+		if (center)
+			{
+			frame.size.height += delta;
+			done ++;
+			dy -= delta;
+			}
+		delta = (done == count-1) ? dy : ddy;
+
+		if (top)
+			dy -= delta;
+
+		if (dy != 0)
+			SDL_Log("Error in height resizing calculation (dy=%d,%s%s%s)",
+					dy, (top ? "T" : "-"), (center ? "C" : "-"),
+					(bottom ? "B" : "-"));
 		}
 
 	// Finally, set the frame
