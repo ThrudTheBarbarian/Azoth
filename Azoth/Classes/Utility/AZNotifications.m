@@ -7,5 +7,7 @@
 
 #import "AZNotifications.h"
 
-NSString * const AZRootViewWillResizeNotification = @"AZ:ResizeRootView";
+NSString * const AZRootViewWillResizeNotification 	= @"AZ:ResizeRootView";
+NSString * const AZControlFocusedNotification 		= @"AZ:ControlFocused";
+
 

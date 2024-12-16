@@ -62,14 +62,17 @@
 				Classes/Application/AZAppDelegate.h,
 				Classes/Application/AZTypes.h,
 				Classes/Base/AZControl.h,
+				Classes/Base/AZResponder.h,
 				Classes/Output/AZFont.h,
 				Classes/Output/AZGlyphData.h,
 				Classes/Output/AZPainter.h,
 				Classes/Output/AZTextPainter.h,
 				Classes/Utility/AZColour.h,
 				Classes/Utility/AZGeometry.h,
+				Classes/Utility/AZNotifications.h,
 				Classes/Utility/AZObject.h,
 				Classes/Views/AZButton.h,
+				Classes/Views/AZTextField.h,
 				Classes/Views/AZView.h,
 			);
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;

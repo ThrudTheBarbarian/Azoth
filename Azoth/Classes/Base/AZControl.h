@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <Azoth/AZView.h>
 
 typedef enum
 	{
@@ -16,7 +17,7 @@ typedef enum
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AZControl : NSObject
+@interface AZControl : AZView
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/

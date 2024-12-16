@@ -136,6 +136,18 @@
 	[btn setTarget:self];
 	[btn setAction:@selector(buttonPressed:)];
 	[self addSubview:btn];
+
+	r = NSMakeRect(30, 250, 100, 29);
+	AZTextField *tf = [AZTextField textfieldWithFrame:r];
+	[tf setTarget:self];
+	[tf setAction:@selector(buttonPressed:)];
+	[self addSubview:tf];
+
+	r = NSMakeRect(30, 280, 100, 29);
+	tf = [AZTextField textfieldWithFrame:r];
+	[tf setTarget:self];
+	[tf setAction:@selector(buttonPressed:)];
+	[self addSubview:tf];
 	}
 
 

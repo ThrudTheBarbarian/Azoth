@@ -5,7 +5,7 @@
 //  Created by Simon Gornall on 12/15/24.
 //
 
-#import <Azoth/AZView.h>
+#import <Azoth/AZControl.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -17,7 +17,7 @@ typedef enum
 	ButtonTypeRoundedDefault	= 9
 	} AZButtonType;
 
-@interface AZButton : AZView
+@interface AZButton : AZControl
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/

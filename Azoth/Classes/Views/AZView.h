@@ -25,7 +25,7 @@
 \*****************************************************************************/
 
 #import <Foundation/Foundation.h>
-#import <Azoth/AZControl.h>
+#import <Azoth/AZResponder.h>
 #import <Azoth/AZTypes.h>
 
 /*****************************************************************************\
@@ -44,7 +44,7 @@ struct SDL_Window;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AZView : AZControl
+@interface AZView : AZResponder
 
 /*****************************************************************************\
 |* Initialisation
