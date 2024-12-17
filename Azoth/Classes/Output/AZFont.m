@@ -63,21 +63,6 @@ static void _restoreTargetState(TargetState *state, SDL_Renderer *renderer)
 		}
 	}
 
-/*****************************************************************************\
-|* Helper functions for creating various primitives
-\*****************************************************************************/
-static inline SDL_Rect mkRect(int x, int y, int w, int h)
-	{
-	SDL_Rect r = {x, y, w, h};
-	return r;
-	}
-
-static inline SDL_Color mkColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
-	{
-	SDL_Color c = {r, g, b, a};
-	return c;
-	}
-
 @interface AZFont()
 // The list of extents for characters in this font
 @property(strong, nonatomic)

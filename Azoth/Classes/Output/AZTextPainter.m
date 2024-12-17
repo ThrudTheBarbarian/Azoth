@@ -84,6 +84,30 @@
 	}
 
 /*****************************************************************************\
+|* Return the text height of (possibly) multi-line text
+\*****************************************************************************/
+- (int) textHeightFor:(NSString *)fmt, ...;
+	{
+	if ((_font == nil) || (fmt == nil))
+		{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+					"No font, or fmt=nil in -textHeightFor...");
+		return 0;
+		}
+
+	EXTRACT_VARARGS(text, fmt);
+	int numLines = 1;
+	NSInteger length = text.length;
+	for (NSInteger i=0; i<length; i++)
+		{
+		unichar c = [text characterAtIndex:i];
+		if (c == '\n')
+			numLines ++;
+		}
+	return numLines * _font.height;
+	}
+
+/*****************************************************************************\
 |* Basic drawing routines
 |* @(x,y)
 \*****************************************************************************/

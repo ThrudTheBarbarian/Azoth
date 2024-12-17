@@ -56,12 +56,6 @@ static int 			_lineHeight = 29;
 
 		self.bgColour 		= [AZColour clearColour];
 		self.stringValue 	= @"Button";
-
-		NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
-		[nc addObserver:self
-			   selector:@selector(controlFocused:)
-				   name:AZControlFocusedNotification
-				 object:nil];
 		}
 	return self;
 	}
@@ -70,17 +64,6 @@ static int 			_lineHeight = 29;
 	{
 	return [[AZTextField alloc] initWithFrame:frame];
 	}
-
-/*****************************************************************************\
-|* Clean up
-\*****************************************************************************/
-- (void) dealloc
-	{
-	NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
-	[nc removeObserver:self];
-	}
-
-// MARK: Notifications
 
 
 /*****************************************************************************\
@@ -96,6 +79,48 @@ static int 			_lineHeight = 29;
 			[self setNeedsDisplay:YES];
 			}
 	}
+
+// MARK: Responder interactions
+
+/*****************************************************************************\
+|* indicates whether we accept first responder status
+\*****************************************************************************/
+- (BOOL) acceptsFirstResponder
+	{
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Return YES to accept becoming the first responder. Called from the AZWindow
+|* makeFirstResponder method. Do not invoke directly
+\*****************************************************************************/
+- (BOOL) becomeFirstResponder
+	{
+	if (self.state == ControlStateNormal)
+		{
+		self.state = ControlStateHighlighted;
+		[self setNeedsDisplay:YES];
+		}
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Return YES to accept un-becoming the first responder. Called from the
+|* AZWindow makeFirstResponder method. Do not invoke directly. Subclasses can
+|* override this method to update state or perform some action such as
+|* unhighlighting the selection, or to return false, refusing to relinquish
+|* first responder status
+\*****************************************************************************/
+- (BOOL) resignFirstResponder
+	{
+	if (self.state != ControlStateNormal)
+		{
+		self.state = ControlStateNormal;
+		[self setNeedsDisplay:YES];
+		}
+	return YES;
+	}
+
 
 /*****************************************************************************\
 |* Draw the textField
@@ -167,14 +192,7 @@ static int 			_lineHeight = 29;
 \*****************************************************************************/
 - (BOOL) mouseDown:(SDL_MouseButtonEvent *)e
 	{
-	if (self.state == ControlStateNormal)
-		{
-		self.state = ControlStateHighlighted;
-		[self setNeedsDisplay:YES];
-
-		NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
-		[nc postNotificationName:AZControlFocusedNotification object:self];
-		}
+	[self.window makeFirstResponder:self];
 	return YES;
 	}
 

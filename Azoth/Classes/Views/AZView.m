@@ -115,6 +115,16 @@
 
 
 /*****************************************************************************\
+|* Set the window for a view, recursively
+\*****************************************************************************/
+- (void) setWindow:(AZWindow *)window
+	{
+	_window = window;
+	for (AZView *view in self.subviews)
+		[view setWindow:window];
+	}
+
+/*****************************************************************************\
 |* Add a subview to the list of views
 \*****************************************************************************/
 - (BOOL) addSubview:(AZView *)view
@@ -144,7 +154,8 @@
 	if (!ok)
 		[_subviews addObject:view];
 
-	view.superview = self;
+	view.superview 	= self;
+	view.window		= _window;
 	[view _installBackingTexture];
 	return ok;
 	}
@@ -170,7 +181,8 @@
 	if (!ok)
 		[_subviews addObject:view];
 
-	view.superview = self;
+	view.superview 	= self;
+	view.window		= _window;
 	[view _installBackingTexture];
 	return ok;
 	}

@@ -27,6 +27,20 @@ struct SDL_MouseWheelEvent;
 \*****************************************************************************/
 - (BOOL) acceptsFirstResponder;
 
+/*****************************************************************************\
+|* Return YES to accept becoming the first responder. Called from the AZWindow
+|* makeFirstResponder method. Do not invoke directly
+\*****************************************************************************/
+- (BOOL) becomeFirstResponder;
+
+/*****************************************************************************\
+|* Return YES to accept un-becoming the first responder. Called from the
+|* AZWindow makeFirstResponder method. Do not invoke directly. Subclasses can
+|* override this method to update state or perform some action such as
+|* unhighlighting the selection, or to return false, refusing to relinquish
+|* first responder status
+\*****************************************************************************/
+- (BOOL) resignFirstResponder;
 
 // MARK: Event handling
 

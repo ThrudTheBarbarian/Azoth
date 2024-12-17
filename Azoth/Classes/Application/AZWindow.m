@@ -13,6 +13,14 @@
 #import "AZView+Internal.h"
 #import "AZWindow.h"
 
+@interface AZWindow()
+// The list of responders in the window
+@property(retain, nonatomic) NSMutableArray<AZResponder *>* responders;
+
+// The current first-responder
+@property(retain, nonatomic) AZResponder *					firstResponder;
+@end
+
 /*****************************************************************************\
 |* Store the top-level content-views for each window we know about
 \*****************************************************************************/
@@ -48,12 +56,15 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 	SDL_AppResult ok = SDL_APP_CONTINUE;
 
 	/*************************************************************************\
-    |* Set up the content-view map
+    |* Set up the responder state storage and content-view map
     \*************************************************************************/
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken,
 		^{
-		_contentViews = [NSMutableDictionary new];
+		self.responders 		= [NSMutableArray new];
+		self.firstResponder 	= nil;
+
+		_contentViews 			= [NSMutableDictionary new];
 		});
 
 
@@ -123,6 +134,32 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 	{
 	NSNumber *windowId = @(SDL_GetWindowID(window));
 	return [_contentViews objectForKey:windowId];
+	}
+
+/*****************************************************************************\
+|* Make an AZResponder the first-responder
+\*****************************************************************************/
+- (BOOL) makeFirstResponder:(AZResponder *)responder
+	{
+	BOOL changed = NO;
+	if ([responder acceptsFirstResponder])
+		{
+		if (self.firstResponder != nil)
+			{
+			if ([self.firstResponder resignFirstResponder])
+				changed = YES;
+			}
+		else
+			changed = YES;
+		}
+
+	if (changed)
+		{
+		[self.responders addObject:responder];
+		self.firstResponder = responder;
+		[responder becomeFirstResponder];
+		}
+	return changed;
 	}
 
 @end

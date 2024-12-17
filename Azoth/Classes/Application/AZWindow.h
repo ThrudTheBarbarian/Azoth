@@ -33,12 +33,16 @@ struct SDL_Window;
 + (AZView *) contentViewForWindow:(AZWindow *)window;
 + (AZView *) contentViewForSDLWindow:(struct SDL_Window *)window;
 
+/*****************************************************************************\
+|* Make an AZResponder the first-responder
+\*****************************************************************************/
+- (BOOL) makeFirstResponder:(AZResponder *)responder;
 
 // The main window, where the rendering happens
-@property(assign, nonatomic) struct SDL_Window *		window;
+@property(assign, nonatomic) struct SDL_Window *			window;
 
 // The renderer for the window
-@property(assign, nonatomic) struct SDL_Renderer *		renderer;
+@property(assign, nonatomic) struct SDL_Renderer *			renderer;
 @end
 
 NS_ASSUME_NONNULL_END
