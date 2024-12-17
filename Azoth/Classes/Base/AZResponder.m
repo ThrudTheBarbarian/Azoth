@@ -85,5 +85,21 @@
 - (BOOL) mouseWheeled:(struct SDL_MouseWheelEvent *)e;
 	{ return NO; }
 
+/*****************************************************************************\
+|* Key event handling. This copes with composition as well as simple key
+|* presses. See AZTextField for details of how to use
+\*****************************************************************************/
+- (BOOL) keyDown:(struct SDL_KeyboardEvent *)e
+	{ return NO; }
+
+- (BOOL) textEditingCandidates:(union SDL_Event *)e
+	{ return NO; }
+
+- (BOOL) textEditing:(struct SDL_TextEditingEvent *)e
+	{ return NO; }
+
+- (BOOL) textInput:(struct SDL_TextInputEvent *)e
+	{ return NO; }
+
 
 @end

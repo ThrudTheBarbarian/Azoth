@@ -16,6 +16,9 @@ union SDL_Event;
 struct SDL_MouseButtonEvent;
 struct SDL_MouseMotionEvent;
 struct SDL_MouseWheelEvent;
+struct SDL_KeyboardEvent;
+struct SDL_TextEditingEvent;
+struct SDL_TextInputEvent;
 
 @interface AZResponder : NSObject
 
@@ -69,7 +72,14 @@ struct SDL_MouseWheelEvent;
 \*****************************************************************************/
 - (BOOL) mouseWheeled:(struct SDL_MouseWheelEvent *)e;
 
-
+/*****************************************************************************\
+|* Key event handling. This copes with composition as well as simple key
+|* presses. See AZTextField for details of how to use
+\*****************************************************************************/
+- (BOOL) keyDown:(struct SDL_KeyboardEvent *)e;
+- (BOOL) textEditingCandidates:(union SDL_Event *)e;
+- (BOOL) textEditing:(struct SDL_TextEditingEvent *)e;
+- (BOOL) textInput:(struct SDL_TextInputEvent *)e;
 
 /*****************************************************************************\
 |* Properties

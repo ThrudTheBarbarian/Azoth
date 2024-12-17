@@ -18,6 +18,7 @@ struct SDL_FRect;
 struct SDL_Renderer;
 struct SDL_Texture;
 struct SDL_Window;
+struct TTF_TextEngine;
 
 @class AZFont;
 @class AZWindow;
@@ -98,6 +99,9 @@ struct SDL_Window;
 // Any window flags to be passed to the call
 // SDL_CreateWindowAndRenderer
 @property(assign, nonatomic) NSInteger					windowFlags;
+
+// The TTF render-engine used for text editing
+@property(assign, nonatomic) struct TTF_TextEngine * 	textEngine;
 @end
 
 NS_ASSUME_NONNULL_END

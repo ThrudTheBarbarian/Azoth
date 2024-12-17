@@ -81,6 +81,11 @@ NSString * const kTextureType	= @"texture";
 		[_window installContentView];
 
 	/*************************************************************************\
+    |* Create the text renderer for any textboxes
+    \*************************************************************************/
+	_textEngine = TTF_CreateRendererTextEngine(_window.renderer);
+
+	/*************************************************************************\
 	|* Get the texture atlas for the UI and put it into a GPU texture
 	\*************************************************************************/
 	NSString *rsrc = [[NSBundle bundleForClass:[self class]] resourcePath];
@@ -218,6 +223,29 @@ NSString * const kTextureType	= @"texture";
 			p.x = ((SDL_MouseMotionEvent *)e)->x;
 			p.y = ((SDL_MouseMotionEvent *)e)->y;
 			[cv processMouseEvent:e atPoint:p];
+			break;
+
+		/*********************************************************************\
+		|* Keyboard
+		\*********************************************************************/
+		case SDL_EVENT_TEXT_EDITING_CANDIDATES:
+			if (_window.firstResponder)
+				[_window.firstResponder textEditingCandidates:e];
+			break;
+
+		case SDL_EVENT_TEXT_EDITING:
+			if (_window.firstResponder)
+				[_window.firstResponder textEditing:&(e->edit)];
+			break;
+
+		case SDL_EVENT_TEXT_INPUT:
+			if (_window.firstResponder)
+				[_window.firstResponder textInput:&(e->text)];
+			break;
+
+		case SDL_EVENT_KEY_DOWN:
+			if (_window.firstResponder)
+				[_window.firstResponder keyDown:&(e->key)];
 			break;
 
 		/*********************************************************************\

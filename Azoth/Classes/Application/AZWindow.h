@@ -43,6 +43,9 @@ struct SDL_Window;
 
 // The renderer for the window
 @property(assign, nonatomic) struct SDL_Renderer *			renderer;
+
+// The current first-responder
+@property(retain, nonatomic) AZResponder *					firstResponder;
 @end
 
 NS_ASSUME_NONNULL_END

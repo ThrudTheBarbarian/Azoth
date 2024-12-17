@@ -6,11 +6,15 @@
 //
 
 #import <SDL3/SDL.h>
+#import <SDL3_ttf/SDL_ttf.h>
 
 #import "AZApp.h"
 #import "AZColour.h"
+#import "AZFont.h"
 #import "AZNotifications.h"
+#import "AZPainter.h"
 #import "AZTextField.h"
+#import "AZTextPainter.h"
 #import "AZTypes.h"
 #import "AZWindow.h"
 
@@ -39,6 +43,39 @@ static SDL_FRect	_bBR[STATE_NUM];
 
 static int 			_lineHeight = 29;
 
+@interface AZTextField()
+@property(assign, nonatomic)	TTF_Text *				text;
+@property(assign, nonatomic)	BOOL 					hasFocus;
+
+// Cursor support
+@property(assign, nonatomic)	int						cursor;
+@property(assign, nonatomic) 	int						cursorLength;
+@property(assign, nonatomic)	uint64_t				lastCursorChange;
+@property(assign, nonatomic)	BOOL					showCursor;
+@property(assign, nonatomic)	NSRect					cursorRect;
+
+// Highlight support
+@property(assign, nonatomic)	BOOL					highlighting;
+@property(assign, nonatomic)	int						highlightFrom;
+@property(assign, nonatomic)	int						highlightTo;
+
+// IME composition
+@property(assign, nonatomic)	int						compositionStart;
+@property(assign, nonatomic)	int						compositionLength;
+@property(assign, nonatomic)	int						compositionCursor;
+@property(assign, nonatomic)	int						compositionCursorLength;
+
+// IME candidates
+@property(assign, nonatomic)	TTF_Text *				candidates;
+@property(assign, nonatomic)	int						selectedCandidateStart;
+@property(assign, nonatomic)	int						selectedCandidateLength;
+
+// For window rendering
+@property(assign, nonatomic) 	NSRect					editArea;
+
+@property(strong, nonatomic) 	NSTimer *				blinkTimer;
+@end
+
 @implementation AZTextField
 
 /*****************************************************************************\
@@ -55,7 +92,12 @@ static int 			_lineHeight = 29;
 			});
 
 		self.bgColour 		= [AZColour clearColour];
-		self.stringValue 	= @"Button";
+		self.stringValue 	= @"";
+		_editArea 			= NSInsetRect(self.bounds, 6, 2);
+		_editArea.origin.y += 1;
+
+		if (![self _editCreate])
+			self = nil;
 		}
 	return self;
 	}
@@ -63,21 +105,6 @@ static int 			_lineHeight = 29;
 + (AZTextField *) textfieldWithFrame:(NSRect)frame
 	{
 	return [[AZTextField alloc] initWithFrame:frame];
-	}
-
-
-/*****************************************************************************\
-|* A control was focussed - if it's not us, then make sure we're not in the
-|* visibly-focused state
-\*****************************************************************************/
-- (void) controlFocused:(NSNotification *)n
-	{
-	if (n.object != self)
-		if (self.state != ControlStateNormal)
-			{
-			self.state = ControlStateNormal;
-			[self setNeedsDisplay:YES];
-			}
 	}
 
 // MARK: Responder interactions
@@ -98,7 +125,21 @@ static int 			_lineHeight = 29;
 	{
 	if (self.state == ControlStateNormal)
 		{
+		_hasFocus = YES;
 		self.state = ControlStateHighlighted;
+		SDL_StartTextInput(self.window.window);
+		_blinkTimer = [NSTimer scheduledTimerWithTimeInterval:0.5
+													  repeats:YES
+														block:
+			^(NSTimer * _Nonnull timer)
+				{
+				if (SDL_GetTicksNS() - self.lastCursorChange > 500)
+					{
+					self.lastCursorChange = SDL_GetTicksNS();
+					self.showCursor 	  = !self.showCursor;
+					[self setNeedsDisplay:YES];
+					}
+				}];
 		[self setNeedsDisplay:YES];
 		}
 	return YES;
@@ -115,12 +156,15 @@ static int 			_lineHeight = 29;
 	{
 	if (self.state != ControlStateNormal)
 		{
+		_hasFocus = NO;
 		self.state = ControlStateNormal;
+		SDL_StopTextInput(self.window.window);
+		[_blinkTimer invalidate];
+		_blinkTimer = nil;
 		[self setNeedsDisplay:YES];
 		}
 	return YES;
 	}
-
 
 /*****************************************************************************\
 |* Draw the textField
@@ -184,6 +228,8 @@ static int 			_lineHeight = 29;
 	SDL_RenderTexture	  (rndr, src, &sBL,    &dBL);
 	SDL_RenderTextureTiled(rndr, src, &sBM, 1, &dBM);
 	SDL_RenderTexture     (rndr, src, &sBR,    &dBR);
+
+	[self _drawTextInRect:_editArea withPainter:p];
 	}
 
 
@@ -254,4 +300,252 @@ static int 			_lineHeight = 29;
 		_lineHeight = MAX(_bCR[i].h, _lineHeight);
 		}
 	}
+
+
+// MARK: Editing
+
+/*****************************************************************************\
+|* Key event handling
+\*****************************************************************************/
+- (BOOL) textInput:(struct SDL_TextInputEvent *)e
+	{
+	[self _editInsert:e->text];
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Drawing
+\*****************************************************************************/
+- (void) _drawTextInRect:(NSRect)r withPainter:(AZPainter *)P
+	{
+		[self _editDraw];
+	}
+
+/*****************************************************************************\
+|* Draw the editable contents
+\*****************************************************************************/
+- (void) _editDraw
+	{
+	AZApp *app 				= AZApp.sharedInstance;
+	SDL_Renderer *renderer 	= app.window.renderer;
+    float x 				= _editArea.origin.x;
+    float y 				= _editArea.origin.y;
+
+	// Draw any highlight
+    int marker, length;
+    if ([self _editGetHighlightExtentsFrom:&marker to:&length])
+		{
+        TTF_SubString **highlights =
+					TTF_GetTextSubStringsForRange(_text, marker, length, NULL);
+        if (highlights)
+			{
+            int i;
+            SDL_SetRenderDrawColor(renderer, 0xEE, 0xEE, 0x00, 0xFF);
+            for (i = 0; highlights[i]; ++i)
+				{
+                SDL_FRect rect;
+                SDL_RectToFRect(&highlights[i]->rect, &rect);
+                rect.x += x;
+                rect.y += y;
+                SDL_RenderFillRect(renderer, &rect);
+				}
+            SDL_free(highlights);
+			}
+		}
+
+	[self _editDrawText:_text atX:x y:y];
+	}
+
+- (void) _editDrawText:(TTF_Text *)text atX:(float)x y:(float)y
+	{
+	SDL_Renderer * R = AZApp.sharedInstance.window.renderer;
+	//SDL_SetRenderDrawBlendMode(R, SDL_BLENDMODE_ADD);
+		TTF_SetTextColor(text, 0, 0, 0, 255);
+    BOOL ok = TTF_DrawRendererText(text, x, y);
+	}
+
+/*****************************************************************************\
+|* Creation of the editing state
+\*****************************************************************************/
+- (BOOL) _editCreate
+	{
+	AZApp *app 				= AZApp.sharedInstance;
+	SDL_Renderer *renderer 	= app.window.renderer;
+
+	_text	= TTF_CreateText(app.textEngine, app.controlFont.ttfFont, NULL, 0);
+	if (_text == nil)
+		{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+				"Cannot create TTF text renderer!");
+		return NO;
+		}
+	_highlightFrom = -1;
+	_highlightTo = -1;
+	_editArea = NSInsetRect(self.bounds, 4, 2);
+
+    // Wrap the editbox text within the editbox area
+	TTF_SetTextWrapWidth(_text, (int)SDL_floorf(_editArea.size.width));
+
+    // Show whitespace when wrapping, so it can be edited
+    TTF_SetTextWrapWhitespaceVisible(_text, true);
+
+	// We support rendering the composition and candidates
+    SDL_SetHint(SDL_HINT_IME_IMPLEMENTED_UI, "composition,candidates");
+
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Insert text
+\*****************************************************************************/
+- (void) _editInsert:(const char *)text
+	{
+	if (!text)
+		return;
+
+	[self _editDeleteHighlight];
+
+    if (_compositionLength > 0)
+		{
+        TTF_DeleteTextString(_text, _compositionStart, _compositionLength);
+        _compositionLength = 0;
+		}
+
+    size_t length = SDL_strlen(text);
+    NSLog(@"insert text '%s' of length %lu", text, length);
+    TTF_InsertTextString(_text, _cursor, text, length);
+    [self _editSetCursorPosition:(int)(_cursor + length)];
+	[self setNeedsDisplay:YES];
+	}
+
+- (BOOL) _editDeleteHighlight
+	{
+    if (!_text->text)
+        return NO;
+
+	int marker, length;
+    if ([self _editGetHighlightExtentsFrom:&marker to:&length])
+		{
+        TTF_DeleteTextString(_text, marker, length);
+        [self _editSetCursorPosition:marker];
+        _highlightFrom 	= -1;
+        _highlightTo 	= -1;
+        return YES;
+		}
+    return NO;
+	}
+
+- (void) _editSetCursorPosition:(int)position
+	{
+    if (_compositionLength > 0)
+		{
+        // Don't let the cursor be moved into the composition
+        if (position >= _compositionStart
+        &&  position <= (_compositionStart + _compositionLength))
+            return;
+
+        [self _editCancelComposition];
+		}
+
+    _cursor = position;
+	}
+
+- (BOOL) _editGetHighlightExtentsFrom:(int *)marker to:(int *)length
+	{
+		if (_highlightFrom >= 0 && _highlightTo >= 0)
+			{
+			int marker1 = SDL_min(_highlightFrom, _highlightTo);
+			int marker2 = SDL_max(_highlightFrom, _highlightTo);
+			if (marker2 > marker1)
+				{
+				*marker = marker1;
+				*length = marker2 - marker1;
+				return YES;
+				}
+			}
+    return NO;
+	}
+
+- (void) _editCancelComposition
+	{
+    [self _editResetComposition];
+	SDL_ClearComposition(self.window.window);
+	}
+
+- (void) _editResetComposition
+	{
+    _compositionStart 			= 0;
+    _compositionLength 			= 0;
+    _compositionCursor 			= 0;
+    _compositionCursorLength 	= 0;
+	}
+
+
+//#if 0
+///*****************************************************************************\
+//|* Key event handling
+//\*****************************************************************************/
+//- (BOOL) textInput:(struct SDL_TextInputEvent *)e
+//	{
+//	NSString *value = [NSString stringWithUTF8String:e->text];
+//	NSString *pre	= [self.stringValue substringToIndex:_cursor];
+//	NSString *post	= [self.stringValue substringFromIndex:_cursor];
+//	NSString *newPre= [NSString stringWithFormat:@"%@%@", pre, value];
+//	NSString *newVal= [NSString stringWithFormat:@"%@%@", newPre, post];
+//
+//	self.stringValue = newVal;
+//	_cursor += value.length;
+//	int cw = [AZApp.sharedInstance.controlFont textWidthFor:newPre];
+//	int cx = _editArea.origin.x + cw;
+//	_cursorRect = NSMakeRect(cx, 6, 1, _editArea.size.height - 10);
+//
+//	[self setNeedsDisplay:YES];
+//	return YES;
+//	}
+//
+//
+//
+///*****************************************************************************\
+//|* Drawing
+//\*****************************************************************************/
+//- (void) _drawTextInRect:(NSRect)r withPainter:(AZPainter *)P
+//	{
+//	[P drawAtX:_editArea.origin.x y:_editArea.origin.y text:self.stringValue];
+//	SDL_Renderer *R = AZApp.sharedInstance.window.renderer;
+//	SDL_SetRenderDrawBlendMode(R, SDL_BLENDMODE_BLEND);
+//	SDL_SetRenderDrawColor(R, 0, 0, 0, 255);
+//
+//	// Draw the cursor
+//	if (_showCursor)
+//		{
+//		int x = _cursorRect.origin.x;
+//		int y = _cursorRect.origin.y;
+//		int h = _cursorRect.size.height;
+//
+//		[P lineAtX:x y:y toX:x y:y+h];
+//		}
+//	}
+//
+///*****************************************************************************\
+//|* Calculate the displayed string from the real one
+//\*****************************************************************************/
+//- (void) _calculateDisplayedString
+//	{
+//	AZApp *app = AZApp.sharedInstance;
+//
+//	int totalLength = [app.controlFont textWidthFor:self.stringValue];
+//	if (totalLength < _editArea.size.width)
+//		{
+//		_displayedText = self.stringValue;
+//		return;
+//		}
+//
+//	if (_cursor == self.stringValue.length)
+//		{
+//		// Pull from the start of the string to make it fit
+//		}
+//	}
+
+
+
 @end

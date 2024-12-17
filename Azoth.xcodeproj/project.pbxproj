@@ -9,6 +9,27 @@
 /* Begin PBXBuildFile section */
 		F41BC6AD2D0A720700E61EDD /* Azoth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; };
 		F41BC6AE2D0A720700E61EDD /* Azoth.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F45ED9272D1145BA00CE8B28 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9202D1145B900CE8B28 /* SDL3.framework */; };
+		F45ED9282D1145BA00CE8B28 /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9212D1145B900CE8B28 /* SDL3_ttf.xcframework */; };
+		F45ED9292D1145BA00CE8B28 /* SDL3_test.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9222D1145B900CE8B28 /* SDL3_test.framework */; };
+		F45ED92A2D1145BA00CE8B28 /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
+		F45ED92B2D1145BA00CE8B28 /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
+		F45ED92C2D1145BA00CE8B28 /* avif.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; };
+		F45ED9312D1146DE00CE8B28 /* avif.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; };
+		F45ED9322D1146DE00CE8B28 /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
+		F45ED9332D1146DE00CE8B28 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9202D1145B900CE8B28 /* SDL3.framework */; };
+		F45ED9342D1146DE00CE8B28 /* SDL3_test.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9222D1145B900CE8B28 /* SDL3_test.framework */; };
+		F45ED9352D1146DE00CE8B28 /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9212D1145B900CE8B28 /* SDL3_ttf.xcframework */; };
+		F45ED9362D1146DE00CE8B28 /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
+		F45ED9382D11471000CE8B28 /* SDL3_image.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; };
+		F45ED9392D1147EB00CE8B28 /* SDL3_image.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; };
+		F45ED93A2D11480800CE8B28 /* SDL3_image.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F45ED93B2D11480A00CE8B28 /* avif.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F45ED93C2D11480D00CE8B28 /* jxl.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F45ED93D2D11481100CE8B28 /* SDL3.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9202D1145B900CE8B28 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F45ED93E2D11481300CE8B28 /* SDL3_test.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9222D1145B900CE8B28 /* SDL3_test.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F45ED93F2D11481500CE8B28 /* SDL3_ttf.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9212D1145B900CE8B28 /* SDL3_ttf.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F45ED9402D11481600CE8B28 /* webp.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F4B6A1412D0BB0E80033580D /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = F4B6A1402D0BB0E80033580D /* README.md */; };
 /* End PBXBuildFile section */
 
@@ -30,6 +51,13 @@
 			dstSubfolderSpec = 10;
 			files = (
 				F41BC6AE2D0A720700E61EDD /* Azoth.framework in Embed Frameworks */,
+				F45ED93A2D11480800CE8B28 /* SDL3_image.xcframework in Embed Frameworks */,
+				F45ED93E2D11481300CE8B28 /* SDL3_test.framework in Embed Frameworks */,
+				F45ED9402D11481600CE8B28 /* webp.xcframework in Embed Frameworks */,
+				F45ED93F2D11481500CE8B28 /* SDL3_ttf.xcframework in Embed Frameworks */,
+				F45ED93D2D11481100CE8B28 /* SDL3.framework in Embed Frameworks */,
+				F45ED93C2D11480D00CE8B28 /* jxl.xcframework in Embed Frameworks */,
+				F45ED93B2D11480A00CE8B28 /* avif.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -49,6 +77,13 @@
 /* Begin PBXFileReference section */
 		F41BC6522D0A61BA00E61EDD /* Azoth.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Azoth.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F41BC69C2D0A71FD00E61EDD /* AZDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F45ED9202D1145B900CE8B28 /* SDL3.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL3.framework; path = ../../../../opt/SDL3/SDL3.framework; sourceTree = "<group>"; };
+		F45ED9212D1145B900CE8B28 /* SDL3_ttf.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3_ttf.xcframework; path = ../../../../opt/SDL3/SDL3_ttf.xcframework; sourceTree = "<group>"; };
+		F45ED9222D1145B900CE8B28 /* SDL3_test.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL3_test.framework; path = ../../../../opt/SDL3/SDL3_test.framework; sourceTree = "<group>"; };
+		F45ED9232D1145B900CE8B28 /* webp.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = webp.xcframework; path = ../../../../opt/SDL3/webp.xcframework; sourceTree = "<group>"; };
+		F45ED9242D1145B900CE8B28 /* jxl.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = jxl.xcframework; path = ../../../../opt/SDL3/jxl.xcframework; sourceTree = "<group>"; };
+		F45ED9252D1145B900CE8B28 /* avif.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = avif.xcframework; path = ../../../../opt/SDL3/avif.xcframework; sourceTree = "<group>"; };
+		F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3_image.xcframework; path = ../../../../opt/SDL3/SDL3_image.xcframework; sourceTree = "<group>"; };
 		F4B6A1402D0BB0E80033580D /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		F4B6A3B62D0F84C00033580D /* genRsrc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = genRsrc.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -78,92 +113,19 @@
 			);
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
 		};
-		F4B6A3692D0D4ADD0033580D /* Exceptions for "Azoth" folder in "AZDemo" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Frameworks/avif.xcframework,
-				Frameworks/jxl.xcframework,
-				Frameworks/SDL3_image.xcframework,
-				Frameworks/SDL3_ttf.xcframework,
-				Frameworks/webp.xcframework,
-			);
-			target = F41BC69B2D0A71FD00E61EDD /* AZDemo */;
-		};
-		F4B6A3CB2D0F85600033580D /* Exceptions for "Azoth" folder in "genRsrc" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Frameworks/SDL3_image.xcframework,
-				Frameworks/SDL3.framework,
-			);
-			target = F4B6A3B52D0F84C00033580D /* genRsrc */;
-		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		F4B6A1252D0A9CDB0033580D /* Exceptions for "AZDemo" folder in "Embed Frameworks" phase from "AZDemo" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			attributesByRelativePath = {
-				Frameworks/SDL3.framework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
-				Frameworks/SDL3_test.framework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
-			};
-			buildPhase = F41BC6B12D0A720700E61EDD /* Embed Frameworks */;
-			membershipExceptions = (
-				Frameworks/SDL3_test.framework,
-				Frameworks/SDL3.framework,
-			);
-		};
-		F4B6A3642D0D4AD10033580D /* Exceptions for "Azoth" folder in "Embed Frameworks" phase from "AZDemo" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			attributesByRelativePath = {
-				Frameworks/SDL3_image.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
-				Frameworks/SDL3_ttf.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
-				Frameworks/avif.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
-				Frameworks/jxl.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
-				Frameworks/webp.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
-			};
-			buildPhase = F41BC6B12D0A720700E61EDD /* Embed Frameworks */;
-			membershipExceptions = (
-				Frameworks/avif.xcframework,
-				Frameworks/jxl.xcframework,
-				Frameworks/SDL3_image.xcframework,
-				Frameworks/SDL3_ttf.xcframework,
-				Frameworks/webp.xcframework,
-			);
-		};
-		F4B6A3D22D0F86D70033580D /* Exceptions for "Azoth" folder in "Embed frameworks" phase from "genRsrc" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			attributesByRelativePath = {
-				Frameworks/SDL3.framework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
-				Frameworks/SDL3_image.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
-				Frameworks/SDL3_test.framework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
-			};
-			buildPhase = F4B6A3D02D0F86C70033580D /* Embed frameworks */;
-			membershipExceptions = (
-				Frameworks/SDL3_image.xcframework,
-				Frameworks/SDL3_test.framework,
-				Frameworks/SDL3.framework,
-			);
-		};
-/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		F41BC6542D0A61BA00E61EDD /* Azoth */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				F41BC6572D0A61BA00E61EDD /* Exceptions for "Azoth" folder in "Azoth" target */,
-				F4B6A3692D0D4ADD0033580D /* Exceptions for "Azoth" folder in "AZDemo" target */,
-				F4B6A3642D0D4AD10033580D /* Exceptions for "Azoth" folder in "Embed Frameworks" phase from "AZDemo" target */,
-				F4B6A3CB2D0F85600033580D /* Exceptions for "Azoth" folder in "genRsrc" target */,
-				F4B6A3D22D0F86D70033580D /* Exceptions for "Azoth" folder in "Embed frameworks" phase from "genRsrc" target */,
 			);
 			path = Azoth;
 			sourceTree = "<group>";
 		};
 		F41BC69D2D0A71FD00E61EDD /* AZDemo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				F4B6A1252D0A9CDB0033580D /* Exceptions for "AZDemo" folder in "Embed Frameworks" phase from "AZDemo" target */,
-			);
 			path = AZDemo;
 			sourceTree = "<group>";
 		};
@@ -179,6 +141,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F45ED9312D1146DE00CE8B28 /* avif.xcframework in Frameworks */,
+				F45ED9322D1146DE00CE8B28 /* jxl.xcframework in Frameworks */,
+				F45ED9332D1146DE00CE8B28 /* SDL3.framework in Frameworks */,
+				F45ED9342D1146DE00CE8B28 /* SDL3_test.framework in Frameworks */,
+				F45ED9382D11471000CE8B28 /* SDL3_image.xcframework in Frameworks */,
+				F45ED9352D1146DE00CE8B28 /* SDL3_ttf.xcframework in Frameworks */,
+				F45ED9362D1146DE00CE8B28 /* webp.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -186,6 +155,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F45ED9272D1145BA00CE8B28 /* SDL3.framework in Frameworks */,
+				F45ED9282D1145BA00CE8B28 /* SDL3_ttf.xcframework in Frameworks */,
+				F45ED9292D1145BA00CE8B28 /* SDL3_test.framework in Frameworks */,
+				F45ED92A2D1145BA00CE8B28 /* webp.xcframework in Frameworks */,
+				F45ED92B2D1145BA00CE8B28 /* jxl.xcframework in Frameworks */,
+				F45ED92C2D1145BA00CE8B28 /* avif.xcframework in Frameworks */,
+				F45ED9392D1147EB00CE8B28 /* SDL3_image.xcframework in Frameworks */,
 				F41BC6AD2D0A720700E61EDD /* Azoth.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -225,6 +201,13 @@
 		F4B6A11B2D0A977D0033580D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */,
+				F45ED9252D1145B900CE8B28 /* avif.xcframework */,
+				F45ED9242D1145B900CE8B28 /* jxl.xcframework */,
+				F45ED9202D1145B900CE8B28 /* SDL3.framework */,
+				F45ED9222D1145B900CE8B28 /* SDL3_test.framework */,
+				F45ED9212D1145B900CE8B28 /* SDL3_ttf.xcframework */,
+				F45ED9232D1145B900CE8B28 /* webp.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -424,7 +407,11 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_MODULE_VERIFIER = NO;
-				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/Azoth/Frameworks";
+				FRAMEWORK_SEARCH_PATHS = (
+					"/opt/SDL3/**",
+					"/opt/SDL3/SDL3_image.xcframework/macos-arm64_x86_64",
+					/opt/SDL3,
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -455,7 +442,11 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_MODULE_VERIFIER = NO;
-				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/Azoth/Frameworks";
+				FRAMEWORK_SEARCH_PATHS = (
+					"/opt/SDL3/**",
+					"/opt/SDL3/SDL3_image.xcframework/macos-arm64_x86_64",
+					/opt/SDL3,
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -609,6 +600,8 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Azoth/Frameworks",
 					"$(PROJECT_DIR)/AZDemo/Frameworks",
+					/opt/SDL3,
+					"/opt/SDL3/SDL3_image.xcframework/macos-arm64_x86_64",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -641,6 +634,8 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Azoth/Frameworks",
 					"$(PROJECT_DIR)/AZDemo/Frameworks",
+					/opt/SDL3,
+					"/opt/SDL3/SDL3_image.xcframework/macos-arm64_x86_64",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
