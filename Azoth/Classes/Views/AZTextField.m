@@ -306,36 +306,184 @@ static int 			_lineHeight = 29;
 - (BOOL) mouseDown:(SDL_MouseButtonEvent *)e
 	{
 	[self.window makeFirstResponder:self];
+	NSPoint p = (NSPoint){e->x, e->y};
+	p = [self convertPoint:p fromView:nil];
+
+    // Set the cursor position
+    TTF_SubString substring;
+	int textX = (int)SDL_roundf(p.x - _editArea.origin.x);
+    int textY = (int)SDL_roundf(p.y - _editArea.origin.y);
+
+    if (!TTF_GetTextSubStringForPoint(_text, textX, textY, &substring))
+		{
+        SDL_Log("Couldn't get cursor location: %s\n", SDL_GetError());
+        return false;
+		}
+
+ 	TTF_Font *font = AZApp.sharedInstance.controlFont.ttfFont;
+	int index = [self _editGetCursorTextIndexFor:font at:textX in:&substring];
+	[self _editSetCursorPosition:index];
+
+    _highlighting 	= YES;
+    _highlightFrom	= _cursor;
+    _highlightTo 	= -1;
+
 	return YES;
 	}
 
 /*****************************************************************************\
-|* Key event handling. This copes with composition as well as simple key
-|* presses. See AZTextField for details of how to use
+|* Handle a mouse drag
 \*****************************************************************************/
-- (BOOL) keyDown:(struct SDL_KeyboardEvent *)e
+- (BOOL) mouseDragged:(SDL_MouseMotionEvent *)e
 	{
-	BOOL ok = NO;
+	if (!_highlighting)
+		return NO;
+
+    // Set the highlight position
+ 	NSPoint p = (NSPoint){e->x, e->y};
+	p = [self convertPoint:p fromView:nil];
+
+	TTF_SubString substring;
+	int textX = (int)SDL_roundf(p.x - _editArea.origin.x);
+    int textY = (int)SDL_roundf(p.y - _editArea.origin.y);
+    if (!TTF_GetTextSubStringForPoint(_text, textX, textY, &substring))
+		{
+        SDL_Log("Couldn't get cursor location: %s\n", SDL_GetError());
+        return false;
+		}
+
+ 	TTF_Font *font = AZApp.sharedInstance.controlFont.ttfFont;
+	int index = [self _editGetCursorTextIndexFor:font at:textX in:&substring];
+	[self _editSetCursorPosition:index];
+
+    _highlightTo = _cursor;
+	[self setNeedsDisplay:YES];
+    return YES;
+	}
+
+/*****************************************************************************\
+|* Mouse-button-up event, return YES if we consume the event
+\*****************************************************************************/
+- (BOOL) mouseUp:(struct SDL_MouseButtonEvent *)e
+	{
+	if (!_highlighting)
+		return NO;
+
+    _highlighting 	= NO;
+	[self setNeedsDisplay:YES];
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Key event handling. These are basically modifiers, the actual text
+|* processing uses the -textInput method
+\*****************************************************************************/
+- (BOOL) keyDown:(SDL_KeyboardEvent *)e
+	{
+	BOOL handled = NO;
 	switch (e->key)
 		{
-        case SDLK_BACKSPACE:
+         case SDLK_A:
+            if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+                [self _editSelectAll];
+			handled = YES;
+            break;
+
+        case SDLK_C:
+            if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+                [self _editCopy];
+			handled = YES;
+            break;
+
+        case SDLK_V:
+            if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+                [self _editPaste];
+			handled = YES;
+            break;
+
+        case SDLK_X:
+            if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+                [self _editCut];
+			handled = YES;
+            break;
+
+        case SDLK_LEFT:
+            if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+				[self _moveCursorToStartOfLine];
+            else
+                [self _moveCursorLeft];
+			handled = YES;
+            break;
+
+        case SDLK_RIGHT:
+            if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+				[self _moveCursorToEndOfLine];
+            else
+                [self _moveCursorRight];
+			handled = YES;
+            break;
+
+        case SDLK_END:
+		case SDLK_DOWN:
+            if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+				[self _moveCursorToEndOfLine];
+			handled = YES;
+            break;
+
+        case SDLK_HOME:
+        case SDLK_UP:
+            if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+				[self _moveCursorToStartOfLine];
+			handled = YES;
+            break;
+
+       case SDLK_BACKSPACE:
             if (e->mod & SDL_KMOD_CTRL)
                 [self _editBackspaceToBeginning];
             else
                 [self _editBackspace];
-			ok = YES;
+			handled = YES;
+            break;
+
+       case SDLK_DELETE:
+            if (e->mod & SDL_KMOD_CTRL)
+                [self _editDeleteToEnd];
+            else
+                [self _editDelete];
+			handled = YES;
             break;
 		}
 
-	return ok;
+	if (handled)
+		[self setNeedsDisplay:YES];
+	return handled;
 	}
 
 /*****************************************************************************\
-|* Key event handling
+|* Text event handling. This is the source of characters entering the buffer
 \*****************************************************************************/
-- (BOOL) textInput:(struct SDL_TextInputEvent *)e
+- (BOOL) textInput:(SDL_TextInputEvent *)e
 	{
 	[self _editInsert:e->text];
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Text compositional editing for non-keyboard symbols
+\*****************************************************************************/
+- (BOOL) textEditing:(SDL_TextEditingEvent *)e
+	{
+	[self _editHandleComposition:e];
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Handle the candidates for composition
+\*****************************************************************************/
+- (BOOL) textEditingCandidates:(SDL_Event *)e
+	{
+	[self _editClearCandidates];
+	[self _editSaveCandidates:e];
 	return YES;
 	}
 
@@ -366,6 +514,14 @@ static int 			_lineHeight = 29;
 	}
 
 /*****************************************************************************\
+|* Draw the actual text itself
+\*****************************************************************************/
+- (void) _editDrawText:(TTF_Text *)text atX:(int)x y:(int)y
+	{
+    TTF_DrawRendererText(text, x, y-1);
+	}
+
+/*****************************************************************************\
 |* Draw the editable contents
 \*****************************************************************************/
 - (void) _editDrawText
@@ -375,29 +531,35 @@ static int 			_lineHeight = 29;
     float x 				= _editArea.origin.x;
     float y 				= _editArea.origin.y;
 
+	[self _editDrawText:_text atX:x y:y];
+
 	// Draw any highlight
     int marker, length;
-    if ([self _editGetHighlightExtentsFrom:&marker to:&length])
+    if ([self _editGetHighlightExtentsFrom:&marker withLength:&length])
 		{
+		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND_PREMULTIPLIED);
         TTF_SubString **highlights =
 					TTF_GetTextSubStringsForRange(_text, marker, length, NULL);
         if (highlights)
 			{
             int i;
-            SDL_SetRenderDrawColor(renderer, 0xEE, 0xEE, 0x00, 0xFF);
+            SDL_SetRenderDrawColor(renderer, 0x0, 0x0, 0xff, 0x10);
             for (i = 0; highlights[i]; ++i)
 				{
                 SDL_FRect rect;
                 SDL_RectToFRect(&highlights[i]->rect, &rect);
                 rect.x += x;
-                rect.y += y;
+                rect.y += y+3;
+
+                int maxH  = self.bounds.size.height-_bTM[0].h - _bBM[0].h;
+                rect.h    = (rect.h > maxH) ? maxH : rect.h;
+
                 SDL_RenderFillRect(renderer, &rect);
 				}
             SDL_free(highlights);
 			}
 		}
 
-    TTF_DrawRendererText(_text, x, y);
 
     // Calculate the cursor rect, used for positioning candidates
 	TTF_SubString cursor;
@@ -417,7 +579,13 @@ static int 			_lineHeight = 29;
 
             [self _editUpdateTextInputArea];
         }
-   
+
+	if (_compositionLength > 0)
+		[self _editDrawComposition];
+
+	if (_candidates)
+		[self _editDrawCandidates];
+
 	}
 
 /*****************************************************************************\
@@ -437,9 +605,10 @@ static int 			_lineHeight = 29;
 	_highlightFrom = -1;
 	_highlightTo = -1;
 	_editArea = NSInsetRect(self.bounds, 4, 2);
+			_editArea.origin.x -= 20;
 
     // Wrap the editbox text within the editbox area
-	TTF_SetTextWrapWidth(_text, (int)SDL_floorf(_editArea.size.width));
+	//TTF_SetTextWrapWidth(_text, (int)SDL_floorf(_editArea.size.width));
 
     // Show whitespace when wrapping, so it can be edited
     TTF_SetTextWrapWhitespaceVisible(_text, true);
@@ -467,7 +636,6 @@ static int 			_lineHeight = 29;
 		}
 
     size_t length = SDL_strlen(text);
-    NSLog(@"insert text '%s' of length %lu", text, length);
     TTF_InsertTextString(_text, _cursor, text, length);
     [self _editSetCursorPosition:(int)(_cursor + length)];
 	[self setNeedsDisplay:YES];
@@ -483,7 +651,7 @@ static int 			_lineHeight = 29;
         return NO;
 
 	int marker, length;
-    if ([self _editGetHighlightExtentsFrom:&marker to:&length])
+    if ([self _editGetHighlightExtentsFrom:&marker withLength:&length])
 		{
         TTF_DeleteTextString(_text, marker, length);
         [self _editSetCursorPosition:marker];
@@ -517,7 +685,7 @@ static int 			_lineHeight = 29;
 /*****************************************************************************\
 |* Find out where the highlights extend to
 \*****************************************************************************/
-- (BOOL) _editGetHighlightExtentsFrom:(int *)marker to:(int *)length
+- (BOOL) _editGetHighlightExtentsFrom:(int *)marker withLength:(int *)length
 	{
 		if (_highlightFrom >= 0 && _highlightTo >= 0)
 			{
@@ -623,5 +791,472 @@ static int 			_lineHeight = 29;
     int cursor_offset = (int)SDL_roundf(window_cursor.x - window_edit_rect_min.x);
 	SDL_SetTextInputArea((__bridge SDL_Window *)(self.window), &rect, cursor_offset);
 	}
+
+/*****************************************************************************\
+|* Select all the text
+\*****************************************************************************/
+- (void) _editSelectAll
+	{
+    if (_text->text == NULL)
+        return;
+
+	_highlightFrom = 0;
+	_highlightTo = (int)SDL_strlen(_text->text);
+	}
+
+/*****************************************************************************\
+|* Copy to the clipboard
+\*****************************************************************************/
+- (void) _editCopy
+	{
+    if (_text->text == NULL)
+        return;
+
+    int marker, length;
+	if ([self _editGetHighlightExtentsFrom:&marker withLength:&length])
+        {
+        char *temp = (char *)SDL_malloc(length + 1);
+        if (temp)
+			{
+            SDL_memcpy(temp, &(_text->text[marker]), length);
+            temp[length] = '\0';
+            SDL_SetClipboardText(temp);
+            SDL_free(temp);
+			}
+		}
+	else
+        SDL_SetClipboardText(_text->text);
+	}
+
+/*****************************************************************************\
+|* Paste from the clipboard
+\*****************************************************************************/
+- (void) _editPaste
+	{
+    if (_text->text == NULL)
+        return;
+
+    const char *text = SDL_GetClipboardText();
+	[self _editInsert:text];
+	}
+
+/*****************************************************************************\
+|* Cut the selection/text
+\*****************************************************************************/
+- (void) _editCut
+	{
+    if (_text->text == NULL)
+        return;
+
+    int marker, length;
+	if ([self _editGetHighlightExtentsFrom:&marker withLength:&length])
+        {
+        char *temp = (char *)SDL_malloc(length + 1);
+        if (temp)
+			{
+            SDL_memcpy(temp, &(_text->text[marker]), length);
+            temp[length] = '\0';
+            SDL_SetClipboardText(temp);
+            SDL_free(temp);
+			}
+        TTF_DeleteTextString(_text, marker, length);
+		[self _editSetCursorPosition:marker];
+        _highlightFrom 	= -1;
+        _highlightTo 	= -1;
+		}
+	else
+        {
+        SDL_SetClipboardText(_text->text);
+        TTF_DeleteTextString(_text, 0, -1);
+        }
+	}
+
+/*****************************************************************************\
+|* Move the cursor to the start of the line
+\*****************************************************************************/
+- (void) _moveCursorToStartOfLine
+	{
+    TTF_SubString substring;
+    if (TTF_GetTextSubString(_text, _cursor, &substring)
+    &&  TTF_GetTextSubStringForLine(_text, substring.line_index, &substring))
+		{
+		[self _editSetCursorPosition:substring.offset];
+		}
+	}
+
+/*****************************************************************************\
+|* Move the cursor one character left
+\*****************************************************************************/
+- (void) _moveCursorLeft
+	{
+	TTF_Font *font = AZApp.sharedInstance.controlFont.ttfFont;
+    if (TTF_GetFontDirection(font) == TTF_DIRECTION_RTL)
+		[self _moveCursorIndex:1];
+    else
+		[self _moveCursorIndex:-1];
+    }
+
+/*****************************************************************************\
+|* Move the cursor one character right
+\*****************************************************************************/
+- (void) _moveCursorRight
+	{
+	TTF_Font *font = AZApp.sharedInstance.controlFont.ttfFont;
+    if (TTF_GetFontDirection(font) == TTF_DIRECTION_RTL)
+		[self _moveCursorIndex:-1];
+    else
+		[self _moveCursorIndex:1];
+    }
+
+/*****************************************************************************\
+|* Actually do the one-character cursor move
+\*****************************************************************************/
+- (void) _moveCursorIndex:(int)direction
+	{
+    TTF_SubString substring;
+
+    if (direction < 0)
+		{
+        if (TTF_GetTextSubString(_text, _cursor - 1, &substring))
+			[self _editSetCursorPosition:substring.offset];
+		}
+	else
+		{
+		int offset = substring.offset + SDL_max(substring.length, 1);
+
+        if (TTF_GetTextSubString(_text, _cursor, &substring)
+        &&  TTF_GetTextSubString(_text, offset, &substring))
+			[self _editSetCursorPosition:substring.offset];
+		}
+	}
+
+/*****************************************************************************\
+|* Move the cursor all the way to the end of the line
+\*****************************************************************************/
+- (void) _moveCursorToEndOfLine
+	{
+    TTF_SubString substring;
+    if (TTF_GetTextSubString(_text, _cursor, &substring)
+	&&  TTF_GetTextSubStringForLine(_text, substring.line_index, &substring))
+		[self _editSetCursorPosition:substring.offset + substring.length];
+	}
+
+/*****************************************************************************\
+|* Delete from the cursor to the end of the line
+\*****************************************************************************/
+- (void) _editDeleteToEnd
+	{
+    TTF_DeleteTextString(_text, _cursor, -1);
+	}
+
+
+/*****************************************************************************\
+|* Delete a single character
+\*****************************************************************************/
+- (void) _editDelete
+	{
+    if (_text->text == NULL)
+        return;
+
+	if ([self _editDeleteHighlight])
+        return;
+
+    const char *start 	= &(_text->text[_cursor]);
+    const char *next 	= start;
+    size_t length 		= SDL_strlen(next);
+    SDL_StepUTF8(&next, &length);
+    length = (next - start);
+    TTF_DeleteTextString(_text, _cursor, (int)length);
+	}
+
+/*****************************************************************************\
+|* Return the byte count for a UTF8 string
+\*****************************************************************************/
+static int UTF8ByteLength(const char *text, int num_codepoints)
+	{
+    const char *start = text;
+    while (num_codepoints > 0)
+		{
+        Uint32 ch = SDL_StepUTF8(&text, NULL);
+        if (ch == 0)
+            break;
+
+        --num_codepoints;
+		}
+    return (int)(uintptr_t)(text - start);
+	}
+
+/*****************************************************************************\
+|* Handle compositional text
+\*****************************************************************************/
+- (void) _editHandleComposition:(SDL_TextEditingEvent *)e
+	{
+	[self _editDeleteHighlight];
+
+    if (_compositionLength > 0)
+		{
+        TTF_DeleteTextString(_text, _compositionStart, _compositionLength);
+		[self _editResetComposition];
+		}
+
+	int length = (int)SDL_strlen(e->text);
+    if (length > 0)
+		{
+        _compositionStart 	= _cursor;
+        _compositionLength 	= length;
+        TTF_InsertTextString(_text, _compositionStart, e->text, _compositionLength);
+        if (e->start > 0 || e->length > 0)
+			{
+            _compositionCursor = UTF8ByteLength(
+								&(_text->text[_compositionStart]), e->start);
+            _compositionCursorLength = UTF8ByteLength(
+					&(_text->text[_compositionStart + _compositionCursor]),
+					e->length);
+			}
+		else
+			{
+            _compositionCursor = length;
+            _compositionCursorLength = 0;
+			}
+		}
+	}
+
+/*****************************************************************************\
+|* Clear the compositional candidates
+\*****************************************************************************/
+- (void) _editClearCandidates
+	{
+    if (_candidates)
+		{
+        TTF_DestroyText(_candidates);
+        _candidates = NULL;
+		}
+    _selectedCandidateStart 	= 0;
+    _selectedCandidateLength 	= 0;
+	}
+
+/*****************************************************************************\
+|* Save the compositional candidates for display/selection
+\*****************************************************************************/
+- (void) _editSaveCandidates:(SDL_Event *)e
+	{
+	[self _editClearCandidates];
+
+    BOOL horizontal 		= e->edit_candidates.horizontal;
+    int numCandidates 		= e->edit_candidates.num_candidates;
+    int selectedCandidate 	= e->edit_candidates.selected_candidate;
+
+    // Calculate the length of the candidates text
+    size_t length = 0;
+    for (int i = 0; i < numCandidates; ++i)
+		{
+        if (horizontal)
+			{
+            if (i > 0)
+                ++length;
+			}
+
+        length += SDL_strlen(e->edit_candidates.candidates[i]);
+
+        if (!horizontal)
+            length ++;
+		}
+    if (length == 0)
+        return;
+
+    ++length; // For null terminator
+
+    char *candidateText = (char *)SDL_malloc(length);
+    if (!candidateText)
+        return;
+
+
+    char *dst = candidateText;
+    for (int i = 0; i < numCandidates; ++i)
+		{
+        if (horizontal)
+			{
+            if (i > 0)
+                *dst++ = ' ';
+			}
+
+        int length = (int)SDL_strlen(e->edit_candidates.candidates[i]);
+        if (i == selectedCandidate)
+			{
+            _selectedCandidateStart  = (int)(uintptr_t)(dst - candidateText);
+            _selectedCandidateLength = length;
+			}
+        SDL_memcpy(dst, e->edit_candidates.candidates[i], length);
+        dst += length;
+
+        if (!horizontal)
+            *dst++ = '\n';
+		}
+    *dst = '\0';
+
+	TTF_Font *font = AZApp.sharedInstance.controlFont.ttfFont;
+    _candidates = TTF_CreateText(TTF_GetTextEngine(_text), font, candidateText, 0);
+    SDL_free(candidateText);
+
+    if (_candidates)
+		{
+        float r, g, b, a;
+        TTF_GetTextColorFloat(_text, &r, &g, &b, &a);
+        TTF_SetTextColorFloat(_candidates, r, g, b, a);
+		}
+	else
+		[self _editClearCandidates];
+	}
+
+/*****************************************************************************\
+|* Draw the composition
+\*****************************************************************************/
+- (void) _editDrawComposition
+	{
+    // Draw an underline under the composed text
+    SDL_Renderer *renderer 		= self.window.renderer;
+	TTF_Font *font 				= AZApp.sharedInstance.controlFont.ttfFont;
+	TTF_SubString **substrings	= NULL;
+
+    int fontHeight = TTF_GetFontHeight(font);
+    substrings = TTF_GetTextSubStringsForRange(_text, _compositionStart,
+											   _compositionLength, NULL);
+    if (substrings)
+		{
+        for (int i = 0; substrings[i]; ++i)
+			{
+            SDL_FRect rect;
+            SDL_RectToFRect(&substrings[i]->rect, &rect);
+			rect.x += _editArea.origin.x;
+            rect.y += _editArea.origin.y + fontHeight;
+            rect.h  = 1.0f;
+            SDL_RenderFillRect(renderer, &rect);
+			}
+        SDL_free(substrings);
+		}
+
+    // Thicken the underline under the active clause in the composed text
+    if (_compositionCursorLength > 0)
+		{
+        substrings = TTF_GetTextSubStringsForRange(
+							_text,
+							_compositionStart + _compositionCursor,
+							_compositionCursorLength,
+							NULL);
+        if (substrings)
+			{
+            for (int i = 0; substrings[i]; ++i)
+				{
+                SDL_FRect rect;
+                SDL_RectToFRect(&substrings[i]->rect, &rect);
+                rect.x += _editArea.origin.x;
+				rect.y += _editArea.origin.y + fontHeight -1;
+                rect.h = 1.0f;
+                SDL_RenderFillRect(renderer, &rect);
+				}
+            SDL_free(substrings);
+			}
+		}
+	}
+
+/*****************************************************************************\
+|* Draw the composition candidates
+\*****************************************************************************/
+- (void) _editDrawCandidates
+	{
+    SDL_Renderer *renderer 		= self.window.renderer;
+ 	TTF_Font *font 				= AZApp.sharedInstance.controlFont.ttfFont;
+
+   SDL_Rect safe_rect;
+    SDL_FRect candidates_rect;
+    int candidates_w;
+    int candidates_h;
+    float x, y;
+
+    // Position the candidate window
+    TTF_SubString cursor;
+    int offset = _compositionStart;
+    if (_compositionCursorLength > 0)
+        // Place the candidates at the active clause
+        offset += _compositionCursor;
+
+    if (!TTF_GetTextSubString(_text, offset, &cursor))
+        return;
+
+
+    SDL_GetRenderSafeArea(renderer, &safe_rect);
+    TTF_GetTextSize(_candidates, &candidates_w, &candidates_h);
+    candidates_rect.x = _editArea.origin.x + cursor.rect.x;
+    candidates_rect.y = _editArea.origin.y + cursor.rect.y + cursor.rect.h + 2.0f;
+    candidates_rect.w = 1.0f + 2.0f + candidates_w + 2.0f + 1.0f;
+    candidates_rect.h = 1.0f + 2.0f + candidates_h + 2.0f + 1.0f;
+    if ((candidates_rect.x + candidates_rect.w) > safe_rect.w)
+		{
+        candidates_rect.x = (safe_rect.w - candidates_rect.w);
+        if (candidates_rect.x < 0.0f)
+            candidates_rect.x = 0.0f;
+		}
+
+    // Draw the candidate background
+    SDL_SetRenderDrawColor(renderer, 0xAA, 0xAA, 0xAA, 0xFF);
+    SDL_RenderFillRect(renderer, &candidates_rect);
+    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+    SDL_RenderRect(renderer, &candidates_rect);
+
+    // Draw the candidates
+    x = candidates_rect.x + 3.0f;
+    y = candidates_rect.y + 3.0f;
+	[self _editDrawText:_candidates atX:x y:y];
+
+    // Underline the selected candidate
+    if (_selectedCandidateLength > 0)
+		{
+		TTF_SubString **substrings	= NULL;
+		int fontHeight 				= TTF_GetFontHeight(font);
+
+        substrings = TTF_GetTextSubStringsForRange(_candidates,
+												   _selectedCandidateStart,
+												   _selectedCandidateLength,
+												   NULL);
+        if (substrings)
+			{
+            for (int i = 0; substrings[i]; ++i)
+				{
+                SDL_FRect rect;
+                SDL_RectToFRect(&substrings[i]->rect, &rect);
+                rect.x += x;
+                rect.y += (y + fontHeight);
+                rect.h = 1.0f;
+                SDL_RenderFillRect(renderer, &rect);
+				}
+            SDL_free(substrings);
+			}
+		}
+	}
+
+/*****************************************************************************\
+|* Find the text position for a given mouse position
+\*****************************************************************************/
+- (int) _editGetCursorTextIndexFor:(TTF_Font *)font
+								at:(int)x
+								in:(TTF_SubString *)substring
+	{
+    if (substring->flags & (TTF_SUBSTRING_LINE_END | TTF_SUBSTRING_TEXT_END))
+        return substring->offset;
+
+    bool roundDown;
+    if (TTF_GetFontDirection(font) == TTF_DIRECTION_RTL)
+        roundDown = (x > (substring->rect.x + substring->rect.w / 2));
+    else
+        roundDown = (x < (substring->rect.x + substring->rect.w / 2));
+
+    if (roundDown)
+        // Start the cursor before the selected text
+        return substring->offset;
+	else
+        // Place the cursor after the selected text
+        return substring->offset + substring->length;
+    }
+
 
 @end
