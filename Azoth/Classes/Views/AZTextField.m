@@ -52,7 +52,7 @@ static int 			_lineHeight = 29;
 @property(assign, nonatomic) 	int						cursorLength;
 @property(assign, nonatomic)	uint64_t				lastCursorChange;
 @property(assign, nonatomic)	BOOL					showCursor;
-@property(assign, nonatomic)	NSRect					cursorRect;
+@property(assign, nonatomic)	SDL_FRect				cursorRect;
 
 // Highlight support
 @property(assign, nonatomic)	BOOL					highlighting;
@@ -95,7 +95,7 @@ static int 			_lineHeight = 29;
 		self.stringValue 	= @"";
 		_editArea 			= NSInsetRect(self.bounds, 6, 2);
 		_editArea.origin.y += 1;
-
+		_textColour			= [AZColour blackColour];
 		if (![self _editCreate])
 			self = nil;
 		}
@@ -128,6 +128,11 @@ static int 			_lineHeight = 29;
 		_hasFocus = YES;
 		self.state = ControlStateHighlighted;
 		SDL_StartTextInput(self.window.window);
+		TTF_SetTextColor(_text, _textColour.red,
+								_textColour.green,
+								_textColour.blue,
+								_textColour.alpha);
+
 		_blinkTimer = [NSTimer scheduledTimerWithTimeInterval:0.5
 													  repeats:YES
 														block:
@@ -233,15 +238,6 @@ static int 			_lineHeight = 29;
 	}
 
 
-/*****************************************************************************\
-|* Handle a mouse press
-\*****************************************************************************/
-- (BOOL) mouseDown:(SDL_MouseButtonEvent *)e
-	{
-	[self.window makeFirstResponder:self];
-	return YES;
-	}
-
 // MARK: Private methods
 
 /*****************************************************************************\
@@ -302,7 +298,37 @@ static int 			_lineHeight = 29;
 	}
 
 
-// MARK: Editing
+// MARK: Events
+
+/*****************************************************************************\
+|* Handle a mouse press
+\*****************************************************************************/
+- (BOOL) mouseDown:(SDL_MouseButtonEvent *)e
+	{
+	[self.window makeFirstResponder:self];
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Key event handling. This copes with composition as well as simple key
+|* presses. See AZTextField for details of how to use
+\*****************************************************************************/
+- (BOOL) keyDown:(struct SDL_KeyboardEvent *)e
+	{
+	BOOL ok = NO;
+	switch (e->key)
+		{
+        case SDLK_BACKSPACE:
+            if (e->mod & SDL_KMOD_CTRL)
+                [self _editBackspaceToBeginning];
+            else
+                [self _editBackspace];
+			ok = YES;
+            break;
+		}
+
+	return ok;
+	}
 
 /*****************************************************************************\
 |* Key event handling
@@ -313,21 +339,39 @@ static int 			_lineHeight = 29;
 	return YES;
 	}
 
+// MARK: Drawing routines
+
 /*****************************************************************************\
 |* Drawing
 \*****************************************************************************/
 - (void) _drawTextInRect:(NSRect)r withPainter:(AZPainter *)P
 	{
-		[self _editDraw];
+	[self _editDrawText];
+	[self _editDrawCursor];
+	}
+
+/*****************************************************************************\
+|* Draw the cursor
+\*****************************************************************************/
+- (void) _editDrawCursor
+	{
+	if (_showCursor)
+		{
+		SDL_Renderer *renderer = AZApp.sharedInstance.window.renderer;
+		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xff);
+		SDL_FRect r = _cursorRect;
+		SDL_RenderFillRect(renderer, &r);
+		}
 	}
 
 /*****************************************************************************\
 |* Draw the editable contents
 \*****************************************************************************/
-- (void) _editDraw
+- (void) _editDrawText
 	{
-	AZApp *app 				= AZApp.sharedInstance;
-	SDL_Renderer *renderer 	= app.window.renderer;
+	SDL_Renderer *renderer 	= AZApp.sharedInstance.window.renderer;
+	TTF_Font *font			= AZApp.sharedInstance.controlFont.ttfFont;
     float x 				= _editArea.origin.x;
     float y 				= _editArea.origin.y;
 
@@ -353,15 +397,27 @@ static int 			_lineHeight = 29;
 			}
 		}
 
-	[self _editDrawText:_text atX:x y:y];
-	}
+    TTF_DrawRendererText(_text, x, y);
 
-- (void) _editDrawText:(TTF_Text *)text atX:(float)x y:(float)y
-	{
-	SDL_Renderer * R = AZApp.sharedInstance.window.renderer;
-	//SDL_SetRenderDrawBlendMode(R, SDL_BLENDMODE_ADD);
-		TTF_SetTextColor(text, 0, 0, 0, 255);
-    BOOL ok = TTF_DrawRendererText(text, x, y);
+    // Calculate the cursor rect, used for positioning candidates
+	TTF_SubString cursor;
+	if (TTF_GetTextSubString(_text, _cursor, &cursor))
+		{
+		SDL_FRect cursor_rect;
+		SDL_RectToFRect(&cursor.rect, &cursor_rect);
+
+		if (TTF_GetFontDirection(font) == TTF_DIRECTION_RTL)
+			cursor_rect.x += cursor.rect.w;
+
+            cursor_rect.x += _editArea.origin.x;
+            cursor_rect.y += _editArea.origin.y;
+            cursor_rect.w = 1.0f;
+
+            SDL_copyp(&_cursorRect, &cursor_rect);
+
+            [self _editUpdateTextInputArea];
+        }
+   
 	}
 
 /*****************************************************************************\
@@ -369,8 +425,7 @@ static int 			_lineHeight = 29;
 \*****************************************************************************/
 - (BOOL) _editCreate
 	{
-	AZApp *app 				= AZApp.sharedInstance;
-	SDL_Renderer *renderer 	= app.window.renderer;
+	AZApp *app = AZApp.sharedInstance;
 
 	_text	= TTF_CreateText(app.textEngine, app.controlFont.ttfFont, NULL, 0);
 	if (_text == nil)
@@ -418,6 +473,10 @@ static int 			_lineHeight = 29;
 	[self setNeedsDisplay:YES];
 	}
 
+
+/*****************************************************************************\
+|* Get rid of any highlight
+\*****************************************************************************/
 - (BOOL) _editDeleteHighlight
 	{
     if (!_text->text)
@@ -435,6 +494,10 @@ static int 			_lineHeight = 29;
     return NO;
 	}
 
+
+/*****************************************************************************\
+|* Set the cursor position
+\*****************************************************************************/
 - (void) _editSetCursorPosition:(int)position
 	{
     if (_compositionLength > 0)
@@ -450,6 +513,10 @@ static int 			_lineHeight = 29;
     _cursor = position;
 	}
 
+
+/*****************************************************************************\
+|* Find out where the highlights extend to
+\*****************************************************************************/
 - (BOOL) _editGetHighlightExtentsFrom:(int *)marker to:(int *)length
 	{
 		if (_highlightFrom >= 0 && _highlightTo >= 0)
@@ -466,12 +533,20 @@ static int 			_lineHeight = 29;
     return NO;
 	}
 
+
+/*****************************************************************************\
+|* Cancel the composition
+\*****************************************************************************/
 - (void) _editCancelComposition
 	{
     [self _editResetComposition];
 	SDL_ClearComposition(self.window.window);
 	}
 
+
+/*****************************************************************************\
+|* Reset the composition
+\*****************************************************************************/
 - (void) _editResetComposition
 	{
     _compositionStart 			= 0;
@@ -480,72 +555,73 @@ static int 			_lineHeight = 29;
     _compositionCursorLength 	= 0;
 	}
 
+/*****************************************************************************\
+|* Backspace to the beginning of the textfield
+\*****************************************************************************/
+- (void) _editBackspaceToBeginning
+	{
+    // Delete to the beginning of the string
+    TTF_DeleteTextString(_text, 0, _cursor);
+	[self _editSetCursorPosition:0];
+	}
 
-//#if 0
-///*****************************************************************************\
-//|* Key event handling
-//\*****************************************************************************/
-//- (BOOL) textInput:(struct SDL_TextInputEvent *)e
-//	{
-//	NSString *value = [NSString stringWithUTF8String:e->text];
-//	NSString *pre	= [self.stringValue substringToIndex:_cursor];
-//	NSString *post	= [self.stringValue substringFromIndex:_cursor];
-//	NSString *newPre= [NSString stringWithFormat:@"%@%@", pre, value];
-//	NSString *newVal= [NSString stringWithFormat:@"%@%@", newPre, post];
-//
-//	self.stringValue = newVal;
-//	_cursor += value.length;
-//	int cw = [AZApp.sharedInstance.controlFont textWidthFor:newPre];
-//	int cx = _editArea.origin.x + cw;
-//	_cursorRect = NSMakeRect(cx, 6, 1, _editArea.size.height - 10);
-//
-//	[self setNeedsDisplay:YES];
-//	return YES;
-//	}
-//
-//
-//
-///*****************************************************************************\
-//|* Drawing
-//\*****************************************************************************/
-//- (void) _drawTextInRect:(NSRect)r withPainter:(AZPainter *)P
-//	{
-//	[P drawAtX:_editArea.origin.x y:_editArea.origin.y text:self.stringValue];
-//	SDL_Renderer *R = AZApp.sharedInstance.window.renderer;
-//	SDL_SetRenderDrawBlendMode(R, SDL_BLENDMODE_BLEND);
-//	SDL_SetRenderDrawColor(R, 0, 0, 0, 255);
-//
-//	// Draw the cursor
-//	if (_showCursor)
-//		{
-//		int x = _cursorRect.origin.x;
-//		int y = _cursorRect.origin.y;
-//		int h = _cursorRect.size.height;
-//
-//		[P lineAtX:x y:y toX:x y:y+h];
-//		}
-//	}
-//
-///*****************************************************************************\
-//|* Calculate the displayed string from the real one
-//\*****************************************************************************/
-//- (void) _calculateDisplayedString
-//	{
-//	AZApp *app = AZApp.sharedInstance;
-//
-//	int totalLength = [app.controlFont textWidthFor:self.stringValue];
-//	if (totalLength < _editArea.size.width)
-//		{
-//		_displayedText = self.stringValue;
-//		return;
-//		}
-//
-//	if (_cursor == self.stringValue.length)
-//		{
-//		// Pull from the start of the string to make it fit
-//		}
-//	}
+/*****************************************************************************\
+|* Backspace a single character
+\*****************************************************************************/
+- (void) _editBackspace
+	{
+    if (!_text->text)
+        return;
 
+	if ([self _editDeleteHighlight])
+		return;
 
+    if (_cursor > 0)
+		{
+        const char *start 	= &(_text->text[_cursor]);
+        const char *next 	= start;
+        SDL_StepBackUTF8(_text->text, &next);
+        int length = (int)(uintptr_t)(start - next);
+        TTF_DeleteTextString(_text, _cursor - length, length);
+        _cursor -= length;
+		}
+	}
+
+/*****************************************************************************\
+|* Convert the text input area and cursor into window coordinates
+\*****************************************************************************/
+- (void) _editUpdateTextInputArea
+	{
+	SDL_Renderer *renderer = self.window.renderer;
+    SDL_FPoint window_edit_rect_min;
+    SDL_FPoint window_edit_rect_max;
+    SDL_FPoint window_cursor;
+    if (!SDL_RenderCoordinatesToWindow(renderer,
+									   _editArea.origin.x,
+									   _editArea.origin.y,
+									   &window_edit_rect_min.x,
+									   &window_edit_rect_min.y) ||
+        !SDL_RenderCoordinatesToWindow(renderer,
+										_editArea.origin.x + _editArea.size.width,
+									    _editArea.origin.y + _editArea.size.height,
+									    &window_edit_rect_max.x,
+									    &window_edit_rect_max.y) ||
+        !SDL_RenderCoordinatesToWindow(renderer,
+										_cursorRect.x,
+										_cursorRect.y,
+										&window_cursor.x,
+										&window_cursor.y))
+		{
+        return;
+		}
+
+    SDL_Rect rect;
+    rect.x = (int)SDL_roundf(window_edit_rect_min.x);
+    rect.y = (int)SDL_roundf(window_edit_rect_min.y);
+    rect.w = (int)SDL_roundf(window_edit_rect_max.x - window_edit_rect_min.x);
+    rect.h = (int)SDL_roundf(window_edit_rect_max.y - window_edit_rect_min.y);
+    int cursor_offset = (int)SDL_roundf(window_cursor.x - window_edit_rect_min.x);
+	SDL_SetTextInputArea((__bridge SDL_Window *)(self.window), &rect, cursor_offset);
+	}
 
 @end

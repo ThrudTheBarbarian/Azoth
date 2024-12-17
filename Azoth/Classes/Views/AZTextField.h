@@ -22,7 +22,11 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 + (AZTextField *) textfieldWithFrame:(NSRect)frame;
 
+// Whether it's a rounded or square textfield
 @property(assign, nonatomic) AZTextFieldType						type;
+
+// Colour for the text in the textbox, default is black
+@property(strong, nonatomic) AZColour *								textColour;
 @end
 
 NS_ASSUME_NONNULL_END
