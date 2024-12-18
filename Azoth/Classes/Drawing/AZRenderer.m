@@ -8,6 +8,7 @@
 #import <SDL3/SDL.h>
 
 #import "AZApp.h"
+#import "AZColour.h"
 #import "AZObject.h"
 #import "AZRenderer.h"
 #import "AZWindow.h"
@@ -19,7 +20,6 @@
 @property(strong, nonatomic)
 NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 
-@property(assign, nonatomic) SDL_Renderer *					renderer;
 @end
 
 @implementation AZRenderer
@@ -118,6 +118,19 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	}
 
 /*****************************************************************************\
+|* Release a texture, removing it from the cache
+\*****************************************************************************/
+- (void) releaseTexture:(NSInteger)refId
+	{
+	AZObject *object = _textures[@(refId)];
+	if (object && [object.hint isEqualToString:kTextureType])
+		{
+		SDL_DestroyTexture((SDL_Texture *)object.ptr);
+		[_textures removeObjectForKey:@(refId)];
+		}
+	}
+
+/*****************************************************************************\
 |* Return a texture for a given id
 \*****************************************************************************/
 - (nullable SDL_Texture *) textureFor:(NSInteger)refId
@@ -152,58 +165,70 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 /*****************************************************************************\
 |* Perform a blit operation
 \*****************************************************************************/
-- (void) blitFrom:(NSInteger)textureId src:(NSRect)srcRect dst:(NSRect)dstRect
+- (int) blitFrom:(NSInteger)textureId src:(NSRect)srcRect dst:(NSRect)dstRect
 	{
 	SDL_Texture *texture = [self textureFor:textureId];
 	if (texture)
 		{
 		SDL_FRect src = SDL_FRECT(srcRect);
 		SDL_FRect dst = SDL_FRECT(dstRect);
-		SDL_RenderTexture(_renderer, texture, &src, &dst);
+		return SDL_RenderTexture(_renderer, texture, &src, &dst);
 		}
-	else
-		SDL_Log("Cannot find texture %d to blit from", (int)textureId);
+
+	SDL_Log("Cannot find texture %d to blit from", (int)textureId);
+	return -1;
 	}
 
 /*****************************************************************************\
 |* Perform a tiled blit operation
 \*****************************************************************************/
-- (void) tileFrom:(NSInteger)textureId src:(NSRect)srcRect dst:(NSRect)dstRect
+- (int) tileFrom:(NSInteger)textureId src:(NSRect)srcRect dst:(NSRect)dstRect
 	{
 	SDL_Texture *texture = [self textureFor:textureId];
 	if (texture)
 		{
 		SDL_FRect src = SDL_FRECT(srcRect);
 		SDL_FRect dst = SDL_FRECT(dstRect);
-		SDL_RenderTextureTiled(_renderer, texture, &src, 1.0f, &dst);
+		return SDL_RenderTextureTiled(_renderer, texture, &src, 1.0f, &dst);
 		}
-	else
-		SDL_Log("Cannot find texture %d to tile from", (int)textureId);
+
+	SDL_Log("Cannot find texture %d to tile from", (int)textureId);
+	return -1;
 	}
 
 /*****************************************************************************\
 |* Perform a tiled blit operation
 \*****************************************************************************/
-- (void) tileFrom:(NSInteger)textureId src:(NSRect)srcRect scale:(float)scale
-			  dst:(NSRect)dstRect
+- (int) tileFrom:(NSInteger)textureId src:(NSRect)srcRect scale:(float)scale
+			 dst:(NSRect)dstRect
 	{
 	SDL_Texture *texture = [self textureFor:textureId];
 	if (texture)
 		{
 		SDL_FRect src = SDL_FRECT(srcRect);
 		SDL_FRect dst = SDL_FRECT(dstRect);
-		SDL_RenderTextureTiled(_renderer, texture, &src, scale, &dst);
+		return SDL_RenderTextureTiled(_renderer, texture, &src, scale, &dst);
 		}
-	else
-		SDL_Log("Cannot find texture %d to tile from", (int)textureId);
+
+	SDL_Log("Cannot find texture %d to tile from", (int)textureId);
+	return -1;
 	}
 
 /*****************************************************************************\
 |* Set the blend mode
 \*****************************************************************************/
-- (void) setBlendMode:(uint32_t)blendMode
+- (int ) setBlendMode:(uint32_t)blendMode
 	{
-	SDL_SetRenderDrawBlendMode(_renderer, blendMode);
+	return SDL_SetRenderDrawBlendMode(_renderer, blendMode);
+	}
+
+- (int) setTexture:(NSInteger)refId blendMode:(uint32_t)blendMode
+	{
+	SDL_Texture *texture = [self textureFor:refId];
+	if (texture)
+		return SDL_SetTextureBlendMode(texture, blendMode);
+	SDL_Log("Cannot find texture %d to set blend mode on", (int)refId);
+	return -1;
 	}
 
 /*****************************************************************************\
@@ -219,5 +244,106 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 		SDL_SetRenderClipRect(_renderer, &clip);
 		}
 	}
+
+/*****************************************************************************\
+|* Get the clip rect
+\*****************************************************************************/
+- (NSRect) clipRect
+	{
+	SDL_Rect existing;
+	SDL_GetRenderClipRect(_renderer, &existing);
+	return NS_RECT(existing);
+	}
+
+/*****************************************************************************\
+|* Set the drawing colour
+\*****************************************************************************/
+- (int) setDrawColour:(AZColour *)colour
+	{
+	return SDL_SetRenderDrawColor(_renderer, colour.red,
+											 colour.green,
+											 colour.blue,
+											 colour.alpha);
+	}
+
+/*****************************************************************************\
+|* Set the drawing colour
+\*****************************************************************************/
+- (int) setDrawColourToRed:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
+	{
+	return SDL_SetRenderDrawColor(_renderer, r, g, b, a);
+	}
+
+/*****************************************************************************\
+|* Clear the current texture target
+\*****************************************************************************/
+- (void) clear
+	{
+	SDL_RenderClear(_renderer);
+	}
+
+/*****************************************************************************\
+|* Present the rendering
+\*****************************************************************************/
+- (void) present
+	{
+	SDL_RenderPresent(_renderer);
+	}
+
+/*****************************************************************************\
+|* Render a point
+\*****************************************************************************/
+- (int) renderPointAtX:(int)x y:(int)y
+	{
+	return SDL_RenderPoint(_renderer, x, y);
+	}
+
+/*****************************************************************************\
+|* Render a point
+\*****************************************************************************/
+- (int) renderPointAt:(NSPoint)p
+	{
+	return SDL_RenderPoint(_renderer, p.x, p.y);
+	}
+
+/*****************************************************************************\
+|* Render a line
+\*****************************************************************************/
+- (int) renderLineFromX:(int)x1 y:(int)y1 toX:(int)x2 y:(int)y2
+	{
+	return SDL_RenderLine(_renderer, x1, y1, x2, y2);
+	}
+
+- (int) renderLineFrom:(NSPoint)p1 to:(NSPoint)p2
+	{
+	return SDL_RenderLine(_renderer, p1.x, p1.y, p2.x, p2.y);
+	}
+
+/*****************************************************************************\
+|* Render lines
+\*****************************************************************************/
+- (int) render:(int)num lines:(SDL_FPoint *)pts
+	{
+	return SDL_RenderLines(_renderer, pts, num);
+	}
+
+/*****************************************************************************\
+|* Render a rectangle
+\*****************************************************************************/
+- (int) renderRect:(NSRect)r
+	{
+	SDL_FRect rect = SDL_FRECT(r);
+	return SDL_RenderRect(_renderer, &rect);
+	}
+
+/*****************************************************************************\
+|* Render a filled rectangle
+\*****************************************************************************/
+- (int) renderFilledRect:(NSRect)r
+	{
+	SDL_FRect rect = SDL_FRECT(r);
+	return SDL_RenderFillRect(_renderer, &rect);
+	}
+
 
 @end

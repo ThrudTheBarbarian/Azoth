@@ -14,10 +14,6 @@ extern NSString * const kTextureType;
 
 enum SDL_AppResult;
 union SDL_Event;
-struct SDL_FRect;
-struct SDL_Renderer;
-struct SDL_Texture;
-struct SDL_Window;
 struct TTF_TextEngine;
 
 @class AZFont;
@@ -57,7 +53,7 @@ struct TTF_TextEngine;
 |* Application service: dispose of things after renderPresent called. Useful
 |* when the renderer has to hang onto a resource in order to process something
 \*****************************************************************************/
-- (void) registerTextureForDisposal:(struct SDL_Texture *)texture;
+- (void) registerTextureForDisposal:(NSNumber *)texture;
 
 
 /*****************************************************************************\

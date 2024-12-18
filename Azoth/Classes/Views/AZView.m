@@ -11,6 +11,7 @@
 #import "AZColour.h"
 #import "AZGeometry.h"
 #import "AZPainter.h"
+#import "AZRenderer.h"
 #import "AZView.h"
 #import "AZView+Internal.h"
 #import "AZWindow.h"
@@ -35,7 +36,7 @@
 		_bounds.origin 			= (NSPoint){0,0};
 		_subviews				= [NSMutableArray new];
 		_superview				= nil;
-		_bg 					= NULL;
+		_bg 					= -1;
 		_bgColour				= [AZColour blackColour];
 		_isOpaque				= NO;
 		_autoresizesSubviews	= YES;
@@ -55,8 +56,8 @@
 \*****************************************************************************/
 - (void) dealloc
 	{
-	if (_bg != NULL)
-		SDL_DestroyTexture(_bg);
+	if (_bg >= 0)
+		[AZRenderer.renderer releaseTexture:_bg];
 	}
 
 // MARK: Event manipulation
@@ -225,14 +226,7 @@
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
-	SDL_Renderer *renderer = SDL_GetRenderer(self.window.window);
-
-	SDL_SetRenderDrawColor(renderer, self.bgColour.red,
-									 self.bgColour.green,
-									 self.bgColour.blue,
-									 self.bgColour.alpha);
-	SDL_FRect rect =	SDLFRectFromNSRect(dirtyRect);
-	SDL_RenderFillRect(renderer, &rect);
+	[painter rectangleWithRect:dirtyRect filled:YES colour:_bgColour];
 	}
 
 

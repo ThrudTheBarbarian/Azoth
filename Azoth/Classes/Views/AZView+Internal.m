@@ -12,6 +12,7 @@
 #import "AZColour.h"
 #import "AZGeometry.h"
 #import "AZPainter.h"
+#import "AZRenderer.h"
 #import "AZView.h"
 #import "AZView+Internal.h"
 #import "AZWindow.h"
@@ -176,29 +177,25 @@
 	\*************************************************************************/
 	if (w*h > 0)
 		{
-		SDL_Renderer *renderer = AZApp.sharedInstance.window.renderer;
+		AZRenderer *azr = AZRenderer.renderer;
 		if (self.bg)
-			SDL_DestroyTexture(self.bg);
+			[azr releaseTexture:self.bg];
 
-		self.bg		 = SDL_CreateTexture(renderer,
-										 SDL_PIXELFORMAT_RGBA8888,
-										 SDL_TEXTUREACCESS_TARGET,
-										 w,
-										 h);
+		self.bg = [azr createTextureOfSize:NSMakeSize(w,h)];
 
 		/*********************************************************************\
 		|* Cue up a 'clear this texture' operation when the next render-
 		|* presentation happens
 		\*********************************************************************/
-		SDL_SetRenderTarget(renderer, self.bg);
-		SDL_SetRenderDrawColor(renderer, self.bgColour.red,
-										 self.bgColour.green,
-										 self.bgColour.blue,
-										 1.f);
-		SDL_RenderClear(renderer);
-		SDL_FRect area = SDLFRectFromNSRect(self.bounds);
-		SDL_RenderRect(renderer,&area);
-		SDL_SetRenderTarget(renderer, NULL);
+		if ([azr lockFocusOn:self.bg])
+			{
+			[azr clear];
+			AZPainter *p = [AZPainter painterForView:self];
+			[p rectangleWithRect:[self bounds] filled:YES colour:self.bgColour];
+			[azr unlockFocus];
+			}
+		else
+			SDL_Log("Cannot lock focus on texture %d", self.bg);
 
 		/*********************************************************************\
 		|* And tell the view it needs to redraw
@@ -215,12 +212,12 @@
 \*****************************************************************************/
 - (void) _renderToScreen
 	{
-	SDL_Renderer *renderer = AZApp.sharedInstance.window.renderer;
+	AZRenderer *azr = AZRenderer.renderer;
 
 	/*************************************************************************\
 	|* Draw to the screen
 	\*************************************************************************/
-	SDL_SetRenderTarget(renderer, NULL);
+	[azr unlockFocus];
 
 	/*************************************************************************\
 	|* Set up the frame correctly
@@ -232,32 +229,28 @@
 	/*************************************************************************\
 	|* Work out source, destination and clip
 	\*************************************************************************/
-	SDL_FRect src 	= SDLFRectFromNSRect(self.bounds);
-	SDL_FRect dst	= SDLFRectFromNSRect(frame);
+	NSRect src 		= self.bounds;
+	NSRect dst		= frame;
 
 	// We also want to clip to the parent view's frame
-	NSRect parent	= self.superview.frame;
-	p 				= [self.superview convertPoint:parent.origin toView:nil];
-	parent.origin	= p;
-	parent 			= NSIntersectionRect(parent, frame);
-
-	SDL_Rect clip	= SDLRectFromNSRect(parent);
-
+	NSRect clip		= self.superview.frame;
+	p 				= [self.superview convertPoint:clip.origin toView:nil];
+	clip.origin		= p;
+	clip 			= NSIntersectionRect(clip, frame);
 
 	/*************************************************************************\
 	|* Handle the transparency of alpha
 	\*************************************************************************/
 	SDL_BlendMode mode = self.isOpaque ? SDL_BLENDMODE_NONE
 									   : SDL_BLENDMODE_ADD_PREMULTIPLIED;
-	SDL_SetRenderDrawBlendMode(renderer, mode);
+	[azr setBlendMode:mode];
 
 	/*************************************************************************\
 	|* Draw ourselves first...
 	\*************************************************************************/
-	
-	SDL_SetRenderClipRect(renderer, &clip);
-	SDL_RenderTexture(renderer, self.bg, &src, &dst);
-	SDL_SetRenderClipRect(renderer, NULL);
+	[azr setClip:clip];
+	[azr blitFrom:self.bg src:src dst:dst];
+	[azr setClip:NSZeroRect];
 
 	/*************************************************************************\
 	|* ... then call the subviews recursively in reverse order
@@ -266,7 +259,7 @@
 		{
 		SDL_BlendMode mode = subview.isOpaque ? SDL_BLENDMODE_NONE
 											  : SDL_BLENDMODE_ADD_PREMULTIPLIED;
-		SDL_SetRenderDrawBlendMode(renderer, mode);
+		[azr setBlendMode:mode];
 		[subview _renderToScreen];
 		}
 	}

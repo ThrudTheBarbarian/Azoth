@@ -127,8 +127,8 @@ NS_ASSUME_NONNULL_BEGIN
 // The window that this view is attached to
 @property(assign, nonatomic, nullable) AZWindow	*			window;
 
-// Backing texture for drawing into
-@property(assign, nonatomic, nullable) struct SDL_Texture *	bg;
+// Backing texture-id for drawing into
+@property(assign, nonatomic) NSInteger						bg;
 
 // Aggregated dirty-rect (where needs to be redrawn)
 @property(assign, nonatomic) NSRect 						dirty;

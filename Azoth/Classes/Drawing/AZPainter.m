@@ -12,6 +12,7 @@
 #import "AZGeometry.h"
 #import "AZObject.h"
 #import "AZPainter.h"
+#import "AZRenderer.h"
 #import "AZTextPainter.h"
 #import "AZView.h"
 #import "AZWindow.h"
@@ -51,7 +52,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 |* "Private" properties
 \*****************************************************************************/
 @interface AZPainter()
-@property(assign, nonatomic) SDL_Renderer *						renderer;
+@property(assign, nonatomic) AZRenderer *						renderer;
 @property(strong, nonatomic) AZView * 							view;
 @end
 
@@ -82,26 +83,26 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 \*****************************************************************************/
 - (BOOL) execute
 	{
-	AZApp *app		= [AZApp sharedInstance];
-	_renderer 		= app.window.renderer;
+	_renderer = AZRenderer.renderer;
 	if (_renderer == NULL)
 		{
 		SDL_LogError(SDL_LOG_CATEGORY_GPU, "Cannot get window renderer");
 		return NO;
 		}
-	_textPainter		= [AZTextPainter painterWithRenderer:_renderer];
-	_textPainter.font	= app.systemFont;
 
-	SDL_Rect bounds	= SDLRectFromNSRect(_view.dirty);
+	_textPainter		= [AZTextPainter painterWithRenderer:_renderer.renderer];
+	_textPainter.font	= AZApp.sharedInstance.systemFont;
 
-	SDL_SetRenderTarget(_renderer, _view.bg);
-	SDL_SetRenderClipRect(_renderer, &bounds);
+	[_renderer lockFocusOn:_view.bg];
+	[_renderer setClip:_view.dirty];
+	[_renderer setDrawColour:_view.bgColour];
+	[_renderer clear];
 
 	[_view drawInRect:_view.dirty withPainter:self];
 	_view.dirty = NSZeroRect;
 
-	SDL_SetRenderClipRect(_renderer, NULL);
-	SDL_SetRenderTarget(_renderer, NULL);
+	[_renderer setClip:NSZeroRect];
+	[_renderer unlockFocus];
 	return YES;
 	}
 
@@ -114,7 +115,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 // Draw a single pixel in the current colour
 - (int) pixelAtX:(int)x y:(int)y
 	{
-	return SDL_RenderPoint(_renderer, x, y);
+	return [_renderer renderPointAtX:x y:y];
 	}
 
 // Draw pixel with blending enabled if a<255
@@ -134,9 +135,9 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	{
 	int result = 0;
 	if (a != 255)
-		result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
-	result |= SDL_SetRenderDrawColor(_renderer, r,g,b,a);
-	result |= SDL_RenderPoint(_renderer, x, y);
+		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
+	result |= [_renderer renderPointAtX:x y:y];
 	return result;
 	}
 
@@ -176,7 +177,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 // Draw a line in the current colour. No blending
 - (int) lineAtX:(int)x1 y:(int)y1 toX:(int)x2 y:(int)y2
 	{
-	return SDL_RenderLine(_renderer, x1, y1, x2, y2);
+	return [_renderer renderLineFromX:x1 y:y1 toX:x2 y:y2];
 	}
 
 
@@ -205,9 +206,9 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		return [self _aaLineAtX:x1 y:y1 toX:x2 y:y2 withR:r g:g b:b a:a];
 	int result = 0;
 	if (a != 255)
-		result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
-	result |= SDL_SetRenderDrawColor(_renderer, r, g, b, a);
-	result |= SDL_RenderLine(_renderer, x1, y1, x2, y2);
+		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
+	result |= [_renderer renderLineFromX:x1 y:y1 toX:x2 y:y2];
 	return result;
 	}
 
@@ -268,15 +269,12 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		h = -h;
 		}
 
-	// Create destination rect
-	SDL_FRect rect = {x, y, w, h};
-
 	// Draw
 	int result = 0;
 	if (a != 255)
-		result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
-	result |= SDL_SetRenderDrawColor(_renderer, r, g, b, a);
-	result |= SDL_RenderRect(_renderer, &rect);
+		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
+	result |= [_renderer renderRect:NSMakeRect(x,y,w,h)];
 	return result;
 	}
 
@@ -444,15 +442,12 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		h = -h;
 		}
 
-	// Create destination rect
-	SDL_FRect rect = {x, y, w+1, h+1};
-
 	// Draw
 	int result = 0;
 	if (a != 255)
-		result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
-	result |= SDL_SetRenderDrawColor(_renderer, r, g, b, a);
-	result |= SDL_RenderFillRect(_renderer, &rect);
+		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
+	result |= [_renderer renderFilledRect:NSMakeRect(x, y, w+1, h+1)];
 	return result;
 	}
 
@@ -554,8 +549,8 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	// Set color
 	result = 0;
 	if (a != 255)
-		result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
-	result |= SDL_SetRenderDrawColor(_renderer, r, g, b, a);
+		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
 
 	// Draw corners
 	do
@@ -818,8 +813,8 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	// Set color
 	int result = 0;
 	if (a != 255)
-		result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
-	result |= SDL_SetRenderDrawColor(_renderer, r, g, b, a);
+		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
 
 	// Set up state
 	int cx = 0;
@@ -1123,8 +1118,8 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	// Set color
 	int result = 0;
 	if (a != 255)
-		result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
-	result |= SDL_SetRenderDrawColor(_renderer, r, g, b, a);
+		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
 
 	// Init vars
 	int oh = 0xffff;
@@ -1314,8 +1309,8 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	// Set color
 	int result = 0;
 	if (a != 255)
-		result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
-	result |= SDL_SetRenderDrawColor(_renderer, r, g, b, a);
+		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
 
 	// Init vars
 	int oh = 0xffff;
@@ -1519,7 +1514,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	points[num].y = pts[0].y;
 
 	// Draw
-	return SDL_RenderLines(_renderer, points, nn);
+	return [_renderer render:nn lines:points];
 	}
 
 - (int) polygonWith:(int)num x:(int *)vx y:(int *)vy
@@ -1548,7 +1543,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	points[num].y = vy[0];
 
 	// Draw
-	return SDL_RenderLines(_renderer, points, nn);
+	return [_renderer render:nn lines:points];
 	}
 
 /*****************************************************************************\
@@ -1571,8 +1566,8 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	// Set color
 	int result = 0;
 	if (a != 255)
-		result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
-	result |= SDL_SetRenderDrawColor(_renderer, r, g, b, a);
+		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
 
 	// Draw
 	return [self _polygonWith:num vx:vx vy:vy withR:r g:g b:b a:a];
@@ -1682,8 +1677,8 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		// Set color
 		result = 0;
 	    if (a != 255)
-			result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
-		result |= SDL_SetRenderDrawColor(_renderer, r, g, b, a);
+			result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
+		result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
 
 		for (int i = 0; (i < ints); i += 2)
 			{
@@ -1774,12 +1769,12 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		}
 
     // Create texture for drawing
-	SDL_Texture *texture = SDL_CreateTextureFromSurface(_renderer, surface);
-	if (texture == NULL)
+	NSInteger texture = [_renderer createTextureWithSurface:surface];
+	if (texture < 0)
 		return -1;
 
-	SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-	
+	[_renderer setTexture:texture blendMode:SDL_BLENDMODE_BLEND];
+
 	// Draw, scanning y
 
 	int result = 0;
@@ -1835,7 +1830,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	//SDL_RenderPresent(_renderer);
 	//SDL_DestroyTexture(texture);
 	AZApp *app = [AZApp sharedInstance];
-	[app registerTextureForDisposal:texture];
+	[app registerTextureForDisposal:@(texture)];
 
 	return (result);
 	}
@@ -1896,8 +1891,8 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	// Set color
 	int result = 0;
 	if (a != 255)
-		result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
-	result |= SDL_SetRenderDrawColor(_renderer, r, g, b, a);
+		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
 
 	// Draw
 	double t=0.0;
@@ -1998,7 +1993,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 // Draw a hline in the current colour. No blending
 - (int) _hLineFromX1:(int)x1 toX2:(int)x2 atY:(int)y
 	{
-	return SDL_RenderLine(_renderer, x1, y, x2, y);
+	return [_renderer renderLineFromX:x1 y:y toX:x2 y:y];
 	}
 
 // Draw a hline with blending
@@ -2023,9 +2018,9 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	{
 	int result = 0;
 	if (a != 255)
-		result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
-	result |= SDL_SetRenderDrawColor(_renderer, r, g, b, a);
-	result |= SDL_RenderLine(_renderer, x1, y, x2, y);
+		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
+	result |= [_renderer renderLineFromX:x1 y:y toX:x2 y:y];
 	return result;
 	}
 
@@ -2038,7 +2033,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 // Draw a vline in the current colour. No blending
 - (int) _vLineFromY1:(int)y1 toY2:(int)y2 atX:(int)x
 	{
-	return SDL_RenderLine(_renderer, x, y1, x, y2);
+	return [_renderer renderLineFromX:x y:y1 toX:x y:y2];
 	}
 
 // Draw a vline with blending
@@ -2063,9 +2058,9 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	{
 	int result = 0;
 	if (a != 255)
-		result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
-	result |= SDL_SetRenderDrawColor(_renderer, r, g, b, a);
-	result |= SDL_RenderLine(_renderer, x, y1, x, y2);
+		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
+	result |= [_renderer renderLineFromX:x y:y1 toX:x y:y2];
 	return result;
 	}
 
@@ -2271,7 +2266,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	// Draw
 	int result = 0;
 	if (a != 255)
-		result |= SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
+		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
 
 	// "End points"
 	result |= [self pixelAtX:xp y:yp withR:r g:g b:b a:a];
@@ -2428,7 +2423,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		points[num].x = vx[0];
 		points[num].y = vy[0];
 
-		return SDL_RenderLines(_renderer, points, nn);
+		return [_renderer render:nn lines:points];
 		}
 
 	// Pointer setup
@@ -2471,7 +2466,7 @@ static int _qsortInts(const void *a, const void *b)
 - (int) _texturedHLineAtX:(int)x1
 					  toX:(int)x2
 					  atY:(int)y
-				  texture:(SDL_Texture*)texture
+				  texture:(NSInteger)texture
 				 textureW:(int)textureW
 				 textureH:(int)textureH
 				textureDx:(int)textureDx
@@ -2498,50 +2493,50 @@ static int _qsortInts(const void *a, const void *b)
 		textureY = textureH + textureY;
 
 	// set up the source rectangle; we are only drawing one horizontal line
-	SDL_FRect src;
-	src.y = textureY;
-	src.x = textureX;
-	src.h = 1;
+	NSRect src;
+	src.origin.y 	= textureY;
+	src.origin.x 	= textureX;
+	src.size.height = 1;
 
 	// we will draw to the current y
-	SDL_FRect dst;
-	dst.y = y;
-	dst.h = 1;
+	NSRect dst;
+	dst.origin.y 	= y;
+	dst.size.height = 1;
 
 	// if there are enough pixels left in the current row of the texture
 	// draw it all at once
 	int result = 0;
 	if (w <= textureW -textureX)
 		{
-		src.w = w;
-		src.x = textureX;
-		dst.x= x1;
-		dst.w = src.w;
-		result = (SDL_RenderTexture(_renderer, texture, &src, &dst) == 0);
+		src.size.width = w;
+		src.origin.x = textureX;
+		dst.origin.x= x1;
+		dst.size.width = src.size.width;
+		[_renderer blitFrom:texture src:src dst:dst];
 		}
 	else
 		{
 		/* we need to draw multiple times */
 		/* draw the first segment */
 		int pixelsWritten = textureW  - textureX;
-		src.w = pixelsWritten;
-		src.x = textureX;
-		dst.x= x1;
-		dst.w = src.w;
-		result |= (SDL_RenderTexture(_renderer, texture, &src, &dst) ==0);
+		src.size.width = pixelsWritten;
+		src.origin.x = textureX;
+		dst.origin.x = x1;
+		dst.size.width = src.size.width;
+		result |= ([_renderer blitFrom:texture src:src dst:dst] != 0);
 		int writeWidth = textureW;
 
 		// now draw the rest, set the source x to 0
-		src.x = 0;
+		src.origin.x = 0;
 		while (pixelsWritten < w)
 			{
 			if (writeWidth >= w - pixelsWritten)
 				writeWidth =  w - pixelsWritten;
 
-			src.w = writeWidth;
-			dst.x = x1 + pixelsWritten;
-			dst.w = src.w;
-			result |= (SDL_RenderTexture(_renderer, texture, &src, &dst) ==0);
+			src.size.width = writeWidth;
+			dst.origin.x = x1 + pixelsWritten;
+			dst.size.width = src.size.width;
+			result |= ([_renderer blitFrom:texture src:src dst:dst] != 0);
 			pixelsWritten += writeWidth;
 			}
 		}

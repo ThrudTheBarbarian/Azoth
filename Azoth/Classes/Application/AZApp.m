@@ -27,7 +27,7 @@ NSString * const kTextureType	= @"texture";
 // This is a place to temporarily store things that the renderer (for example)
 // still needs to be alive up until [renderer present] is called, at which
 // time they will be deleted
-@property(strong, nonatomic) NSMutableArray<AZObject *> * 		bin;
+@property(strong, nonatomic) NSMutableArray<NSNumber *> * 		bin;
 
 // This provides the x,y,w,h metadata for graphical UI items
 @property(strong, nonatomic) NSDictionary *						uiMap;
@@ -88,7 +88,7 @@ NSString * const kTextureType	= @"texture";
 	/*************************************************************************\
     |* Create the text renderer for any textboxes
     \*************************************************************************/
-	_textEngine = TTF_CreateRendererTextEngine(_window.renderer);
+	_textEngine = TTF_CreateRendererTextEngine(azr.renderer);
 
 	/*************************************************************************\
 	|* Get the texture atlas for the UI and put it into a GPU texture
@@ -287,11 +287,11 @@ NSString * const kTextureType	= @"texture";
 \*****************************************************************************/
 - (SDL_AppResult) nextFrameWithAppState:(void *)state
 	{
-	SDL_Renderer *R = _window.renderer;
+	AZRenderer *azr = AZRenderer.renderer;
 
 	// Before we render anything into the *textures* make sure there is
 	// no outstanding blending effect from the last cycle around
-	SDL_SetRenderDrawBlendMode(R, SDL_BLENDMODE_NONE);
+	[azr setBlendMode:SDL_BLENDMODE_NONE];
 
 	// Redraw any of the subviews that need it into their own textures
 	AZView *view = [AZWindow contentViewForWindow:_window];
@@ -300,8 +300,7 @@ NSString * const kTextureType	= @"texture";
 	[view redrawSubViewsIfNecessary];
 
 	// Get the top-level view, draw it as the background
-	SDL_FRect rect = SDLFRectFromNSRect(view.bounds);
-	SDL_RenderTexture(R, view.bg, &rect, &rect);
+	[azr blitFrom:view.bg src:view.bounds dst:view.bounds];
 
 	// Run through the views in reverse order, telling them to render their
 	// subviews to the screen
@@ -309,7 +308,7 @@ NSString * const kTextureType	= @"texture";
 		[subview _renderToScreen];
 
 	// Tell the renderer we're done
-	SDL_RenderPresent(R);
+	[azr present];
 
 	// If there's anything in the bin, get rid of it safely now
 	[self _purgeBin];
@@ -328,10 +327,9 @@ NSString * const kTextureType	= @"texture";
 /*****************************************************************************\
 |* Application service: dispose of things after renderPresent called
 \*****************************************************************************/
-- (void) registerTextureForDisposal:(SDL_Texture *)texture
+- (void) registerTextureForDisposal:(NSNumber *)texture
 	{
-	AZObject *obj = [AZObject objectWithPointer:texture andHint:kTextureType];
-	[_bin addObject:obj];
+	[_bin addObject:texture];
 	}
 
 // MARK: SDL callbacks
@@ -370,13 +368,10 @@ void SDL_AppQuit(void *appState, SDL_AppResult result)
 
 - (void) _purgeBin
 	{
-	for (AZObject *obj in _bin)
-		{
-		if ([obj.hint isEqualToString:kTextureType])
-			SDL_DestroyTexture(obj.ptr);
-		else
-			SDL_Log("Found unknown type '%s' in bin!", obj.hint.UTF8String);
-		}
+	AZRenderer *azr = [AZRenderer renderer];
+	for (NSNumber *obj in _bin)
+		[azr releaseTexture:obj.integerValue];
+
 	[_bin removeAllObjects];
 	}
 

@@ -538,11 +538,10 @@ static int 			_lineHeight = 29;
 	{
 	if (_showCursor)
 		{
-		SDL_Renderer *renderer = AZApp.sharedInstance.window.renderer;
-		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xff);
-		SDL_FRect r = _cursorRect;
-		SDL_RenderFillRect(renderer, &r);
+		AZRenderer *azr = AZRenderer.renderer;
+		[azr setBlendMode:SDL_BLENDMODE_BLEND];
+		[azr setDrawColourToRed:0 g:0 b:0 a:0xff];
+		[azr renderFilledRect:NS_RECT(_cursorRect)];
 		}
 	}
 
