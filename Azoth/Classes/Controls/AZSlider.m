@@ -122,7 +122,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 			return [self _horizontalDrag:e];
 			break;
 		case SliderTypeVertical:
-			return [self _horizontalDrag:e];
+			return [self _verticalDrag:e];
 			break;
 		case SliderTypeCircular:
 			return [self _horizontalDrag:e];
@@ -160,7 +160,37 @@ static NSRect	_knob[STATE_NUM];	// knobs
 	if (p.x >= X + W)
 		p.x = X + W;
 
-	self.doubleValue = (p.x - X) / W;
+	self.doubleValue = ((p.x - X) / W)
+					 * (self.maxValue - self.minValue)
+					 + self.minValue;
+
+	[self setNeedsDisplay:YES];
+
+	if (self.continuous)
+		[self sendAction:self.action to:self.target];
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Handle a drag press on the vertical track
+\*****************************************************************************/
+- (BOOL) _verticalDrag:(SDL_MouseMotionEvent *)e
+	{
+ 	NSPoint p = (NSPoint){e->x, e->y};
+	p = [self convertPoint:p fromView:nil];
+
+	double Y = _track.origin.y;
+	double H = _track.size.height;
+
+	if (p.y < Y)
+		p.y = Y;
+
+	if (p.y >= Y + H)
+		p.y = Y + H;
+
+	self.doubleValue = (1.0 - (p.y - Y) / H)
+					 * (self.maxValue - self.minValue)
+					 + self.minValue;
 	[self setNeedsDisplay:YES];
 
 	if (self.continuous)
@@ -224,10 +254,56 @@ static NSRect	_knob[STATE_NUM];	// knobs
 	}
 
 /*****************************************************************************\
-|* Draw the vertical slider
+|* Draw the horizontal slider
 \*****************************************************************************/
 - (void) _drawVerticalInRect:(NSRect)dirtyRect with:(AZPainter *)painter
 	{
+	NSRect sK	= _knob[self.state];
+
+	int which	= self.state == ControlStateHighlighted
+				? ControlStateNormal
+				: self.state;
+	NSRect sB	= _trackB[which];
+	NSRect sC	= _trackC[which];
+	NSRect sT	= _trackT[which];
+
+	float K2	= sK.size.width/3.f;
+	float W		= self.bounds.size.width;
+	float H		= self.bounds.size.height;
+	float W2	= W/2;
+
+	// Draw the track
+	NSRect dT	= {W2-sT.size.width/2,
+				  K2,
+				  sT.size.width,
+				  sT.size.height};
+
+	_track		= (NSRect) {W2 - sC.size.width/2,
+				  sT.size.height + K2,
+				  sC.size.width,
+				  H-sB.size.height-sT.size.height - K2 - K2};
+
+	NSRect dB	= {W2-sB.size.width/2,
+				  H-sB.size.height -K2,
+				  sB.size.width,
+				  sB.size.height};
+
+	AZRenderer *azr = AZRenderer.renderer;
+	NSInteger ui	= AZApp.sharedInstance.ui;
+
+	[azr setBlendMode:SDL_BLENDMODE_ADD];
+
+	[azr blitFrom:ui src:sB dst:dB];
+	[azr tileFrom:ui src:sC dst:_track];
+	[azr blitFrom:ui src:sT dst:dT];
+
+	// Draw the knob
+	double where	= _track.origin.y + self.doubleValue * _track.size.height;
+	_active			= (NSRect){W2 - sK.size.width/2,
+					  H - where - sK.size.width/2,
+					  sK.size.width,
+					  sK.size.height};
+	[azr blitFrom:ui src:sK dst:_active];
 	}
 
 /*****************************************************************************\

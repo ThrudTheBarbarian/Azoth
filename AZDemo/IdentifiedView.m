@@ -16,6 +16,7 @@
 @property (assign, nonatomic) SDL_Surface * surface;
 
 @property (strong, nonatomic) AZSlider *slider;
+@property (strong, nonatomic) AZSlider *vslider;
 @property (strong, nonatomic) AZTextField *text;
 @end
 
@@ -51,6 +52,13 @@
 	[_slider setAction:@selector(sliderValue:)];
 	[_slider setContinuous:YES];
 	[self addSubview:_slider];
+
+	r = NSMakeRect(150, 220, 29, 80);
+	_vslider = [AZSlider sliderWithFrame:r];
+	[_vslider setTarget:self];
+	[_vslider setAction:@selector(sliderValue:)];
+	[_vslider setContinuous:YES];
+	[self addSubview:_vslider];
 
 	return self;
 	}
@@ -174,7 +182,7 @@
 
 - (void) sliderValue:(id)sender
 	{
-	NSLog(@"slider:%@, value:%f", sender, _slider.doubleValue);
+	NSLog(@"slider:%@, value:%f", sender, ((AZSlider *)sender).doubleValue);
 	}
 
 @end

@@ -102,11 +102,6 @@ static int 			_lineHeight = 29;
 			_editArea 			= NSInsetRect(self.bounds, 6, 2);
 			_editArea.origin.y += 1;
 			_textColour			= [AZColour blackColour];
-
-			TTF_SetTextColor(_text, _textColour.red,
-									_textColour.green,
-									_textColour.blue,
-									_textColour.alpha);
 			}
 		}
 	return self;
@@ -217,6 +212,11 @@ static int 			_lineHeight = 29;
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
 	[super drawInRect:dirtyRect withPainter:painter];
+
+	TTF_SetTextColor(_text, _textColour.red,
+							_textColour.green,
+							_textColour.blue,
+							_textColour.alpha);
 
 	if (_type == TextFieldSquare)
 		[self _drawSquareTextFieldWithRect:dirtyRect andPainter:painter];
