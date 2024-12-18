@@ -111,6 +111,16 @@ struct SDL_FPoint;
 - (int) renderRect:(NSRect)r;
 - (int) renderFilledRect:(NSRect)r;
 
+/*****************************************************************************\
+|* Return the area safe for rendering in
+\*****************************************************************************/
+- (NSRect) safeAreaForRendering;
+
+/*****************************************************************************\
+|* Convert the render co-ords to window co-ords
+\*****************************************************************************/
+- (BOOL) convertRx:(float)rx ry:(float)ry to:(float*)wx wy:(float*)wy;
+
 @property(assign, nonatomic) struct SDL_Renderer *					renderer;
 @end
 

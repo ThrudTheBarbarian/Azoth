@@ -345,5 +345,23 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	return SDL_RenderFillRect(_renderer, &rect);
 	}
 
+/*****************************************************************************\
+|* Return the area safe for rendering in
+\*****************************************************************************/
+- (NSRect) safeAreaForRendering
+	{
+	SDL_Rect safeArea;
+	SDL_GetRenderSafeArea(_renderer, &safeArea);
+	return NS_RECT(safeArea);
+	}
+
+/*****************************************************************************\
+|* Convert the render co-ords to window co-ords
+\*****************************************************************************/
+- (BOOL) convertRx:(float)rx ry:(float)ry to:(float*)wx wy:(float*)wy
+	{
+	return SDL_RenderCoordinatesToWindow(_renderer, rx, ry, wx, wy);
+	}
+
 
 @end

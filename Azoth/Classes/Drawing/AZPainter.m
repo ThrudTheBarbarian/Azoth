@@ -1827,8 +1827,6 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 			}
 		}
 
-	//SDL_RenderPresent(_renderer);
-	//SDL_DestroyTexture(texture);
 	AZApp *app = [AZApp sharedInstance];
 	[app registerTextureForDisposal:@(texture)];
 

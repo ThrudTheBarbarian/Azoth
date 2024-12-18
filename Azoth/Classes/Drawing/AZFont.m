@@ -13,6 +13,7 @@
 #import "AZFont.h"
 #import "AZGlyphData.h"
 #import "AZObject.h"
+#import "AZRenderer.h"
 #import "AZTypes.h"
 #import "AZWindow.h"
 
@@ -81,7 +82,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 	{
 	if (self = [super init])
 		{
-		_renderer		= AZApp.sharedInstance.window.renderer;
+		_renderer		= AZRenderer.renderer.renderer;
 		_extents 		= [NSMutableDictionary new];
 		_glyphs			= [NSMutableArray new];
 		_lastGlyph		= [AZGlyphData new];

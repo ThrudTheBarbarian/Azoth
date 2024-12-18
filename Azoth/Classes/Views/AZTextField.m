@@ -558,35 +558,32 @@ static int 			_lineHeight = 29;
 \*****************************************************************************/
 - (void) _editDrawText
 	{
-	SDL_Renderer *renderer 	= AZApp.sharedInstance.window.renderer;
-	TTF_Font *font			= AZApp.sharedInstance.controlFont.ttfFont;
-    float x 				= _editArea.origin.x;
-    float y 				= _editArea.origin.y;
+	AZRenderer *azr	= AZRenderer.renderer;
+	TTF_Font *font	= AZApp.sharedInstance.controlFont.ttfFont;
+    float x 		= _editArea.origin.x;
+    float y 		= _editArea.origin.y;
 
-	SDL_Rect existing;
-	SDL_GetRenderClipRect(renderer, &existing);
-	NSRect nsExisting 	= NS_RECT(existing);
-	NSRect nsClip       = NSIntersectionRect(nsExisting, _origArea);
-	SDL_Rect clip		= SDL_RECT(nsClip);
+	NSRect existing 	= azr.clipRect;
+	NSRect nsClip       = NSIntersectionRect(existing, _origArea);
+	[azr setClip:nsClip];
 
-	SDL_SetRenderClipRect(renderer, &clip);
 	[self _editDrawText:_text atX:x y:y];
-	if ((existing.w > 0) && (existing.h > 0))
-		SDL_SetRenderClipRect(renderer, &existing);
+	if ((existing.size.width > 0) && (existing.size.height > 0))
+		[azr setClip:existing];
 	else
-		SDL_SetRenderClipRect(renderer, NULL);
+		[azr setClip:NSZeroRect];
 
 	// Draw any highlight
     int marker, length;
     if ([self _editGetHighlightExtentsFrom:&marker withLength:&length])
 		{
-		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND_PREMULTIPLIED);
+		[azr setBlendMode:SDL_BLENDMODE_BLEND_PREMULTIPLIED];
         TTF_SubString **highlights =
 					TTF_GetTextSubStringsForRange(_text, marker, length, NULL);
         if (highlights)
 			{
             int i;
-            SDL_SetRenderDrawColor(renderer, 0x0, 0x0, 0xff, 0x10);
+			[azr setDrawColourToRed:0 g:0 b:0xff a:0x10];
             for (i = 0; highlights[i]; ++i)
 				{
                 SDL_FRect rect;
@@ -599,7 +596,7 @@ static int 			_lineHeight = 29;
 						  - _bBM[0].size.height;
                 rect.h    = (rect.h > maxH) ? maxH : rect.h;
 
-                SDL_RenderFillRect(renderer, &rect);
+				[azr renderFilledRect:NS_RECT(rect)];
 				}
             SDL_free(highlights);
 			}
@@ -860,28 +857,25 @@ static int 			_lineHeight = 29;
 \*****************************************************************************/
 - (void) _editUpdateTextInputArea
 	{
-	SDL_Renderer *renderer = self.window.renderer;
+	AZRenderer *azr = AZRenderer.renderer;
+
     SDL_FPoint window_edit_rect_min;
     SDL_FPoint window_edit_rect_max;
     SDL_FPoint window_cursor;
-    if (!SDL_RenderCoordinatesToWindow(renderer,
-									   _editArea.origin.x,
-									   _editArea.origin.y,
-									   &window_edit_rect_min.x,
-									   &window_edit_rect_min.y) ||
-        !SDL_RenderCoordinatesToWindow(renderer,
-										_editArea.origin.x + _editArea.size.width,
-									    _editArea.origin.y + _editArea.size.height,
-									    &window_edit_rect_max.x,
-									    &window_edit_rect_max.y) ||
-        !SDL_RenderCoordinatesToWindow(renderer,
-										_cursorRect.x,
-										_cursorRect.y,
-										&window_cursor.x,
-										&window_cursor.y))
-		{
-        return;
-		}
+
+	if (![azr convertRx:_editArea.origin.x
+					 ry:_editArea.origin.y
+					 to:&window_edit_rect_min.x
+					 wy:&window_edit_rect_min.y]
+	||  ![azr convertRx:_editArea.origin.x + _editArea.size.width
+					 ry:_editArea.origin.y + _editArea.size.height
+					 to:&window_edit_rect_max.x
+					 wy:&window_edit_rect_max.y]
+	||  ![azr convertRx:_cursorRect.x
+					 ry:_cursorRect.y
+					 to:&window_cursor.x
+					 wy:&window_cursor.y])
+		return;
 
     SDL_Rect rect;
     rect.x = (int)SDL_roundf(window_edit_rect_min.x);
@@ -1216,7 +1210,7 @@ static int UTF8ByteLength(const char *text, int num_codepoints)
 - (void) _editDrawComposition
 	{
     // Draw an underline under the composed text
-    SDL_Renderer *renderer 		= self.window.renderer;
+	AZRenderer *azr				= AZRenderer.renderer;
 	TTF_Font *font 				= AZApp.sharedInstance.controlFont.ttfFont;
 	TTF_SubString **substrings	= NULL;
 
@@ -1232,7 +1226,7 @@ static int UTF8ByteLength(const char *text, int num_codepoints)
 			rect.x += _editArea.origin.x;
             rect.y += _editArea.origin.y + fontHeight;
             rect.h  = 1.0f;
-            SDL_RenderFillRect(renderer, &rect);
+			[azr renderFilledRect:NS_RECT(rect)];
 			}
         SDL_free(substrings);
 		}
@@ -1254,7 +1248,7 @@ static int UTF8ByteLength(const char *text, int num_codepoints)
                 rect.x += _editArea.origin.x;
 				rect.y += _editArea.origin.y + fontHeight -1;
                 rect.h = 1.0f;
-                SDL_RenderFillRect(renderer, &rect);
+				[azr renderFilledRect:NS_RECT(rect)];
 				}
             SDL_free(substrings);
 			}
@@ -1266,8 +1260,8 @@ static int UTF8ByteLength(const char *text, int num_codepoints)
 \*****************************************************************************/
 - (void) _editDrawCandidates
 	{
-    SDL_Renderer *renderer 		= self.window.renderer;
- 	TTF_Font *font 				= AZApp.sharedInstance.controlFont.ttfFont;
+	AZRenderer *azr	= AZRenderer.renderer;
+ 	TTF_Font *font 	= AZApp.sharedInstance.controlFont.ttfFont;
 
    SDL_Rect safe_rect;
     SDL_FRect candidates_rect;
@@ -1285,8 +1279,7 @@ static int UTF8ByteLength(const char *text, int num_codepoints)
     if (!TTF_GetTextSubString(_text, offset, &cursor))
         return;
 
-
-    SDL_GetRenderSafeArea(renderer, &safe_rect);
+	safe_rect = SDL_RECT(azr.safeAreaForRendering);
     TTF_GetTextSize(_candidates, &candidates_w, &candidates_h);
     candidates_rect.x = _editArea.origin.x + cursor.rect.x;
     candidates_rect.y = _editArea.origin.y + cursor.rect.y + cursor.rect.h + 2.0f;
@@ -1300,10 +1293,10 @@ static int UTF8ByteLength(const char *text, int num_codepoints)
 		}
 
     // Draw the candidate background
-    SDL_SetRenderDrawColor(renderer, 0xAA, 0xAA, 0xAA, 0xFF);
-    SDL_RenderFillRect(renderer, &candidates_rect);
-    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
-    SDL_RenderRect(renderer, &candidates_rect);
+	[azr setDrawColourToRed:0xaa g:0xaa b:0xaa a:0xff];
+	[azr renderFilledRect:NS_RECT(candidates_rect)];
+	[azr setDrawColourToRed:0x00 g:0x00 b:0x00 a:0xff];
+	[azr renderRect:NS_RECT(candidates_rect)];
 
     // Draw the candidates
     x = candidates_rect.x + 3.0f;
@@ -1329,7 +1322,7 @@ static int UTF8ByteLength(const char *text, int num_codepoints)
                 rect.x += x;
                 rect.y += (y + fontHeight);
                 rect.h = 1.0f;
-                SDL_RenderFillRect(renderer, &rect);
+				[azr renderFilledRect:NS_RECT(rect)];
 				}
             SDL_free(substrings);
 			}

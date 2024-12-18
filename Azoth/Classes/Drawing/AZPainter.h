@@ -253,12 +253,6 @@ struct SDL_Surface;
 \*****************************************************************************/
 - (void) setTextScale:(AZScale)scale;
 
-
-/*****************************************************************************\
-|* Blitting (SDL_Render facade so it can be replaced more easily when I get
-|* around to migrating to the SDL3 GPU
-\*****************************************************************************/
-
 // Set to draw with the (slower, but nicer looking) anti-aliased line drawing
 // routines
 @property(assign, nonatomic) BOOL 							usingAntiAliasing;
