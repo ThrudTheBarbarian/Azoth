@@ -12,6 +12,7 @@
 #import "AZColour.h"
 #import "AZFont.h"
 #import "AZPainter.h"
+#import "AZRenderer.h"
 #import "AZWindow.h"
 
 #define BUTTON_HEIGHT 		25
@@ -38,9 +39,9 @@ enum
 	STATE_NUM
 	};
 
-static SDL_FRect	_bLeft[STATE_NUM];
-static SDL_FRect	_bCenter[STATE_NUM];
-static SDL_FRect	_bRight[STATE_NUM];
+static NSRect	_bLeft[STATE_NUM];
+static NSRect	_bCenter[STATE_NUM];
+static NSRect	_bRight[STATE_NUM];
 
 @implementation AZButton
 
@@ -85,24 +86,26 @@ static SDL_FRect	_bRight[STATE_NUM];
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
+	NSRect bounds	= self.bounds;
 	[super drawInRect:dirtyRect withPainter:painter];
 
-	SDL_FRect srcL		= _bLeft[self.state + _type];
-	SDL_FRect srcC		= _bCenter[self.state + _type];
-	SDL_FRect srcR		= _bRight[self.state + _type];
+	NSRect srcL		= _bLeft[self.state + _type];
+	NSRect srcC		= _bCenter[self.state + _type];
+	NSRect srcR		= _bRight[self.state + _type];
 
-	int stretch 		= self.bounds.size.width - srcL.w - srcR.w;
-	SDL_FRect dstL		= {0, 0, srcL.w, srcL.h};
-	SDL_FRect dstC  	= {srcL.w, 0, stretch, srcC.h};
-	SDL_FRect dstR		= {srcL.w+stretch, 0, srcR.w, srcR.h};
+	int stretch 	= bounds.size.width - srcL.size.width - srcR.size.width;
+	NSRect dstL		= NSMakeRect(0, 0, srcL.size.width, srcL.size.height);
+	NSRect dstC  	= NSMakeRect(srcL.size.width, 0, stretch, srcC.size.height);
+	NSRect dstR		= NSMakeRect(srcL.size.width + stretch, 0,
+								 srcR.size.width, srcR.size.height);
 
-	SDL_Texture *src	= AZApp.sharedInstance.ui;
-	SDL_Renderer *rndr	= AZApp.sharedInstance.window.renderer;
+	AZRenderer *azr		= AZRenderer.renderer;
+	NSInteger ui		= AZApp.sharedInstance.ui;
 
-	SDL_SetRenderDrawBlendMode(rndr, SDL_BLENDMODE_ADD);
-	SDL_RenderTexture(rndr , src, &srcL, &dstL);
-	SDL_RenderTextureTiled(rndr , src, &srcC, 1, &dstC);
-	SDL_RenderTexture(rndr , src, &srcR, &dstR);
+	[azr setBlendMode:SDL_BLENDMODE_ADD];
+	[azr blitFrom:ui src:srcL dst:dstL];
+	[azr tileFrom:ui src:srcC dst:dstC];
+	[azr blitFrom:ui src:srcR dst:dstR];
 
 	[painter setTextAlignment:AZFONT_HALIGN_CENTER];
 
@@ -116,8 +119,8 @@ static SDL_FRect	_bRight[STATE_NUM];
 			[painter setTextColour:[AZColour blackColour]];
 			break;
 		}
-	NSRect bounds = NSInsetRect(self.bounds, 0, 2);
-	[painter drawInBox:bounds text:self.stringValue];
+	NSRect box = NSInsetRect(bounds, 0, 2);
+	[painter drawInBox:box text:self.stringValue];
 	}
 
 
@@ -161,55 +164,55 @@ static SDL_FRect	_bRight[STATE_NUM];
 \*****************************************************************************/
 - (void) _fetchRects
 	{
-	AZApp *app 			 = AZApp.sharedInstance;
-	_bLeft[STATE_N]   = SDL_FRECT([app srcRectFor:@"button-bezel-left"]);
-	_bLeft[STATE_H]   = SDL_FRECT([app srcRectFor:@"button-bezel-highlighted-left"]);
-	_bLeft[STATE_D]   = SDL_FRECT([app srcRectFor:@"button-bezel-disabled-left"]);
+	AZApp *app 		  = AZApp.sharedInstance;
+	_bLeft[STATE_N]   = [app srcRectFor:@"button-bezel-left"];
+	_bLeft[STATE_H]   = [app srcRectFor:@"button-bezel-highlighted-left"];
+	_bLeft[STATE_D]   = [app srcRectFor:@"button-bezel-disabled-left"];
 
-	_bLeft[STATE_RN]  = SDL_FRECT([app srcRectFor:@"button-bezel-rounded-left"]);
-	_bLeft[STATE_RH]  = SDL_FRECT([app srcRectFor:@"button-bezel-rounded-highlighted-left"]);
-	_bLeft[STATE_RD]  = SDL_FRECT([app srcRectFor:@"button-bezel-rounded-disabled-left"]);
+	_bLeft[STATE_RN]  = [app srcRectFor:@"button-bezel-rounded-left"];
+	_bLeft[STATE_RH]  = [app srcRectFor:@"button-bezel-rounded-highlighted-left"];
+	_bLeft[STATE_RD]  = [app srcRectFor:@"button-bezel-rounded-disabled-left"];
 
-	_bLeft[STATE_DN]  = SDL_FRECT([app srcRectFor:@"default-button-bezel-left"]);
-	_bLeft[STATE_DH]  = SDL_FRECT([app srcRectFor:@"default-button-bezel-highlighted-left"]);
-	_bLeft[STATE_DD]  = SDL_FRECT([app srcRectFor:@"default-button-bezel-disabled-left"]);
+	_bLeft[STATE_DN]  = [app srcRectFor:@"default-button-bezel-left"];
+	_bLeft[STATE_DH]  = [app srcRectFor:@"default-button-bezel-highlighted-left"];
+	_bLeft[STATE_DD]  = [app srcRectFor:@"default-button-bezel-disabled-left"];
 
-	_bLeft[STATE_RDN] = SDL_FRECT([app srcRectFor:@"default-button-bezel-rounded-left"]);
-	_bLeft[STATE_RDH] = SDL_FRECT([app srcRectFor:@"default-button-bezel-rounded-highlighted-left"]);
-	_bLeft[STATE_RDD] = SDL_FRECT([app srcRectFor:@"default-button-bezel-rounded-disabled-left"]);
-
-
-	_bCenter[STATE_N]   = SDL_FRECT([app srcRectFor:@"button-bezel-center"]);
-	_bCenter[STATE_H]   = SDL_FRECT([app srcRectFor:@"button-bezel-highlighted-center"]);
-	_bCenter[STATE_D]   = SDL_FRECT([app srcRectFor:@"button-bezel-disabled-center"]);
-
-	_bCenter[STATE_RN]  = SDL_FRECT([app srcRectFor:@"button-bezel-rounded-center"]);
-	_bCenter[STATE_RH]  = SDL_FRECT([app srcRectFor:@"button-bezel-rounded-highlighted-center"]);
-	_bCenter[STATE_RD]  = SDL_FRECT([app srcRectFor:@"button-bezel-rounded-disabled-center"]);
-
-	_bCenter[STATE_DN]  = SDL_FRECT([app srcRectFor:@"default-button-bezel-center"]);
-	_bCenter[STATE_DH]  = SDL_FRECT([app srcRectFor:@"default-button-bezel-highlighted-center"]);
-	_bCenter[STATE_DD]  = SDL_FRECT([app srcRectFor:@"default-button-bezel-disabled-center"]);
-
-	_bCenter[STATE_RDN] = SDL_FRECT([app srcRectFor:@"default-button-bezel-rounded-center"]);
-	_bCenter[STATE_RDH] = SDL_FRECT([app srcRectFor:@"default-button-bezel-rounded-highlighted-center"]);
-	_bCenter[STATE_RDD] = SDL_FRECT([app srcRectFor:@"default-button-bezel-rounded-disabled-center"]);
+	_bLeft[STATE_RDN] = [app srcRectFor:@"default-button-bezel-rounded-left"];
+	_bLeft[STATE_RDH] = [app srcRectFor:@"default-button-bezel-rounded-highlighted-left"];
+	_bLeft[STATE_RDD] = [app srcRectFor:@"default-button-bezel-rounded-disabled-left"];
 
 
-	_bRight[STATE_N]   = SDL_FRECT([app srcRectFor:@"button-bezel-right"]);
-	_bRight[STATE_H]   = SDL_FRECT([app srcRectFor:@"button-bezel-highlighted-right"]);
-	_bRight[STATE_D]   = SDL_FRECT([app srcRectFor:@"button-bezel-disabled-right"]);
+	_bCenter[STATE_N]   = [app srcRectFor:@"button-bezel-center"];
+	_bCenter[STATE_H]   = [app srcRectFor:@"button-bezel-highlighted-center"];
+	_bCenter[STATE_D]   = [app srcRectFor:@"button-bezel-disabled-center"];
 
-	_bRight[STATE_RN]  = SDL_FRECT([app srcRectFor:@"button-bezel-rounded-right"]);
-	_bRight[STATE_RH]  = SDL_FRECT([app srcRectFor:@"button-bezel-rounded-highlighted-right"]);
-	_bRight[STATE_RD]  = SDL_FRECT([app srcRectFor:@"button-bezel-rounded-disabled-right"]);
+	_bCenter[STATE_RN]  = [app srcRectFor:@"button-bezel-rounded-center"];
+	_bCenter[STATE_RH]  = [app srcRectFor:@"button-bezel-rounded-highlighted-center"];
+	_bCenter[STATE_RD]  = [app srcRectFor:@"button-bezel-rounded-disabled-center"];
 
-	_bRight[STATE_DN]  = SDL_FRECT([app srcRectFor:@"default-button-bezel-right"]);
-	_bRight[STATE_DH]  = SDL_FRECT([app srcRectFor:@"default-button-bezel-highlighted-right"]);
-	_bRight[STATE_DD]  = SDL_FRECT([app srcRectFor:@"default-button-bezel-disabled-right"]);
+	_bCenter[STATE_DN]  = [app srcRectFor:@"default-button-bezel-center"];
+	_bCenter[STATE_DH]  = [app srcRectFor:@"default-button-bezel-highlighted-center"];
+	_bCenter[STATE_DD]  = [app srcRectFor:@"default-button-bezel-disabled-center"];
 
-	_bRight[STATE_RDN] = SDL_FRECT([app srcRectFor:@"default-button-bezel-rounded-right"]);
-	_bRight[STATE_RDH] = SDL_FRECT([app srcRectFor:@"default-button-bezel-rounded-highlighted-right"]);
-	_bRight[STATE_RDD] = SDL_FRECT([app srcRectFor:@"default-button-bezel-rounded-disabled-right"]);
+	_bCenter[STATE_RDN] = [app srcRectFor:@"default-button-bezel-rounded-center"];
+	_bCenter[STATE_RDH] = [app srcRectFor:@"default-button-bezel-rounded-highlighted-center"];
+	_bCenter[STATE_RDD] = [app srcRectFor:@"default-button-bezel-rounded-disabled-center"];
+
+
+	_bRight[STATE_N]   = [app srcRectFor:@"button-bezel-right"];
+	_bRight[STATE_H]   = [app srcRectFor:@"button-bezel-highlighted-right"];
+	_bRight[STATE_D]   = [app srcRectFor:@"button-bezel-disabled-right"];
+
+	_bRight[STATE_RN]  = [app srcRectFor:@"button-bezel-rounded-right"];
+	_bRight[STATE_RH]  = [app srcRectFor:@"button-bezel-rounded-highlighted-right"];
+	_bRight[STATE_RD]  = [app srcRectFor:@"button-bezel-rounded-disabled-right"];
+
+	_bRight[STATE_DN]  = [app srcRectFor:@"default-button-bezel-right"];
+	_bRight[STATE_DH]  = [app srcRectFor:@"default-button-bezel-highlighted-right"];
+	_bRight[STATE_DD]  = [app srcRectFor:@"default-button-bezel-disabled-right"];
+
+	_bRight[STATE_RDN] = [app srcRectFor:@"default-button-bezel-rounded-right"];
+	_bRight[STATE_RDH] = [app srcRectFor:@"default-button-bezel-rounded-highlighted-right"];
+	_bRight[STATE_RDD] = [app srcRectFor:@"default-button-bezel-rounded-disabled-right"];
 	}
 @end

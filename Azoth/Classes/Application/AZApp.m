@@ -15,6 +15,7 @@
 #import "AZGeometry.h"
 #import "AZNotifications.h"
 #import "AZObject.h"
+#import "AZRenderer.h"
 #import "AZView.h"
 #import "AZView+Internal.h"
 #import "AZWindow.h"
@@ -67,6 +68,8 @@ NSString * const kTextureType	= @"texture";
 \*****************************************************************************/
 - (void) startWithArgc:(int)argc argv:(char **)argv
 	{
+	AZRenderer *azr = nil;
+
 	/*************************************************************************\
     |* Create the window
     \*************************************************************************/
@@ -78,8 +81,10 @@ NSString * const kTextureType	= @"texture";
 		_viability = SDL_APP_FAILURE;
 		}
 	else
+		{
+		azr = [AZRenderer renderer];
 		[_window installContentView];
-
+		}
 	/*************************************************************************\
     |* Create the text renderer for any textboxes
     \*************************************************************************/
@@ -100,7 +105,14 @@ NSString * const kTextureType	= @"texture";
 		}
 	else
 		{
-		_ui = SDL_CreateTextureFromSurface(_window.renderer, atlasSurface);
+		_ui = [azr createTextureWithSurface:atlasSurface];
+		if (_ui < 0)
+			{
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+						  "Failed to create UI atlas!");
+			_viability =  SDL_APP_FAILURE;
+			}
+
 		SDL_DestroySurface(atlasSurface);
 		atlasPath = [NSString stringWithFormat:@"%@/atlas.plist", rsrc];
 		_uiMap = [NSDictionary dictionaryWithContentsOfFile:atlasPath];

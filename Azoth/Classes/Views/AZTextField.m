@@ -13,6 +13,7 @@
 #import "AZFont.h"
 #import "AZNotifications.h"
 #import "AZPainter.h"
+#import "AZRenderer.h"
 #import "AZTextField.h"
 #import "AZTextPainter.h"
 #import "AZTypes.h"
@@ -31,15 +32,15 @@ enum
 	STATE_NUM
 	};
 
-static SDL_FRect	_bTL[STATE_NUM];
-static SDL_FRect	_bTM[STATE_NUM];
-static SDL_FRect	_bTR[STATE_NUM];
-static SDL_FRect	_bCL[STATE_NUM];
-static SDL_FRect	_bCM[STATE_NUM];
-static SDL_FRect	_bCR[STATE_NUM];
-static SDL_FRect	_bBL[STATE_NUM];
-static SDL_FRect	_bBM[STATE_NUM];
-static SDL_FRect	_bBR[STATE_NUM];
+static NSRect	_bTL[STATE_NUM];
+static NSRect	_bTM[STATE_NUM];
+static NSRect	_bTR[STATE_NUM];
+static NSRect	_bCL[STATE_NUM];
+static NSRect	_bCM[STATE_NUM];
+static NSRect	_bCR[STATE_NUM];
+static NSRect	_bBL[STATE_NUM];
+static NSRect	_bBM[STATE_NUM];
+static NSRect	_bBR[STATE_NUM];
 
 static int 			_lineHeight = 29;
 
@@ -192,49 +193,72 @@ static int 			_lineHeight = 29;
 
 - (void) _drawSquareTextFieldWithRect:(NSRect)r andPainter:(AZPainter *)p
 	{
-	SDL_FRect sTL		= _bTL[self.state + _type];
-	SDL_FRect sTM		= _bTM[self.state + _type];
-	SDL_FRect sTR		= _bTR[self.state + _type];
+	NSRect sTL	= _bTL[self.state + _type];
+	NSRect sTM	= _bTM[self.state + _type];
+	NSRect sTR	= _bTR[self.state + _type];
 
-	SDL_FRect sCL		= _bCL[self.state + _type];
-	SDL_FRect sCM		= _bCM[self.state + _type];
-	SDL_FRect sCR		= _bCR[self.state + _type];
+	NSRect sCL	= _bCL[self.state + _type];
+	NSRect sCM	= _bCM[self.state + _type];
+	NSRect sCR	= _bCR[self.state + _type];
 
-	SDL_FRect sBL		= _bBL[self.state + _type];
-	SDL_FRect sBM		= _bBM[self.state + _type];
-	SDL_FRect sBR		= _bBR[self.state + _type];
+	NSRect sBL	= _bBL[self.state + _type];
+	NSRect sBM	= _bBM[self.state + _type];
+	NSRect sBR	= _bBR[self.state + _type];
 
-	float W				= self.bounds.size.width  - 1;
-	float H				= self.bounds.size.height - 1;
+	float W		= self.bounds.size.width  - 1;
+	float H		= self.bounds.size.height - 1;
 
-	SDL_FRect dTL		= {0, H-sTL.h, sTL.w, sTL.h};
-	SDL_FRect dTM		= {sTL.w, H-sTM.h, W-sTL.w-sTR.w, sTM.h};
-	SDL_FRect dTR		= {W-sTR.w, H-sTR.h, sTR.w, sTR.h};
+	NSRect dTL	= {0,
+				   H-sTL.size.height,
+				   sTL.size.width,
+				   sTL.size.height};
 
-	SDL_FRect dCL		= {0, sBL.h, sCL.w, H-sTL.h-sBL.h};
-	SDL_FRect dCM		= {sCL.w, sCM.h, W-sCL.w-sCR.w, H-sTM.h-sBM.h};
-	SDL_FRect dCR		= {W-sCR.w, sBR.h, sCR.w, H-sTR.h-sBR.h};
+	NSRect dTM	= {sTL.size.width,
+				   H-sTM.size.height,
+				   W-sTL.size.width-sTR.size.width,
+				   sTM.size.height};
 
-	SDL_FRect dBL		= {0, 0, sBL.w, sBL.h};
-	SDL_FRect dBM		= {sBL.w, 0, W-sBL.w-sBR.w, sBM.h};
-	SDL_FRect dBR		= {W-sBR.w, 0, sBR.w, sBR.h};
+	NSRect dTR	= {W-sTR.size.width,
+				   H-sTR.size.height,
+				   sTR.size.width,
+				   sTR.size.height};
 
-	SDL_Texture *src	= AZApp.sharedInstance.ui;
-	SDL_Renderer *rndr	= AZApp.sharedInstance.window.renderer;
+	NSRect dCL	= {0,
+				   sBL.size.height,
+				   sCL.size.width,
+				   H-sTL.size.height-sBL.size.height};
 
-	SDL_SetRenderDrawBlendMode(rndr, SDL_BLENDMODE_ADD);
+	NSRect dCM	= {sCL.size.width,
+				   sCM.size.height,
+				   W-sCL.size.width-sCR.size.width,
+				   H-sTM.size.height-sBM.size.height};
 
-	SDL_RenderTexture	  (rndr, src, &sTL,    &dTL);
-	SDL_RenderTextureTiled(rndr, src, &sTM, 1, &dTM);
-	SDL_RenderTexture     (rndr, src, &sTR,    &dTR);
+	NSRect dCR	= {W-sCR.size.width,
+				   sBR.size.height,
+				   sCR.size.width,
+				   H-sTR.size.height-sBR.size.height};
 
-	SDL_RenderTextureTiled(rndr, src, &sCL, 1, &dCL);
-	SDL_RenderTextureTiled(rndr, src, &sCM, 1, &dCM);
-	SDL_RenderTextureTiled(rndr, src, &sCR, 1, &dCR);
+	NSRect dBL	= {0, 0, sBL.size.width, sBL.size.height};
+	NSRect dBM	= {sBL.size.width, 0,
+				   W-sBL.size.width-sBR.size.width, sBM.size.height};
+	NSRect dBR	= {W-sBR.size.width, 0, sBR.size.width, sBR.size.height};
 
-	SDL_RenderTexture	  (rndr, src, &sBL,    &dBL);
-	SDL_RenderTextureTiled(rndr, src, &sBM, 1, &dBM);
-	SDL_RenderTexture     (rndr, src, &sBR,    &dBR);
+	AZRenderer *azr = AZRenderer.renderer;
+	NSInteger ui	= AZApp.sharedInstance.ui;
+
+	[azr setBlendMode:SDL_BLENDMODE_ADD];
+
+	[azr blitFrom:ui src:sTL dst:dTL];
+	[azr tileFrom:ui src:sTM dst:dTM];
+	[azr blitFrom:ui src:sTR dst:dTR];
+
+	[azr tileFrom:ui src:sCL dst:dCL];
+	[azr tileFrom:ui src:sCM dst:dCM];
+	[azr tileFrom:ui src:sCR dst:dCR];
+
+	[azr blitFrom:ui src:sBL dst:dBL];
+	[azr tileFrom:ui src:sBM dst:dBM];
+	[azr blitFrom:ui src:sBR dst:dBR];
 
 	[self _drawTextInRect:_editArea withPainter:p];
 	}
@@ -249,53 +273,53 @@ static int 			_lineHeight = 29;
 	{
 	AZApp *app 			 = AZApp.sharedInstance;
 
-	_bBL[STATE_SN] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-0"]);
-	_bBM[STATE_SN] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-1"]);
-	_bBR[STATE_SN] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-2"]);
-	_bCL[STATE_SN] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-3"]);
-	_bCM[STATE_SN] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-4"]);
-	_bCR[STATE_SN] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-5"]);
-	_bTL[STATE_SN] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-6"]);
-	_bTM[STATE_SN] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-7"]);
-	_bTR[STATE_SN] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-8"]);
+	_bBL[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-0"];
+	_bBM[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-1"];
+	_bBR[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-2"];
+	_bCL[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-3"];
+	_bCM[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-4"];
+	_bCR[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-5"];
+	_bTL[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-6"];
+	_bTM[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-7"];
+	_bTR[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-8"];
 
-	_bBL[STATE_SF] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-focused-0"]);
-	_bBM[STATE_SF] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-focused-1"]);
-	_bBR[STATE_SF] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-focused-2"]);
-	_bCL[STATE_SF] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-focused-3"]);
-	_bCM[STATE_SF] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-focused-4"]);
-	_bCR[STATE_SF] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-focused-5"]);
-	_bTL[STATE_SF] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-focused-6"]);
-	_bTM[STATE_SF] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-focused-7"]);
-	_bTR[STATE_SF] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-focused-8"]);
+	_bBL[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-0"];
+	_bBM[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-1"];
+	_bBR[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-2"];
+	_bCL[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-3"];
+	_bCM[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-4"];
+	_bCR[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-5"];
+	_bTL[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-6"];
+	_bTM[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-7"];
+	_bTR[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-8"];
 
-	_bBL[STATE_SD] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-disabled-0"]);
-	_bBM[STATE_SD] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-disabled-1"]);
-	_bBR[STATE_SD] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-disabled-2"]);
-	_bCL[STATE_SD] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-disabled-3"]);
-	_bCM[STATE_SD] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-disabled-4"]);
-	_bCR[STATE_SD] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-disabled-5"]);
-	_bTL[STATE_SD] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-disabled-6"]);
-	_bTM[STATE_SD] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-disabled-7"]);
-	_bTR[STATE_SD] = SDL_FRECT([app srcRectFor:@"textfield-bezel-square-disabled-8"]);
+	_bBL[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-0"];
+	_bBM[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-1"];
+	_bBR[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-2"];
+	_bCL[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-3"];
+	_bCM[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-4"];
+	_bCR[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-5"];
+	_bTL[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-6"];
+	_bTM[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-7"];
+	_bTR[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-8"];
 
-	_bCL[STATE_RN] = SDL_FRECT([app srcRectFor:@"textfield-bezel-rounded-left"]);
-	_bCM[STATE_RN] = SDL_FRECT([app srcRectFor:@"textfield-bezel-rounded-center"]);
-	_bCR[STATE_RN] = SDL_FRECT([app srcRectFor:@"textfield-bezel-rounded-right"]);
+	_bCL[STATE_RN] = [app srcRectFor:@"textfield-bezel-rounded-left"];
+	_bCM[STATE_RN] = [app srcRectFor:@"textfield-bezel-rounded-center"];
+	_bCR[STATE_RN] = [app srcRectFor:@"textfield-bezel-rounded-right"];
 
-	_bCL[STATE_RF] = SDL_FRECT([app srcRectFor:@"textfield-bezel-rounded-focused-left"]);
-	_bCM[STATE_RF] = SDL_FRECT([app srcRectFor:@"textfield-bezel-rounded-focused-center"]);
-	_bCR[STATE_RF] = SDL_FRECT([app srcRectFor:@"textfield-bezel-rounded-focused-right"]);
+	_bCL[STATE_RF] = [app srcRectFor:@"textfield-bezel-rounded-focused-left"];
+	_bCM[STATE_RF] = [app srcRectFor:@"textfield-bezel-rounded-focused-center"];
+	_bCR[STATE_RF] = [app srcRectFor:@"textfield-bezel-rounded-focused-right"];
 
-	_bCL[STATE_RD] = SDL_FRECT([app srcRectFor:@"textfield-bezel-rounded-disabled-left"]);
-	_bCM[STATE_RD] = SDL_FRECT([app srcRectFor:@"textfield-bezel-rounded-disabled-center"]);
-	_bCR[STATE_RD] = SDL_FRECT([app srcRectFor:@"textfield-bezel-rounded-disabled-right"]);
+	_bCL[STATE_RD] = [app srcRectFor:@"textfield-bezel-rounded-disabled-left"];
+	_bCM[STATE_RD] = [app srcRectFor:@"textfield-bezel-rounded-disabled-center"];
+	_bCR[STATE_RD] = [app srcRectFor:@"textfield-bezel-rounded-disabled-right"];
 
 	for (int i=STATE_RN; i<=STATE_RD; i++)
 		{
-		_lineHeight = MAX(_bCL[i].h, _lineHeight);
-		_lineHeight = MAX(_bCM[i].h, _lineHeight);
-		_lineHeight = MAX(_bCR[i].h, _lineHeight);
+		_lineHeight = MAX(_bCL[i].size.height, _lineHeight);
+		_lineHeight = MAX(_bCM[i].size.height, _lineHeight);
+		_lineHeight = MAX(_bCR[i].size.height, _lineHeight);
 		}
 	}
 
@@ -571,7 +595,9 @@ static int 			_lineHeight = 29;
                 rect.x += x;
                 rect.y += y+3;
 
-                int maxH  = self.bounds.size.height-_bTM[0].h - _bBM[0].h;
+                int maxH  = self.bounds.size.height
+						  - _bTM[0].size.height
+						  - _bBM[0].size.height;
                 rect.h    = (rect.h > maxH) ? maxH : rect.h;
 
                 SDL_RenderFillRect(renderer, &rect);
@@ -641,10 +667,14 @@ static int 			_lineHeight = 29;
 	_highlightFrom = -1;
 	_highlightTo = -1;
 
-	int X = _bCL[0].w + 3;
-	int Y = _bTM[0].h - 2;
-	int W = self.bounds.size.width - _bCL[0].w - _bCR[0].w - 6;
-	int H = self.bounds.size.height - _bBM[0].h - _bTM[0].h;
+	int X = _bCL[0].size.width + 3;
+	int Y = _bTM[0].size.height - 2;
+	int W = self.bounds.size.width
+		  - _bCL[0].size.width
+		  - _bCR[0].size.width - 6;
+	int H = self.bounds.size.height
+		  - _bBM[0].size.height
+		  - _bTM[0].size.height;
 
 	_editArea = NSMakeRect(X,Y,W,H);
 		 //NSInsetRect(self.bounds, 4, 2);
@@ -693,7 +723,9 @@ static int 			_lineHeight = 29;
 		// editArea off to the left to compensate
 		int cx = cursor.rect.w + cursor.rect.x;
 		int cumulativeWidth = 0;
-		int maxX = _origArea.size.width - _bCL[0].w - _bCR[0].w;
+		int maxX = _origArea.size.width
+				- _bCL[0].size.width
+				- _bCR[0].size.width;
 		TTF_SubString prefix, next;
 		TTF_GetTextSubString(_text, 0, &prefix);
 		while (cx - cumulativeWidth > maxX)

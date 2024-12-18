@@ -89,8 +89,8 @@ struct TTF_TextEngine;
 // And an appropriately sized control font
 @property(strong, nonatomic) AZFont *					controlFont;
 
-// The UI texture atlas
-@property(assign, nonatomic) struct SDL_Texture *		ui;
+// The UI texture atlas id
+@property(assign, nonatomic) NSInteger 					ui;
 
 // The Initial frame at startup. If not set, a default
 // 640x480 size will be used

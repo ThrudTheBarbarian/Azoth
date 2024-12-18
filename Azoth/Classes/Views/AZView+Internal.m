@@ -254,6 +254,7 @@
 	/*************************************************************************\
 	|* Draw ourselves first...
 	\*************************************************************************/
+	
 	SDL_SetRenderClipRect(renderer, &clip);
 	SDL_RenderTexture(renderer, self.bg, &src, &dst);
 	SDL_SetRenderClipRect(renderer, NULL);
