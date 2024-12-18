@@ -39,13 +39,13 @@
 	NSRect r = NSMakeRect(30, 250, 100, 29);
 	AZTextField *tf = [AZTextField textfieldWithFrame:r];
 	[tf setTarget:self];
-	[tf setAction:@selector(buttonPressed:)];
+	[tf setAction:@selector(textEntered:)];
 	[self addSubview:tf];
 
 	r = NSMakeRect(30, 280, 100, 29);
 	tf = [AZTextField textfieldWithFrame:r];
 	[tf setTarget:self];
-	[tf setAction:@selector(buttonPressed:)];
+	[tf setAction:@selector(textEntered:)];
 	[self addSubview:tf];
 
 	return self;
@@ -155,6 +155,12 @@
 - (void) buttonPressed:(id)sender
 	{
 	NSLog(@"sender:%@", sender);
+	}
+
+
+- (void) textEntered:(id)sender
+	{
+	NSLog(@"sender:%@, text:'%@'", sender, ((AZTextField *)sender).stringValue);
 	}
 
 @end

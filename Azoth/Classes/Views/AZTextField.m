@@ -72,8 +72,10 @@ static int 			_lineHeight = 29;
 
 // For window rendering
 @property(assign, nonatomic) 	NSRect					editArea;
+@property(assign, nonatomic) 	NSRect					origArea;
 
 @property(strong, nonatomic) 	NSTimer *				blinkTimer;
+
 @end
 
 @implementation AZTextField
@@ -355,6 +357,7 @@ static int 			_lineHeight = 29;
  	TTF_Font *font = AZApp.sharedInstance.controlFont.ttfFont;
 	int index = [self _editGetCursorTextIndexFor:font at:textX in:&substring];
 	[self _editSetCursorPosition:index];
+	[self _editEnsureCursorVisible];
 
     _highlightTo = _cursor;
 	[self setNeedsDisplay:YES];
@@ -452,7 +455,13 @@ static int 			_lineHeight = 29;
                 [self _editDelete];
 			handled = YES;
             break;
+
+        case SDLK_RETURN:
+            [self _editAction];
+            handled = YES;
+            break;
 		}
+	[self _editEnsureCursorVisible];
 
 	if (handled)
 		[self setNeedsDisplay:YES];
@@ -531,7 +540,18 @@ static int 			_lineHeight = 29;
     float x 				= _editArea.origin.x;
     float y 				= _editArea.origin.y;
 
+	SDL_Rect existing;
+	SDL_GetRenderClipRect(renderer, &existing);
+	NSRect nsExisting 	= NS_RECT(existing);
+	NSRect nsClip       = NSIntersectionRect(nsExisting, _origArea);
+	SDL_Rect clip		= SDL_RECT(nsClip);
+
+	SDL_SetRenderClipRect(renderer, &clip);
 	[self _editDrawText:_text atX:x y:y];
+	if ((existing.w > 0) && (existing.h > 0))
+		SDL_SetRenderClipRect(renderer, &existing);
+	else
+		SDL_SetRenderClipRect(renderer, NULL);
 
 	// Draw any highlight
     int marker, length;
@@ -588,6 +608,22 @@ static int 			_lineHeight = 29;
 
 	}
 
+// MARK: Editing methods
+
+
+/*****************************************************************************\
+|* Send an action to the target if we have both
+\*****************************************************************************/
+- (void) _editAction
+	{
+	if ((self.target != nil) && (self.action != nil))
+		{
+		IMP imp = [self.target methodForSelector:self.action];
+		void (*func)(id, SEL, id) = (void *)imp;
+		func(self.target, self.action, self);
+		}
+	}
+
 /*****************************************************************************\
 |* Creation of the editing state
 \*****************************************************************************/
@@ -604,14 +640,15 @@ static int 			_lineHeight = 29;
 		}
 	_highlightFrom = -1;
 	_highlightTo = -1;
-	_editArea = NSInsetRect(self.bounds, 4, 2);
-			_editArea.origin.x -= 20;
 
-    // Wrap the editbox text within the editbox area
-	//TTF_SetTextWrapWidth(_text, (int)SDL_floorf(_editArea.size.width));
+	int X = _bCL[0].w + 3;
+	int Y = _bTM[0].h - 2;
+	int W = self.bounds.size.width - _bCL[0].w - _bCR[0].w - 6;
+	int H = self.bounds.size.height - _bBM[0].h - _bTM[0].h;
 
-    // Show whitespace when wrapping, so it can be edited
-    TTF_SetTextWrapWhitespaceVisible(_text, true);
+	_editArea = NSMakeRect(X,Y,W,H);
+		 //NSInsetRect(self.bounds, 4, 2);
+	_origArea = _editArea;
 
 	// We support rendering the composition and candidates
     SDL_SetHint(SDL_HINT_IME_IMPLEMENTED_UI, "composition,candidates");
@@ -638,9 +675,39 @@ static int 			_lineHeight = 29;
     size_t length = SDL_strlen(text);
     TTF_InsertTextString(_text, _cursor, text, length);
     [self _editSetCursorPosition:(int)(_cursor + length)];
+	[self _editEnsureCursorVisible];
+
 	[self setNeedsDisplay:YES];
 	}
 
+
+/*****************************************************************************\
+|* Make sure the cursor is visible by manipulating the textbox area
+\*****************************************************************************/
+- (void) _editEnsureCursorVisible
+	{
+	TTF_SubString cursor;
+ 	if (TTF_GetTextSubString(_text, _cursor, &cursor))
+		{
+		// If the cursor would go off the screen to the right, push the
+		// editArea off to the left to compensate
+		int cx = cursor.rect.w + cursor.rect.x;
+		int cumulativeWidth = 0;
+		int maxX = _origArea.size.width - _bCL[0].w - _bCR[0].w;
+		TTF_SubString prefix, next;
+		TTF_GetTextSubString(_text, 0, &prefix);
+		while (cx - cumulativeWidth > maxX)
+			{
+			cumulativeWidth += prefix.rect.w;
+			TTF_GetNextTextSubString(_text, &prefix, &next);
+			prefix = next;
+			}
+		_editArea.origin.x = _origArea.origin.x - cumulativeWidth;
+		}
+
+	if (_text->text)
+		self.stringValue = [NSString stringWithUTF8String:_text->text];
+	}
 
 /*****************************************************************************\
 |* Get rid of any highlight
@@ -679,6 +746,7 @@ static int 			_lineHeight = 29;
 		}
 
     _cursor = position;
+	[self _editEnsureCursorVisible];
 	}
 
 
@@ -752,6 +820,7 @@ static int 			_lineHeight = 29;
         int length = (int)(uintptr_t)(start - next);
         TTF_DeleteTextString(_text, _cursor - length, length);
         _cursor -= length;
+		[self _editEnsureCursorVisible];
 		}
 	}
 
@@ -894,7 +963,7 @@ static int 			_lineHeight = 29;
 		[self _moveCursorIndex:1];
     else
 		[self _moveCursorIndex:-1];
-    }
+	}
 
 /*****************************************************************************\
 |* Move the cursor one character right
@@ -922,10 +991,12 @@ static int 			_lineHeight = 29;
 		}
 	else
 		{
-		int offset = substring.offset + SDL_max(substring.length, 1);
-
-        if (TTF_GetTextSubString(_text, _cursor, &substring)
-        &&  TTF_GetTextSubString(_text, offset, &substring))
+        if (TTF_GetTextSubString(_text,
+								 _cursor,
+								 &substring)
+        &&  TTF_GetTextSubString(_text,
+								 substring.offset + SDL_max(substring.length, 1),
+								 &substring))
 			[self _editSetCursorPosition:substring.offset];
 		}
 	}

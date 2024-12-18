@@ -133,8 +133,8 @@ static SDL_FRect	_bRight[STATE_NUM];
 		if ((self.target != nil) && (self.action != nil))
 			{
 			IMP imp = [self.target methodForSelector:self.action];
-			void (*func)(id, SEL) = (void *)imp;
-			func(self.target, self.action);
+			void (*func)(id, SEL, id) = (void *)imp;
+			func(self.target, self.action, self);
 			}
 		}
 	return YES;
