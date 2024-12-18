@@ -23,10 +23,26 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 - (instancetype) initWithFrame:(NSRect)frame;
 
+/*****************************************************************************\
+|* set the enabled/disabled state (enabled by default)
+\*****************************************************************************/
+- (BOOL) enabled;
+- (void) setEnabled:(BOOL)yn;
+
+/*****************************************************************************\
+|* Send an action to the target
+\*****************************************************************************/
+- (void) sendAction:(nullable SEL)action to:(nullable NSObject *)target;
+
 @property(assign, nonatomic) SEL 								action;
 @property(strong, nonatomic) NSObject *							target;
+
 @property(assign, nonatomic) AZControlState						state;
+@property(assign, nonatomic) BOOL 								enabled;
+
 @property(strong, nonatomic) NSString *							stringValue;
+@property(assign, nonatomic) double								doubleValue;
+@property(assign, nonatomic) BOOL								continuous;
 @end
 
 NS_ASSUME_NONNULL_END

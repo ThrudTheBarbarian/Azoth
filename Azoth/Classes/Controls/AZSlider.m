@@ -1,0 +1,272 @@
+//
+//  AZSlider.m
+//  Azoth
+//
+//  Created by Simon Gornall on 12/18/24.
+//
+#import <SDL3/SDL.h>
+
+#import "AZApp.h"
+#import "AZColour.h"
+#import "AZPainter.h"
+#import "AZRenderer.h"
+#import "AZSlider.h"
+#import "AZWindow.h"
+
+enum
+	{
+	STATE_N	= 0,					// Normal
+	STATE_H,						// Highlighted
+	STATE_D,						// Disabled
+
+	STATE_NUM
+	};
+
+static NSRect	_trackL[STATE_NUM];	// Horizontal, Left
+static NSRect	_trackM[STATE_NUM];	// Horizontal, Middle
+static NSRect	_trackR[STATE_NUM];	// Horizontal, Right
+
+static NSRect	_trackB[STATE_NUM];	// Vertical, Bottom
+static NSRect	_trackC[STATE_NUM];	// Vertical, Center
+static NSRect	_trackT[STATE_NUM];	// Vertical, Top
+
+static NSRect	_circ[STATE_NUM];	// Circular, bezel
+static NSRect	_cKnob[STATE_NUM];	// Circular, knob
+
+static NSRect	_knob[STATE_NUM];	// knobs
+
+@interface AZSlider()
+@property(assign, nonatomic) NSRect							active;
+@property(assign, nonatomic) NSRect							track;
+@end
+
+@implementation AZSlider
+
+/*****************************************************************************\
+|* Initialisation
+\*****************************************************************************/
+- (instancetype) initWithFrame:(NSRect)frame
+	{
+	if (self = [super initWithFrame:frame])
+		{
+		static dispatch_once_t onceToken;
+		dispatch_once(&onceToken,
+			^{
+			[self _fetchRects];
+			});
+
+		self.bgColour 		= [AZColour clearColour];
+		self.doubleValue 	= 0.5;
+		self.minValue		= 0.0;
+		self.maxValue		= 1.0;
+		_type		 		= frame.size.width > frame.size.height
+							? SliderTypeHorizontal
+							: frame.size.width == frame.size.height
+							? SliderTypeCircular
+							: SliderTypeVertical;
+		}
+	return self;
+	}
+
++ (AZSlider *) sliderWithFrame:(NSRect)frame
+	{
+	return [[AZSlider alloc] initWithFrame:frame];
+	}
+
+// MARK: Drawing
+
+/*****************************************************************************\
+|* Draw the slider
+\*****************************************************************************/
+- (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
+	{
+	switch (_type)
+		{
+		case SliderTypeHorizontal:
+			[self _drawHorizontalInRect:dirtyRect with:painter];
+			break;
+		case SliderTypeVertical:
+			[self _drawVerticalInRect:dirtyRect with:painter];
+			break;
+		case SliderTypeCircular:
+			[self _drawCircularInRect:dirtyRect with:painter];
+			break;
+		default:
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+				"Asked to draw nonexistent slider type %d!", _type);
+			break;
+		}
+	}
+
+// MARK: Events
+
+
+/*****************************************************************************\
+|* Handle a mouse down
+\*****************************************************************************/
+- (BOOL) mouseDown:(struct SDL_MouseButtonEvent *)e
+	{
+	if (self.state == ControlStateDisabled)
+		return NO;
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Handle a mouse drag
+\*****************************************************************************/
+- (BOOL) mouseDragged:(SDL_MouseMotionEvent *)e
+	{
+	switch (_type)
+		{
+		case SliderTypeHorizontal:
+			return [self _horizontalDrag:e];
+			break;
+		case SliderTypeVertical:
+			return [self _horizontalDrag:e];
+			break;
+		case SliderTypeCircular:
+			return [self _horizontalDrag:e];
+			break;
+		default:
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+				"Asked to drag mouse in nonexistent slider type %d!", _type);
+			break;
+		}
+	return NO;
+	}
+/*****************************************************************************\
+|* Handle a mouse up
+\*****************************************************************************/
+- (BOOL) mouseUp:(SDL_MouseButtonEvent *)e
+	{
+	[self sendAction:self.action to:self.target];
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Handle a drag press on the horizontal track
+\*****************************************************************************/
+- (BOOL) _horizontalDrag:(SDL_MouseMotionEvent *)e
+	{
+ 	NSPoint p = (NSPoint){e->x, e->y};
+	p = [self convertPoint:p fromView:nil];
+
+	double X = _track.origin.x;
+	double W = _track.size.width;
+
+	if (p.x < X)
+		p.x = X;
+
+	if (p.x >= X + W)
+		p.x = X + W;
+
+	self.doubleValue = (p.x - X) / W;
+	[self setNeedsDisplay:YES];
+
+	if (self.continuous)
+		[self sendAction:self.action to:self.target];
+	return YES;
+	}
+
+// MARK: Private methods
+
+
+/*****************************************************************************\
+|* Draw the horizontal slider
+\*****************************************************************************/
+- (void) _drawHorizontalInRect:(NSRect)dirtyRect with:(AZPainter *)painter
+	{
+	NSRect sK	= _knob[self.state];
+
+	int which	= self.state == ControlStateHighlighted
+				? ControlStateNormal
+				: self.state;
+	NSRect sL	= _trackL[which];
+	NSRect sM	= _trackM[which];
+	NSRect sR	= _trackR[which];
+
+	float K2	= sK.size.width/3.f;
+	float W		= self.bounds.size.width;
+	float H		= self.bounds.size.height;
+
+	// Draw the track
+	NSRect dL	= {K2,
+				  (H-sL.size.height)/2,
+				  sL.size.width,
+				  sL.size.height};
+
+	_track		= (NSRect) {sL.size.width + K2,
+				  (H-sM.size.height)/2,
+				  W-sL.size.width-sR.size.width - K2 - K2,
+				  sM.size.height};
+
+	NSRect dR	= {W-sR.size.width - K2,
+				  (H-sR.size.height)/2,
+				  sR.size.width,
+				  sR.size.height};
+
+	AZRenderer *azr = AZRenderer.renderer;
+	NSInteger ui	= AZApp.sharedInstance.ui;
+
+	[azr setBlendMode:SDL_BLENDMODE_ADD];
+
+	[azr blitFrom:ui src:sL dst:dL];
+	[azr tileFrom:ui src:sM dst:_track];
+	[azr blitFrom:ui src:sR dst:dR];
+
+	// Draw the knob
+	double where	= _track.origin.x + self.doubleValue * _track.size.width;
+	_active			= (NSRect){where - sK.size.width/2,
+					  (H - sK.size.height)/2,
+					  sK.size.width,
+					  sK.size.height};
+	[azr blitFrom:ui src:sK dst:_active];
+	}
+
+/*****************************************************************************\
+|* Draw the vertical slider
+\*****************************************************************************/
+- (void) _drawVerticalInRect:(NSRect)dirtyRect with:(AZPainter *)painter
+	{
+	}
+
+/*****************************************************************************\
+|* Draw the horizontal slider
+\*****************************************************************************/
+- (void) _drawCircularInRect:(NSRect)dirtyRect with:(AZPainter *)painter
+	{
+	}
+
+/*****************************************************************************\
+|* Populate the rectangles from the UI texture atlas
+\*****************************************************************************/
+- (void) _fetchRects
+	{
+	AZApp *app			= AZApp.sharedInstance;
+	_trackL[STATE_N]	= [app srcRectFor:@"horizontal-track-left"];
+	_trackM[STATE_N]	= [app srcRectFor:@"horizontal-track-center"];
+	_trackR[STATE_N]	= [app srcRectFor:@"horizontal-track-right"];
+
+	_trackL[STATE_D]	= [app srcRectFor:@"horizontal-track-disabled-left"];
+	_trackM[STATE_D]	= [app srcRectFor:@"horizontal-track-disabled-center"];
+	_trackR[STATE_D]	= [app srcRectFor:@"horizontal-track-disabled-right"];
+
+	_trackB[STATE_N]	= [app srcRectFor:@"vertical-track-bottom"];
+	_trackC[STATE_N]	= [app srcRectFor:@"vertical-track-center"];
+	_trackT[STATE_N]	= [app srcRectFor:@"vertical-track-top"];
+
+	_trackB[STATE_D]	= [app srcRectFor:@"vertical-track-disabled-bottom"];
+	_trackC[STATE_D]	= [app srcRectFor:@"vertical-track-disabled-center"];
+	_trackT[STATE_D]	= [app srcRectFor:@"vertical-track-disabled-top"];
+
+	_knob[STATE_N]		= [app srcRectFor:@"knob"];
+	_knob[STATE_H]		= [app srcRectFor:@"knob-highlighted"];
+	_knob[STATE_D]		= [app srcRectFor:@"knob-disabled"];
+
+	_circ[STATE_N]		= [app srcRectFor:@"slider-circular-bezel"];
+	_cKnob[STATE_N]		= [app srcRectFor:@"slider-circular-knob"];
+	_circ[STATE_D]		= [app srcRectFor:@"slider-circular-disabled-bezel"];
+	_cKnob[STATE_D]		= [app srcRectFor:@"slider-circular-disabled-knob"];
+	}
+
+@end

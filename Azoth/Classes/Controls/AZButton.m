@@ -133,12 +133,7 @@ static NSRect	_bRight[STATE_NUM];
 		{
 		self.state = ControlStateHighlighted;
 		[self setNeedsDisplay:YES];
-		if ((self.target != nil) && (self.action != nil))
-			{
-			IMP imp = [self.target methodForSelector:self.action];
-			void (*func)(id, SEL, id) = (void *)imp;
-			func(self.target, self.action, self);
-			}
+		[self sendAction:self.action to:self.target];
 		}
 	return YES;
 	}

@@ -99,6 +99,9 @@
 				Classes/Application/AZWindow.h,
 				Classes/Base/AZControl.h,
 				Classes/Base/AZResponder.h,
+				Classes/Controls/AZButton.h,
+				Classes/Controls/AZSlider.h,
+				Classes/Controls/AZTextField.h,
 				Classes/Drawing/AZFont.h,
 				Classes/Drawing/AZGlyphData.h,
 				Classes/Drawing/AZPainter.h,
@@ -108,9 +111,7 @@
 				Classes/Utility/AZGeometry.h,
 				Classes/Utility/AZNotifications.h,
 				Classes/Utility/AZObject.h,
-				Classes/Views/AZButton.h,
-				Classes/Views/AZTextField.h,
-				Classes/Views/AZView.h,
+				Classes/View/AZView.h,
 			);
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
 		};

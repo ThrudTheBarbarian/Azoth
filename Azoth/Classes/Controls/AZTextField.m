@@ -46,7 +46,6 @@ static int 			_lineHeight = 29;
 
 @interface AZTextField()
 @property(assign, nonatomic)	TTF_Text *				text;
-@property(assign, nonatomic)	BOOL 					hasFocus;
 
 // Cursor support
 @property(assign, nonatomic)	int						cursor;
@@ -94,13 +93,21 @@ static int 			_lineHeight = 29;
 			[self _fetchRects];
 			});
 
-		self.bgColour 		= [AZColour clearColour];
-		self.stringValue 	= @"";
-		_editArea 			= NSInsetRect(self.bounds, 6, 2);
-		_editArea.origin.y += 1;
-		_textColour			= [AZColour blackColour];
 		if (![self _editCreate])
 			self = nil;
+		else
+			{
+			self.bgColour 		= [AZColour clearColour];
+			self.stringValue 	= @"";
+			_editArea 			= NSInsetRect(self.bounds, 6, 2);
+			_editArea.origin.y += 1;
+			_textColour			= [AZColour blackColour];
+
+			TTF_SetTextColor(_text, _textColour.red,
+									_textColour.green,
+									_textColour.blue,
+									_textColour.alpha);
+			}
 		}
 	return self;
 	}
@@ -128,7 +135,6 @@ static int 			_lineHeight = 29;
 	{
 	if (self.state == ControlStateNormal)
 		{
-		_hasFocus = YES;
 		self.state = ControlStateHighlighted;
 		SDL_StartTextInput(self.window.window);
 		TTF_SetTextColor(_text, _textColour.red,
@@ -164,7 +170,6 @@ static int 			_lineHeight = 29;
 	{
 	if (self.state != ControlStateNormal)
 		{
-		_hasFocus = NO;
 		self.state = ControlStateNormal;
 		SDL_StopTextInput(self.window.window);
 		[_blinkTimer invalidate];
@@ -173,6 +178,38 @@ static int 			_lineHeight = 29;
 		}
 	return YES;
 	}
+
+// MARK: AZControl
+
+/*****************************************************************************\
+|* If we have a string set on us, update the TTF_Text
+\*****************************************************************************/
+- (void) setStringValue:(NSString *)stringValue
+	{
+	if (_text)
+		{
+		[self _editSetCursorPosition:0];
+		[self _editDeleteToEnd];
+		[self _editInsert:stringValue.UTF8String];
+		[self setNeedsDisplay:YES];
+		}
+	}
+
+/*****************************************************************************\
+|* Likewise, return the string from the TTF_Text
+\*****************************************************************************/
+- (NSString *)stringValue
+	{
+	return [NSString stringWithUTF8String:_text->text];
+	}
+
+/*****************************************************************************\
+|* Return YES to accept un-becoming the first responder. Called from the
+|* AZWindow makeFirstResponder method. Do not invoke directly. Subclasses can
+|* override this method to update state or perform some action such as
+|* unhighlighting the selection, or to return false, refusing to relinquish
+|* first responder status
+\*****************************************************************************/
 
 /*****************************************************************************\
 |* Draw the textField
@@ -194,8 +231,6 @@ static int 			_lineHeight = 29;
 	NSRect sCR	= _bCR[self.state + _type];
 
 	float W		= self.bounds.size.width;
-	float H		= self.bounds.size.height;
-
 	NSRect dCL	= {0, 1, sCL.size.width, sCL.size.height};
 
 	NSRect dCM	= {sCL.size.width,
@@ -217,7 +252,7 @@ static int 			_lineHeight = 29;
 	[azr tileFrom:ui src:sCM dst:dCM];
 	[azr blitFrom:ui src:sCR dst:dCR];
 
-		_editArea.origin.y = _origArea.origin.y + 1;
+	_editArea.origin.y = _origArea.origin.y + 1;
 	[self _drawTextInRect:_editArea withPainter:p];
 	}
 
@@ -589,6 +624,9 @@ static int 			_lineHeight = 29;
 - (void) _editDrawText
 	{
 	AZRenderer *azr	= AZRenderer.renderer;
+	[azr setBlendMode:SDL_BLENDMODE_BLEND];
+	[azr setDrawColour:[AZColour blackColour]];
+
 	TTF_Font *font	= AZApp.sharedInstance.controlFont.ttfFont;
     float x 		= _editArea.origin.x;
     float y 		= _editArea.origin.y;
@@ -598,6 +636,7 @@ static int 			_lineHeight = 29;
 	[azr setClip:nsClip];
 
 	[self _editDrawText:_text atX:x y:y];
+
 	if ((existing.size.width > 0) && (existing.size.height > 0))
 		[azr setClip:existing];
 	else
@@ -669,12 +708,7 @@ static int 			_lineHeight = 29;
 \*****************************************************************************/
 - (void) _editAction
 	{
-	if ((self.target != nil) && (self.action != nil))
-		{
-		IMP imp = [self.target methodForSelector:self.action];
-		void (*func)(id, SEL, id) = (void *)imp;
-		func(self.target, self.action, self);
-		}
+	[self sendAction:self.action to:self.target];
 	}
 
 /*****************************************************************************\
@@ -763,9 +797,6 @@ static int 			_lineHeight = 29;
 			}
 		_editArea.origin.x = _origArea.origin.x - cumulativeWidth;
 		}
-
-	if (_text->text)
-		self.stringValue = [NSString stringWithUTF8String:_text->text];
 	}
 
 /*****************************************************************************\

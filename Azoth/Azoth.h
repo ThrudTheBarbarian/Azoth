@@ -28,6 +28,7 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZPainter.h>
 #import <Azoth/AZRenderer.h>
 #import <Azoth/AZResponder.h>
+#import <Azoth/AZSlider.h>
 #import <Azoth/AZTextField.h>
 #import <Azoth/AZTextPainter.h>
 #import <Azoth/AZTypes.h>

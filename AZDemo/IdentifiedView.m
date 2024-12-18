@@ -14,6 +14,9 @@
 @interface IdentifiedView()
 @property (strong, nonatomic) NSString * rsrcDir;
 @property (assign, nonatomic) SDL_Surface * surface;
+
+@property (strong, nonatomic) AZSlider *slider;
+@property (strong, nonatomic) AZTextField *text;
 @end
 
 @implementation IdentifiedView
@@ -36,18 +39,18 @@
 	[btn setAction:@selector(buttonPressed:)];
 	[self addSubview:btn];
 
-	NSRect r = NSMakeRect(30, 250, 100, 29);
-	AZTextField *tf = [AZTextField textfieldWithFrame:r];
-	[tf setTarget:self];
-	[tf setAction:@selector(textEntered:)];
-	[self addSubview:tf];
+	NSRect r = NSMakeRect(30, 250, 110, 29);
+	_text = [AZTextField textfieldWithFrame:r];
+	[_text setTarget:self];
+	[_text setAction:@selector(textEntered:)];
+	[self addSubview:_text];
 
-	r = NSMakeRect(30, 280, 100, 29);
-	tf = [AZTextField textfieldWithFrame:r];
-	tf.type = TextFieldRounded;
-	[tf setTarget:self];
-	[tf setAction:@selector(textEntered:)];
-	[self addSubview:tf];
+	r = NSMakeRect(30, 280, 110, 29);
+	_slider = [AZSlider sliderWithFrame:r];
+	[_slider setTarget:self];
+	[_slider setAction:@selector(sliderValue:)];
+	[_slider setContinuous:YES];
+	[self addSubview:_slider];
 
 	return self;
 	}
@@ -155,13 +158,23 @@
 
 - (void) buttonPressed:(id)sender
 	{
+	[_text setStringValue: @"hi there"];
 	NSLog(@"sender:%@", sender);
+	if (_slider.enabled)
+		_slider.enabled = NO;
+	else
+		_slider.enabled = YES;
 	}
 
 
 - (void) textEntered:(id)sender
 	{
 	NSLog(@"sender:%@, text:'%@'", sender, ((AZTextField *)sender).stringValue);
+	}
+
+- (void) sliderValue:(id)sender
+	{
+	NSLog(@"slider:%@, value:%f", sender, _slider.doubleValue);
 	}
 
 @end
