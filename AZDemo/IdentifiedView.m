@@ -44,6 +44,7 @@
 
 	r = NSMakeRect(30, 280, 100, 29);
 	tf = [AZTextField textfieldWithFrame:r];
+	tf.type = TextFieldRounded;
 	[tf setTarget:self];
 	[tf setAction:@selector(textEntered:)];
 	[self addSubview:tf];

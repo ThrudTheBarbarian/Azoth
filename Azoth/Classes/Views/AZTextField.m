@@ -189,6 +189,36 @@ static int 			_lineHeight = 29;
 
 - (void) _drawRoundTextFieldWithRect:(NSRect)r andPainter:(AZPainter *)p
 	{
+	NSRect sCL	= _bCL[self.state + _type];
+	NSRect sCM	= _bCM[self.state + _type];
+	NSRect sCR	= _bCR[self.state + _type];
+
+	float W		= self.bounds.size.width;
+	float H		= self.bounds.size.height;
+
+	NSRect dCL	= {0, 1, sCL.size.width, sCL.size.height};
+
+	NSRect dCM	= {sCL.size.width,
+				   1,
+				   W-sCL.size.width-sCR.size.width,
+				   sCM.size.height};
+
+	NSRect dCR	= {W-sCR.size.width,
+				   1,
+				   sCR.size.width,
+				   sCR.size.height};
+
+	AZRenderer *azr = AZRenderer.renderer;
+	NSInteger ui	= AZApp.sharedInstance.ui;
+
+	[azr setBlendMode:SDL_BLENDMODE_ADD];
+
+	[azr blitFrom:ui src:sCL dst:dCL];
+	[azr tileFrom:ui src:sCM dst:dCM];
+	[azr blitFrom:ui src:sCR dst:dCR];
+
+		_editArea.origin.y = _origArea.origin.y + 1;
+	[self _drawTextInRect:_editArea withPainter:p];
 	}
 
 - (void) _drawSquareTextFieldWithRect:(NSRect)r andPainter:(AZPainter *)p
@@ -614,8 +644,9 @@ static int 			_lineHeight = 29;
 			cursor_rect.x += cursor.rect.w;
 
             cursor_rect.x += _editArea.origin.x;
-            cursor_rect.y += _editArea.origin.y;
-            cursor_rect.w = 1.0f;
+            cursor_rect.y += _editArea.origin.y + 2;
+            cursor_rect.w = 1.f;
+            cursor_rect.h -= 2.f;
 
             SDL_copyp(&_cursorRect, &cursor_rect);
 
