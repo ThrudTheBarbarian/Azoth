@@ -125,7 +125,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 			return [self _verticalDrag:e];
 			break;
 		case SliderTypeCircular:
-			return [self _horizontalDrag:e];
+			return [self _circleDrag:e];
 			break;
 		default:
 			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -144,7 +144,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 	}
 
 /*****************************************************************************\
-|* Handle a drag press on the horizontal track
+|* Handle a drag on the horizontal track
 \*****************************************************************************/
 - (BOOL) _horizontalDrag:(SDL_MouseMotionEvent *)e
 	{
@@ -172,7 +172,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 	}
 
 /*****************************************************************************\
-|* Handle a drag press on the vertical track
+|* Handle a drag on the vertical track
 \*****************************************************************************/
 - (BOOL) _verticalDrag:(SDL_MouseMotionEvent *)e
 	{
@@ -191,6 +191,35 @@ static NSRect	_knob[STATE_NUM];	// knobs
 	self.doubleValue = (1.0 - (p.y - Y) / H)
 					 * (self.maxValue - self.minValue)
 					 + self.minValue;
+	[self setNeedsDisplay:YES];
+
+	if (self.continuous)
+		[self sendAction:self.action to:self.target];
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Handle a drag on the circular slider
+\*****************************************************************************/
+- (BOOL) _circleDrag:(SDL_MouseMotionEvent *)e
+	{
+ 	NSPoint p = (NSPoint){e->x, e->y};
+	p = [self convertPoint:p fromView:nil];
+
+	float X = _track.origin.x;
+	float W = _track.size.width;
+	float C = X + W/2;
+
+	if (p.x < C - 5.f*W)
+		p.x = C - 5.f*W;
+
+	if (p.x >= C + 5.f*W)
+		p.x =  C + 5.f*W;
+
+	self.doubleValue  	= (((p.x - C) / (W * 10.f) + 0.5f))
+						* (self.maxValue - self.minValue)
+						+ self.minValue;
+
 	[self setNeedsDisplay:YES];
 
 	if (self.continuous)
@@ -254,7 +283,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 	}
 
 /*****************************************************************************\
-|* Draw the horizontal slider
+|* Draw the vertical slider
 \*****************************************************************************/
 - (void) _drawVerticalInRect:(NSRect)dirtyRect with:(AZPainter *)painter
 	{
@@ -307,10 +336,54 @@ static NSRect	_knob[STATE_NUM];	// knobs
 	}
 
 /*****************************************************************************\
-|* Draw the horizontal slider
+|* Draw the circular slider
 \*****************************************************************************/
 - (void) _drawCircularInRect:(NSRect)dirtyRect with:(AZPainter *)painter
 	{
+	NSRect sK	= _cKnob[self.state];
+
+	int which	= self.state == ControlStateHighlighted
+				? ControlStateNormal
+				: self.state;
+	NSRect sC	= _circ[which];
+
+	float W		= self.bounds.size.width;
+	float H		= self.bounds.size.height;
+	float W2	= W/2;
+	float H2	= H/2;
+
+	// Draw the bezel
+	_track		= (NSRect) {W2 - sC.size.width/2,
+							H2 - sC.size.height/2,
+							sC.size.width,
+							sC.size.height};
+
+	AZRenderer *azr = AZRenderer.renderer;
+	NSInteger ui	= AZApp.sharedInstance.ui;
+
+	[azr setBlendMode:SDL_BLENDMODE_ADD];
+
+	[azr blitFrom:ui src:sC dst:_track];
+
+	// Draw the knob
+	float r		= W2 * 0.5;
+	float range	= self.maxValue - self.minValue;
+	if (range == 0.0)
+		{
+		SDL_Log("Range of 0 on circular slider. Aborting");
+		return;
+		}
+
+	float scale	= (self.doubleValue - self.minValue)/range;
+	float angle	= -scale * M_PI * 1.5 -2.25*  M_PI;
+	float x		= r * SDL_sin(angle) + NSMidX(_track);
+	float y 	= r * SDL_cos(angle)  + NSMidY(_track);
+
+	NSRect knob	= (NSRect){x - sK.size.width/2,
+						   y - sK.size.width/2,
+						   sK.size.width,
+						   sK.size.height};
+	[azr blitFrom:ui src:sK dst:knob];
 	}
 
 /*****************************************************************************\

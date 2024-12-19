@@ -17,6 +17,7 @@
 
 @property (strong, nonatomic) AZSlider *slider;
 @property (strong, nonatomic) AZSlider *vslider;
+@property (strong, nonatomic) AZSlider *circ;
 @property (strong, nonatomic) AZTextField *text;
 @end
 
@@ -59,6 +60,13 @@
 	[_vslider setAction:@selector(sliderValue:)];
 	[_vslider setContinuous:YES];
 	[self addSubview:_vslider];
+
+	r = NSMakeRect(180, 220, 30, 30);
+	_circ = [AZSlider sliderWithFrame:r];
+	[_circ setTarget:self];
+	[_circ setAction:@selector(sliderValue:)];
+	[_circ setContinuous:YES];
+	[self addSubview:_circ];
 
 	return self;
 	}
@@ -168,10 +176,10 @@
 	{
 	[_text setStringValue: @"hi there"];
 	NSLog(@"sender:%@", sender);
-	if (_slider.enabled)
-		_slider.enabled = NO;
+	if (_vslider.enabled)
+		_vslider.enabled = NO;
 	else
-		_slider.enabled = YES;
+		_vslider.enabled = YES;
 	}
 
 
