@@ -96,16 +96,16 @@
 \*****************************************************************************/
 - (NSPoint) convertPoint:(NSPoint)p toView:(nullable AZView *)otherView
 	{
-	AZView *view = self.superview;
+	AZView *view = self;
 	while (view != otherView)
 		{
-		if (view == nil)
-			break;
 
 		p.x += view.frame.origin.x;
 		p.y += view.frame.origin.y;
 		view = view.superview;
-		}
+		if (view == nil)
+			break;
+	}
 
 	return p;
 	}

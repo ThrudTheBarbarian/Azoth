@@ -53,7 +53,11 @@
 	\*************************************************************************/
 	if (!done)
 		{
-		NSRect global 	= [self frame];
+		// We use bounds, not frame, because we'll be adding on this view's
+		// frame co-ords as part of the process of finding the point's
+		// location in the parent. Since we want the frame itself, we want
+		// to start at (0,0)
+		NSRect global 	= [self bounds];
 		global.origin	= [self convertPoint:global.origin toView:nil];
 
 		if (NSPointInRect(p, global))
@@ -195,7 +199,7 @@
 			[azr unlockFocus];
 			}
 		else
-			SDL_Log("Cannot lock focus on texture %d", self.bg);
+			SDL_Log("Cannot lock focus on texture %d", (int)self.bg);
 
 		/*********************************************************************\
 		|* And tell the view it needs to redraw
@@ -221,19 +225,25 @@
 
 	/*************************************************************************\
 	|* Set up the frame correctly
+	|*
+	|* We use bounds, not frame, because we'll be adding on this view's
+	|* frame co-ords as part of the process of finding the point's
+	|* location in the parent. Since we want the frame itself, we want
+	|* to start at (0,0)
 	\*************************************************************************/
-	NSRect frame  	= self.frame;
+	NSRect frame  	= self.bounds;
 	NSPoint p		= [self convertPoint:frame.origin toView:nil];
 	frame.origin	= p;
 
 	/*************************************************************************\
-	|* Work out source, destination and clip
+	|* Work out source, destination and clip. Same comment applies to the
+	|* 'bounds' vs 'frame' as above.
 	\*************************************************************************/
 	NSRect src 		= self.bounds;
 	NSRect dst		= frame;
 
 	// We also want to clip to the parent view's frame
-	NSRect clip		= self.superview.frame;
+	NSRect clip		= self.superview.bounds;
 	p 				= [self.superview convertPoint:clip.origin toView:nil];
 	clip.origin		= p;
 	clip 			= NSIntersectionRect(clip, frame);
