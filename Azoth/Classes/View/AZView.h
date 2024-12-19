@@ -65,7 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 - (BOOL) addSubview:(AZView *)view;
 - (BOOL) addSubview:(AZView *)view after:(AZView *)other;
-- (BOOL) addSubview:(AZView *)view before:(AZView *)other;
+- (BOOL) addSubview:(AZView *)view before:(nullable AZView *)other;
 
 /*****************************************************************************\
 |* Tell the view it needs to redraw itself. Will happen on the next render-pass

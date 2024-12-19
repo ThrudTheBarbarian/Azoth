@@ -19,6 +19,7 @@
 @property (strong, nonatomic) AZSlider *vslider;
 @property (strong, nonatomic) AZSlider *circ;
 @property (strong, nonatomic) AZTextField *text;
+@property (strong, nonatomic) AZMenu *menu;
 @end
 
 @implementation IdentifiedView
@@ -68,6 +69,10 @@
 	[_circ setContinuous:YES];
 	[self addSubview:_circ];
 
+	_menu = [AZMenu menuWithTitle:@"test menu"];
+	[_menu addItemWithTitle:@"item 1" action:nil keyEquivalent:@""];
+	[_menu addItemWithTitle:@"item 2" action:nil keyEquivalent:@""];
+	[_menu addItemWithTitle:@"item 3" action:nil keyEquivalent:@""];
 	return self;
 	}
 
@@ -180,6 +185,13 @@
 		_vslider.enabled = NO;
 	else
 		_vslider.enabled = YES;
+
+	AZMenuItem *item = [_menu itemAtIndex:0];
+	[_menu popUpMenuPositioningItem:item
+						 atLocation:NSMakePoint(300,300)
+						     inView:self];
+
+		NSLog(@"subviews: %@", [[AZWindow contentViewForWindow:self.window] subviews]);
 	}
 
 

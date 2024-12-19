@@ -145,12 +145,18 @@
 	BOOL ok 		= NO;
 	NSInteger idx 	= 0;
 
-	for (AZView *view in _subviews)
-		if (view == other)
-			{
-			[_subviews insertObject:view atIndex:idx];
-			ok = YES;
-			}
+	if (other == nil)
+		{
+		[_subviews insertObject:view atIndex:0];
+		ok = YES;
+		}
+	else
+		for (AZView *view in _subviews)
+			if (view == other)
+				{
+				[_subviews insertObject:view atIndex:idx];
+				ok = YES;
+				}
 
 	if (!ok)
 		[_subviews addObject:view];

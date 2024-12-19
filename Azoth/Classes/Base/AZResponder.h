@@ -86,7 +86,7 @@ struct SDL_TextInputEvent;
 \*****************************************************************************/
 
 // Identifier, purely for debugging
-@property(strong, nonatomic) NSString *						identifier;
+@property(copy, nonatomic) NSString *						identifier;
 
 @end
 

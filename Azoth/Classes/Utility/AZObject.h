@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (AZObject *) objectWithPointer:(void *)ptr;
 + (AZObject *) objectWithPointer:(void *)ptr andHint:(NSString *)hint;
 
-@property(strong, nonatomic) NSString *		hint;
+@property(copy, nonatomic) NSString *		hint;
 @property(assign, nonatomic) void *			ptr;
 @end
 

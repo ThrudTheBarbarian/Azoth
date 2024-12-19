@@ -107,6 +107,8 @@
 				Classes/Drawing/AZPainter.h,
 				Classes/Drawing/AZRenderer.h,
 				Classes/Drawing/AZTextPainter.h,
+				Classes/Menu/AZMenu.h,
+				Classes/Menu/AZMenuItem.h,
 				Classes/Utility/AZColour.h,
 				Classes/Utility/AZGeometry.h,
 				Classes/Utility/AZNotifications.h,

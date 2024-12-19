@@ -94,6 +94,17 @@ enum AZAutoresizingMaskOptions
 	};
 
 /*****************************************************************************\
+|* Control states
+\*****************************************************************************/
+typedef enum
+	{
+	ControlStateValueOn 	= 0,
+	ControlStateValueOff 	= 1,
+	ControlStateValueMixed 	= 2
+	} AZControlStateValue;
+
+
+/*****************************************************************************\
 |* Conversion macros
 \*****************************************************************************/
 #define SDL_RECT(nsrect)													\
