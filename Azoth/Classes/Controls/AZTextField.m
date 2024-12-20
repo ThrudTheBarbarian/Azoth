@@ -640,7 +640,7 @@ static int 			_lineHeight = 29;
 	if ((existing.size.width > 0) && (existing.size.height > 0))
 		[azr setClip:existing];
 	else
-		[azr setClip:NSZeroRect];
+		[azr unsetClip];
 
 	// Draw any highlight
     int marker, length;

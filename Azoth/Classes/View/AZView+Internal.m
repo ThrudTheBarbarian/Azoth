@@ -242,6 +242,7 @@
 	NSRect src 		= self.bounds;
 	NSRect dst		= frame;
 
+
 	// We also want to clip to the parent view's frame
 	NSRect clip		= self.superview.bounds;
 	p 				= [self.superview convertPoint:clip.origin toView:nil];
@@ -260,7 +261,7 @@
 	\*************************************************************************/
 	[azr setClip:clip];
 	[azr blitFrom:self.bg src:src dst:dst];
-	[azr setClip:NSZeroRect];
+	[azr unsetClip];
 
 	/*************************************************************************\
 	|* ... then call the subviews recursively in reverse order

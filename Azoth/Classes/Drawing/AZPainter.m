@@ -101,7 +101,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	[_view drawInRect:_view.dirty withPainter:self];
 	_view.dirty = NSZeroRect;
 
-	[_renderer setClip:NSZeroRect];
+	[_renderer unsetClip];
 	[_renderer unlockFocus];
 	return YES;
 	}

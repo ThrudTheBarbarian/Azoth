@@ -236,13 +236,13 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 \*****************************************************************************/
 - (void) setClip:(NSRect)clipRect
 	{
-	if ((clipRect.size.width == 0) || (clipRect.size.height == 0))
-		SDL_SetRenderClipRect(_renderer, NULL);
-	else
-		{
-		SDL_Rect clip = SDL_RECT(clipRect);
-		SDL_SetRenderClipRect(_renderer, &clip);
-		}
+	SDL_Rect clip = SDL_RECT(clipRect);
+	SDL_SetRenderClipRect(_renderer, &clip);
+	}
+
+- (void) unsetClip
+	{
+	SDL_SetRenderClipRect(_renderer, NULL);
 	}
 
 /*****************************************************************************\

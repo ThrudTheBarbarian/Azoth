@@ -67,10 +67,11 @@ struct SDL_FPoint;
 - (int) setTexture:(NSInteger)refId blendMode:(uint32_t)blendMode;
 
 /*****************************************************************************\
-|* Get/Set the clip, use NSZeroRect to unset
+|* Get/Set/Unset the clip
 \*****************************************************************************/
 - (NSRect) clipRect;
 - (void) setClip:(NSRect)clipRect;
+- (void) unsetClip;
 
 /*****************************************************************************\
 |* Clear the current texture target
