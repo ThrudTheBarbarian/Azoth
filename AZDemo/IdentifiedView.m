@@ -72,6 +72,7 @@
 	_menu = [AZMenu menuWithTitle:@"test menu"];
 	[_menu addItemWithTitle:@"item 1" action:nil keyEquivalent:@""];
 	[_menu addItemWithTitle:@"item 2" action:nil keyEquivalent:@""];
+	[[_menu lastItem] setState:ControlStateValueOn];
 	[_menu addItemWithTitle:@"item 3" action:nil keyEquivalent:@""];
 	return self;
 	}
@@ -188,10 +189,19 @@
 
 	AZMenuItem *item = [_menu itemAtIndex:0];
 	[_menu popUpMenuPositioningItem:item
-						 atLocation:NSMakePoint(300,300)
-						     inView:self];
+						 atLocation:NSMakePoint(30,220)
+						     inView:self
+						   thenCall:^(BOOL menuClicked)
+		{
+		if (menuClicked)
+			{
+			NSLog(@"selected '%@'", self.menu.selectedItem.title);
+			}
+		else
+			NSLog(@"Done no-click");
+		}];
 
-		NSLog(@"subviews: %@", [[AZWindow contentViewForWindow:self.window] subviews]);
+	NSLog(@"subviews: %@", [[AZWindow contentViewForWindow:self.window] subviews]);
 	}
 
 

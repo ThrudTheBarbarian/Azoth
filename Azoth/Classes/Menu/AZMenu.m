@@ -7,10 +7,12 @@
 #import <SDL3/SDL.h>
 
 #import "AZApp.h"
+#import "AZEventSink.h"
 #import "AZFont.h"
 #import "AZMenu.h"
 #import "AZMenuItem.h"
-#import "AZMenuOverlayView.h"
+#import "AZMenuView.h"
+#import "AZWindow.h"
 
 #define MENU_HEIGHT 		25
 #define MENU_LEADING   		12
@@ -18,7 +20,7 @@
 
 @interface AZMenu()
 @property(strong, nonatomic) NSMutableArray<AZMenuItem *> * 	items;
-@property(strong, nonatomic) AZMenuOverlayView *				overlay;
+@property(strong, nonatomic) AZMenuView * 						menuView;
 @end
 
 @implementation AZMenu
@@ -43,13 +45,20 @@
 
 		// Add the first item as the title of the menu. Menu choices are
 		// 1-based to allow for a title at position-0
-		AZMenuItem *titleItem = [AZMenuItem itemWithTitle:title
-												   action:nil
-											keyEquivalent:@""];
-		[_items addObject:titleItem];
+		AZMenuItem *titleItem = [AZMenuItem sectionHeaderWithTitle:title];
+		[self addItem:titleItem];
 		}
 	return self;
 	}
+
+/*****************************************************************************\
+|* Return the items
+\*****************************************************************************/
+- (NSArray<AZMenuItem *> *) itemArray
+	{
+	return _items;
+	}
+
 
 
 // MARK: Adding items
@@ -64,6 +73,7 @@
 	if ((index >= 0) && (index < _items.count))
 		{
 		[_items insertObject:newItem atIndex:index];
+		newItem.menu = self;
 		ok = YES;
 		}
 	return ok;
@@ -94,6 +104,7 @@
 - (void) addItem:(AZMenuItem *)newItem
 	{
 	[_items addObject:newItem];
+	newItem.menu = self;
 	}
 
 /*****************************************************************************\
@@ -130,6 +141,14 @@
 		ok = YES;
 		}
 	return ok;
+	}
+
+/*****************************************************************************\
+|* Return the numbe of items (all types) in the list
+\*****************************************************************************/
+- (NSInteger) numberOfItems
+	{
+	return _items.count;
 	}
 
 /*****************************************************************************\
@@ -256,6 +275,27 @@
 	return -1;
 	}
 
+/*****************************************************************************\
+|* Returns the last item, or nil if there are none
+\*****************************************************************************/
+- (nullable AZMenuItem *) lastItem
+	{
+	if (_items.count > 0)
+		return _items.lastObject;
+	return nil;
+	}
+
+/*****************************************************************************\
+|* Returns the selected item, or nil if there are none
+\*****************************************************************************/
+- (nullable AZMenuItem *) selectedItem
+	{
+	for (AZMenuItem *item in _items)
+		if (item.state == ControlStateValueOn)
+			return item;
+	return nil;
+	}
+
 
 // MARK: Submenu management
 
@@ -281,28 +321,43 @@
 |* Show a popup menu and run it, waiting for a click either on the menu or
 |* off it (to dismiss)
 \*****************************************************************************/
-- (BOOL) popUpMenuPositioningItem:(AZMenuItem *) item
+- (void) popUpMenuPositioningItem:(AZMenuItem *) item
                        atLocation:(NSPoint) location
                            inView:(AZView *) view
+						 thenCall:(MenuDoneBlock)callback
 	{
-	BOOL ok = NO;
-	
-	// Find the contentview for this view
-	AZView *contentView = view;
-	while (contentView.superview != nil)
-		contentView = view.superview;
-
-	// Add a subview to the contentview which will overlay the entire content-
-	// view, which is how we trap the clicks and make the menu modal
-	_overlay = [[AZMenuOverlayView alloc] initWithFrame:[contentView frame]];
-	[contentView addSubview:_overlay before:nil];
-
 	// Find the position of the co-ordinates in window space (which is the
 	// space that the overlay is running in
 	NSPoint p = [view convertPoint:location toView:nil];
-		NSLog(@"point: %@ -> %@", NSStringFromPoint(location), NSStringFromPoint(p));
-	return ok;
+
+	// Run the menu. If there's a click outside the bounds of the menu, we
+	// cancel the menu and return NO. If there was a click inside the menu
+	// (so a selection was made), we return yes, and we can query the menu
+	[self runMenuFor:item at:p inView:view then:^(BOOL menuClicked) {
+		[self.menuView removeFromSuperview];
+		self.menuView = nil;
+		callback(menuClicked);
+		}];
 	}
 
+/*****************************************************************************\
+|* Handle the menu execution
+\*****************************************************************************/
+- (void) runMenuFor:(AZMenuItem *)item
+				 at:(NSPoint)p
+			 inView:(AZView *) view
+			   then:(MenuDoneBlock)call
+	{
+	int flags	  	= AZMENU_RENDER_BOTTOM | AZMENU_RENDER_TOP;
+	AZMenuSize sz 	= [AZMenuView measureMenu:item.menu withFlags:flags];
+	_menuView 	  	= [[AZMenuView alloc] initWithMenu:item.menu andSize:sz];
+	AZView *cv    	= [AZWindow contentViewForWindow:view.window];
+
+	[_menuView setFrameOrigin:p];
+	_menuView.call = call;
+
+	[_menuView setupEventSink];
+	[cv addSubview:_menuView before:nil];
+	}
 
 @end

@@ -1,0 +1,290 @@
+//
+//  AZMenuView.m
+//  Azoth
+//
+//  Created by Simon Gornall on 12/18/24.
+//
+
+#import <SDL3/SDL.h>
+
+#import "AZApp.h"
+#import "AZColour.h"
+#import "AZEventSink.h"
+#import "AZFont.h"
+#import "AZPainter.h"
+#import "AZRenderer.h"
+#import "AZMenu.h"
+#import "AZMenuItem.h"
+#import "AZMenuView.h"
+
+static NSRect _barNormal;			// The menu bar when mouse is not over it
+static NSRect _barSel;				// The menu bar when mouse is over it
+static NSRect _menuTL;				// top-left of the menu, if rendered
+static NSRect _menuTM;				// top-middle of the menu, if rendered
+static NSRect _menuTR;				// top-right of the menu, if rendered
+static NSRect _menuCL;				// center-left of the menu
+static NSRect _menuCM;				// center-middle of the menu
+static NSRect _menuCR;				// center-right of the menu
+static NSRect _menuBL;				// bottom-left of the menu, if rendered
+static NSRect _menuBM;				// bottom-middle of the menu, if rendered
+static NSRect _menuBR;				// bottom-right of the menu, if rendered
+
+@interface AZMenuView()
+@property(assign, nonatomic) AZMenuSize 							measure;
+@property(strong, nonatomic) AZEventSink * 							sink;
+@end
+
+@implementation AZMenuView
+
+/*****************************************************************************\
+|* Initialisation
+\*****************************************************************************/
+- (instancetype) initWithMenu:(AZMenu *)menu andSize:(AZMenuSize)size
+	{
+	if (self = [super initWithFrame:size.frame])
+		{
+		_measure 		= size;
+		_menu	 		= menu;
+		self.bgColour 	= [AZColour clearColour];
+		}
+	return self;
+	}
+
+/*****************************************************************************\
+|* Measure a menu to figure out its frame
+\*****************************************************************************/
++ (AZMenuSize) measureMenu:(AZMenu *)menu withFlags:(int)flags
+	{
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken,
+		^{
+		[AZMenuView _fetchRects];
+		});
+
+	NSInteger count	= menu.numberOfItems;
+	NSInteger top	= (flags & AZMENU_RENDER_TOP) ? NSHeight(_menuTM) : 0;
+	NSInteger mid	= count * NSHeight(_barSel);
+	NSInteger bot	= (flags & AZMENU_RENDER_BOTTOM) ? NSHeight(_menuBM) : 0;
+
+	AZFont *font 	= AZApp.sharedInstance.controlFont;
+	int width		= 0;
+	for (AZMenuItem *item in menu.itemArray)
+		{
+		int w = [font textWidthFor:item.title];
+		width = (width > w) ? width : w;
+		}
+
+	AZMenuSize size;
+
+	size.frame	= NSMakeRect(0,0, width, top+mid+bot);
+	size.bottomHeight	= bot;
+	size.topHeight		= top;
+	size.flagsUsed		= flags;
+	size.fontHeight		= font.height;
+	return size;
+	}
+
+
+// MARK: Event handling
+
+/*****************************************************************************\
+|* We got a mouse event
+\*****************************************************************************/
+- (void) _receivedEvent:(SDL_Event *)e
+	{
+	switch (e->type)
+		{
+		case SDL_EVENT_MOUSE_BUTTON_DOWN:
+			[self _handleMouseDown:e];
+			break;
+
+		case SDL_EVENT_MOUSE_MOTION:
+			[self _handleMouseMoved:e];
+			break;
+		}
+	}
+
+/*****************************************************************************\
+|* The mouse moved
+\*****************************************************************************/
+- (void) _handleMouseDown:(SDL_Event *)e
+	{
+ 	NSPoint p 	= (NSPoint){e->motion.x, e->motion.y};
+	p 			= [self convertPoint:p fromView:nil];
+	float H 	= self.bounds.size.height - _menuBM.size.height;
+	float W 	= self.bounds.size.width;
+	BOOL inside	= NO;
+
+	if ((p.x >= 0) && (p.x < W) && (p.y >= 0) && (p.y < H))
+		inside = YES;
+
+	[AZApp.sharedInstance removeEventSink:_sink];
+	_sink = nil;
+	_call(inside);
+	}
+
+/*****************************************************************************\
+|* The mouse moved
+\*****************************************************************************/
+- (void) _handleMouseMoved:(SDL_Event *)e
+	{
+ 	NSPoint p 	= (NSPoint){e->motion.x, e->motion.y};
+	p 			= [self convertPoint:p fromView:nil];
+	float H 	= self.bounds.size.height - _menuBM.size.height;
+	float W 	= self.bounds.size.width;
+
+	if ((p.x >= 0) && (p.x < W) && (p.y >= _menuTM.size.height) && (p.y < H))
+		{
+		p.y     = p.y - _menuTM.size.height + _measure.fontHeight -1;
+		int sel	=  p.y / _measure.fontHeight;
+		if (sel < 0)
+			sel = 0;
+		if (sel >= _menu.itemArray.count)
+			sel = (int) _menu.itemArray.count - 1;
+
+		if (_menu.itemArray[sel].state == ControlStateValueOff)
+			{
+			int idx = 0;
+			for (AZMenuItem *item in _menu.itemArray)
+				{
+				item.state = (idx == sel) ? ControlStateValueOn
+										  : ControlStateValueOff;
+				idx ++;
+				}
+			[self setNeedsDisplay:YES];
+			}
+		}
+	}
+
+/*****************************************************************************\
+|* Configure the event-sink
+\*****************************************************************************/
+- (void) setupEventSink
+	{
+	_sink =	[[AZEventSink alloc] initWithAction:@selector(_receivedEvent:)
+									  forTarget:self];
+	[_sink addEventType:SDL_EVENT_MOUSE_BUTTON_UP];
+	[_sink addEventType:SDL_EVENT_MOUSE_BUTTON_DOWN];
+	[_sink addEventType:SDL_EVENT_MOUSE_MOTION];
+	[AZApp.sharedInstance addEventSink:_sink];
+	}
+
+// MARK: Private methods
+
+
+/*****************************************************************************\
+|* Populate the rectangles from the UI texture atlas
+\*****************************************************************************/
++ (void) _fetchRects
+	{
+	AZApp *app	= AZApp.sharedInstance;
+	_barSel		= [app srcRectFor:@"menu-bar-window-background-selected"];
+
+	_menuTL		= [app srcRectFor:@"menu-window-rounded-0"];
+	_menuTM		= [app srcRectFor:@"menu-window-1"];
+	_menuTR		= [app srcRectFor:@"menu-window-rounded-2"];
+
+	_menuCL		= [app srcRectFor:@"menu-window-3"];
+	_menuCM		= [app srcRectFor:@"menu-window-4"];
+	_menuCR		= [app srcRectFor:@"menu-window-5"];
+
+	_menuBL		= [app srcRectFor:@"menu-window-rounded-6"];
+	_menuBM		= [app srcRectFor:@"menu-window-7"];
+	_menuBR		= [app srcRectFor:@"menu-window-rounded-8"];
+	}
+
+
+/*****************************************************************************\
+|* Draw
+\*****************************************************************************/
+- (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
+	{
+	NSRect bounds	= self.bounds;
+	[super drawInRect:dirtyRect withPainter:painter];
+
+	AZRenderer *azr		= AZRenderer.renderer;
+	[azr setBlendMode:SDL_BLENDMODE_ADD];
+
+	NSInteger ui		= AZApp.sharedInstance.ui;
+	int y 				= 0;
+	int H				= _measure.fontHeight;
+
+	/*************************************************************************\
+	|* Do we have a top-bar ?
+	\*************************************************************************/
+	if (_measure.flagsUsed & AZMENU_RENDER_TOP)
+		{
+		y = NSHeight(_menuTR);
+		int stretch = bounds.size.width - NSWidth(_menuTL) - NSWidth(_menuTR);
+		NSRect dstL	= NSMakeRect(0, 0, NSWidth(_menuTL), y);
+		NSRect dstC = NSMakeRect(NSWidth(_menuTL), 0, stretch, y);
+		NSRect dstR	= NSMakeRect(stretch + NSWidth(_menuTL), 0, NSWidth(_menuTR), y);
+
+		[azr blitFrom:ui src:_menuTL dst:dstL];
+		[azr tileFrom:ui src:_menuTM dst:dstC];
+		[azr blitFrom:ui src:_menuTR dst:dstR];
+		}
+
+	/*************************************************************************\
+	|* Draw each of the text entries
+	\*************************************************************************/
+	int index = 0;
+	for (AZMenuItem *item in _menu.itemArray)
+		{
+		if ((index == 0) && ((_measure.flagsUsed & AZMENU_SHOW_TITLE) == 0))
+			{
+			index ++;
+			continue;
+			}
+
+		int stretch  = bounds.size.width - NSWidth(_menuCL) - NSWidth(_menuCR);
+		NSRect text	 = NSMakeRect(NSWidth(_menuCL), y, stretch, H);
+		NSRect inset = NSInsetRect(text, 7, 0);
+
+		AZColour *textColour = nil;
+
+		if (item.state == ControlStateValueOn)
+			{
+			NSRect dstC = NSMakeRect(0, y, self.bounds.size.width, H);
+			[azr tileFrom:ui src:_barSel dst:dstC];
+				textColour = AZColour.whiteColour;
+			}
+		else
+			{
+			NSRect dstL	= NSMakeRect(0, y, NSWidth(_menuCL), H);
+			NSRect dstC	= NSMakeRect(NSWidth(_menuCL), y, stretch, H);
+			NSRect dstR	= NSMakeRect(stretch + NSWidth(_menuCL), y,
+									 NSWidth(_menuCR), H);
+
+			[azr tileFrom:ui src:_menuCL dst:dstL];
+			[azr tileFrom:ui src:_menuCM dst:dstC];
+			[azr tileFrom:ui src:_menuCR dst:dstR];
+			textColour = AZColour.blackColour;
+			}
+
+		[painter setTextAlignment:AZFONT_HALIGN_LEFT];
+		[painter setTextColour:textColour];
+		[painter drawInBox:inset text:item.title];
+
+		y += H;
+		}
+
+	/*************************************************************************\
+	|* Do we have a bottom bar ?
+	\*************************************************************************/
+	if (_measure.flagsUsed & AZMENU_RENDER_TOP)
+		{
+		int h       = NSHeight(_menuBL);
+		int stretch = bounds.size.width - NSWidth(_menuBL) - NSWidth(_menuBR);
+		NSRect dstL	= NSMakeRect(0, y, NSWidth(_menuTL), h);
+		NSRect dstC = NSMakeRect(NSWidth(_menuBL), y, stretch, h);
+		NSRect dstR	= NSMakeRect(stretch + NSWidth(_menuBL), y, NSWidth(_menuBR), h);
+
+		[azr blitFrom:ui src:_menuBL dst:dstL];
+		[azr tileFrom:ui src:_menuBM dst:dstC];
+		[azr blitFrom:ui src:_menuBR dst:dstR];
+		}
+
+	}
+
+@end

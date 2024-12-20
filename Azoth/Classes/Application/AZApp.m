@@ -11,6 +11,7 @@
 
 #import "AZApp.h"
 #import "AZAppDelegate.h"
+#import "AZEventSink.h"
 #import "AZFont.h"
 #import "AZGeometry.h"
 #import "AZNotifications.h"
@@ -31,6 +32,9 @@ NSString * const kTextureType	= @"texture";
 
 // This provides the x,y,w,h metadata for graphical UI items
 @property(strong, nonatomic) NSDictionary *						uiMap;
+
+// This provides the x,y,w,h metadata for graphical UI items
+@property(strong, nonatomic) NSMutableArray *					eventSinks;
 @end
 
 @implementation AZApp
@@ -43,6 +47,7 @@ NSString * const kTextureType	= @"texture";
 	if (self = [super init])
 		{
 		_bin 			= [NSMutableArray new];
+		_eventSinks		= [NSMutableArray new];
 		}
 	return self;
 	}
@@ -206,6 +211,18 @@ NSString * const kTextureType	= @"texture";
 	AZView *cv 				= [AZWindow contentViewForWindow:_window];
 	NSPoint p				= (NSPoint){-1,-1};
 
+	/*************************************************************************\
+	|* If we have an event-sink installed, and it matches this event, then
+	|* divert to the sink
+	\*************************************************************************/
+	for (AZEventSink *sink in _eventSinks)
+		if ([sink matches:e])
+			if ([sink call:e])
+				return result;
+
+	/*************************************************************************\
+	|* Else process the event
+	\*************************************************************************/
 	switch (e->type)
 		{
 		/*********************************************************************\
@@ -265,8 +282,6 @@ NSString * const kTextureType	= @"texture";
 		\*********************************************************************/
 		case SDL_EVENT_WINDOW_RESIZED:
 			{
-			SDL_Window *win = SDL_GetWindowFromID(e->window.windowID);
-			AZView *cv = [AZWindow contentViewForSDLWindow:win];
 			int w = e->window.data1;
 			int h = e->window.data2;
 
@@ -332,6 +347,24 @@ NSString * const kTextureType	= @"texture";
 	[_bin addObject:texture];
 	}
 
+// MARK: Event sinks
+
+/*****************************************************************************\
+|* Add an event sink
+\*****************************************************************************/
+- (void) addEventSink:(AZEventSink *)sink
+	{
+	[_eventSinks addObject:sink];
+	}
+
+/*****************************************************************************\
+|* Remove an event sink
+\*****************************************************************************/
+- (void) removeEventSink:(AZEventSink *)sink
+	{
+	[_eventSinks removeObject:sink];
+	}
+
 // MARK: SDL callbacks
 
 /*****************************************************************************\
@@ -339,8 +372,7 @@ NSString * const kTextureType	= @"texture";
 \*****************************************************************************/
 SDL_AppResult SDL_AppEvent(void *appState, SDL_Event *event)
 	{
-	AZApp *app = AZApp.sharedInstance;
-	return [app handleEvent:event withAppState:appState];
+	return [AZApp.sharedInstance handleEvent:event withAppState:appState];
 	}
 
 /*****************************************************************************\

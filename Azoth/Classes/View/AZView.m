@@ -221,6 +221,30 @@
 	}
 
 
+/*****************************************************************************\
+|* Remove a view from its superview
+\*****************************************************************************/
+- (void) removeFromSuperview
+	{
+	AZView *superview = self.superview;
+	[superview _removeSubview:self];
+	}
+
+/*****************************************************************************\
+|* Set the frame origin and size
+\*****************************************************************************/
+- (void) setFrameOrigin:(NSPoint)p
+	{
+	_frame.origin = p;
+	}
+
+- (void) setFrameSize:(NSSize)s;
+	{
+	_frame.size = s;
+	}
+
+
+
 // MARK: Redraw
 
 

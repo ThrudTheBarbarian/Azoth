@@ -98,11 +98,36 @@ enum AZAutoresizingMaskOptions
 \*****************************************************************************/
 typedef enum
 	{
-	ControlStateValueOn 	= 0,
-	ControlStateValueOff 	= 1,
+	ControlStateValueOff 	= 0,
+	ControlStateValueOn 	= 1,
 	ControlStateValueMixed 	= 2
 	} AZControlStateValue;
 
+
+/*****************************************************************************\
+|* Measurement of popup menus
+\*****************************************************************************/
+typedef struct
+	{
+	NSRect frame;					// Calculated width and height of frame
+	NSInteger topHeight;			// Space for curved top
+	NSInteger bottomHeight;			// Space for curved bottom
+	int flagsUsed;					// For posterity
+	int fontHeight;					// Size of the font used
+	} AZMenuSize;
+
+enum
+	{
+	AZMENU_RENDER_TOP		= 1,
+	AZMENU_RENDER_BOTTOM	= 2,
+	AZMENU_SHOW_TITLE		= 4
+	};
+
+
+/*****************************************************************************\
+|* Popup menu callback
+\*****************************************************************************/
+typedef void (^MenuDoneBlock)(BOOL menuClicked);
 
 /*****************************************************************************\
 |* Conversion macros

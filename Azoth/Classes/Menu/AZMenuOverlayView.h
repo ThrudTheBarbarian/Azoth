@@ -16,6 +16,11 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 - (instancetype) initWithFrame:(NSRect)frame;
 
+/*****************************************************************************\
+|* Run a popup menu
+\*****************************************************************************/
+- (BOOL) runMenuFor:(AZMenuItem *)item at:(NSPoint)p;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -80,8 +80,16 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter;
 
+/*****************************************************************************\
+|* Remove a view from its superview
+\*****************************************************************************/
+- (void) removeFromSuperview;
 
-
+/*****************************************************************************\
+|* Set the frame origin and size
+\*****************************************************************************/
+- (void) setFrameOrigin:(NSPoint)p;
+- (void) setFrameSize:(NSSize)s;
 
 // MARK: Event manipulation
 

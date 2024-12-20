@@ -16,6 +16,7 @@ enum SDL_AppResult;
 union SDL_Event;
 struct TTF_TextEngine;
 
+@class AZEventSink;
 @class AZFont;
 @class AZWindow;
 
@@ -60,6 +61,15 @@ struct TTF_TextEngine;
 |* Fill out a box that defines a particular named piece of the UI texture atlas
 \*****************************************************************************/
 - (NSRect) srcRectFor:(NSString *)uiName;
+
+
+// MARK: Event sinks
+
+/*****************************************************************************\
+|* Add/Remove an event sink
+\*****************************************************************************/
+- (void) addEventSink:(AZEventSink *)sink;
+- (void) removeEventSink:(AZEventSink *)sink;
 
 /*****************************************************************************\
 |* Properties

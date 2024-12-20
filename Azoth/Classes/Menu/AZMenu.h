@@ -48,6 +48,11 @@ NS_ASSUME_NONNULL_BEGIN
                     keyEquivalent:(NSString *) charCode;
 
 
+/*****************************************************************************\
+|* Return the items
+\*****************************************************************************/
+- (NSArray<AZMenuItem *> *) itemArray;
+
 // MARK: Removing items
 
 
@@ -115,6 +120,16 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 - (NSInteger) indexOfItemWithSubmenu:(AZMenu *) submenu;
 
+/*****************************************************************************\
+|* Returns the last item, or nil if there are none
+\*****************************************************************************/
+- (nullable AZMenuItem *) lastItem;
+
+/*****************************************************************************\
+|* Returns the selected item, or nil if there are none
+\*****************************************************************************/
+- (nullable AZMenuItem *) selectedItem;
+
 
 // MARK: Submenu management
 
@@ -134,9 +149,10 @@ NS_ASSUME_NONNULL_BEGIN
 |* Show a popup menu and run it, waiting for a click either on the menu or
 |* off it (to dismiss)
 \*****************************************************************************/
-- (BOOL) popUpMenuPositioningItem:(AZMenuItem *) item
+- (void) popUpMenuPositioningItem:(AZMenuItem *) item
                        atLocation:(NSPoint) location
-                           inView:(AZView *) view;
+                           inView:(AZView *) view
+						 thenCall:(MenuDoneBlock)callback;
 
 /*****************************************************************************\
 |* Properties
@@ -149,9 +165,6 @@ NS_ASSUME_NONNULL_BEGIN
 // The number of menu items in the menu, including
 // separator/header items
 @property (readonly) NSInteger 									numberOfItems;
-
-// An array containing the menu items in the menu
-@property(copy, nonatomic) NSArray<AZMenuItem *> * 				itemArray;
 
 // The parent menu that contains this menu as a submenu.
 // If the menu has no parent menu, then the value of this

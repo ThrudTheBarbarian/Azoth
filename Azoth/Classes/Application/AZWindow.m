@@ -23,6 +23,11 @@
 \*****************************************************************************/
 static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 
+/*****************************************************************************\
+|* Store the top-level windows for each SDLwindow we know about
+\*****************************************************************************/
+static NSMutableDictionary<NSNumber *, AZWindow *> * _windows = nil;
+
 @implementation AZWindow
 /*****************************************************************************\
 |* Initialisation
@@ -35,6 +40,7 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 		if ([self _initWithRect:contentRect style:style] != SDL_APP_CONTINUE)
 			self = nil;
 		}
+
 	return self;
 	}
 
@@ -62,6 +68,7 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 		self.firstResponder 	= nil;
 
 		_contentViews 			= [NSMutableDictionary new];
+		_windows				= [NSMutableDictionary new];
 		});
 
 
@@ -86,6 +93,10 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 		{
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         ok = SDL_APP_FAILURE;
+		}
+	else
+		{
+		_windows[@(SDL_GetWindowID(_window))] = self;
 		}
 
 	/*************************************************************************\
@@ -116,6 +127,14 @@ static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
 	contentView.isOpaque 	= YES;
 
 	[contentView _installBackingTexture];
+	}
+
+/*****************************************************************************\
+|* Return the window for the given SDL_Window.
+\*****************************************************************************/
++ (AZWindow *) windowForSDLWindow:(SDL_Window *)sdlWindow
+	{
+	return _windows[@(SDL_GetWindowID(sdlWindow))];
 	}
 
 /*****************************************************************************\

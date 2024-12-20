@@ -28,6 +28,11 @@ struct SDL_Window;
 - (void) installContentView;
 
 /*****************************************************************************\
+|* Return the window for any given SDL_Window.
+\*****************************************************************************/
++ (AZWindow *) windowForSDLWindow:(struct SDL_Window *)sdlWindow;
+
+/*****************************************************************************\
 |* Return the contentView for any given (SDL_)Window.
 \*****************************************************************************/
 + (AZView *) contentViewForWindow:(AZWindow *)window;
@@ -45,7 +50,7 @@ struct SDL_Window;
 @property(assign, nonatomic) struct SDL_Renderer *			renderer;
 
 // The current first-responder
-@property(retain, nonatomic) AZResponder *					firstResponder;
+@property(retain, nonatomic, nullable) AZResponder *		firstResponder;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -6,7 +6,13 @@
 //
 
 #import "AZColour.h"
+#import "AZMenuItem.h"
+#import "AZMenuView.h"
 #import "AZMenuOverlayView.h"
+
+@interface AZMenuOverlayView()
+@property(strong, nonatomic) AZMenuView *							menuView;
+@end
 
 @implementation AZMenuOverlayView
 
@@ -79,5 +85,30 @@
 	{
 	return YES;
 	}
-	
+
+/*****************************************************************************\
+|* Run a popup menu
+\*****************************************************************************/
+- (BOOL) runMenuFor:(AZMenuItem *)item at:(NSPoint)p
+	{
+	BOOL ok = NO;
+
+	AZMenu *menu 	= item.menu;
+	NSInteger index	= [menu indexOfItem:item];
+	NSInteger count = menu.numberOfItems;
+	float fraction	= (float)index / (float)count;
+
+	int flags		= AZMENU_RENDER_TOP|AZMENU_RENDER_BOTTOM;
+	AZMenuSize size	= [AZMenuView measureMenu:menu withFlags:flags];
+	_menuView		= [[AZMenuView alloc] initWithMenu:menu andSize:size];
+
+	NSRect frame	= _menuView.frame;
+	frame.origin.y 	= p.y - fraction * frame.size.height;
+	frame.origin.x	= p.x;
+	_menuView.frame = frame;
+
+	[self addSubview:_menuView];
+	return ok;
+	}
+
 @end

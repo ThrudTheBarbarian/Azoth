@@ -296,4 +296,12 @@
 	[painter execute];
 	}
 
+/*****************************************************************************\
+|* Remove a subview
+\*****************************************************************************/
+- (void) _removeSubview:(AZView *)subview
+	{
+	[self.subviews removeObject:subview];
+	}
+
 @end
