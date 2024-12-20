@@ -20,6 +20,7 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZButton.h>
 #import <Azoth/AZColour.h>
 #import <Azoth/AZControl.h>
+#import <Azoth/AZEventSink.h>
 #import <Azoth/AZFont.h>
 #import <Azoth/AZGeometry.h>
 #import <Azoth/AZGlyphData.h>
@@ -28,6 +29,7 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZNotifications.h>
 #import <Azoth/AZObject.h>
 #import <Azoth/AZPainter.h>
+#import <Azoth/AZPopupButton.h>
 #import <Azoth/AZRenderer.h>
 #import <Azoth/AZResponder.h>
 #import <Azoth/AZSlider.h>

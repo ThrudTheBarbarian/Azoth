@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Measure a menu to figure out its frame
 \*****************************************************************************/
-+ (AZMenuSize) measureMenu:(AZMenu *)menu withFlags:(int)flags;
++ (AZMenuSize) measureMenu:(AZMenu *)menu;
 
 /*****************************************************************************\
 |* Configure the event-sink

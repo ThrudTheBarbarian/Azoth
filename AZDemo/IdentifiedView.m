@@ -37,24 +37,49 @@
 		_surface = IMG_Load([path fileSystemRepresentation]);
 		}
 
+	NSRect r;
+
 	AZButton *btn = [AZButton buttonWithText:@"Button test" at:NSMakePoint(30,220)];
 	[btn setTarget:self];
 	[btn setAction:@selector(buttonPressed:)];
 	[self addSubview:btn];
-		NSLog(@"btn.frame = %@", NSStringFromRect(btn.frame));
 
-	NSRect r = NSMakeRect(30, 250, 110, 29);
+	int w = btn.frame.size.width;
+
+	r = NSMakeRect(30, 250, w, 29);
 	_text = [AZTextField textfieldWithFrame:r];
 	[_text setTarget:self];
 	[_text setAction:@selector(textEntered:)];
 	[self addSubview:_text];
 
-	r = NSMakeRect(30, 280, 110, 29);
+	r = NSMakeRect(30, 280, w, 29);
 	_slider = [AZSlider sliderWithFrame:r];
 	[_slider setTarget:self];
 	[_slider setAction:@selector(sliderValue:)];
 	[_slider setContinuous:YES];
 	[self addSubview:_slider];
+
+	AZMenu *menu = [AZMenu new];
+	[menu addItemWithTitle:@"item 1" action:nil keyEquivalent:@""];
+	[menu addItemWithTitle:@"item 2" action:nil keyEquivalent:@""];
+	AZPopupButton *pbtn = [AZPopupButton pullDownButtonWithTitle:@"Test pulldown"
+															menu:menu];
+	[pbtn setFrameOrigin:NSMakePoint(30,320)];
+	[pbtn setTarget:self];
+	[pbtn setAction:@selector(pbuttonPressed:)];
+	[self addSubview:pbtn];
+	int pbw = pbtn.frame.size.width;
+
+	menu = [AZMenu new];
+	[menu addItemWithTitle:@"item 1" action:nil keyEquivalent:@""];
+	[menu addItemWithTitle:@"item 2" action:nil keyEquivalent:@""];
+	pbtn = [AZPopupButton popupButtonWithTitle:@"Test popup"
+										  menu:menu];
+	[pbtn setFrameOrigin:NSMakePoint(50+pbw,320)];
+	[pbtn setTarget:self];
+	[pbtn setAction:@selector(pbuttonPressed:)];
+	[self addSubview:pbtn];
+
 
 	r = NSMakeRect(150, 220, 29, 80);
 	_vslider = [AZSlider sliderWithFrame:r];
@@ -183,7 +208,7 @@
 - (void) buttonPressed:(id)sender
 	{
 	[_text setStringValue: @"hi there"];
-	NSLog(@"sender:%@", sender);
+	NSLog(@"btn: sender:%@", sender);
 	if (_vslider.enabled)
 		_vslider.enabled = NO;
 	else
@@ -202,6 +227,13 @@
 		else
 			NSLog(@"Done no-click");
 		}];
+	}
+
+
+
+- (void) pbuttonPressed:(id)sender
+	{
+	NSLog(@"popup: sender:%@", sender);
 	}
 
 

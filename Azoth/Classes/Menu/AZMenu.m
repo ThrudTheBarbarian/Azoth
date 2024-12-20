@@ -32,16 +32,32 @@
 	return [[AZMenu alloc] initWithTitle:title];
 	}
 
+- (instancetype) init
+	{
+	NSRect frame = NSMakeRect(0, 0, MENU_LEADING + MENU_TRAILING, MENU_HEIGHT);
+
+	if (self = [super initWithFrame:frame])
+		{
+		_renderFlags = AZMENU_RENDER_TOP | AZMENU_RENDER_BOTTOM;
+		_items 		 = [NSMutableArray new];
+
+		// Add the first item as the title of the menu. Menu choices are
+		// 1-based to allow for a title at position-0
+		AZMenuItem *titleItem = [AZMenuItem sectionHeaderWithTitle:@""];
+		[self addItem:titleItem];
+		}
+	return self;
+	}
+
 - (instancetype) initWithTitle:(NSString *)title
 	{
-	AZApp *app 			= AZApp.sharedInstance;
-	int width  			= [app.controlFont textWidthFor:title]
-						+ MENU_LEADING + MENU_TRAILING;
+	int width  			= [self widthForString:title];
 	NSRect frame		= NSMakeRect(100, 100, width, MENU_HEIGHT);
 
 	if (self = [super initWithFrame:frame])
 		{
-		_items = [NSMutableArray new];
+		_items 		 = [NSMutableArray new];
+		_renderFlags = AZMENU_RENDER_TOP | AZMENU_RENDER_BOTTOM;
 
 		// Add the first item as the title of the menu. Menu choices are
 		// 1-based to allow for a title at position-0
@@ -57,6 +73,18 @@
 - (NSArray<AZMenuItem *> *) itemArray
 	{
 	return _items;
+	}
+
+
+/*****************************************************************************\
+|* Figure out the width requirements of an item's string
+\*****************************************************************************/
+- (int) widthForString:(NSString *)text
+	{
+	AZApp *app 			= AZApp.sharedInstance;
+	int width  			= [app.controlFont textWidthFor:text]
+						+ MENU_LEADING + MENU_TRAILING;
+	return width;
 	}
 
 
@@ -105,6 +133,12 @@
 	{
 	[_items addObject:newItem];
 	newItem.menu = self;
+	if (_highlightedItem == nil)
+		_highlightedItem = newItem;
+
+	int w = [self widthForString:newItem.title];
+	if (w > self.frame.size.width)
+		[self setFrameSize:NSMakeSize(w, self.size.height)];
 	}
 
 /*****************************************************************************\
@@ -141,6 +175,23 @@
 		ok = YES;
 		}
 	return ok;
+	}
+
+/*****************************************************************************\
+|* Removes the first menu item with the given title
+\*****************************************************************************/
+- (BOOL) removeItemWithTitle:(NSString *) title
+	{
+	AZMenuItem *toRemove = nil;
+	for (AZMenuItem *item in _items)
+		if ([item.title isEqualToString:title])
+			{
+			toRemove = item;
+			break;
+			}
+	if (toRemove)
+		[self removeItem:toRemove];
+	return (toRemove != nil);
 	}
 
 /*****************************************************************************\
@@ -276,6 +327,22 @@
 	}
 
 /*****************************************************************************\
+|* Returns the index of the menu item with the specified target and action
+\*****************************************************************************/
+- (NSInteger) indexOfItemWithTarget:(NSObject *)target andAction:(SEL)action
+	{
+	NSInteger index = 0;
+	for (AZMenuItem *candidate in _items)
+		{
+		if ((candidate.target == target) && (candidate.action == action))
+			return index;
+		index ++;
+		}
+	return -1;
+	}
+
+
+/*****************************************************************************\
 |* Returns the last item, or nil if there are none
 \*****************************************************************************/
 - (nullable AZMenuItem *) lastItem
@@ -284,6 +351,22 @@
 		return _items.lastObject;
 	return nil;
 	}
+
+
+/*****************************************************************************\
+|* Returns the list of item titles in the menu
+\*****************************************************************************/
+- (NSArray<NSString *> *) itemTitles
+	{
+	NSMutableArray<NSString *> * itemTitles = [NSMutableArray new];
+	for (AZMenuItem *item in _items)
+		[itemTitles addObject:item.title];
+	return itemTitles;
+	}
+
+
+
+// MARK: Selection
 
 /*****************************************************************************\
 |* Returns the selected item, or nil if there are none
@@ -310,6 +393,84 @@
 		}
 	return -1;
 	}
+
+
+/*****************************************************************************\
+|* Select a menu item
+\*****************************************************************************/
+- (BOOL) selectItem:(AZMenuItem *)item
+	{
+	BOOL ok = NO;
+	for (AZMenuItem *candidate in _items)
+		if (item == candidate)
+			{
+			candidate.state = ControlStateValueOn;
+			ok = YES;
+			}
+		else
+			candidate.state = ControlStateValueOff;
+	return ok;
+	}
+
+
+/*****************************************************************************\
+|* Selects the item in the menu at the specified index
+\*****************************************************************************/
+- (BOOL) selectItemAtIndex:(NSInteger)index
+	{
+	BOOL ok = NO;
+	NSInteger count = 0;
+	for (AZMenuItem *candidate in _items)
+		{
+		if (count == index)
+			{
+			candidate.state = ControlStateValueOn;
+			ok = YES;
+			}
+		else
+			candidate.state = ControlStateValueOff;
+		count ++;
+		}
+	return ok;
+	}
+
+/*****************************************************************************\
+|* Selects the menu item with the specified tag.
+\*****************************************************************************/
+- (BOOL) selectItemWithTag:(NSInteger)tag
+	{
+	BOOL ok = NO;
+	for (AZMenuItem *candidate in _items)
+		if (tag == candidate.tag)
+			{
+			candidate.state = ControlStateValueOn;
+			ok = YES;
+			}
+		else
+			candidate.state = ControlStateValueOff;
+
+	return ok;
+	}
+
+/*****************************************************************************\
+|* Selects the item with the specified title
+\*****************************************************************************/
+- (BOOL) selectItemWithTitle:(NSString *) title
+	{
+	BOOL ok = NO;
+	for (AZMenuItem *candidate in _items)
+		if ([title isEqualToString:candidate.title])
+			{
+			candidate.state = ControlStateValueOn;
+			ok = YES;
+			}
+		else
+			candidate.state = ControlStateValueOff;
+
+	return ok;
+	}
+
+
 
 
 // MARK: Submenu management
@@ -364,13 +525,16 @@
 			   then:(MenuDoneBlock)call
 	{
 	AZMenu *menu	= item.menu;
-	int flags	  	= AZMENU_RENDER_BOTTOM | AZMENU_RENDER_TOP;
-	AZMenuSize sz 	= [AZMenuView measureMenu:item.menu withFlags:flags];
+	AZMenuSize sz 	= [AZMenuView measureMenu:menu];
 	_menuView 	  	= [[AZMenuView alloc] initWithMenu:menu andSize:sz];
 	AZView *cv    	= [AZWindow contentViewForWindow:view.window];
 
 	NSInteger index	= [menu selectedIndex];
-	p.y				= p.y
+		if ((index < 1) && (menu.numberOfItems > 1))
+		index = 1;
+
+	if (!_pullsDown)
+		p.y			= p.y
 					- (index) * sz.fontHeight
 					- sz.topHeight;
 	if (p.y < 0)
@@ -387,5 +551,7 @@
 	[_menuView setupEventSink];
 	[cv addSubview:_menuView before:nil];
 	}
+
+// MARK: Private methods
 
 @end

@@ -53,7 +53,7 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 /*****************************************************************************\
 |* Measure a menu to figure out its frame
 \*****************************************************************************/
-+ (AZMenuSize) measureMenu:(AZMenu *)menu withFlags:(int)flags
++ (AZMenuSize) measureMenu:(AZMenu *)menu
 	{
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken,
@@ -61,6 +61,8 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 		[AZMenuView _fetchRects];
 		});
 
+	AZMenuRenderFlag flags = menu.renderFlags;
+	
 	NSInteger count	= menu.numberOfItems;
 	NSInteger top	= (flags & AZMENU_RENDER_TOP) ? NSHeight(_menuTM) : 0;
 	NSInteger mid	= count * NSHeight(_barSel);
@@ -70,18 +72,24 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 	int width		= 0;
 	for (AZMenuItem *item in menu.itemArray)
 		{
-		int w = [font textWidthFor:item.title];
+		int w = [menu widthForString:item.title];
 		width = (width > w) ? width : w;
 		}
-	width += 15; // Padding to either side
+
+	width = (width < menu.measure.frame.size.width)
+		  ? menu.measure.frame.size.width
+		  : width;
 
 	AZMenuSize size;
-
-	size.frame	= NSMakeRect(0,0, width, top+mid+bot);
+	size.frame			= NSMakeRect(0,0, width, top+mid+bot);
 	size.bottomHeight	= bot;
 	size.topHeight		= top;
 	size.flagsUsed		= flags;
 	size.fontHeight		= font.height;
+
+	if (menu.measure.frame.size.width == 0)
+		menu.measure = size;
+
 	return size;
 	}
 
@@ -293,7 +301,7 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 	/*************************************************************************\
 	|* Do we have a bottom bar ?
 	\*************************************************************************/
-	if (_measure.flagsUsed & AZMENU_RENDER_TOP)
+	if (_measure.flagsUsed & AZMENU_RENDER_BOTTOM)
 		{
 		int h       = NSHeight(_menuBL);
 		int stretch = bounds.size.width - NSWidth(_menuBL) - NSWidth(_menuBR);

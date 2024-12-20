@@ -116,12 +116,12 @@ typedef struct
 	int fontHeight;					// Size of the font used (bar height too)
 	} AZMenuSize;
 
-enum
+typedef enum
 	{
 	AZMENU_RENDER_TOP		= 1,
 	AZMENU_RENDER_BOTTOM	= 2,
 	AZMENU_SHOW_TITLE		= 4
-	};
+	} AZMenuRenderFlag;
 
 
 /*****************************************************************************\
