@@ -296,6 +296,21 @@
 	return nil;
 	}
 
+/*****************************************************************************\
+|* Returns the index of the selected item, or -1 if there are none
+\*****************************************************************************/
+- (NSInteger) selectedIndex
+	{
+	int idx = 0;
+	for (AZMenuItem *item in _items)
+		{
+		if (item.state == ControlStateValueOn)
+			return idx;
+		idx ++;
+		}
+	return -1;
+	}
+
 
 // MARK: Submenu management
 
@@ -348,11 +363,24 @@
 			 inView:(AZView *) view
 			   then:(MenuDoneBlock)call
 	{
+	AZMenu *menu	= item.menu;
 	int flags	  	= AZMENU_RENDER_BOTTOM | AZMENU_RENDER_TOP;
 	AZMenuSize sz 	= [AZMenuView measureMenu:item.menu withFlags:flags];
-	_menuView 	  	= [[AZMenuView alloc] initWithMenu:item.menu andSize:sz];
+	_menuView 	  	= [[AZMenuView alloc] initWithMenu:menu andSize:sz];
 	AZView *cv    	= [AZWindow contentViewForWindow:view.window];
 
+	NSInteger index	= [menu selectedIndex];
+	p.y				= p.y
+					- (index) * sz.fontHeight
+					- sz.topHeight;
+	if (p.y < 0)
+		p.y = 0;
+	if (p.y + _menuView.frame.size.height> cv.frame.size.height)
+		p.y = cv.frame.size.height - _menuView.frame.size.height;
+	if (p.x < 0)
+		p.x = 0;
+	if (p.x + _menuView.frame.size.width > cv.frame.size.width)
+		p.x = cv.frame.size.width - _menuView.frame.size.width;
 	[_menuView setFrameOrigin:p];
 	_menuView.call = call;
 

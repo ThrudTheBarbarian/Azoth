@@ -130,6 +130,11 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 - (nullable AZMenuItem *) selectedItem;
 
+/*****************************************************************************\
+|* Returns the index of the selected item, or -1 if there are none
+\*****************************************************************************/
+- (NSInteger) selectedIndex;
+
 
 // MARK: Submenu management
 

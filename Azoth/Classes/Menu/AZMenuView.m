@@ -73,6 +73,7 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 		int w = [font textWidthFor:item.title];
 		width = (width > w) ? width : w;
 		}
+	width += 15; // Padding to either side
 
 	AZMenuSize size;
 
@@ -105,19 +106,39 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 	}
 
 /*****************************************************************************\
-|* The mouse moved
+|* The mouse button was pressed
 \*****************************************************************************/
 - (void) _handleMouseDown:(SDL_Event *)e
 	{
- 	NSPoint p 	= (NSPoint){e->motion.x, e->motion.y};
+ 	NSPoint p 	= (NSPoint){e->button.x, e->button.y};
 	p 			= [self convertPoint:p fromView:nil];
 	float H 	= self.bounds.size.height - _menuBM.size.height;
 	float W 	= self.bounds.size.width;
 	BOOL inside	= NO;
 
+	/*************************************************************************\
+	|* Pull out the impending mouse-up event otherwise another widget might
+	|* get an 'up' and take an action
+	\*************************************************************************/
+	SDL_Event up;
+	SDL_PumpEvents();
+	while (true)
+		{
+		SDL_PollEvent(&up);
+		if (up.type == SDL_EVENT_MOUSE_BUTTON_UP)
+			break;
+		}
+
+	/*************************************************************************\
+	|* Decide whether this was an in-the-menu click or an out-the-menu click
+	\*************************************************************************/
 	if ((p.x >= 0) && (p.x < W) && (p.y >= 0) && (p.y < H))
 		inside = YES;
 
+	/*************************************************************************\
+	|* Clean up the event-filtering logic, and return to the caller using the
+	|* provided block
+	\*************************************************************************/
 	[AZApp.sharedInstance removeEventSink:_sink];
 	_sink = nil;
 	_call(inside);
@@ -239,7 +260,7 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 
 		int stretch  = bounds.size.width - NSWidth(_menuCL) - NSWidth(_menuCR);
 		NSRect text	 = NSMakeRect(NSWidth(_menuCL), y, stretch, H);
-		NSRect inset = NSInsetRect(text, 7, 0);
+		NSRect inset = NSInsetRect(text, 4, 0);
 
 		AZColour *textColour = nil;
 

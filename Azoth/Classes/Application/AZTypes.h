@@ -113,7 +113,7 @@ typedef struct
 	NSInteger topHeight;			// Space for curved top
 	NSInteger bottomHeight;			// Space for curved bottom
 	int flagsUsed;					// For posterity
-	int fontHeight;					// Size of the font used
+	int fontHeight;					// Size of the font used (bar height too)
 	} AZMenuSize;
 
 enum

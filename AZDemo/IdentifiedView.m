@@ -41,6 +41,7 @@
 	[btn setTarget:self];
 	[btn setAction:@selector(buttonPressed:)];
 	[self addSubview:btn];
+		NSLog(@"btn.frame = %@", NSStringFromRect(btn.frame));
 
 	NSRect r = NSMakeRect(30, 250, 110, 29);
 	_text = [AZTextField textfieldWithFrame:r];
@@ -70,10 +71,11 @@
 	[self addSubview:_circ];
 
 	_menu = [AZMenu menuWithTitle:@"test menu"];
-	[_menu addItemWithTitle:@"item 1" action:nil keyEquivalent:@""];
-	[_menu addItemWithTitle:@"item 2" action:nil keyEquivalent:@""];
+	[_menu addItemWithTitle:@"The Angry Man" action:nil keyEquivalent:@""];
 	[[_menu lastItem] setState:ControlStateValueOn];
-	[_menu addItemWithTitle:@"item 3" action:nil keyEquivalent:@""];
+	[_menu addItemWithTitle:@"The quiet thinker" action:nil keyEquivalent:@""];
+	[_menu addItemWithTitle:@"The xylophone" action:nil keyEquivalent:@""];
+	[_menu addItemWithTitle:@"The card-carrying gunslinger" action:nil keyEquivalent:@""];
 	return self;
 	}
 
@@ -187,9 +189,9 @@
 	else
 		_vslider.enabled = YES;
 
-	AZMenuItem *item = [_menu itemAtIndex:0];
+	AZMenuItem *item = [_menu itemAtIndex:2];
 	[_menu popUpMenuPositioningItem:item
-						 atLocation:NSMakePoint(30,220)
+						 atLocation:NSMakePoint(59,244)
 						     inView:self
 						   thenCall:^(BOOL menuClicked)
 		{
@@ -200,8 +202,6 @@
 		else
 			NSLog(@"Done no-click");
 		}];
-
-	NSLog(@"subviews: %@", [[AZWindow contentViewForWindow:self.window] subviews]);
 	}
 
 
