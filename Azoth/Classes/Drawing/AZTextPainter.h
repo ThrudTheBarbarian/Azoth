@@ -52,8 +52,7 @@ struct SDL_Texture;
 /*****************************************************************************\
 |* Utility method - return an initialised effect structure
 \*****************************************************************************/
-+ (AZFontEffect) mkEffect:(AZFontHAlign)hAlign
-				   vAlign:(AZFontVAlign)vAlign
++ (AZFontEffect) mkEffect:(AZTextAlignment)align
 					    r:(uint8_t)r
 					    g:(uint8_t)g
 					    b:(uint8_t)b
@@ -73,7 +72,7 @@ struct SDL_Texture;
 @property(strong, nonatomic) AZColour *						colour;
 
 // Text alignment
-@property(assign, nonatomic) AZFontHAlign					hAlign;
+@property(assign, nonatomic) AZTextAlignment				alignment;
 
 // Text scaling factors
 @property(assign, nonatomic) AZScale						scale;

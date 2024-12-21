@@ -1934,9 +1934,9 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 /*****************************************************************************\
 |* Set horizontal text alignment
 \*****************************************************************************/
-- (void) setTextAlignment:(AZFontHAlign)align
+- (void) setTextAlignment:(AZTextAlignment)align
 	{
-	_textPainter.hAlign = align;
+	_textPainter.alignment = align;
 	}
 
 /*****************************************************************************\

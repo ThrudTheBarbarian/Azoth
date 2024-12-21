@@ -34,7 +34,7 @@
 		{
 		_renderer 	= renderer;
 		_colour 	= [AZColour colourWithR:0.f g:0.f b:0.f a:1.f];
-		_hAlign		= AZFONT_HALIGN_LEFT;
+		_alignment	= AZTextAlignmentLeft;
 		_scale		= (AZScale){1.f, 1.f};
 		}
 	return self;
@@ -48,8 +48,7 @@
 /*****************************************************************************\
 |* Utility method - return an initialised effect structure
 \*****************************************************************************/
-+ (AZFontEffect) mkEffect:(AZFontHAlign)hAlign
-				   vAlign:(AZFontVAlign)vAlign
++ (AZFontEffect) mkEffect:(AZTextAlignment)alignment
 					    r:(uint8_t)r
 					    g:(uint8_t)g
 					    b:(uint8_t)b
@@ -57,12 +56,11 @@
 	{
 	AZFontEffect e =
 		{
-		.hAlign = hAlign,
-		.vAlign = vAlign,
-		.r		= r,
-		.g		= g,
-		.b		= b,
-		.a		= a
+		.alignment 	= alignment,
+		.r			= r,
+		.g			= g,
+		.b			= b,
+		.a			= a
 		};
 	return e;
 	}
@@ -118,15 +116,15 @@
 	[_font setColourForAllCaches:_colour];
 
 	NSRect result = NSZeroRect;
-	switch (_hAlign)
+	switch (_alignment)
 		{
-		case AZFONT_HALIGN_LEFT:
+		case AZTextAlignmentLeft:
 			result = [self _renderLeftAtX:x y:y msg:text];
 			break;
-		case AZFONT_HALIGN_CENTER:
+		case AZTextAlignmentCenter:
 			result = [self _renderCenterAtX:x y:y msg:text];
 			break;
-		case AZFONT_HALIGN_RIGHT:
+		case AZTextAlignmentRight:
 			result = [self _renderRightAtX:x y:y msg:text];
 			break;
 		default:
@@ -217,12 +215,12 @@
 	{
     int y = box.origin.y;
 	int x = box.origin.x;
-	switch (_hAlign)
+	switch (_alignment)
 		{
-		case AZFONT_HALIGN_CENTER:
+		case AZTextAlignmentCenter:
 			x += box.size.width/2;
 			break;
-		case AZFONT_HALIGN_RIGHT:
+		case AZTextAlignmentRight:
 			x += box.size.width;
 			break;
 		default:

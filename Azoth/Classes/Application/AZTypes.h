@@ -43,22 +43,16 @@ typedef struct AZFontStyle
 \*****************************************************************************/
 typedef enum
 	{
-	AZFONT_VALIGN_BASE = 0,
-	AZFONT_VALIGN_HALF,
-	AZFONT_VALIGN_ASCENT,
-	AZFONT_VALIGN_BOTTOM,
-	AZFONT_VALIGN_DESCENT,
-	AZFONT_VALIGN_TOP,
-	AZFONT_VALIGN_MAX
-	} AZFontVAlign; // Currently not implemented
+	AZTextAlignmentLeft = 0,
+	AZTextAlignmentRight,
+	AZTextAlignmentCenter,
 
-typedef enum
-	{
-	AZFONT_HALIGN_LEFT = 0,
-	AZFONT_HALIGN_CENTER,
-	AZFONT_HALIGN_RIGHT,
-	AZFONT_HALIGN_MAX
-	} AZFontHAlign;
+	// Not implemented below here
+	AZTextAlignmentJustified,
+	AZTextAlignmentNatural,
+
+	AZTextAlignmentMax
+	} AZTextAlignment;
 
 /*****************************************************************************\
 |* Scale factor
@@ -74,8 +68,7 @@ typedef struct
 \*****************************************************************************/
 typedef struct
 	{
-	AZFontHAlign hAlign;
-	AZFontVAlign vAlign;
+	AZTextAlignment alignment;
 	uint8_t r, g, b, a;
 	} AZFontEffect;
 

@@ -32,6 +32,46 @@
 	return self;
 	}
 
+- (instancetype) initWithPoint:(NSPoint)p
+	{
+	if (self = [super init])
+		{
+		_p 	= p;
+		_hint 	= @"";
+		}
+	return self;
+	}
+
+- (instancetype) initWithPoint:(NSPoint)p andHint:(NSString *)hint
+	{
+	if (self = [super init])
+		{
+		_p 		= p;
+		_hint 	= hint ? hint : @"";
+		}
+	return self;
+	}
+
+- (instancetype) initWithRect:(NSRect)r
+	{
+	if (self = [super init])
+		{
+		_rect = r;
+		_hint = @"";
+		}
+	return self;
+	}
+
+- (instancetype) initWithRect:(NSRect)r andHint:(NSString *)hint
+	{
+	if (self = [super init])
+		{
+		_rect = r;
+		_hint = hint ? hint : @"";
+		}
+	return self;
+	}
+
 /*****************************************************************************\
 |* ... conveniently
 \*****************************************************************************/
@@ -43,6 +83,26 @@
 + (AZObject *) objectWithPointer:(void *)ptr andHint:(NSString *)hint
 	{
 	return [[AZObject alloc] initWithPointer:ptr andHint:hint];
+	}
+
++ (AZObject *) objectWithPoint:(NSPoint)p
+	{
+	return [[AZObject alloc] initWithPoint:p];
+	}
+
++ (AZObject *) objectWithPoint:(NSPoint)p andHint:(NSString *)hint
+	{
+	return [[AZObject alloc] initWithPoint:p andHint:hint];
+	}
+
++ (AZObject *) objectWithRect:(NSRect)r
+	{
+	return [[AZObject alloc] initWithRect:r];
+	}
+
++ (AZObject *) objectWithRect:(NSRect)r andHint:(NSString *)hint
+	{
+	return [[AZObject alloc] initWithRect:r andHint:hint];
 	}
 
 @end

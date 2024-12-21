@@ -291,7 +291,7 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 			textColour = AZColour.blackColour;
 			}
 
-		[painter setTextAlignment:AZFONT_HALIGN_LEFT];
+		[painter setTextAlignment:AZTextAlignmentLeft];
 		[painter setTextColour:textColour];
 		[painter drawInBox:inset text:item.title];
 

@@ -20,6 +20,7 @@
 @property (strong, nonatomic) AZSlider *circ;
 @property (strong, nonatomic) AZTextField *text;
 @property (strong, nonatomic) AZMenu *menu;
+@property (strong, nonatomic) AZSegmentedControl *ctrl;
 @end
 
 @implementation IdentifiedView
@@ -101,6 +102,16 @@
 	[_menu addItemWithTitle:@"The quiet thinker" action:nil keyEquivalent:@""];
 	[_menu addItemWithTitle:@"The xylophone" action:nil keyEquivalent:@""];
 	[_menu addItemWithTitle:@"The card-carrying gunslinger" action:nil keyEquivalent:@""];
+
+	NSArray<NSString *> *labels = @[@"Car", @"Bus", @"Bike"];
+	_ctrl = [AZSegmentedControl segmentedControlWithLabels:labels
+								trackingMode:AZSegmentSwitchTrackingSelectOne
+								target:self
+								action:@selector(segmentClicked:)];
+	[_ctrl setFrameOrigin:NSMakePoint(220,220)];
+	[self addSubview:_ctrl];
+
+
 	return self;
 	}
 
@@ -191,7 +202,7 @@
 //	[painter setTextColour:[AZColour redColour]];
 //	[painter drawAtX:450 y:300 format:@"Aiiiiiie! says %@", @"Simon"];
 
-	[painter setTextAlignment:AZFONT_HALIGN_LEFT];
+	[painter setTextAlignment:AZTextAlignmentLeft];
 	NSString * text = @"Just a test of reformatting text to be in a column\n\n"
 					   "The quick brown fox jumped over the lazy dog who "
 					   "barely batted an eye let alone ran after the fox, "
@@ -245,6 +256,12 @@
 - (void) sliderValue:(id)sender
 	{
 	NSLog(@"slider:%@, value:%f", sender, ((AZSlider *)sender).doubleValue);
+	}
+
+
+- (void) segmentClicked:(id)sender
+	{
+	NSLog(@"segmented control:%@", sender);
 	}
 
 @end

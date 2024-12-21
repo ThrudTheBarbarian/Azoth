@@ -241,7 +241,7 @@ struct SDL_Surface;
 /*****************************************************************************\
 |* Set horizontal text alignment
 \*****************************************************************************/
-- (void) setTextAlignment:(AZFontHAlign)align;
+- (void) setTextAlignment:(AZTextAlignment)align;
 
 /*****************************************************************************\
 |* Set text angle (cardinal angles only for now, 0, 90, 180, 270)

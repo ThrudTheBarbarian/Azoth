@@ -107,7 +107,7 @@ static NSRect	_bRight[STATE_NUM];
 	[azr tileFrom:ui src:srcC dst:dstC];
 	[azr blitFrom:ui src:srcR dst:dstR];
 
-	[painter setTextAlignment:AZFONT_HALIGN_CENTER];
+	[painter setTextAlignment:AZTextAlignmentCenter];
 
 	switch (_type)
 		{

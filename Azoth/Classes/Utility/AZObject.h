@@ -24,13 +24,23 @@ NS_ASSUME_NONNULL_BEGIN
 |* Initialisation
 \*****************************************************************************/
 - (instancetype) initWithPointer:(void *)ptr;
-- (instancetype) initWithPointer:(void *)ptr andHint:(NSString *)hint;
+- (instancetype) initWithPointer:(void *)ptr andHint:(nullable NSString *)hint;
+- (instancetype) initWithRect:(NSRect)rect;
+- (instancetype) initWithRect:(NSRect)rect andHint:(nullable NSString *)hint;
+- (instancetype) initWithPoint:(NSPoint)p;
+- (instancetype) initWithPoint:(NSPoint)p andHint:(nullable NSString *)hint;
 
 + (AZObject *) objectWithPointer:(void *)ptr;
-+ (AZObject *) objectWithPointer:(void *)ptr andHint:(NSString *)hint;
++ (AZObject *) objectWithPointer:(void *)ptr andHint:(nullable NSString *)hint;
++ (AZObject *) objectWithPoint:(NSPoint)p;
++ (AZObject *) objectWithPoint:(NSPoint)p andHint:(nullable NSString *)hint;
++ (AZObject *) objectWithRect:(NSRect)rect;
++ (AZObject *) objectWithRect:(NSRect)rect andHint:(nullable NSString *)hint;
 
-@property(copy, nonatomic) NSString *		hint;
-@property(assign, nonatomic) void *			ptr;
+@property(copy, nonatomic, nullable) NSString *					hint;
+@property(assign, nonatomic) void *								ptr;
+@property(assign, nonatomic) NSRect								rect;
+@property(assign, nonatomic) NSPoint							p;
 @end
 
 NS_ASSUME_NONNULL_END
