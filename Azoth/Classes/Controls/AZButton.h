@@ -14,7 +14,9 @@ typedef enum
 	ButtonTypePlain 			= 0,
 	ButtonTypeDefault			= 3,
 	ButtonTypeRounded			= 6,
-	ButtonTypeRoundedDefault	= 9
+	ButtonTypeRoundedDefault	= 9,
+	ButtonTypeCheckbox			= 12,
+	ButtonTypeRadio				= 15
 	} AZButtonType;
 
 @interface AZButton : AZControl
@@ -25,8 +27,9 @@ typedef enum
 + (AZButton *) buttonWithFrame:(NSRect)frame;
 + (AZButton *) buttonWithText:(NSString *)text at:(NSPoint)p;
 
-
 @property(assign, nonatomic) AZButtonType						type;
+@property(assign, nonatomic) AZCellImagePosition				imagePosition;
+@property(strong, nonatomic) NSString *							radioGroup;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -11,3 +11,4 @@ NSString * const AZRootViewWillResizeNotification 	= @"AZ:ResizeRootView";
 
 NSString * const AZPopUpButtonWillPopUpNotification = @"AZ:PopupWillShow";
 
+NSString * const AZRadioButtonPressedNotification 	= @"AZ:RadioButtonPressed";

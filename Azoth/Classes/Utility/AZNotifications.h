@@ -13,5 +13,5 @@ extern NSString * const AZRootViewWillResizeNotification;
 
 extern NSString * const AZPopUpButtonWillPopUpNotification;
 
-
+extern NSString * const AZRadioButtonPressedNotification;
 NS_ASSUME_NONNULL_END

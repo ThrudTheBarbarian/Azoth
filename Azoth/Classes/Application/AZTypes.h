@@ -98,6 +98,21 @@ typedef enum
 
 
 /*****************************************************************************\
+|* Orientation of text within buttons relative to an image
+\*****************************************************************************/
+typedef enum
+	{
+	AZNoImage				= 0,
+	AZImageOnly	,
+	AZImageLeading,
+	AZImageTrailing,
+	AZImageLeft,
+	AZImageRight,
+	AZImageAbove,
+	AZImageBelow
+	} AZCellImagePosition;
+
+/*****************************************************************************\
 |* Measurement of popup menus
 \*****************************************************************************/
 typedef struct

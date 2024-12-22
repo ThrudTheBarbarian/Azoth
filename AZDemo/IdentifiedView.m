@@ -21,6 +21,9 @@
 @property (strong, nonatomic) AZTextField *text;
 @property (strong, nonatomic) AZMenu *menu;
 @property (strong, nonatomic) AZSegmentedControl *ctrl;
+@property (strong, nonatomic) AZButton *cb;
+@property (strong, nonatomic) AZButton *rb1;
+@property (strong, nonatomic) AZButton *rb2;
 @end
 
 @implementation IdentifiedView
@@ -81,6 +84,29 @@
 	[pbtn setAction:@selector(pbuttonPressed:)];
 	[self addSubview:pbtn];
 
+	_cb = [AZButton buttonWithText:@"Checkbox test" at:NSMakePoint(220,220)];
+	_cb.type = ButtonTypeCheckbox;
+	_cb.enabled = NO;
+
+	[_cb setTarget:self];
+	[_cb setAction:@selector(cbPressed:)];
+	[self addSubview:_cb];
+
+	_rb1 = [AZButton buttonWithText:@"Radio test #1" at:NSMakePoint(180,260)];
+	_rb1.type = ButtonTypeRadio;
+	_rb1.radioGroup = @"test";
+
+	[_rb1 setTarget:self];
+	[_rb1 setAction:@selector(rbPressed:)];
+	[self addSubview:_rb1];
+
+	_rb2 = [AZButton buttonWithText:@"Radio test #2" at:NSMakePoint(180,285)];
+	_rb2.type = ButtonTypeRadio;
+	_rb2.radioGroup = @"test";
+
+	[_rb2 setTarget:self];
+	[_rb2 setAction:@selector(rbPressed:)];
+	[self addSubview:_rb2];
 
 	r = NSMakeRect(150, 220, 29, 80);
 	_vslider = [AZSlider sliderWithFrame:r];
@@ -103,12 +129,14 @@
 	[_menu addItemWithTitle:@"The xylophone" action:nil keyEquivalent:@""];
 	[_menu addItemWithTitle:@"The card-carrying gunslinger" action:nil keyEquivalent:@""];
 
+	int segx = NSMaxX(pbtn.frame) + 20;
+
 	NSArray<NSString *> *labels = @[@"Car", @"Bus", @"Bike"];
 	_ctrl = [AZSegmentedControl segmentedControlWithLabels:labels
 								trackingMode:AZSegmentSwitchTrackingSelectOne
 								target:self
 								action:@selector(segmentClicked:)];
-	[_ctrl setFrameOrigin:NSMakePoint(220,220)];
+	[_ctrl setFrameOrigin:NSMakePoint(segx,320)];
 	[self addSubview:_ctrl];
 
 
@@ -247,6 +275,11 @@
 	NSLog(@"popup: sender:%@", sender);
 	}
 
+- (void) cbPressed:(id)sender
+	{
+	NSLog(@"Checkbox: sender:%@", sender);
+	}
+
 
 - (void) textEntered:(id)sender
 	{
@@ -256,12 +289,20 @@
 - (void) sliderValue:(id)sender
 	{
 	NSLog(@"slider:%@, value:%f", sender, ((AZSlider *)sender).doubleValue);
+	_cb.enabled = (((AZSlider *)sender).doubleValue == 0);
 	}
 
 
 - (void) segmentClicked:(id)sender
 	{
 	NSLog(@"segmented control:%@", sender);
+
+	}
+
+- (void) rbPressed:(id)sender
+	{
+	NSLog(@"radio button pressed:%@", sender);
+
 	}
 
 @end

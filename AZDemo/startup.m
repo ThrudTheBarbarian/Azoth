@@ -65,7 +65,7 @@ void _testMouseEvents(void)
 	[cv setIdentifier:@"content-view"];
 
 	IdentifiedView *v1 = [[IdentifiedView alloc]
-							initWithFrame:NSMakeRect(100,100, 400, 360)
+							initWithFrame:NSMakeRect(100,100, 600, 360)
 								  andName:@"view1"];
 	[v1 setBgColour:[AZColour redColour]];
 	[cv addSubview:v1];

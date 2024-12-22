@@ -11,6 +11,7 @@
 #import "AZButton.h"
 #import "AZColour.h"
 #import "AZFont.h"
+#import "AZNotifications.h"
 #import "AZPainter.h"
 #import "AZRenderer.h"
 #import "AZWindow.h"
@@ -36,6 +37,14 @@ enum
 	STATE_RDH,					// Rounded, default, highlight
 	STATE_RDD,					// Rounded, default, disabled
 
+	STATE_CN,					// Checkbox normal
+	STATE_CK,					// Checkbox checked
+	STATE_CD,					// Checkbox disabled
+
+	STATE_NR,					// Radio normal
+	STATE_SR,					// Radio selected
+	STATE_DR,					// Radio disabled
+
 	STATE_NUM
 	};
 
@@ -60,7 +69,8 @@ static NSRect	_bRight[STATE_NUM];
 
 		self.bgColour 		= [AZColour clearColour];
 		self.stringValue 	= @"Button";
-		_type		 		= ButtonTypePlain;
+		self.imagePosition	= AZImageLeft;		// Only used in checkbox
+		self.type	 		= ButtonTypePlain;
 		}
 	return self;
 	}
@@ -82,10 +92,49 @@ static NSRect	_bRight[STATE_NUM];
 	}
 
 /*****************************************************************************\
+|* Clean up
+\*****************************************************************************/
+- (void) dealloc
+	{
+	NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
+	[nc removeObserver:self];
+	}
+
+/*****************************************************************************\
+|* If we set the type to be a radio button, listen for broadcasts of being set
+\*****************************************************************************/
+- (void) setType:(AZButtonType)type
+	{
+	_type = type;
+
+	NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
+	if (_type == ButtonTypeRadio)
+		[nc addObserver:self
+			   selector:@selector(radioButtonPressed:)
+				   name:AZRadioButtonPressedNotification
+				 object:nil];
+	else
+		[nc removeObserver:self];
+	}
+
+/*****************************************************************************\
+|* If we set the radio buttom group, send out a signal that we toggled, so at
+|* least one entry in the radio group is always toggled on
+\*****************************************************************************/
+- (void) setRadioGroup:(NSString *)radioGroup
+	{
+	_radioGroup = radioGroup;
+	[self _toggleButtonToggled];
+	}
+
+/*****************************************************************************\
 |* Draw the button
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
+	if (self.type >= ButtonTypeCheckbox)
+		return [self _drawCheckboxInRect:dirtyRect withPainter:painter];
+
 	NSRect bounds	= self.bounds;
 	[super drawInRect:dirtyRect withPainter:painter];
 
@@ -125,11 +174,54 @@ static NSRect	_bRight[STATE_NUM];
 
 
 /*****************************************************************************\
+|* Draw a checkbox button
+\*****************************************************************************/
+- (void) _drawCheckboxInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
+	{
+	[super drawInRect:dirtyRect withPainter:painter];
+
+	NSRect b		= self.bounds;
+	int W			= b.size.width;
+	int H			= b.size.height;
+
+	NSRect src		= _bCenter[self.state + _type];
+	NSRect dst		= src;
+	BOOL rhs		= (self.imagePosition == AZImageRight)
+					| (self.imagePosition == AZImageTrailing);
+	int by			= (H-NSHeight(src))/2;
+	dst.origin  	= rhs ? NSMakePoint(W-NSWidth(src), by) : NSMakePoint(0, by);
+
+	AZRenderer *azr	= AZRenderer.renderer;
+	NSInteger ui	= AZApp.sharedInstance.ui;
+
+	[azr setBlendMode:SDL_BLENDMODE_ADD];
+	[azr blitFrom:ui src:src dst:dst];
+
+	if (!self.enabled)
+		[painter setTextColour:[AZColour grey75Colour]];
+	else
+		[painter setTextColour:[AZColour blackColour]];
+
+	AZFont *font	= AZApp.sharedInstance.controlFont;
+	int y			= H/2-font.baseline/2;
+	int textW		= [font textWidthFor:self.stringValue];
+	int x			= rhs ? NSMaxX(dst) - textW - 5 : NSMaxX(dst) + 5;
+
+	[painter drawAtX:x y:y text:self.stringValue];
+	}
+
+/*****************************************************************************\
 |* Handle a mouse press
 \*****************************************************************************/
 - (BOOL) mouseDown:(SDL_MouseButtonEvent *)e
 	{
-	if (self.state == ControlStateNormal)
+	if (self.state ==ControlStateDisabled)
+		return NO;
+
+	if (self.type >= ButtonTypeCheckbox)
+		[self _toggleButtonToggled];
+
+	else if (self.state == ControlStateNormal)
 		{
 		self.state = ControlStateHighlighted;
 		[self setNeedsDisplay:YES];
@@ -144,15 +236,56 @@ static NSRect	_bRight[STATE_NUM];
 \*****************************************************************************/
 - (BOOL) mouseUp:(struct SDL_MouseButtonEvent *)e
 	{
-	if (self.state == ControlStateHighlighted)
-		{
-		self.state = ControlStateNormal;
-		[self setNeedsDisplay:YES];
-		}
+	if (self.state ==ControlStateDisabled)
+		return NO;
+
+	if (self.type < ButtonTypeCheckbox)
+		if (self.state == ControlStateHighlighted)
+			{
+			self.state = ControlStateNormal;
+			[self setNeedsDisplay:YES];
+			}
 	return YES;
 	}
 
+// MARK: Notifications
+
+- (void) radioButtonPressed:(NSNotification *)n
+	{
+	if (self == n.object)
+		return;
+
+	if (![n.userInfo[@"group"] isEqualToString:_radioGroup])
+		return;
+
+	[self setState:ControlStateNormal];
+	[self setNeedsDisplay:YES];
+	}
+
 // MARK: Private methods
+
+/*****************************************************************************\
+|* Process a click on a radio button
+\*****************************************************************************/
+- (void) _toggleButtonToggled
+	{
+	self.state  = (self.state == ControlStateNormal)
+				? ControlStateHighlighted
+				: ControlStateNormal;
+	[self sendAction:self.action to:self.target];
+	[self setNeedsDisplay:YES];
+	if (self.type == ButtonTypeRadio)
+		{
+		NSDictionary *info =
+			@{
+			@"group" : self.radioGroup
+			};
+
+		NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
+		[nc postNotificationName:AZRadioButtonPressedNotification
+						  object:self userInfo:info];
+		}
+	}
 
 /*****************************************************************************\
 |* Populate the rectangles from the UI texture atlas
@@ -193,6 +326,13 @@ static NSRect	_bRight[STATE_NUM];
 	_bCenter[STATE_RDH] = [app srcRectFor:@"default-button-bezel-rounded-highlighted-center"];
 	_bCenter[STATE_RDD] = [app srcRectFor:@"default-button-bezel-rounded-disabled-center"];
 
+	_bCenter[STATE_CN]	= [app srcRectFor:@"check-box-image"];
+	_bCenter[STATE_CK]	= [app srcRectFor:@"check-box-image-selected"];
+	_bCenter[STATE_CD]	= [app srcRectFor:@"check-box-image"];
+
+	_bCenter[STATE_NR]	= [app srcRectFor:@"radio-image"];
+	_bCenter[STATE_SR]	= [app srcRectFor:@"radio-image-selected"];
+	_bCenter[STATE_DR]	= [app srcRectFor:@"radio-image"];
 
 	_bRight[STATE_N]   = [app srcRectFor:@"button-bezel-right"];
 	_bRight[STATE_H]   = [app srcRectFor:@"button-bezel-highlighted-right"];
