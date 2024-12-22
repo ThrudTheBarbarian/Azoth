@@ -101,6 +101,7 @@
 				Classes/Base/AZResponder.h,
 				Classes/Controls/AZButton.h,
 				Classes/Controls/AZPopupButton.h,
+				Classes/Controls/AZScroller.h,
 				Classes/Controls/AZSegmentedControl.h,
 				Classes/Controls/AZSlider.h,
 				Classes/Controls/AZTextField.h,

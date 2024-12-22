@@ -24,6 +24,8 @@
 @property (strong, nonatomic) AZButton *cb;
 @property (strong, nonatomic) AZButton *rb1;
 @property (strong, nonatomic) AZButton *rb2;
+@property (strong, nonatomic) AZScroller *hs;
+@property (strong, nonatomic) AZScroller *vs;
 @end
 
 @implementation IdentifiedView
@@ -139,7 +141,22 @@
 	[_ctrl setFrameOrigin:NSMakePoint(segx,320)];
 	[self addSubview:_ctrl];
 
+	NSRect b = self.bounds;
+	b.origin.y = b.size.height - 10;
+	b.size.height = 10;
+	_hs = [[AZScroller alloc] initWithFrame:b];
+	[_hs setAction:@selector(scrollerMoved:)];
+	[_hs setTarget:self];
+	[self addSubview:_hs];
 
+	b = self.bounds;
+	b.origin.x = b.size.width - 10;
+	b.size.width = 10;
+	_vs = [[AZScroller alloc] initWithFrame:b];
+	[_vs setAction:@selector(scrollerMoved:)];
+	[_vs setTarget:self];
+		_vs.knobProportion = 0.2;
+	[self addSubview:_vs];
 	return self;
 	}
 
@@ -278,6 +295,10 @@
 - (void) cbPressed:(id)sender
 	{
 	NSLog(@"Checkbox: sender:%@", sender);
+	if (_hs.enabled)
+		_hs.enabled = NO;
+	else
+		_hs.enabled = YES;
 	}
 
 
@@ -302,7 +323,11 @@
 - (void) rbPressed:(id)sender
 	{
 	NSLog(@"radio button pressed:%@", sender);
+	}
 
+- (void) scrollerMoved:(id)sender
+	{
+	NSLog(@"scroller moved:%@ [%f]", sender, ((AZScroller*)sender).doubleValue);
 	}
 
 @end

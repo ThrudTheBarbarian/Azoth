@@ -65,6 +65,7 @@ struct SDL_FPoint;
 \*****************************************************************************/
 - (int) setBlendMode:(uint32_t)blendMode;
 - (int) setTexture:(NSInteger)refId blendMode:(uint32_t)blendMode;
+- (int) texture:(NSInteger)refId blendMode:(uint32_t*)blendMode;
 
 /*****************************************************************************\
 |* Get/Set/Unset the clip

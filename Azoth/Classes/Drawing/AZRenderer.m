@@ -231,6 +231,15 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	return -1;
 	}
 
+- (int) texture:(NSInteger)refId blendMode:(uint32_t*)blendMode
+	{
+	SDL_Texture *texture = [self textureFor:refId];
+	if (texture)
+		return SDL_GetTextureBlendMode(texture, blendMode);
+	SDL_Log("Cannot find texture %d to get blend mode on", (int)refId);
+	return -1;
+	}
+
 /*****************************************************************************\
 |* Set the clip, use NSZeroRect to unset
 \*****************************************************************************/
