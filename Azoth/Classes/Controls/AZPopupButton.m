@@ -43,9 +43,9 @@ static NSRect	_bR[STATE_NUM];			// Right-hand-side image
 		{
 		[AZPopupButton _fetchRects];
 
-		self.bgColour 		= [AZColour clearColour];
-		_menu 				= [AZMenu menuWithTitle:@"Popup"];
-		_menu.pullsDown		= yn;
+		self.backgroundColour	= [AZColour clearColour];
+		_menu 					= [AZMenu menuWithTitle:@"Popup"];
+		_menu.pullsDown			= yn;
 		}
 	return self;
 	}

@@ -67,10 +67,10 @@ static NSRect	_bRight[STATE_NUM];
 			[self _fetchRects];
 			});
 
-		self.bgColour 		= [AZColour clearColour];
-		self.stringValue 	= @"Button";
-		self.imagePosition	= AZImageLeft;		// Only used in checkbox
-		self.type	 		= ButtonTypePlain;
+		self.backgroundColour 	= [AZColour clearColour];
+		self.stringValue 		= @"Button";
+		self.imagePosition		= AZImageLeft;		// Only used in checkbox
+		self.type	 			= ButtonTypePlain;
 		}
 	return self;
 	}

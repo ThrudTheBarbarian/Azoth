@@ -67,13 +67,13 @@ static NSRect	_sR[STATE_NUM];
 
 	if (self = [super initWithFrame:frame])
 		{
-		self.knobProportion	= 0.1;
-		self.doubleValue 	= 0.0;
-		self.bgColour 		= AZColour.clearColour;
-		self.dragging 		= NO;
-		self.enabled 		= NO;
-		self.continuous 	= YES;
-		_horizontal 		= horizontal;
+		self.knobProportion		= 0.1;
+		self.doubleValue 		= 0.0;
+		self.backgroundColour 	= AZColour.clearColour;
+		self.dragging 			= NO;
+		self.enabled 			= NO;
+		self.continuous 		= YES;
+		_horizontal 			= horizontal;
 		}
 	return self;
 	}

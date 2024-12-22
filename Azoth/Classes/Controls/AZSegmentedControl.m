@@ -68,10 +68,10 @@ typedef struct
 		// Insert a dummy segment (which will certainly be overwritten)
 		// just so we can set up the selected state coherently
 		[self setLabel:@"[x]" forSegment:0];
-		_trackingMode		= AZSegmentSwitchTrackingSelectOne;
-		_info[0].selected	= YES;
+		_trackingMode			= AZSegmentSwitchTrackingSelectOne;
+		_info[0].selected		= YES;
 
-		self.bgColour		= AZColour.clearColour;
+		self.backgroundColour	= AZColour.clearColour;
 		}
 
 	return self;

@@ -95,7 +95,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 
 	[_renderer lockFocusOn:_view.bg];
 	[_renderer setClip:_view.dirty];
-	[_renderer setDrawColour:_view.bgColour];
+	[_renderer setDrawColour:_view.backgroundColour];
 	[_renderer clear];
 
 	[_view drawInRect:_view.dirty withPainter:self];

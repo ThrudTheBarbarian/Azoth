@@ -91,6 +91,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void) setFrameOrigin:(NSPoint)p;
 - (void) setFrameSize:(NSSize)s;
 
+/*****************************************************************************\
+|* Set the bounds origin and size
+\*****************************************************************************/
+-(void)setBoundsSize:(NSSize)size;
+-(void)setBoundsOrigin:(NSPoint)origin;
+
 // MARK: Event manipulation
 
 /*****************************************************************************\
@@ -104,7 +110,13 @@ NS_ASSUME_NONNULL_BEGIN
 |* this with nil will convert from window co-ordinates. The view must be in
 |* the superview-hierarchy otherwise.
 \*****************************************************************************/
+
 - (NSPoint) convertPoint:(NSPoint)p1 fromView:(nullable AZView *)otherView;
+/*****************************************************************************\
+|* Convenience method to do the same for a rect. Basically just do the origin
+|* and leave the size alone
+\*****************************************************************************/
+- (NSRect) convertRect:(NSRect)r fromView:(nullable AZView *)otherView;
 
 /*****************************************************************************\
 |* Convert a point from our own view's co-ordinate system to another. Calling
@@ -113,6 +125,11 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 - (NSPoint) convertPoint:(NSPoint)p1 toView:(nullable AZView *)otherView;
 
+/*****************************************************************************\
+|* Convenience method to do the same for a rect. Basically just do the origin
+|* and leave the size alone
+\*****************************************************************************/
+- (NSRect) convertRect:(NSRect)r toView:(nullable AZView *)otherView;
 
 
 /*****************************************************************************\
@@ -142,7 +159,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(assign, nonatomic) NSRect 						dirty;
 
 // Background colour if nothing else supplied to draw
-@property(assign, nonatomic) AZColour *						bgColour;
+@property(assign, nonatomic) AZColour *						backgroundColour;
 
 // Is this view opaque - affects the blending mode,
 // default is NO
@@ -151,6 +168,9 @@ NS_ASSUME_NONNULL_BEGIN
 // Does this view resize its subviews on having its
 // frame set, default is YES
 @property(assign, nonatomic) BOOL							autoresizesSubviews;
+
+// The visible part of the view
+@property(assign, nonatomic) NSRect 						visibleRect;
 
 // The bit-mask of AZAutoresizingMaskOptions that defines
 // how auto-resizing will work

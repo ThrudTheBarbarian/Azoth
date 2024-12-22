@@ -10,6 +10,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSString * const AZRootViewWillResizeNotification;
+extern NSString * const AZViewFrameDidChangeNotification;
+extern NSString * const AZViewBoundsDidChangeNotification;
 
 extern NSString * const AZPopUpButtonWillPopUpNotification;
 

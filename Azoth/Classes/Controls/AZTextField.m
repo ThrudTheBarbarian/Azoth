@@ -97,11 +97,12 @@ static int 			_lineHeight = 29;
 			self = nil;
 		else
 			{
-			self.bgColour 		= [AZColour clearColour];
-			self.stringValue 	= @"";
-			_editArea 			= NSInsetRect(self.bounds, 6, 2);
-			_editArea.origin.y += 1;
-			_textColour			= [AZColour blackColour];
+			self.backgroundColour		= [AZColour clearColour];
+			self.stringValue 			= @"";
+			self.textColour				= [AZColour blackColour];
+			NSRect r 					= NSInsetRect(self.bounds, 6, 2);
+			r.origin.y	  			   += 1;
+			self.editArea 				= r;
 			}
 		}
 	return self;

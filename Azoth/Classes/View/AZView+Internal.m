@@ -195,7 +195,9 @@
 			{
 			[azr clear];
 			AZPainter *p = [AZPainter painterForView:self];
-			[p rectangleWithRect:[self bounds] filled:YES colour:self.bgColour];
+			[p rectangleWithRect:[self bounds]
+						  filled:YES
+						  colour:self.backgroundColour];
 			[azr unlockFocus];
 			}
 		else

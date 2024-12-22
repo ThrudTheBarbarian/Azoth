@@ -8,6 +8,8 @@
 #import "AZNotifications.h"
 
 NSString * const AZRootViewWillResizeNotification 	= @"AZ:ResizeRootView";
+NSString * const AZViewFrameDidChangeNotification 	= @"AZ:FrameResized";
+NSString * const AZViewBoundsDidChangeNotification 	= @"AZ:BoundsResized";
 
 NSString * const AZPopUpButtonWillPopUpNotification = @"AZ:PopupWillShow";
 

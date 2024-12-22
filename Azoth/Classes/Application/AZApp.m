@@ -80,20 +80,20 @@ NSString * const kTextureType	= @"texture";
     \*************************************************************************/
 	_window = [AZWindow windowWithContentRect:_initialFrame
 									styleMask:_windowFlags];
-    if (_window == nil)
+    if (self.window == nil)
 		{
         SDL_Log("Couldn't create main window: %s", SDL_GetError());
-		_viability = SDL_APP_FAILURE;
+		self.viability = SDL_APP_FAILURE;
 		}
 	else
 		{
 		azr = [AZRenderer renderer];
-		[_window installContentView];
+		[self.window installContentView];
 		}
 	/*************************************************************************\
     |* Create the text renderer for any textboxes
     \*************************************************************************/
-	_textEngine = TTF_CreateRendererTextEngine(azr.renderer);
+	self.textEngine = TTF_CreateRendererTextEngine(azr.renderer);
 
 	/*************************************************************************\
 	|* Get the texture atlas for the UI and put it into a GPU texture
@@ -106,27 +106,27 @@ NSString * const kTextureType	= @"texture";
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
 					  "Failed to load UI atlas at %s!",
 					  atlasPath.fileSystemRepresentation);
-        _viability =  SDL_APP_FAILURE;
+        self.viability =  SDL_APP_FAILURE;
 		}
 	else
 		{
-		_ui = [azr createTextureWithSurface:atlasSurface];
-		if (_ui < 0)
+		self.ui = [azr createTextureWithSurface:atlasSurface];
+		if (self.ui < 0)
 			{
 			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
 						  "Failed to create UI atlas!");
-			_viability =  SDL_APP_FAILURE;
+			self.viability =  SDL_APP_FAILURE;
 			}
 
 		SDL_DestroySurface(atlasSurface);
 		atlasPath = [NSString stringWithFormat:@"%@/atlas.plist", rsrc];
-		_uiMap = [NSDictionary dictionaryWithContentsOfFile:atlasPath];
+		self.uiMap = [NSDictionary dictionaryWithContentsOfFile:atlasPath];
 		if (!_uiMap)
 			{
 			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
 						  "Failed to load UI atlas metdata at %s!",
 						  atlasPath.fileSystemRepresentation);
-			_viability =  SDL_APP_FAILURE;
+			self.viability =  SDL_APP_FAILURE;
 			}
 		}
 
@@ -135,7 +135,7 @@ NSString * const kTextureType	= @"texture";
     \*************************************************************************/
 	NSString *name 	= @"applicationDidFinishLaunching:";
 	SEL launch 		= NSSelectorFromString(name);
-	if (_delegate && [_delegate respondsToSelector:launch])
+	if (self.delegate && [self.delegate respondsToSelector:launch])
 		{
 		/*********************************************************************\
 		|* Set up the system-font info with reasonable defaults
@@ -164,7 +164,7 @@ NSString * const kTextureType	= @"texture";
 		|* Load the system font after notifying the delegate, so it has a
 		|* chance to change the system font path
 		\*********************************************************************/
-		_systemFont = [AZFont systemFontWithsize:_systemFontInfo.size];
+		self.systemFont = [AZFont systemFontWithsize:_systemFontInfo.size];
 		if (!_systemFont)
 			{
 			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,

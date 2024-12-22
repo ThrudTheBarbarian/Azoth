@@ -117,6 +117,8 @@
 				Classes/Utility/AZGeometry.h,
 				Classes/Utility/AZNotifications.h,
 				Classes/Utility/AZObject.h,
+				Classes/View/AZClipView.h,
+				Classes/View/AZScrollView.h,
 				Classes/View/AZView.h,
 			);
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;

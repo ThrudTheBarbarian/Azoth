@@ -272,6 +272,22 @@
 	}
 
 
+/*****************************************************************************\
+|* Predefined colours : 'control' colour
+\*****************************************************************************/
++ (AZColour *) controlColour
+	{
+	static AZColour *colour = nil;
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken,
+		^{
+		colour = [[AZColour alloc] initWithR:.65f g:.65f b:.65f a:1.f];
+		});
+	return colour;
+	}
+
+
 // MARK: uint8_t accessors
 
 /*****************************************************************************\

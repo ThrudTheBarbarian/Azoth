@@ -43,9 +43,9 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 	{
 	if (self = [super initWithFrame:size.frame])
 		{
-		_measure 		= size;
-		_menu	 		= menu;
-		self.bgColour 	= [AZColour clearColour];
+		_measure 				= size;
+		_menu	 				= menu;
+		self.backgroundColour 	= [AZColour clearColour];
 		}
 	return self;
 	}

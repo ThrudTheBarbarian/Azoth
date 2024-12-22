@@ -10,6 +10,7 @@
 #import "AZApp.h"
 #import "AZColour.h"
 #import "AZGeometry.h"
+#import "AZNotifications.h"
 #import "AZPainter.h"
 #import "AZRenderer.h"
 #import "AZView.h"
@@ -20,6 +21,14 @@
 |* "Private" properties
 \*****************************************************************************/
 @interface AZView()
+// Current 'visible rect' or NSZeroRect if not known
+@property(assign, nonatomic) NSRect						visRect;
+
+// Post notifications when the frame is changed
+@property(assign, nonatomic) BOOL						postFrameNotifications;
+
+// Post notifications when the bounds are changed
+@property(assign, nonatomic) BOOL						postBoundsNotifications;
 @end
 
 @implementation AZView
@@ -31,15 +40,20 @@
 	{
 	if (self = [super init])
 		{
-		_frame 					= frame;
-		_bounds					= frame;
-		_bounds.origin 			= (NSPoint){0,0};
-		_subviews				= [NSMutableArray new];
-		_superview				= nil;
-		_bg 					= -1;
-		_bgColour				= [AZColour blackColour];
-		_isOpaque				= NO;
-		_autoresizesSubviews	= YES;
+		_frame 						= frame;
+		_bounds						= frame;
+		_bounds.origin 				= (NSPoint){0,0};
+		_subviews					= [NSMutableArray new];
+		_superview					= nil;
+		_bg 						= -1;
+		_backgroundColour			= [AZColour blackColour];
+		_isOpaque					= NO;
+		_autoresizesSubviews		= YES;
+		_postFrameNotifications		= YES;
+		_postBoundsNotifications	= YES;
+		_autoresizingMask		 	= AZViewNotSizable;
+
+		[self setNeedsDisplay:YES];
 		}
 
 	return self;
@@ -90,6 +104,16 @@
 	}
 
 /*****************************************************************************\
+|* Convenience method to do the same for a rect. Basically just do the origin
+|* and leave the size alone
+\*****************************************************************************/
+- (NSRect) convertRect:(NSRect)r fromView:(nullable AZView *)otherView
+	{
+	r.origin = [self convertPoint:r.origin fromView:otherView];
+	return r;
+	}
+
+/*****************************************************************************\
 |* Convert a point from our own view's co-ordinate system to another. Calling
 |* this with nil will convert to window co-ordinates. The view must be in
 |* the superview-hierarchy otherwise.
@@ -108,6 +132,16 @@
 	}
 
 	return p;
+	}
+
+/*****************************************************************************\
+|* Convenience method to do the same for a rect. Basically just do the origin
+|* and leave the size alone
+\*****************************************************************************/
+- (NSRect) convertRect:(NSRect)r toView:(nullable AZView *)otherView
+	{
+	r.origin = [self convertPoint:r.origin toView:otherView];
+	return r;
 	}
 
 
@@ -236,11 +270,41 @@
 - (void) setFrameOrigin:(NSPoint)p
 	{
 	_frame.origin = p;
+	[self setFrame:_frame];
 	}
 
 - (void) setFrameSize:(NSSize)s;
 	{
 	_frame.size = s;
+	[self setFrame:_frame];
+	}
+
+/*****************************************************************************\
+|* Set the bounds origin and size
+\*****************************************************************************/
+-(void)setBoundsSize:(NSSize)size
+	{
+	NSRect bounds 	= self.bounds;
+	bounds.size		= size;
+	self.bounds 	= bounds;
+	}
+
+-(void)setBoundsOrigin:(NSPoint)origin
+	{
+	NSRect bounds	= self.bounds;
+	bounds.origin	= origin;
+	self.bounds 	= bounds;
+	}
+
+/*****************************************************************************\
+|* The visible part of the view
+\*****************************************************************************/
+- (NSRect) visibleRect
+	{
+	if (NSEqualRects(_visRect, NSZeroRect))
+		_visRect = [self _calculateVisibleRect];
+
+	return _visRect;
 	}
 
 
@@ -256,7 +320,9 @@
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
-	[painter rectangleWithRect:dirtyRect filled:YES colour:_bgColour];
+	[painter rectangleWithRect:dirtyRect
+						filled:YES
+					    colour:self.backgroundColour];
 	}
 
 
@@ -274,15 +340,57 @@
 
 // MARK: Resize
 
+/*****************************************************************************\
+|* Set the frame of this view
+\*****************************************************************************/
+- (void) setBounds:(NSRect)bounds
+	{
+	if (!NSEqualRects(bounds, self.bounds))
+		{
+		_bounds = bounds;
+		self.visRect = NSZeroRect;
+
+		// this also invalidates tracking areas
+		// Yep, still not implemented
+		// [_window invalidateCursorRectsForView:self];
+		
+		if (_postBoundsNotifications)
+			{
+			NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
+			[nc postNotificationName:AZViewBoundsDidChangeNotification
+							  object:self];
+			}
+		}
+	}
+
+/*****************************************************************************\
+|* Set the frame of this view
+\*****************************************************************************/
 - (void) setFrame:(NSRect)frame
 	{
-	NSSize oldSize = self.frame.size;
-	_frame = frame;
-	_bounds.size = _frame.size;
+	// We don't post anything if the frame is the same
+	if(NSEqualRects(self.frame,frame))
+		return;
 
-	if (self.autoresizesSubviews)
+	NSSize oldSize = self.bounds.size;
+
+	_bounds.size = frame.size;
+	_frame=frame;
+
+	// Not implemented yet, but note for later
+	//[_window invalidateCursorRectsForView:self]; // this also invalidates tracking areas
+
+   if (_autoresizesSubviews)
 		[self resizeSubviewsWithOldSize:oldSize];
-	[self setNeedsDisplay:YES];
+
+	// Invalidate the visible rect
+	_visRect = NSZeroRect;
+
+	if (self.postFrameNotifications)
+		{
+		NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
+		[nc postNotificationName:AZViewFrameDidChangeNotification object:self];
+		}
 	}
 
 - (void) resizeSubviewsWithOldSize:(NSSize)size
@@ -384,4 +492,28 @@
 	[self setNeedsDisplay:YES];
 	return YES;
 	}
+
+
+
+// MARK: Private methods
+
+/*****************************************************************************\
+|* Calculate the visible rect
+\*****************************************************************************/
+- (NSRect) _calculateVisibleRect
+	{
+	// Don't support this (yet ?)
+	//if ([self isHiddenOrHasHiddenAncestor])
+	//	return NSZeroRect;
+
+	if (self.superview == nil)
+		return self.bounds;
+
+    NSRect result	= self.superview.visibleRect;
+    result 			= [self convertRect:result fromView:self.superview];
+    result 			= NSIntersectionRect(result, self.bounds);
+
+    return result;
+	}
+
 @end

@@ -55,15 +55,15 @@ static NSRect	_knob[STATE_NUM];	// knobs
 			[self _fetchRects];
 			});
 
-		self.bgColour 		= [AZColour clearColour];
-		self.doubleValue 	= 0.5;
-		self.minValue		= 0.0;
-		self.maxValue		= 1.0;
-		_type		 		= frame.size.width > frame.size.height
-							? SliderTypeHorizontal
-							: frame.size.width == frame.size.height
-							? SliderTypeCircular
-							: SliderTypeVertical;
+		self.backgroundColour	= [AZColour clearColour];
+		self.doubleValue 		= 0.5;
+		self.minValue			= 0.0;
+		self.maxValue			= 1.0;
+		_type		 			= frame.size.width > frame.size.height
+								? SliderTypeHorizontal
+								: frame.size.width == frame.size.height
+								? SliderTypeCircular
+								: SliderTypeVertical;
 		}
 	return self;
 	}
