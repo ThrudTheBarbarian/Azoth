@@ -278,6 +278,76 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	return result;
 	}
 
+
+// MARK: Edge effects
+
+/*****************************************************************************\
+|* Rectangle routines (edge effects)
+\*****************************************************************************/
+- (void) rectangleWithBezel:(NSRect)r withClip:(NSRect)clip
+	{
+	NSRect originalClip = self.renderer.clipRect;
+	NSRect intersection	= NSIntersectionRect(originalClip, clip);
+	[self.renderer setClip:intersection];
+
+	[self rectangleWithRect:r colour:AZColour.whiteColour];
+
+	NSRect r2 = r;
+	r2.size.width -= 1;
+	r2.size.height -= 1;
+	[self rectangleWithRect:r2 colour:AZColour.grey75Colour];
+
+	r2 = r;
+	r2.origin.x += 1;
+	r2.origin.y += 1;
+	r2.size.width -= 3;
+	r2.size.height -= 3;
+	[self rectangleWithRect:r2 colour:AZColour.blackColour];
+
+	r2 = r;
+	r2.origin.x += 2;
+	r2.origin.y += 2;
+	r2.size.width -= 3;
+	r2.size.height -= 3;
+	[self rectangleWithRect:r2 colour:AZColour.controlColour];
+
+	[self.renderer setClip:originalClip];
+	}
+
+/*****************************************************************************\
+|* Rectangle routines (edge effects)
+\*****************************************************************************/
+- (void) rectangleWithGroove:(NSRect)r withClip:(NSRect)clip
+	{
+	NSRect originalClip = self.renderer.clipRect;
+	NSRect intersection	= NSIntersectionRect(originalClip, clip);
+	[self.renderer setClip:intersection];
+
+	[self rectangleWithRect:r colour:AZColour.grey75Colour];
+
+	NSRect r2 = r;
+	r2.size.width += 1;
+	r2.size.height += 1;
+	[self rectangleWithRect:r2 colour:AZColour.whiteColour];
+
+	r2 = r;
+	r2.origin.x += 2;
+	r2.origin.y += 2;
+	r2.size.width -= 3;
+	r2.size.height -= 3;
+	[self rectangleWithRect:r2 colour:AZColour.grey75Colour];
+
+	r2 = r;
+	r2.origin.x += 2;
+	r2.origin.y += 2;
+	r2.size.width -= 4;
+	r2.size.height -= 4;
+	[self rectangleWithRect:r2 colour:AZColour.controlColour];
+
+	[self.renderer setClip:originalClip];
+	}
+
+
 // MARK: Rounded Rectangle drawing routines
 
 /*****************************************************************************\

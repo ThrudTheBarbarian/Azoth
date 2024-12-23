@@ -78,7 +78,7 @@
 		[self.documentView removeFromSuperview];
 		}
 
-	self.documentView = view;
+	_documentView = view;
 	[self addSubview:view];
 
 	if(self.documentView != nil)
@@ -284,7 +284,7 @@
 	{
 	point = [self constrainScrollPoint:point];
 
-	// No need for more work and a full redislay if we don't really scroll
+	// No need for more work and a full redisplay if we don't really scroll
 	if (!NSEqualPoints(point, self.bounds.origin))
 		{
 		[self setBoundsOrigin:point];

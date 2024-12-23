@@ -282,7 +282,22 @@
 
 	dispatch_once(&onceToken,
 		^{
-		colour = [[AZColour alloc] initWithR:.65f g:.65f b:.65f a:1.f];
+		colour = [[AZColour alloc] initWithR:.67f g:.67f b:.67f a:1.f];
+		});
+	return colour;
+	}
+
+/*****************************************************************************\
+|* Predefined colours : 'control' colour
+\*****************************************************************************/
++ (AZColour *) controlBackgroundColour
+	{
+	static AZColour *colour = nil;
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken,
+		^{
+		colour = [[AZColour alloc] initWithR:.89f g:.89f b:.89f a:1.f];
 		});
 	return colour;
 	}
@@ -322,5 +337,11 @@
 	return (uint8_t)(255.f * _a);
 	}
 
+// MARK: NSCopying
+
+- (nonnull id)copyWithZone:(nullable NSZone *)zone
+	{
+	return [AZColour colourWithR:_r g:_g b:_b a:_a];
+	}
 
 @end

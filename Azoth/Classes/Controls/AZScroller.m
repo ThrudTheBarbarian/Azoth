@@ -71,11 +71,21 @@ static NSRect	_sR[STATE_NUM];
 		self.doubleValue 		= 0.0;
 		self.backgroundColour 	= AZColour.clearColour;
 		self.dragging 			= NO;
-		self.enabled 			= NO;
+		self.enabled 			= YES;
 		self.continuous 		= YES;
+		self.isHidden			= NO;
 		_horizontal 			= horizontal;
 		}
 	return self;
+	}
+
+/*****************************************************************************\
+|* Return the size of a scrollbar
+\*****************************************************************************/
++ (float) scrollerWidth
+	{
+	[AZScroller _fetchRects];
+	return _sL[STATE_HT].size.height;
 	}
 
 /*****************************************************************************\
@@ -88,6 +98,14 @@ static NSRect	_sR[STATE_NUM];
 		[self _drawHorizontalScrollerInRect:dirtyRect with:painter];
 	else
 		[self _drawVerticalScrollerInRect:dirtyRect with:painter];
+	}
+
+/*****************************************************************************\
+|* Which part did we hit (currently always say the knob)
+\*****************************************************************************/
+- (AZScrollerPart) hitPart
+	{
+	return AZScrollerKnob;
 	}
 
 /*****************************************************************************\
@@ -285,6 +303,7 @@ static NSRect	_sR[STATE_NUM];
 	_dMouse				= (_horizontal)
 						? _dragP.x - self.doubleValue * W
 						: _dragP.y - self.doubleValue * H;
+		NSLog(@"md:%@", NSStringFromPoint(p));
 	return YES;
 	}
 

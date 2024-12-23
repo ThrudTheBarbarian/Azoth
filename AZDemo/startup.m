@@ -65,9 +65,17 @@ void _testMouseEvents(void)
 	[cv setIdentifier:@"content-view"];
 
 	IdentifiedView *v1 = [[IdentifiedView alloc]
-							initWithFrame:NSMakeRect(100,100, 600, 360)
+							initWithFrame:NSMakeRect(0,0, 1200, 720)
 								  andName:@"view1"];
-	[v1 setBackgroundColour:[AZColour redColour]];
-	[cv addSubview:v1];
+	[v1 setBackgroundColour:[AZColour whiteColour]];
+
+	AZScrollView *sv = [[AZScrollView alloc]
+							initWithFrame:NSMakeRect(100, 100, 600, 360)];
+	[sv setHasVerticalScroller:YES];
+	[sv setHasHorizontalScroller:YES];
+	[sv setBorderType: AZLineBorder];
+	[sv setDocumentView:v1];
+
+	[cv addSubview:sv];
 	[cv setBackgroundColour:[AZColour orangeColour]];
 	}

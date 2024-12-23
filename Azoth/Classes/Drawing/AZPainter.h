@@ -97,6 +97,13 @@ struct SDL_Surface;
 		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
 
 /*****************************************************************************\
+|* Rectangle routines (edge effects)
+\*****************************************************************************/
+- (void) rectangleWithBezel:(NSRect)r withClip:(NSRect)clip;
+- (void) rectangleWithGroove:(NSRect)r withClip:(NSRect)clip;
+
+
+/*****************************************************************************\
 |* Rounded rectangle routines (not filled)
 \*****************************************************************************/
 

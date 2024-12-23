@@ -95,7 +95,6 @@
 				Azoth.h,
 				Classes/Application/AZApp.h,
 				Classes/Application/AZAppDelegate.h,
-				Classes/Application/AZTypes.h,
 				Classes/Application/AZWindow.h,
 				Classes/Base/AZControl.h,
 				Classes/Base/AZResponder.h,
@@ -117,7 +116,9 @@
 				Classes/Utility/AZGeometry.h,
 				Classes/Utility/AZNotifications.h,
 				Classes/Utility/AZObject.h,
+				Classes/Utility/AZTypes.h,
 				Classes/View/AZClipView.h,
+				Classes/View/AZRulerView.h,
 				Classes/View/AZScrollView.h,
 				Classes/View/AZView.h,
 			);

@@ -374,7 +374,7 @@
 - (nullable AZMenuItem *) selectedItem
 	{
 	for (AZMenuItem *item in _items)
-		if (item.state == ControlStateValueOn)
+		if (item.state == AZControlStateValueOn)
 			return item;
 	return nil;
 	}
@@ -387,7 +387,7 @@
 	int idx = 0;
 	for (AZMenuItem *item in _items)
 		{
-		if (item.state == ControlStateValueOn)
+		if (item.state == AZControlStateValueOn)
 			return idx;
 		idx ++;
 		}
@@ -404,11 +404,11 @@
 	for (AZMenuItem *candidate in _items)
 		if (item == candidate)
 			{
-			candidate.state = ControlStateValueOn;
+			candidate.state = AZControlStateValueOn;
 			ok = YES;
 			}
 		else
-			candidate.state = ControlStateValueOff;
+			candidate.state = AZControlStateValueOff;
 	return ok;
 	}
 
@@ -424,11 +424,11 @@
 		{
 		if (count == index)
 			{
-			candidate.state = ControlStateValueOn;
+			candidate.state = AZControlStateValueOn;
 			ok = YES;
 			}
 		else
-			candidate.state = ControlStateValueOff;
+			candidate.state = AZControlStateValueOff;
 		count ++;
 		}
 	return ok;
@@ -443,11 +443,11 @@
 	for (AZMenuItem *candidate in _items)
 		if (tag == candidate.tag)
 			{
-			candidate.state = ControlStateValueOn;
+			candidate.state = AZControlStateValueOn;
 			ok = YES;
 			}
 		else
-			candidate.state = ControlStateValueOff;
+			candidate.state = AZControlStateValueOff;
 
 	return ok;
 	}
@@ -461,11 +461,11 @@
 	for (AZMenuItem *candidate in _items)
 		if ([title isEqualToString:candidate.title])
 			{
-			candidate.state = ControlStateValueOn;
+			candidate.state = AZControlStateValueOn;
 			ok = YES;
 			}
 		else
-			candidate.state = ControlStateValueOff;
+			candidate.state = AZControlStateValueOff;
 
 	return ok;
 	}

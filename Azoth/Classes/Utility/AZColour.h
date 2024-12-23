@@ -9,7 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AZColour : NSObject
+@interface AZColour : NSObject <NSCopying>
 
 /*****************************************************************************\
 |* Initialisation
@@ -40,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (AZColour *) purpleColour;
 + (AZColour *) clearColour;
 + (AZColour *) controlColour;
++ (AZColour *) controlBackgroundColour;
 
 
 

@@ -159,7 +159,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(assign, nonatomic) NSRect 						dirty;
 
 // Background colour if nothing else supplied to draw
-@property(assign, nonatomic) AZColour *						backgroundColour;
+@property(strong, nonatomic) AZColour *						backgroundColour;
 
 // Is this view opaque - affects the blending mode,
 // default is NO

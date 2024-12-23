@@ -17,6 +17,9 @@
 #import "AZView+Internal.h"
 #import "AZWindow.h"
 
+#import "AZScrollView.h"
+#import "AZScroller.h"
+
 @implementation AZView (Internal)
 
 
@@ -243,7 +246,6 @@
 	\*************************************************************************/
 	NSRect src 		= self.bounds;
 	NSRect dst		= frame;
-
 
 	// We also want to clip to the parent view's frame
 	NSRect clip		= self.superview.bounds;

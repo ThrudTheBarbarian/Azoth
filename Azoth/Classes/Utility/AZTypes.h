@@ -55,6 +55,27 @@ typedef enum
 	} AZTextAlignment;
 
 /*****************************************************************************\
+|* Ruler view types
+\*****************************************************************************/
+typedef enum
+	{
+	AZHorizontalRuler		= 1,
+	AZVerticalRuler			= 2,
+	} AZRulerOrientation;
+
+/*****************************************************************************\
+|* Scrollbar area types
+\*****************************************************************************/
+typedef enum
+	{
+	AZScrollerIncrementLine	= 1,
+	AZScrollerDecrementLine,
+	AZScrollerIncrementPage,
+	AZScrollerDecrementPage,
+	AZScrollerKnob
+	} AZScrollerPart;
+
+/*****************************************************************************\
 |* Scale factor
 \*****************************************************************************/
 typedef struct
@@ -87,13 +108,25 @@ enum AZAutoresizingMaskOptions
 	};
 
 /*****************************************************************************\
+|* Border types within Azoth
+\*****************************************************************************/
+typedef enum
+	{
+	AZNoBorder	 	= 0,
+	AZLineBorder	= 1,
+	AZBezelBorder 	= 2,
+	AZGrooveBorder	= 3
+	} AZBorderType;
+
+
+/*****************************************************************************\
 |* Control states
 \*****************************************************************************/
 typedef enum
 	{
-	ControlStateValueOff 	= 0,
-	ControlStateValueOn 	= 1,
-	ControlStateValueMixed 	= 2
+	AZControlStateValueOff 	= 0,
+	AZControlStateValueOn 	= 1,
+	AZControlStateValueMixed 	= 2
 	} AZControlStateValue;
 
 

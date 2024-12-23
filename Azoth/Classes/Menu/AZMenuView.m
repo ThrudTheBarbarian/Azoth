@@ -17,7 +17,6 @@
 #import "AZMenuItem.h"
 #import "AZMenuView.h"
 
-static NSRect _barNormal;			// The menu bar when mouse is not over it
 static NSRect _barSel;				// The menu bar when mouse is over it
 static NSRect _menuTL;				// top-left of the menu, if rendered
 static NSRect _menuTM;				// top-middle of the menu, if rendered
@@ -171,13 +170,13 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 		if (sel >= _menu.itemArray.count)
 			sel = (int) _menu.itemArray.count - 1;
 
-		if (_menu.itemArray[sel].state == ControlStateValueOff)
+		if (_menu.itemArray[sel].state == AZControlStateValueOff)
 			{
 			int idx = 0;
 			for (AZMenuItem *item in _menu.itemArray)
 				{
-				item.state = (idx == sel) ? ControlStateValueOn
-										  : ControlStateValueOff;
+				item.state = (idx == sel) ? AZControlStateValueOn
+										  : AZControlStateValueOff;
 				idx ++;
 				}
 			[self setNeedsDisplay:YES];
@@ -272,7 +271,7 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 
 		AZColour *textColour = nil;
 
-		if (item.state == ControlStateValueOn)
+		if (item.state == AZControlStateValueOn)
 			{
 			NSRect dstC = NSMakeRect(0, y, self.bounds.size.width, H);
 			[azr tileFrom:ui src:_barSel dst:dstC];
