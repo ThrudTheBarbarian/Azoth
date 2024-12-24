@@ -40,7 +40,7 @@ static Class _rulerViewClass = nil;
 		self.backgroundColour	= [[AZColour controlBackgroundColour] copy];
 
 		self.lineScroll			= 1.f;
-		self.pageScroll			= 10.f;		//entirely arbitrary
+		self.pageScroll			= 50.f;		//entirely arbitrary
 		self.autoresizesSubviews= YES;
 
 		[self addSubview:_contentView];

@@ -43,6 +43,8 @@ static NSRect	_sR[STATE_NUM];
 @property(assign, nonatomic) BOOL								dragging;
 @property(assign, nonatomic) NSPoint							dragP;
 @property(assign, nonatomic) float								initialValue;
+@property(assign, nonatomic) float								knobLow;
+@property(assign, nonatomic) float								knobHigh;
 @end
 
 
@@ -74,7 +76,9 @@ static NSRect	_sR[STATE_NUM];
 		self.enabled 			= YES;
 		self.continuous 		= YES;
 		self.isHidden			= NO;
-		_horizontal 			= horizontal;
+		self.knobLow			= 0.f;
+		self.knobHigh			= 1.f;
+		self.horizontal 		= horizontal;
 		}
 	return self;
 	}
@@ -98,14 +102,6 @@ static NSRect	_sR[STATE_NUM];
 		[self _drawHorizontalScrollerInRect:dirtyRect with:painter];
 	else
 		[self _drawVerticalScrollerInRect:dirtyRect with:painter];
-	}
-
-/*****************************************************************************\
-|* Which part did we hit (currently always say the knob)
-\*****************************************************************************/
-- (AZScrollerPart) hitPart
-	{
-	return AZScrollerKnob;
 	}
 
 /*****************************************************************************\
@@ -173,6 +169,7 @@ static NSRect	_sR[STATE_NUM];
 	float x = (W-width) * self.doubleValue;
 
 	// Draw the left bezel
+	self.knobLow = x;
 	dstL = NSMakeRect(x, y, NSWidth(srcL), NSHeight(srcL));
 	[azr blitFrom:ui src:srcL dst:dstL];
 	x += NSWidth(srcL);
@@ -189,6 +186,7 @@ static NSRect	_sR[STATE_NUM];
 	// Draw the right bezel
 	dstR = NSMakeRect(x, y, NSWidth(srcR), NSHeight(srcR));
 	[azr blitFrom:ui src:srcR dst:dstR];
+	self.knobHigh = x + NSWidth(srcR);
 
 	// Draw a line to separate the content from the scrollbar
 	[azr setBlendMode:SDL_BLENDMODE_BLEND];
@@ -263,6 +261,7 @@ static NSRect	_sR[STATE_NUM];
 	float y = (H-height) * self.doubleValue;
 
 	// Draw the top bezel
+	self.knobLow = y;
 	dstL = NSMakeRect(x, y, NSWidth(srcL), NSHeight(srcL));
 	[azr blitFrom:ui src:srcL dst:dstL];
 	y += NSHeight(srcL);
@@ -279,6 +278,7 @@ static NSRect	_sR[STATE_NUM];
 	// Draw the bottom bezel
 	dstR = NSMakeRect(x, y, NSWidth(srcR), NSHeight(srcR));
 	[azr blitFrom:ui src:srcR dst:dstR];
+	self.knobHigh = y + NSHeight(srcR);
 
 	// Draw a line to separate the content from the scrollbar
 	[azr setBlendMode:SDL_BLENDMODE_BLEND];
@@ -289,18 +289,32 @@ static NSRect	_sR[STATE_NUM];
 // Events
 
 /*****************************************************************************\
+|* Figure out which part of the scroller we clicked on
+\*****************************************************************************/
+- (void) _calculateHitPart
+	{
+	float val = (self.horizontal) ? _dragP.x : _dragP.y;
+
+	if (val < _knobLow)
+		_hitPart = AZScrollerDecrementPage;
+	else if (val < _knobHigh)
+		_hitPart = AZScrollerKnob;
+	else
+		_hitPart = AZScrollerIncrementPage;
+	}
+
+/*****************************************************************************\
 |* Handle mouse events
 \*****************************************************************************/
 - (BOOL) mouseDown:(struct SDL_MouseButtonEvent *)e
 	{
- 	NSRect b			= self.bounds;
-	int W 				= NSMaxX(b) - SCROLLER_WIDTH;
-	int H				= NSMaxY(b) - SCROLLER_WIDTH;
 	self.enabled 		= YES;
 	self.dragging 		= YES;
  	NSPoint p 			= (NSPoint){e->x, e->y};
 	_dragP				= [self convertPoint:p fromView:nil];
 	_initialValue		= self.doubleValue;
+
+	[self _calculateHitPart];
 	return YES;
 	}
 
