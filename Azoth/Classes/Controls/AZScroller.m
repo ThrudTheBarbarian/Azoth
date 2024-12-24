@@ -39,10 +39,10 @@ static NSRect	_sC[STATE_NUM];
 static NSRect	_sR[STATE_NUM];
 
 @interface AZScroller()
-@property(assign, nonatomic) BOOL									horizontal;
-@property(assign, nonatomic) BOOL									dragging;
-@property(assign, nonatomic) NSPoint								dragP;
-@property(assign, nonatomic) float									dMouse;
+@property(assign, nonatomic) BOOL								horizontal;
+@property(assign, nonatomic) BOOL								dragging;
+@property(assign, nonatomic) NSPoint							dragP;
+@property(assign, nonatomic) float								initialValue;
 @end
 
 
@@ -300,9 +300,7 @@ static NSRect	_sR[STATE_NUM];
 	self.dragging 		= YES;
  	NSPoint p 			= (NSPoint){e->x, e->y};
 	_dragP				= [self convertPoint:p fromView:nil];
-	_dMouse				= (_horizontal)
-						? _dragP.x - self.doubleValue * W
-						: _dragP.y - self.doubleValue * H;
+	_initialValue		= self.doubleValue;
 	return YES;
 	}
 
@@ -315,12 +313,11 @@ static NSRect	_sR[STATE_NUM];
 - (BOOL) mouseDraggedHorizontally:(struct SDL_MouseMotionEvent *)e
 	{
  	NSRect b		= self.bounds;
+	int W 			= NSMaxX(b) - SCROLLER_WIDTH;
 	NSPoint p 		= (NSPoint){e->x, e->y};
 	p				= [self convertPoint:p fromView:nil];
-	p.x 		   -= _dMouse;
 
 	// Figure out the size of the knob from the proportion
-	int W = NSMaxX(b) - SCROLLER_WIDTH;
 	float width = self.knobProportion * W;
 
 	// If width < 2x end-points, make it = to 2x endpoints
@@ -328,21 +325,29 @@ static NSRect	_sR[STATE_NUM];
 	if (width < minWidth)
 		width = minWidth;
 
-	// Bounds-constrain the effective mouse position
-	if (p.x < 0)
-		p.x = 0;
-	if (p.x > W - width)
-		p.x = W - width;
+	float totalSize = W - width;
+	if (totalSize > 0.f)
+		{
+		// Bounds-constrain the effective mouse position
+		p.x = (p.x < 0.f) ? 0.f : p.x;
+		p.x = (p.x > W  ) ? W   : p.x;
 
-	// Figure out the starting co-ordinate for the knob
-	float x = p.x / (W-width);
-	self.doubleValue = x;
+		float dx = p.x - _dragP.x;
 
-	// Send events
-	if (self.continuous)
-		[self sendAction:self.action to:self.target];
+		// Figure out the current value of the scroller
+		self.doubleValue = _initialValue + dx/totalSize;
+		self.doubleValue = (self.doubleValue < 0.f) ? 0.f : self.doubleValue;
+		self.doubleValue = (self.doubleValue > 1.f) ? 1.f : self.doubleValue;
 
-	[self setNeedsDisplay:YES];
+		// Send events
+		if (self.continuous)
+			[self sendAction:self.action to:self.target];
+
+		[self setNeedsDisplay:YES];
+		}
+	else
+		self.doubleValue = 0.f;
+
 	return YES;
 	}
 
@@ -353,7 +358,6 @@ static NSRect	_sR[STATE_NUM];
 	int H 			= NSMaxY(b) - SCROLLER_WIDTH;
 	NSPoint p 		= (NSPoint){e->x, e->y};
 	p				= [self convertPoint:p fromView:nil];
-	p.y 		   -= _dMouse;
 
 	// Figure out the size of the knob from the proportion
 	float height = self.knobProportion * H;
@@ -363,21 +367,29 @@ static NSRect	_sR[STATE_NUM];
 	if (height < minHeight)
 		height = minHeight;
 
-	// Bounds-constrain the effective mouse position
-	if (p.y < 0)
-		p.y = 0;
-	if (p.y > H - height)
-		p.y = H - height;
+	float totalSize = H - height;
+	if (totalSize > 0.f)
+		{
+		// Bounds-constrain the effective mouse position
+		p.y = (p.y < 0.f) ? 0.f : p.y;
+		p.y = (p.y > H  ) ? H   : p.y;
 
-	// Figure out the starting co-ordinate for the knob
-	float y = p.y / (H-height);
-	self.doubleValue = y;
+		float dy = p.y - _dragP.y;
 
-	// Send events
-	if (self.continuous)
-		[self sendAction:self.action to:self.target];
+		// Figure out the current value of the scroller
+		self.doubleValue = _initialValue + dy/totalSize;
+		self.doubleValue = (self.doubleValue < 0.f) ? 0.f : self.doubleValue;
+		self.doubleValue = (self.doubleValue > 1.f) ? 1.f : self.doubleValue;
 
-	[self setNeedsDisplay:YES];
+		// Send events
+		if (self.continuous)
+			[self sendAction:self.action to:self.target];
+
+		[self setNeedsDisplay:YES];
+		}
+	else
+		self.doubleValue = 0;
+
 	return YES;
 	}
 
