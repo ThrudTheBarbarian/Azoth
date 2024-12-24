@@ -23,7 +23,6 @@
 
 NSString * const kTextureType	= @"texture";
 
-
 @interface AZApp()
 // This is a place to temporarily store things that the renderer (for example)
 // still needs to be alive up until [renderer present] is called, at which

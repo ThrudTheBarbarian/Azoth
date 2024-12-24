@@ -39,7 +39,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     \*************************************************************************/
 	_app 				= [AZApp sharedInstance];
 	_app.delegate		= [AppDelegate new];
-	_app.initialFrame	= NSMakeRect(50, 50, 980, 800);
+	_app.initialFrame	= NSMakeRect(50, 50, 780, 480);
 	_app.windowFlags	= SDL_WINDOW_RESIZABLE;
 	*appstate			= (__bridge void *)(_app);
 
@@ -75,6 +75,7 @@ void _testMouseEvents(void)
 	[sv setHasHorizontalScroller:YES];
 	[sv setBorderType: AZLineBorder];
 	[sv setDocumentView:v1];
+	sv.autoresizingMask = AZViewHeightSizable|AZViewWidthSizable;
 
 	[cv addSubview:sv];
 	[cv setBackgroundColour:[AZColour orangeColour]];

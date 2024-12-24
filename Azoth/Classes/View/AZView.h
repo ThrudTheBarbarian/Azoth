@@ -35,6 +35,7 @@
 \*****************************************************************************/
 struct SDL_Texture;
 struct SDL_Window;
+struct SDL_Mutex;
 
 @class AZColour;
 @class AZPainter;
@@ -176,6 +177,10 @@ NS_ASSUME_NONNULL_BEGIN
 // The bit-mask of AZAutoresizingMaskOptions that defines
 // how auto-resizing will work
 @property(assign, nonatomic) enum AZAutoresizingMaskOptions	autoresizingMask;
+
+// Backing texture mutex. Taken when the backing texture
+// is swapped out, and also when rendering using it.
+@property(assign, nonatomic) struct SDL_Mutex *				textureMutex;
 @end
 
 NS_ASSUME_NONNULL_END

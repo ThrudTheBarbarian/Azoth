@@ -185,10 +185,13 @@
 	if (w*h > 0)
 		{
 		AZRenderer *azr = AZRenderer.renderer;
+
+		SDL_LockMutex(self.textureMutex);
 		if (self.bg)
 			[azr releaseTexture:self.bg];
 
 		self.bg = [azr createTextureOfSize:NSMakeSize(w,h)];
+		SDL_UnlockMutex(self.textureMutex);
 
 		/*********************************************************************\
 		|* Cue up a 'clear this texture' operation when the next render-
@@ -270,9 +273,11 @@
 	/*************************************************************************\
 	|* Draw ourselves first...
 	\*************************************************************************/
+	SDL_LockMutex(self.textureMutex);
 	[azr setClip:clip];
 	[azr blitFrom:self.bg src:src dst:dst];
-
+	SDL_UnlockMutex(self.textureMutex);
+	
 	/*************************************************************************\
 	|* ... then call the subviews recursively in reverse order
 	\*************************************************************************/

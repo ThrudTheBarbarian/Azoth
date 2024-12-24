@@ -13,6 +13,9 @@
 #import "AZRenderer.h"
 #import "AZWindow.h"
 
+static NSInteger 		_textureId;
+static SDL_SpinLock 	_textureLock;
+
 /*****************************************************************************\
 |* "Private" properties
 \*****************************************************************************/
@@ -51,11 +54,25 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken,
 		^{
-		tmgr = [AZRenderer new];
+		tmgr 			= [AZRenderer new];
+		_textureId 		= 1;
+		_textureLock 	= 0;
 		});
 	return tmgr;
 	}
 
+
+/*****************************************************************************\
+|* Get a texture-id
+\*****************************************************************************/
+- (NSNumber *) nextTextureId;
+	{
+	SDL_LockSpinlock(&_textureLock);
+	_textureId ++;
+	NSNumber * retVal = [NSNumber numberWithInteger:_textureId];
+	SDL_UnlockSpinlock(&_textureLock);
+	return retVal;
+	}
 
 /*****************************************************************************\
 |* Create an SDL_Texture from a surface
@@ -65,7 +82,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	SDL_Texture *texture = SDL_CreateTextureFromSurface(_renderer, surface);
 	if (texture)
 		{
-		NSNumber *ref 	= [NSNumber numberWithInteger:_textures.count];
+		NSNumber *ref 	= [self nextTextureId];
 		_textures[ref] 	= [AZObject objectWithPointer:texture
 											  andHint:kTextureType];
 		return ref.integerValue;
@@ -88,7 +105,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 
 	if (texture)
 		{
-		NSNumber *ref 	= [NSNumber numberWithInteger:_textures.count];
+		NSNumber *ref 	= [self nextTextureId];
 		_textures[ref] 	= [AZObject objectWithPointer:texture
 											  andHint:kTextureType];
 		return ref.integerValue;
@@ -109,7 +126,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 
 	if (texture)
 		{
-		NSNumber *ref 	= [NSNumber numberWithInteger:_textures.count];
+		NSNumber *ref 	= [self nextTextureId];
 		_textures[ref] 	= [AZObject objectWithPointer:texture
 											  andHint:kTextureType];
 		return ref.integerValue;

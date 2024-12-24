@@ -65,6 +65,7 @@
 		_transformToWindow			= [AZTransform new];
 		_transformFromWindow		= [AZTransform new];
 		_transformsAreValid			= NO;
+		_textureMutex				= SDL_CreateMutex();
 
 		[self setNeedsDisplay:YES];
 		}
