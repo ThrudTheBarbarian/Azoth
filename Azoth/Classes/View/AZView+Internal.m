@@ -247,11 +247,18 @@
 	NSRect src 		= self.bounds;
 	NSRect dst		= frame;
 
-	// We also want to clip to the parent view's frame
-	NSRect clip		= self.superview.bounds;
-	p 				= [self.superview convertPoint:clip.origin toView:nil];
-	clip.origin		= p;
-	clip 			= NSIntersectionRect(clip, frame);
+	/*************************************************************************\
+	|* We also want to clip to the every parent view's frame in the list down
+	|* from the window's content-view
+	\*************************************************************************/
+	AZView *view	= self.superview;
+	NSRect clip		= [view convertRect:view.bounds toView:nil];
+	while (view.superview != nil)
+		{
+		view = view.superview;
+		NSRect frameClip 	= [view convertRect:view.bounds toView:nil];
+		clip				= NSIntersectionRect(clip, frameClip);
+		}
 
 	/*************************************************************************\
 	|* Handle the transparency of alpha
@@ -265,7 +272,6 @@
 	\*************************************************************************/
 	[azr setClip:clip];
 	[azr blitFrom:self.bg src:src dst:dst];
-	[azr unsetClip];
 
 	/*************************************************************************\
 	|* ... then call the subviews recursively in reverse order
@@ -277,6 +283,7 @@
 		[azr setBlendMode:mode];
 		[subview _renderToScreen];
 		}
+	[azr unsetClip];
 	}
 
 

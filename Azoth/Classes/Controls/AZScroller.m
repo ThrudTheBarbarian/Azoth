@@ -303,7 +303,6 @@ static NSRect	_sR[STATE_NUM];
 	_dMouse				= (_horizontal)
 						? _dragP.x - self.doubleValue * W
 						: _dragP.y - self.doubleValue * H;
-		NSLog(@"md:%@", NSStringFromPoint(p));
 	return YES;
 	}
 
