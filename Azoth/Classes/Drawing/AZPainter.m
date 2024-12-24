@@ -90,7 +90,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		return NO;
 		}
 
-	_textPainter		= [AZTextPainter painterWithRenderer:_renderer.renderer];
+	_textPainter		= [AZTextPainter painterWithRenderer:_renderer];
 	_textPainter.font	= AZApp.sharedInstance.systemFont;
 
 	[_renderer lockFocusOn:_view.bg];

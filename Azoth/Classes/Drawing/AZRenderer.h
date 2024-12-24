@@ -47,6 +47,7 @@ struct SDL_FPoint;
 \*****************************************************************************/
 - (BOOL) lockFocusOn:(NSInteger)refId;
 - (void) unlockFocus;
+- (NSInteger) currentFocus;
 
 /*****************************************************************************\
 |* Perform a blit operation
@@ -61,6 +62,16 @@ struct SDL_FPoint;
 			  dst:(NSRect)dstRect;
 
 /*****************************************************************************\
+|* Perform a rotated blit operation
+\*****************************************************************************/
+- (int) blitFrom:(NSInteger)textureId	// Texture id from cache
+			 src:(NSRect)srcRect		// If NSZeroRect, entire texture
+			 dst:(NSRect)dstRect		// If NSZeroRect, entire target
+		   angle:(NSInteger)degrees		// clockwise positive from x=0
+		  center:(NSPoint)p				// Point around which to rotate
+			flip:(NSInteger)flip;		// Flip-action on texture
+
+/*****************************************************************************\
 |* Set the blend mode
 \*****************************************************************************/
 - (int) setBlendMode:(uint32_t)blendMode;
@@ -68,11 +79,43 @@ struct SDL_FPoint;
 - (int) texture:(NSInteger)refId blendMode:(uint32_t*)blendMode;
 
 /*****************************************************************************\
+|* Set the colour mod
+\*****************************************************************************/
+- (int) setTexture:(NSInteger)texId modR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b;
+
+/*****************************************************************************\
+|* Return some info about a given texture, by id
+\*****************************************************************************/
+- (float) widthOfTexture:(NSInteger)refId;
+- (float) heightOfTexture:(NSInteger)refId;
+
+/*****************************************************************************\
 |* Get/Set/Unset the clip
 \*****************************************************************************/
 - (NSRect) clipRect;
 - (void) setClip:(NSRect)clipRect;
 - (void) unsetClip;
+- (BOOL) clipEnabled;
+
+/*****************************************************************************\
+|* Viewport...
+\*****************************************************************************/
+- (NSRect) viewport;
+- (void) setViewport:(NSRect)viewport;
+
+/*****************************************************************************\
+|* Scale...
+\*****************************************************************************/
+- (void) renderScaleX:(float *)xs y:(float *)ys;
+- (void) setScaleX:(float)xs y:(float)ys;
+
+/*****************************************************************************\
+|* Presentation...
+\*****************************************************************************/
+- (NSSize) presentationSize;
+- (int) presentationMode;
+- (void) setPresentationSize:(NSSize)size mode:(int)mode;
+
 
 /*****************************************************************************\
 |* Clear the current texture target
@@ -80,10 +123,11 @@ struct SDL_FPoint;
 - (void) clear;
 
 /*****************************************************************************\
-|* Set the drawing colour
+|* Get/Set the drawing colour
 \*****************************************************************************/
 - (int) setDrawColour:(AZColour *)colour;
 - (int) setDrawColourToRed:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
+- (void) drawColourR:(uint8_t*)r g:(uint8_t*)g b:(uint8_t*)b a:(uint8_t*)a;
 
 /*****************************************************************************\
 |* Present the rendering

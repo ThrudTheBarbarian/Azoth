@@ -143,6 +143,23 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	}
 
 /*****************************************************************************\
+|* Return a texture-id for a given texture. Should probably replace with a
+|* reverse lookup map...
+\*****************************************************************************/
+- (NSInteger) textureIdFor:(SDL_Texture *)texture
+	{
+	for (NSNumber *textureId in _textures)
+		{
+		AZObject *obj = _textures[textureId];
+		if (obj.ptr == texture)
+			return textureId.integerValue;
+		}
+
+	SDL_Log("Cannot find texture %p in cache", texture);
+	return -1;
+	}
+
+/*****************************************************************************\
 |* Un/Lock focus on a given texture
 \*****************************************************************************/
 - (BOOL) lockFocusOn:(NSInteger)refId
@@ -162,6 +179,12 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	SDL_SetRenderTarget(_renderer, NULL);
 	}
 
+- (NSInteger) currentFocus
+	{
+	SDL_Texture* current = SDL_GetRenderTarget(_renderer);
+	return current ? [self textureIdFor:current] : -1;
+	}
+
 /*****************************************************************************\
 |* Perform a blit operation
 \*****************************************************************************/
@@ -172,9 +195,41 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 		{
 		SDL_FRect src = SDL_FRECT(srcRect);
 		SDL_FRect dst = SDL_FRECT(dstRect);
-		return SDL_RenderTexture(_renderer, texture, &src, &dst);
+		return SDL_RenderTexture(_renderer,
+								 texture,
+								 NSEqualRects(srcRect,NSZeroRect)? NULL : &src,
+								 NSEqualRects(dstRect,NSZeroRect)? NULL : &dst);
 		}
 
+	SDL_Log("Cannot find texture %d to blit from", (int)textureId);
+	return -1;
+	}
+
+/*****************************************************************************\
+|* Perform a (possibly) rotated text-blit operation
+\*****************************************************************************/
+- (int) blitFrom:(NSInteger)textureId	// Texture id from font
+			 src:(NSRect)srcRect		// If NSZeroRect, entire texture
+			 dst:(NSRect)dstRect		// If NSZeroRect, entire target
+		   angle:(NSInteger)degrees		// clockwise positive from x=0
+		  center:(NSPoint)p				// Point around which to rotate
+			flip:(NSInteger)flip		// Flip-action on texture
+	{
+	SDL_Texture *texture = [self textureFor:textureId];
+	if (texture)
+		{
+		SDL_FRect src = SDL_FRECT(srcRect);
+		SDL_FRect dst = SDL_FRECT(dstRect);
+		SDL_FPoint p  = (SDL_FPoint){p.x, p.y};
+
+		return SDL_RenderTextureRotated(_renderer,
+										texture,
+										&src,
+										&dst,
+										degrees,
+										&p,
+										(SDL_FlipMode)flip);
+		}
 	SDL_Log("Cannot find texture %d to blit from", (int)textureId);
 	return -1;
 	}
@@ -241,6 +296,118 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	}
 
 /*****************************************************************************\
+|* Set the colour mod
+\*****************************************************************************/
+- (int) setTexture:(NSInteger)texId modR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b
+	{
+	SDL_Texture *texture = [self textureFor:texId];
+	if (texture)
+		return SDL_SetTextureColorMod(texture, r, g, b);
+	SDL_Log("Cannot find texture %d to set colour-mod on", (int)texId);
+	return -1;
+	}
+
+
+/*****************************************************************************\
+|* Return some info about a given texture, by id
+\*****************************************************************************/
+- (float) widthOfTexture:(NSInteger)refId
+	{
+	SDL_Texture *texture = [self textureFor:refId];
+	if (texture)
+		{
+		float w, h;
+		SDL_GetTextureSize(texture, &w, &h);
+		return w;
+		}
+	SDL_Log("Cannot find texture %d to set colour-mod on", (int)refId);
+	return -1;
+	}
+
+- (float) heightOfTexture:(NSInteger)refId
+	{
+	SDL_Texture *texture = [self textureFor:refId];
+	if (texture)
+		{
+		float w, h;
+		SDL_GetTextureSize(texture, &w, &h);
+		return h;
+		}
+	SDL_Log("Cannot find texture %d to set colour-mod on", (int)refId);
+	return -1;
+	}
+
+/*****************************************************************************\
+|* Test if the clip is set
+\*****************************************************************************/
+- (BOOL) clipEnabled
+	{
+	NSRect clip = [self clipRect];
+	if (NSEqualRects(clip, NSZeroRect))
+		return NO;
+	return YES;
+	}
+
+
+/*****************************************************************************\
+|* Presentation...
+\*****************************************************************************/
+- (NSSize) presentationSize
+	{
+	int w, h;
+	SDL_RendererLogicalPresentation mode;
+	SDL_GetRenderLogicalPresentation(_renderer, &w, &h, &mode);
+	return NSMakeSize(w,h);
+	}
+
+- (int) presentationMode
+	{
+	int w, h;
+	SDL_RendererLogicalPresentation mode;
+	SDL_GetRenderLogicalPresentation(_renderer, &w, &h, &mode);
+	return (int)mode;
+	}
+
+- (void) setPresentationSize:(NSSize)size mode:(int)mode
+	{
+	int w = (int)size.width;
+	int h = (int)size.height;
+	SDL_SetRenderLogicalPresentation(_renderer, w, h, mode);
+	}
+
+
+/*****************************************************************************\
+|* Viewport...
+\*****************************************************************************/
+- (NSRect) viewport
+	{
+	SDL_Rect viewport;
+	SDL_GetRenderViewport(_renderer, &viewport);
+	return NS_RECT(viewport);
+	}
+
+- (void) setViewport:(NSRect)viewport
+	{
+	SDL_Rect vp = SDL_RECT(viewport);
+	SDL_SetRenderViewport(_renderer, &vp);
+	}
+
+
+/*****************************************************************************\
+|* Scale...
+\*****************************************************************************/
+- (void) renderScaleX:(float *)xs y:(float *)ys
+	{
+	SDL_GetRenderScale(_renderer, xs, ys);
+	}
+
+- (void) setScaleX:(float)xs y:(float)ys
+	{
+	SDL_SetRenderScale(_renderer, xs, ys);
+	}
+
+
+/*****************************************************************************\
 |* Set the clip
 \*****************************************************************************/
 - (void) setClip:(NSRect)clipRect
@@ -281,6 +448,11 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 - (int) setDrawColourToRed:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
 	{
 	return SDL_SetRenderDrawColor(_renderer, r, g, b, a);
+	}
+
+- (void) drawColourR:(uint8_t*)r g:(uint8_t*)g b:(uint8_t*)b a:(uint8_t*)a
+	{
+	SDL_GetRenderDrawColor(_renderer, r, g, b, a);
 	}
 
 /*****************************************************************************\

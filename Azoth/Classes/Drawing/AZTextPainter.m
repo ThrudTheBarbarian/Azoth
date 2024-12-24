@@ -12,6 +12,7 @@
 #import "AZColour.h"
 #import "AZFont.h"
 #import "AZGlyphData.h"
+#import "AZRenderer.h"
 #import "AZTextPainter.h"
 #import "AZObject.h"
 
@@ -28,19 +29,21 @@
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/
-- (instancetype) initWithRenderer:(struct SDL_Renderer *)renderer
+- (instancetype) initWithRenderer:(AZRenderer *)renderer
 	{
 	if (self = [super init])
 		{
-		_renderer 	= renderer;
-		_colour 	= [AZColour colourWithR:0.f g:0.f b:0.f a:1.f];
-		_alignment	= AZTextAlignmentLeft;
-		_scale		= (AZScale){1.f, 1.f};
+		_renderer 		= renderer;
+		_colour 		= [AZColour colourWithR:0.f g:0.f b:0.f a:1.f];
+		_alignment		= AZTextAlignmentLeft;
+		_scale			= (AZScale){1.f, 1.f};
+		_rotateAbout	= (NSPoint){0.f,0.f};
+
 		}
 	return self;
 	}
 
-+ (AZTextPainter *) painterWithRenderer:(struct SDL_Renderer *)renderer
++ (AZTextPainter *) painterWithRenderer:(AZRenderer *)renderer
 	{
 	return [[AZTextPainter alloc] initWithRenderer:renderer];
 	}
@@ -141,27 +144,27 @@
 \*****************************************************************************/
 - (NSRect) drawInBox:(NSRect)box text:(NSString *)text
 	{
-	bool useClip = SDL_RenderClipEnabled(_renderer);
+	BOOL useClip = [_renderer clipEnabled];
 
-    SDL_Rect oldclip, newclip;
+	NSRect oldClip = NSZeroRect;		// Keep clang happy
+	NSRect newClip;
     if (useClip)
 		{
-		SDL_GetRenderClipRect(_renderer, &oldclip);
-		NSRect oldNS 		= NS_RECT(oldclip);
-		NSRect intersect	= NSIntersectionRect(oldNS, box);
-        newclip 			= SDL_RECT(intersect);
+		oldClip = _renderer.clipRect;
+		newClip	= NSIntersectionRect(oldClip, box);
 		}
     else
-        newclip = SDL_RECT(box);
+        newClip = box;
 
-    SDL_SetRenderClipRect(_renderer, &newclip);
+	[_renderer setClip:newClip];
+
 	[_font setColourForAllCaches:_colour];
 	[self _drawColumnFor:text inBox:box];
 
     if (useClip)
-        SDL_SetRenderClipRect(_renderer, &oldclip);
+		[_renderer setClip:oldClip];
     else
-        SDL_SetRenderClipRect(_renderer, NULL);
+		[_renderer unsetClip];
 
     return box;
 	}
@@ -169,13 +172,13 @@
 /*****************************************************************************\
 |* Renderer method - override in a subclass to change how it's rendered
 \*****************************************************************************/
-- (NSRect) renderFrom:(NSRect)srcRect in:(SDL_Texture *)src at:(NSPoint)p
+- (NSRect) renderFrom:(NSRect)srcRect in:(NSInteger)textureId at:(NSPoint)p
 	{
 	// Take a local copy since we modify it here
 	AZScale scale = _scale;
 
-    float w = srcRect.size.width * scale.x;
-    float h = srcRect.size.height * scale.y;
+//    float w = srcRect.size.width * scale.x;
+//    float h = srcRect.size.height * scale.y;
     NSRect result;
 
 	SDL_FlipMode flip = SDL_FLIP_NONE;
@@ -190,19 +193,29 @@
 		flip = (SDL_FlipMode) ((int)flip | (int)SDL_FLIP_VERTICAL);
 		}
 
-	SDL_FRect r = {
-				  srcRect.origin.x,
-				  srcRect.origin.y,
-				  srcRect.size.width,
-				  srcRect.size.height
-				  };
+//	SDL_FRect r = {
+//				  srcRect.origin.x,
+//				  srcRect.origin.y,
+//				  srcRect.size.width,
+//				  srcRect.size.height
+//				  };
 
-	SDL_FRect dr = {p.x, p.y, (int)(scale.x * r.w), (int)(scale.y * r.h)};
-	SDL_RenderTextureRotated(_renderer, src, &r, &dr, _angle, &_rotateAbout, flip);
+	float dstW		= scale.x * srcRect.size.width;
+	float dstH		= scale.y * srcRect.size.height;
+	NSRect dstRect 	= NSMakeRect(p.x, p.y, dstW, dstH);
+	[_renderer blitFrom:textureId
+					src:srcRect
+					dst:dstRect
+				  angle:_angle
+				 center:_rotateAbout
+				   flip:flip];
 
-	result.origin = p;
-	result.size.width = w;
-	result.size.height = h;
+	//SDL_FRect dr = {p.x, p.y, (int)(scale.x * r.w), (int)(scale.y * r.h)};
+	//SDL_RenderTextureRotated(_renderer, src, &r, &dr, _angle, &_rotateAbout, flip);
+
+	result.origin 		= p;
+	result.size.width 	= srcRect.size.width  * scale.x;
+	result.size.height 	= srcRect.size.height * scale.y;
     return result;
 	}
 
@@ -341,7 +354,7 @@
     if (_font == NULL)
         return dirtyRect;
 
-    if (_font.glyphs.count == 0)
+    if (_font.textures.count == 0)
         return dirtyRect;
 
     float destX 			= x;

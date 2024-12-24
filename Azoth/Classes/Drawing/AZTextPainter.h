@@ -15,16 +15,16 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 @class AZColour;
 @class AZFont;
+@class AZRenderer;
 
-struct SDL_Renderer;
 struct SDL_Texture;
 
 @interface AZTextPainter : NSObject
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/
-- (instancetype) initWithRenderer:(struct SDL_Renderer *)renderer;
-+ (AZTextPainter *) painterWithRenderer:(struct SDL_Renderer *)renderer;
+- (instancetype) initWithRenderer:(AZRenderer *)renderer;
++ (AZTextPainter *) painterWithRenderer:(AZRenderer *)renderer;
 
 /*****************************************************************************\
 |* Basic drawing routine
@@ -45,9 +45,7 @@ struct SDL_Texture;
 /*****************************************************************************\
 |* Rendering method
 \*****************************************************************************/
-- (NSRect) renderFrom:(NSRect)rect in:(struct SDL_Texture *)src
-		   at:(NSPoint)p;
-
+- (NSRect) renderFrom:(NSRect)rect in:(NSInteger)textureId at:(NSPoint)p;
 
 /*****************************************************************************\
 |* Utility method - return an initialised effect structure
@@ -63,7 +61,7 @@ struct SDL_Texture;
 \*****************************************************************************/
 
 // Renderer for drawing with
-@property(assign, nonatomic) struct SDL_Renderer *			renderer;
+@property(assign, nonatomic) AZRenderer *					renderer;
 
 // Font to use
 @property(strong, nonatomic) AZFont *						font;
@@ -80,7 +78,7 @@ struct SDL_Texture;
 // Angle to draw at (0, 90, 180, 270)
 @property(assign, nonatomic) int							angle;
 
-@property(assign, nonatomic) struct SDL_FPoint				rotateAbout;
+@property(assign, nonatomic) NSPoint						rotateAbout;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -14,7 +14,6 @@ NS_ASSUME_NONNULL_BEGIN
 |* Forward references
 \*****************************************************************************/
 
-struct SDL_Renderer;
 struct SDL_Color;
 struct TTF_Font;
 
@@ -51,7 +50,7 @@ struct TTF_Font;
 /*****************************************************************************\
 |* Get the cache image for a given cache-id
 \*****************************************************************************/
-- (nullable struct SDL_Texture *) glyphsFor:(NSInteger)cacheId;
+- (NSInteger) glyphsFor:(NSInteger)cacheId;
 
 /*****************************************************************************\
 |* Return the width of a text string in this font
@@ -67,9 +66,6 @@ struct TTF_Font;
 
 // Number of spaces in \t
 @property(assign, nonatomic) int							tabWidth;
-
-// Renderer for drawing with
-@property(assign, nonatomic) struct SDL_Renderer *			renderer;
 
 // The underlying TrueType font this AZFont uses
 @property(assign, nonatomic) struct TTF_Font *				ttfFont;
@@ -102,7 +98,7 @@ struct TTF_Font;
 @property(assign, nonatomic) BOOL							renderToTarget;
 
 // Actual glyph data map
-@property(strong, nonatomic) NSMutableArray<AZObject *> *	glyphs;
+@property(strong, nonatomic) NSMutableArray<NSNumber *> *	textures;
 @end
 
 NS_ASSUME_NONNULL_END
