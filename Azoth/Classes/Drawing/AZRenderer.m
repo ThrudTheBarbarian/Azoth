@@ -241,7 +241,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	}
 
 /*****************************************************************************\
-|* Set the clip, use NSZeroRect to unset
+|* Set the clip
 \*****************************************************************************/
 - (void) setClip:(NSRect)clipRect
 	{

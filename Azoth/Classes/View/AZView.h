@@ -38,6 +38,7 @@ struct SDL_Window;
 
 @class AZColour;
 @class AZPainter;
+@class AZTransform;
 @class AZWindow;
 
 NS_ASSUME_NONNULL_BEGIN

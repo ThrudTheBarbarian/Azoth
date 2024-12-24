@@ -13,6 +13,7 @@
 #import "AZNotifications.h"
 #import "AZPainter.h"
 #import "AZRenderer.h"
+#import "AZTransform.h"
 #import "AZView.h"
 #import "AZView+Internal.h"
 #import "AZWindow.h"
@@ -29,6 +30,15 @@
 
 // Post notifications when the bounds are changed
 @property(assign, nonatomic) BOOL						postBoundsNotifications;
+
+// Whether the transforms are currently valid
+@property(assign, nonatomic) BOOL						transformsAreValid;
+
+// Transform from the window co-ords space
+@property(strong, nonatomic, nullable)  AZTransform *	transformFromWindow;
+
+// Transform to the window co-ords space
+@property(strong, nonatomic, nullable)  AZTransform *	transformToWindow;
 @end
 
 @implementation AZView
@@ -52,6 +62,9 @@
 		_postFrameNotifications		= YES;
 		_postBoundsNotifications	= YES;
 		_autoresizingMask		 	= AZViewNotSizable;
+		_transformToWindow			= [AZTransform new];
+		_transformFromWindow		= [AZTransform new];
+		_transformsAreValid			= NO;
 
 		[self setNeedsDisplay:YES];
 		}
@@ -85,68 +98,143 @@
 
 /*****************************************************************************\
 |* Convert a point from another window's co-ordinate system to our own. Calling
-|* this with nil will convert from window co-ordinates. The view must be in
-|* the superview-hierarchy otherwise.
+|* this with nil will convert from window co-ordinates.
 \*****************************************************************************/
 - (NSPoint) convertPoint:(NSPoint)p fromView:(nullable AZView *)otherView
 	{
-	AZView *view = self;
-	while (view != otherView)
-		{
-		p.x -= view.frame.origin.x;
-		p.y -= view.frame.origin.y;
-		view = view.superview;
-		if (view == nil)
-			break;
-		}
+	AZView *fromView 	= (otherView != nil)
+						? otherView
+						: [AZWindow contentViewForWindow:self.window];
 
-	return p;
+	AZTransform * toWindow		= fromView.transformToWindow;
+	AZTransform * fromWindow	= self.transformFromWindow;
+
+	return [fromWindow applyToPoint:[toWindow applyToPoint:p]];
 	}
 
 /*****************************************************************************\
-|* Convenience method to do the same for a rect. Basically just do the origin
-|* and leave the size alone
+|* Convert a size from our own view's co-ordinate system to another. Calling
+|* this with nil will convert to window co-ordinates.
 \*****************************************************************************/
-- (NSRect) convertRect:(NSRect)r fromView:(nullable AZView *)otherView
+- (NSSize) convertSize:(NSSize)size fromView:(nullable AZView *)viewOrNil
 	{
-	r.origin = [self convertPoint:r.origin fromView:otherView];
-	return r;
+	AZView *fromView		= (viewOrNil != nil)
+							? viewOrNil
+							: [AZWindow contentViewForWindow:self.window];
+
+	AZTransform *toWindow	= fromView.transformToWindow;
+	AZTransform *fromWindow	= self.transformFromWindow;
+
+	return [fromWindow applyToSize:[toWindow applyToSize:size]];
+	}
+
+/*****************************************************************************\
+|* Convert a rect from our own view's co-ordinate system to another. Calling
+|* this with nil will convert to window co-ordinates.
+\*****************************************************************************/
+- (NSRect) convertRect:(NSRect)r fromView:(nullable AZView *)viewOrNil
+	{
+	AZView *fromView		= (viewOrNil != nil)
+							? viewOrNil
+							: [AZWindow contentViewForWindow:self.window];
+	AZTransform *toWindow	= fromView.transformToWindow;
+	AZTransform *fromWindow	= self.transformFromWindow;
+
+	NSPoint p1				= r.origin;
+	NSPoint p2				= NSMakePoint(NSMaxX(r), NSMaxY(r));
+
+	p1 = [fromWindow applyToPoint:[toWindow applyToPoint:p1]];
+	p2 = [fromWindow applyToPoint:[toWindow applyToPoint:p2]];
+
+	if (p2.y < p1.y)
+		{
+		float temp=p2.y;
+		p2.y = p1.y;
+		p1.y = temp;
+		}
+
+	return NSMakeRect(p1.x,p1.y,p2.x-p1.x,p2.y-p1.y);
 	}
 
 /*****************************************************************************\
 |* Convert a point from our own view's co-ordinate system to another. Calling
-|* this with nil will convert to window co-ordinates. The view must be in
-|* the superview-hierarchy otherwise.
+|* this with nil will convert to window co-ordinates.
 \*****************************************************************************/
 - (NSPoint) convertPoint:(NSPoint)p toView:(nullable AZView *)otherView
 	{
-	AZView *view = self;
-	while (view != otherView)
-		{
-		p.x += view.frame.origin.x;
-		p.y += view.frame.origin.y;
-		view = view.superview;
-		if (view == nil)
-			break;
-	}
+	AZView *toView 	= (otherView != nil)
+					? otherView
+					: [AZWindow contentViewForWindow:self.window];
 
-	return p;
+	AZTransform * toWindow		= self.transformToWindow;
+	AZTransform * fromWindow	= toView.transformFromWindow;
+
+	return [fromWindow applyToPoint:[toWindow applyToPoint:p]];
 	}
 
 /*****************************************************************************\
-|* Convenience method to do the same for a rect. Basically just do the origin
-|* and leave the size alone
+|* Convert a size from our own view's co-ordinate system to another. Calling
+|* this with nil will convert to window co-ordinates.
 \*****************************************************************************/
-- (NSRect) convertRect:(NSRect)r toView:(nullable AZView *)otherView
+- (NSSize) convertSize:(NSSize)size toView:(nullable AZView *)viewOrNil
 	{
-	r.origin = [self convertPoint:r.origin toView:otherView];
-	return r;
+	AZView *toView 	= (viewOrNil != nil)
+					? viewOrNil
+					: [AZWindow contentViewForWindow:self.window];
+
+	AZTransform * toWindow		= self.transformToWindow;
+	AZTransform * fromWindow	= toView.transformFromWindow;
+
+	return [fromWindow applyToSize:[toWindow applyToSize:size]];
+	}
+
+
+/*****************************************************************************\
+|* Convenience method to do the same for a rect.
+\*****************************************************************************/
+- (NSRect) convertRect:(NSRect)r toView:(nullable AZView *)viewOrNil
+	{
+	AZView *toView 	= (viewOrNil != nil)
+					? viewOrNil
+					: [AZWindow contentViewForWindow:self.window];
+
+	AZTransform * toWindow		= self.transformToWindow;
+	AZTransform * fromWindow	= toView.transformFromWindow;
+
+	NSPoint p1				= r.origin;
+	NSPoint p2				= NSMakePoint(NSMaxX(r), NSMaxY(r));
+
+	p1 = [fromWindow applyToPoint:[toWindow applyToPoint:p1]];
+	p2 = [fromWindow applyToPoint:[toWindow applyToPoint:p2]];
+
+	if (p2.y < p1.y)
+		{
+		float temp=p2.y;
+		p2.y = p1.y;
+		p1.y = temp;
+		}
+
+	return NSMakeRect(p1.x,p1.y,p2.x-p1.x,p2.y-p1.y);
 	}
 
 
 
 // MARK: View processing
 
+/*****************************************************************************\
+|* Return the transforms to/from the window co-ords
+\*****************************************************************************/
+- (AZTransform *) transformFromWindow
+	{
+	_buildTransformsIfNeeded(self);
+	return _transformFromWindow;
+	}
+
+- (AZTransform *) transformToWindow
+	{
+	_buildTransformsIfNeeded(self);
+	return _transformToWindow;
+	}
 
 /*****************************************************************************\
 |* Set the window for a view, recursively
@@ -167,6 +255,8 @@
 	view.superview 	= self;
 	view.window		= _window;
 	[view _installBackingTexture];
+	[view _invalidateTransforms];
+	//[self setNeedsDisplayInRect:[view frame]];
 	return YES;
 	}
 
@@ -348,6 +438,7 @@
 		{
 		_bounds = bounds;
 		self.visRect = NSZeroRect;
+		[self _invalidateTransforms];
 
 		// this also invalidates tracking areas
 		// Yep, still not implemented
@@ -384,6 +475,7 @@
 
 	// Invalidate the visible rect
 	_visRect = NSZeroRect;
+	[self _invalidateTransforms];
 
 	if (self.postFrameNotifications)
 		{
@@ -514,5 +606,72 @@
 
     return result;
 	}
+
+static inline void _buildTransformsIfNeeded(AZView *self)
+	{
+	if (!self->_transformsAreValid)
+		{
+		self->_transformToWindow	= [self _createTransformToWindow];
+		self->_transformFromWindow	= [self->_transformToWindow invert];
+		self->_transformsAreValid	= YES;
+
+		self->_visibleRect			= [self _calculateVisibleRect];
+		}
+	}
+
+/*****************************************************************************\
+|* Get a transform for the window by concat'ing from the superview if we can
+\*****************************************************************************/
+- (AZTransform *) _createTransformToWindow
+	{
+	AZTransform *result = [AZTransform new];
+	AZView *sv			= self.superview;
+	BOOL doFrame		= YES;
+
+	if (sv != nil)
+		result = [sv transformToWindow];
+
+	result = [self _concatViewTransform:result
+								   view:self
+							    doFrame:doFrame];
+
+	return result;
+	}
+
+/*****************************************************************************\
+|* Apply the transformation for the view
+\*****************************************************************************/
+- (AZTransform *) _concatViewTransform:(AZTransform *)result
+								  view:(AZView *)view
+							   doFrame:(BOOL)doFrame
+	{
+	NSRect bounds = view.bounds;
+	NSRect frame  = view.frame;
+
+	if (doFrame)
+		result = [result translateX:frame.origin.x y:frame.origin.y];
+
+	// Apply bounds scaling to fit in the frame if needed
+	float sx = NSWidth(frame)/NSWidth(bounds);
+	float sy = NSHeight(frame)/NSHeight(bounds);
+	if ((sx != 1.f) || (sy != 1.f))
+		{
+		AZTransform *scale = [AZTransform scaleX:sx y:sy];
+		result = [result concat:scale];
+		}
+
+	return [result translateX:-bounds.origin.x y:-bounds.origin.y];
+	}
+
+/*****************************************************************************\
+|* Invalidate the view transforms, forcing them to be recalculated when needed
+\*****************************************************************************/
+- (void) _invalidateTransforms
+	{
+	_transformsAreValid = NO;
+	for (AZView *view in _subviews)
+		[view _invalidateTransforms];
+	}
+
 
 @end

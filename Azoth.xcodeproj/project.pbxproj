@@ -116,6 +116,7 @@
 				Classes/Utility/AZGeometry.h,
 				Classes/Utility/AZNotifications.h,
 				Classes/Utility/AZObject.h,
+				Classes/Utility/AZTransform.h,
 				Classes/Utility/AZTypes.h,
 				Classes/View/AZClipView.h,
 				Classes/View/AZRulerView.h,
