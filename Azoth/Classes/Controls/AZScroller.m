@@ -38,6 +38,9 @@ static NSRect	_sL[STATE_NUM];
 static NSRect	_sC[STATE_NUM];
 static NSRect	_sR[STATE_NUM];
 
+/*****************************************************************************\
+|* "Private" properties
+\*****************************************************************************/
 @interface AZScroller()
 @property(assign, nonatomic) BOOL								horizontal;
 @property(assign, nonatomic) BOOL								dragging;

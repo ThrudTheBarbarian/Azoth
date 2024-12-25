@@ -385,11 +385,12 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	return (int)mode;
 	}
 
-- (void) setPresentationSize:(NSSize)size mode:(int)mode
+- (void) setPresentationSize:(NSSize)size mode:(NSInteger)mode
 	{
-	int w = (int)size.width;
-	int h = (int)size.height;
-	SDL_SetRenderLogicalPresentation(_renderer, w, h, mode);
+	int w 		= (int)size.width;
+	int h 		= (int)size.height;
+	int pmode	= (int)mode;
+	SDL_SetRenderLogicalPresentation(_renderer, w, h, pmode);
 	}
 
 

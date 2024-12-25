@@ -37,6 +37,15 @@ typedef struct AZFontStyle
 	int style;					// Collection of above enums
 	} AZFontStyle;
 
+/*****************************************************************************\
+|* Types of splitview pane divider
+\*****************************************************************************/
+typedef enum
+	{
+    AZSplitViewDividerStyleThick = 1,
+    AZSplitViewDividerStyleThin,
+    AZSplitViewDividerStylePaneSplitter,
+	} AZSplitViewDividerStyle;
 
 /*****************************************************************************\
 |* Alignment constants

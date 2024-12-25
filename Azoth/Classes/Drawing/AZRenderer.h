@@ -114,7 +114,7 @@ struct SDL_FPoint;
 \*****************************************************************************/
 - (NSSize) presentationSize;
 - (int) presentationMode;
-- (void) setPresentationSize:(NSSize)size mode:(int)mode;
+- (void) setPresentationSize:(NSSize)size mode:(NSInteger)mode;
 
 
 /*****************************************************************************\

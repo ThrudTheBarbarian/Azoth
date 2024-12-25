@@ -43,10 +43,18 @@
 	|*  - return whether handled
 	\*************************************************************************/
 
+	if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+		NSLog(@"click!");
+
+	NSRect global 	= [self visibleRect];
+	global			= [self convertRect:global toView:nil];
+
 	BOOL done 	= NO;
 	for (AZView *subview in self.subviews)
 		{
-		done = [subview processMouseEvent:e atPoint:p];
+		// Only want to check against visible rect
+		if (NSPointInRect(p, global))
+			done = [subview processMouseEvent:e atPoint:p];
 		if (done)
 			break;
 		}
@@ -60,8 +68,8 @@
 		// frame co-ords as part of the process of finding the point's
 		// location in the parent. Since we want the frame itself, we want
 		// to start at (0,0)
-		NSRect global 	= [self bounds];
-		global.origin	= [self convertPoint:global.origin toView:nil];
+		global 	= [self bounds];
+		global	= [self convertRect:global toView:nil];
 
 		if (NSPointInRect(p, global))
 			{
@@ -226,6 +234,13 @@
 	{
 	AZRenderer *azr = AZRenderer.renderer;
 
+	/*************************************************************************\
+	|* If we are hidden, short-circuit the display routine for ourselves and
+	|* all descendents, and return now
+	\*************************************************************************/
+	if (self.hidden)
+		return;
+		
 	/*************************************************************************\
 	|* Draw to the screen
 	\*************************************************************************/

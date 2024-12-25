@@ -16,4 +16,8 @@ extern NSString * const AZViewBoundsDidChangeNotification;
 extern NSString * const AZPopUpButtonWillPopUpNotification;
 
 extern NSString * const AZRadioButtonPressedNotification;
+
+extern NSString * const AZSplitViewDidResizeSubviewsNotification;
+extern NSString * const AZSplitViewWillResizeSubviewsNotification;
+
 NS_ASSUME_NONNULL_END

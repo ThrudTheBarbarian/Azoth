@@ -119,6 +119,7 @@
 				Classes/View/AZClipView.h,
 				Classes/View/AZRulerView.h,
 				Classes/View/AZScrollView.h,
+				Classes/View/AZSplitView.h,
 				Classes/View/AZView.h,
 			);
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;

@@ -295,10 +295,7 @@
 - (void) cbPressed:(id)sender
 	{
 	NSLog(@"Checkbox: sender:%@", sender);
-//	if (_hs.enabled)
-//		_hs.enabled = NO;
-//	else
-//		_hs.enabled = YES;
+		_ctrl.hidden = !_ctrl.hidden;
 	}
 
 

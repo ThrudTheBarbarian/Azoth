@@ -99,6 +99,11 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)setBoundsSize:(NSSize)size;
 -(void)setBoundsOrigin:(NSPoint)origin;
 
+/*****************************************************************************\
+|* Determine if this, or any view further up the view hierarchy, is hidden
+\*****************************************************************************/
+-(BOOL)isHiddenOrHasHiddenAncestor;
+
 // MARK: Event manipulation
 
 /*****************************************************************************\
@@ -181,6 +186,9 @@ NS_ASSUME_NONNULL_BEGIN
 // Backing texture mutex. Taken when the backing texture
 // is swapped out, and also when rendering using it.
 @property(assign, nonatomic) struct SDL_Mutex *				textureMutex;
+
+// Whether the view is hidden (not displayed)
+@property(assign, nonatomic) BOOL							hidden;
 @end
 
 NS_ASSUME_NONNULL_END

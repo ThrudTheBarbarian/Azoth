@@ -50,22 +50,23 @@
 	{
 	if (self = [super init])
 		{
-		_frame 						= frame;
-		_bounds						= frame;
-		_bounds.origin 				= (NSPoint){0,0};
-		_subviews					= [NSMutableArray new];
-		_superview					= nil;
-		_bg 						= -1;
-		_backgroundColour			= [AZColour blackColour];
-		_isOpaque					= NO;
-		_autoresizesSubviews		= YES;
-		_postFrameNotifications		= YES;
-		_postBoundsNotifications	= YES;
-		_autoresizingMask		 	= AZViewNotSizable;
-		_transformToWindow			= [AZTransform new];
-		_transformFromWindow		= [AZTransform new];
-		_transformsAreValid			= NO;
-		_textureMutex				= SDL_CreateMutex();
+		self.frame 						= frame;
+		frame.origin					= (NSPoint){0,0};
+		self.bounds						= frame;
+		self.subviews					= [NSMutableArray new];
+		self.superview					= nil;
+		self.bg 						= -1;
+		self.backgroundColour			= [AZColour blackColour];
+		self.isOpaque					= NO;
+		self.autoresizesSubviews		= YES;
+		self.postFrameNotifications		= YES;
+		self.postBoundsNotifications	= YES;
+		self.autoresizingMask		 	= AZViewNotSizable;
+		self.transformToWindow			= [AZTransform new];
+		self.transformFromWindow		= [AZTransform new];
+		self.transformsAreValid			= NO;
+		self.textureMutex				= SDL_CreateMutex();
+		self.hidden						= NO;
 
 		[self setNeedsDisplay:YES];
 		}
@@ -223,6 +224,14 @@
 // MARK: View processing
 
 /*****************************************************************************\
+|* Determine if this, or any view further up the view hierarchy, is hidden
+\*****************************************************************************/
+-(BOOL)isHiddenOrHasHiddenAncestor
+	{
+	return _hidden || [self.superview isHiddenOrHasHiddenAncestor];
+	}
+
+/*****************************************************************************\
 |* Return the transforms to/from the window co-ords
 \*****************************************************************************/
 - (AZTransform *) transformFromWindow
@@ -257,7 +266,6 @@
 	view.window		= _window;
 	[view _installBackingTexture];
 	[view _invalidateTransforms];
-	//[self setNeedsDisplayInRect:[view frame]];
 	return YES;
 	}
 
@@ -594,9 +602,8 @@
 \*****************************************************************************/
 - (NSRect) _calculateVisibleRect
 	{
-	// Don't support this (yet ?)
-	//if ([self isHiddenOrHasHiddenAncestor])
-	//	return NSZeroRect;
+	if ([self isHiddenOrHasHiddenAncestor])
+		return NSZeroRect;
 
 	if (self.superview == nil)
 		return self.bounds;

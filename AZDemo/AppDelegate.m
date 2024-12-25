@@ -15,7 +15,7 @@
 
 - (void) applicationDidFinishLaunching:(NSNotification *)notification
 	{
-	AZApp *app = [AZApp sharedInstance];
+	//AZApp *app = [AZApp sharedInstance];
 	}
 
 @end

@@ -451,10 +451,6 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 
 		NSInteger img = [azr createTextureWithSurface:glyph];
 
-		SDL_FRect destrect = {_lastGlyph.rect.origin.x,
-							  _lastGlyph.rect.origin.y,
-							  _lastGlyph.rect.size.width,
-							  _lastGlyph.rect.size.height};
 		[azr lockFocusOn:img];
 		[azr blitFrom:img src:NSZeroRect dst:_lastGlyph.rect];
 		[azr unlockFocus];

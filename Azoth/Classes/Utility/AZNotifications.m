@@ -14,3 +14,6 @@ NSString * const AZViewBoundsDidChangeNotification 	= @"AZ:BoundsResized";
 NSString * const AZPopUpButtonWillPopUpNotification = @"AZ:PopupWillShow";
 
 NSString * const AZRadioButtonPressedNotification 	= @"AZ:RadioButtonPressed";
+
+NSString * const AZSplitViewDidResizeSubviewsNotification 	= @"AZ:SplitviewWillResize";
+NSString * const AZSplitViewWillResizeSubviewsNotification 	= @"AZ:SplitviewDidResize";

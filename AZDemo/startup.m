@@ -14,6 +14,7 @@
 
 #import "AppDelegate.h"
 #import "IdentifiedView.h"
+#import "ColouredView.h"
 
 /*****************************************************************************\
 |* File-private variables
@@ -39,7 +40,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     \*************************************************************************/
 	_app 				= [AZApp sharedInstance];
 	_app.delegate		= [AppDelegate new];
-	_app.initialFrame	= NSMakeRect(50, 50, 780, 480);
+	_app.initialFrame	= NSMakeRect(50, 50, 1280, 960);
 	_app.windowFlags	= SDL_WINDOW_RESIZABLE;
 	*appstate			= (__bridge void *)(_app);
 
@@ -76,7 +77,23 @@ void _testMouseEvents(void)
 	[sv setBorderType: AZLineBorder];
 	[sv setDocumentView:v1];
 	sv.autoresizingMask = AZViewHeightSizable|AZViewWidthSizable;
-
 	[cv addSubview:sv];
+
+	NSRect r = NSMakeRect(100, 470, 600, 360);
+	AZSplitView *spv = [[AZSplitView alloc] initWithFrame:r];
+	spv.autoresizingMask = AZViewHeightSizable|AZViewWidthSizable;
+
+	AZView *c1 = [[AZView alloc] initWithFrame:NSMakeRect(0, 0, 600, 180)];
+	c1.backgroundColour = AZColour.redColour;
+	[spv addSubview:c1];
+
+	AZView *c2 = [[AZView alloc] initWithFrame:NSMakeRect(0, 180, 600, 180)];
+	c2.backgroundColour = AZColour.blueColour;
+	[spv addSubview:c2];
+	spv.isVertical = YES;
+	spv.dividerStyle = AZSplitViewDividerStyleThin;
+	[cv addSubview:spv];
+
+
 	[cv setBackgroundColour:[AZColour orangeColour]];
 	}
