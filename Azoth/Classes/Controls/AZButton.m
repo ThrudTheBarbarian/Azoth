@@ -213,7 +213,7 @@ static NSRect	_bRight[STATE_NUM];
 /*****************************************************************************\
 |* Handle a mouse press
 \*****************************************************************************/
-- (BOOL) mouseDown:(SDL_MouseButtonEvent *)e
+- (BOOL) mouseDown:(AZEvent *)e
 	{
 	if (self.state ==ControlStateDisabled)
 		return NO;
@@ -234,7 +234,7 @@ static NSRect	_bRight[STATE_NUM];
 /*****************************************************************************\
 |* Handle a mouse release
 \*****************************************************************************/
-- (BOOL) mouseUp:(struct SDL_MouseButtonEvent *)e
+- (BOOL) mouseUp:(AZEvent *)e
 	{
 	if (self.state ==ControlStateDisabled)
 		return NO;

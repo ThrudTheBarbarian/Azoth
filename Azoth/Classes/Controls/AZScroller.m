@@ -10,6 +10,7 @@
 #import "AZApp.h"
 #import "AZButton.h"
 #import "AZColour.h"
+#import "AZEvent.h"
 #import "AZFont.h"
 #import "AZNotifications.h"
 #import "AZPainter.h"
@@ -309,11 +310,11 @@ static NSRect	_sR[STATE_NUM];
 /*****************************************************************************\
 |* Handle mouse events
 \*****************************************************************************/
-- (BOOL) mouseDown:(struct SDL_MouseButtonEvent *)e
+- (BOOL) mouseDown:(AZEvent *)e
 	{
 	self.enabled 		= YES;
 	self.dragging 		= YES;
- 	NSPoint p 			= (NSPoint){e->x, e->y};
+ 	NSPoint p 			= e.locationInWindow;
 	_dragP				= [self convertPoint:p fromView:nil];
 	_initialValue		= self.doubleValue;
 
@@ -321,18 +322,17 @@ static NSRect	_sR[STATE_NUM];
 	return YES;
 	}
 
-- (BOOL) mouseDragged:(struct SDL_MouseMotionEvent *)e
+- (BOOL) mouseDragged:(AZEvent *)e
 	{
 	return _horizontal ? [self mouseDraggedHorizontally:e]
 					   : [self mouseDraggedVertically:e];
 	}
 
-- (BOOL) mouseDraggedHorizontally:(struct SDL_MouseMotionEvent *)e
+- (BOOL) mouseDraggedHorizontally:(AZEvent *)e
 	{
  	NSRect b		= self.bounds;
 	int W 			= NSMaxX(b) - SCROLLER_WIDTH;
-	NSPoint p 		= (NSPoint){e->x, e->y};
-	p				= [self convertPoint:p fromView:nil];
+	NSPoint p		= [self convertPoint:e.locationInWindow fromView:nil];
 
 	// Figure out the size of the knob from the proportion
 	float width = self.knobProportion * W;
@@ -369,12 +369,11 @@ static NSRect	_sR[STATE_NUM];
 	}
 
 
-- (BOOL) mouseDraggedVertically:(struct SDL_MouseMotionEvent *)e
+- (BOOL) mouseDraggedVertically:(AZEvent *)e
 	{
  	NSRect b		= self.bounds;
 	int H 			= NSMaxY(b) - SCROLLER_WIDTH;
-	NSPoint p 		= (NSPoint){e->x, e->y};
-	p				= [self convertPoint:p fromView:nil];
+	NSPoint p		= [self convertPoint:e.locationInWindow fromView:nil];
 
 	// Figure out the size of the knob from the proportion
 	float height = self.knobProportion * H;
@@ -410,7 +409,7 @@ static NSRect	_sR[STATE_NUM];
 	return YES;
 	}
 
-- (BOOL) mouseUp:(struct SDL_MouseButtonEvent *)e
+- (BOOL) mouseUp:(AZEvent *)e
 	{
 	self.enabled = NO;
 	[self sendAction:self.action to:self.target];

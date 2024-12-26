@@ -9,6 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class AZTableHeaderView;
 @class AZTableView;
 @class AZView;
 
@@ -31,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(strong, nonatomic) AZTableView *						tableView;
 
 // The header view for this column
-@property(strong, nonatomic) AZView *							headerView;
+@property(strong, nonatomic) AZTableHeaderView *				headerView;
 
 // The default prototype view for this column's data
 @property(strong, nonatomic) AZView *							dataView;

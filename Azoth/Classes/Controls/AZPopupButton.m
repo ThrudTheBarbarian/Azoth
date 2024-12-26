@@ -169,7 +169,7 @@ static NSRect	_bR[STATE_NUM];			// Right-hand-side image
 
 // Event handling
 
-- (BOOL) mouseDown:(SDL_MouseButtonEvent *)e
+- (BOOL) mouseDown:(AZEvent *)e
 	{
 	if (_menu.pullsDown)
 		_menu.renderFlags = AZMENU_RENDER_BOTTOM;

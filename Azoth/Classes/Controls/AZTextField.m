@@ -10,6 +10,7 @@
 
 #import "AZApp.h"
 #import "AZColour.h"
+#import "AZEvent.h"
 #import "AZFont.h"
 #import "AZNotifications.h"
 #import "AZPainter.h"
@@ -394,11 +395,10 @@ static int 			_lineHeight = 29;
 /*****************************************************************************\
 |* Handle a mouse press
 \*****************************************************************************/
-- (BOOL) mouseDown:(SDL_MouseButtonEvent *)e
+- (BOOL) mouseDown:(AZEvent *)e
 	{
 	[self.window makeFirstResponder:self];
-	NSPoint p = (NSPoint){e->x, e->y};
-	p = [self convertPoint:p fromView:nil];
+	NSPoint p = [self convertPoint:e.locationInWindow fromView:nil];
 
     // Set the cursor position
     TTF_SubString substring;
@@ -425,14 +425,13 @@ static int 			_lineHeight = 29;
 /*****************************************************************************\
 |* Handle a mouse drag
 \*****************************************************************************/
-- (BOOL) mouseDragged:(SDL_MouseMotionEvent *)e
+- (BOOL) mouseDragged:(AZEvent *)e
 	{
 	if (!_highlighting)
 		return NO;
 
     // Set the highlight position
- 	NSPoint p = (NSPoint){e->x, e->y};
-	p = [self convertPoint:p fromView:nil];
+	NSPoint p = [self convertPoint:e.locationInWindow fromView:nil];
 
 	TTF_SubString substring;
 	int textX = (int)SDL_roundf(p.x - _editArea.origin.x);
@@ -456,7 +455,7 @@ static int 			_lineHeight = 29;
 /*****************************************************************************\
 |* Mouse-button-up event, return YES if we consume the event
 \*****************************************************************************/
-- (BOOL) mouseUp:(struct SDL_MouseButtonEvent *)e
+- (BOOL) mouseUp:(AZEvent *)e
 	{
 	if (!_highlighting)
 		return NO;

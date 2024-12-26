@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Table-view datasource protocol
 \*****************************************************************************/
-@protocol NSTableViewDataSource
+@protocol NSTableViewDataSource <NSObject>
 @optional
 
 // Return the number of rows in the table view
@@ -59,7 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Table-view delegate protocol
 \*****************************************************************************/
-@protocol NSTableViewDelegate
+@protocol NSTableViewDelegate <NSObject>
 @optional
 
 // Determine whether the user can edit a given row/col
@@ -182,16 +182,6 @@ NS_ASSUME_NONNULL_BEGIN
 // MARK: Editing
 
 /*****************************************************************************\
-|* The row being edited
-\*****************************************************************************/
-- (int)editedRow;
-
-/*****************************************************************************\
-|* The column being edited
-\*****************************************************************************/
-- (int)editedColumn;
-
-/*****************************************************************************\
 |* Perform an edit
 \*****************************************************************************/
 //- (void)editColumn:(NSInteger)column
@@ -215,12 +205,12 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Is a particular column selected
 \*****************************************************************************/
-- (BOOL)isColumnSelected:(int)row;
+- (BOOL)isColumnSelected:(NSInteger)row;
 
 /*****************************************************************************\
 |* Is a particular row selected
 \*****************************************************************************/
-- (BOOL)isRowSelected:(int)row;
+- (BOOL)isRowSelected:(NSInteger)row;
 
 /*****************************************************************************\
 |* The set of selected columns
@@ -250,12 +240,12 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Deselect a row
 \*****************************************************************************/
-- (void)deselectRow:(int)row;
+- (void)deselectRow:(NSInteger)row;
 
 /*****************************************************************************\
 |* Deselect a column
 \*****************************************************************************/
-- (void)deselectColumn:(int)column;
+- (void)deselectColumn:(NSInteger)column;
 
 
 /*****************************************************************************\
@@ -343,7 +333,8 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 
 // The tableview delegate
-@property(strong, nonatomic) NSObject *		delegate;
+@property(strong, nonatomic)
+id<NSTableViewDelegate>						delegate;
 
 // The tableview datasource
 @property(strong, nonatomic) NSObject *		datasource;

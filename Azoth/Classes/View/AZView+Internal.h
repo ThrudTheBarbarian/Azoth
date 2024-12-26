@@ -11,7 +11,7 @@
 #ifndef AZView_Internal_h
 #define AZView_Internal_h
 
-union SDL_Event;
+@class AZEvent;
 
 
 @interface AZView(Internal)
@@ -22,8 +22,7 @@ union SDL_Event;
 |* Events : handle the mouse-based events, using the view-coords to determine
 |* 			which view gets to see the event
 \*****************************************************************************/
-- (BOOL) processMouseEvent:(union SDL_Event *)event atPoint:(NSPoint)p;
-
+- (BOOL) processMouseEvent:(AZEvent *)event atPoint:(NSPoint)p;
 
 /*****************************************************************************\
 |* Rendering: Install a SDL_Texture as backing for the view.

@@ -8,6 +8,7 @@
 
 #import "AZApp.h"
 #import "AZColour.h"
+#import "AZEvent.h"
 #import "AZPainter.h"
 #import "AZRenderer.h"
 #import "AZSlider.h"
@@ -104,7 +105,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 /*****************************************************************************\
 |* Handle a mouse down
 \*****************************************************************************/
-- (BOOL) mouseDown:(struct SDL_MouseButtonEvent *)e
+- (BOOL) mouseDown:(AZEvent *)e
 	{
 	if (self.state == ControlStateDisabled)
 		return NO;
@@ -114,7 +115,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 /*****************************************************************************\
 |* Handle a mouse drag
 \*****************************************************************************/
-- (BOOL) mouseDragged:(SDL_MouseMotionEvent *)e
+- (BOOL) mouseDragged:(AZEvent *)e
 	{
 	switch (_type)
 		{
@@ -137,7 +138,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 /*****************************************************************************\
 |* Handle a mouse up
 \*****************************************************************************/
-- (BOOL) mouseUp:(SDL_MouseButtonEvent *)e
+- (BOOL) mouseUp:(AZEvent *)e
 	{
 	[self sendAction:self.action to:self.target];
 	return YES;
@@ -146,10 +147,9 @@ static NSRect	_knob[STATE_NUM];	// knobs
 /*****************************************************************************\
 |* Handle a drag on the horizontal track
 \*****************************************************************************/
-- (BOOL) _horizontalDrag:(SDL_MouseMotionEvent *)e
+- (BOOL) _horizontalDrag:(AZEvent *)e
 	{
- 	NSPoint p = (NSPoint){e->x, e->y};
-	p = [self convertPoint:p fromView:nil];
+	NSPoint p = [self convertPoint:e.locationInWindow fromView:nil];
 
 	double X = _track.origin.x;
 	double W = _track.size.width;
@@ -174,10 +174,9 @@ static NSRect	_knob[STATE_NUM];	// knobs
 /*****************************************************************************\
 |* Handle a drag on the vertical track
 \*****************************************************************************/
-- (BOOL) _verticalDrag:(SDL_MouseMotionEvent *)e
+- (BOOL) _verticalDrag:(AZEvent *)e
 	{
- 	NSPoint p = (NSPoint){e->x, e->y};
-	p = [self convertPoint:p fromView:nil];
+	NSPoint p = [self convertPoint:e.locationInWindow fromView:nil];
 
 	double Y = _track.origin.y;
 	double H = _track.size.height;
@@ -201,10 +200,9 @@ static NSRect	_knob[STATE_NUM];	// knobs
 /*****************************************************************************\
 |* Handle a drag on the circular slider
 \*****************************************************************************/
-- (BOOL) _circleDrag:(SDL_MouseMotionEvent *)e
+- (BOOL) _circleDrag:(AZEvent *)e
 	{
- 	NSPoint p = (NSPoint){e->x, e->y};
-	p = [self convertPoint:p fromView:nil];
+	NSPoint p = [self convertPoint:e.locationInWindow fromView:nil];
 
 	float X = _track.origin.x;
 	float W = _track.size.width;

@@ -12,10 +12,9 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* SDL event structures/unions
 \*****************************************************************************/
+@class AZEvent;
+
 union SDL_Event;
-struct SDL_MouseButtonEvent;
-struct SDL_MouseMotionEvent;
-struct SDL_MouseWheelEvent;
 struct SDL_KeyboardEvent;
 struct SDL_TextEditingEvent;
 struct SDL_TextInputEvent;
@@ -50,27 +49,27 @@ struct SDL_TextInputEvent;
 /*****************************************************************************\
 |* Mouse-button-down event, return YES if we consume the event
 \*****************************************************************************/
-- (BOOL) mouseDown:(struct SDL_MouseButtonEvent *)e;
+- (BOOL) mouseDown:(AZEvent *)e;
 
 /*****************************************************************************\
 |* Mouse-button-up event, return YES if we consume the event
 \*****************************************************************************/
-- (BOOL) mouseUp:(struct SDL_MouseButtonEvent *)e;
+- (BOOL) mouseUp:(AZEvent *)e;
 
 /*****************************************************************************\
 |* Mouse-moved event, return YES if we consume the event
 \*****************************************************************************/
-- (BOOL) mouseMoved:(struct SDL_MouseMotionEvent *)e;
+- (BOOL) mouseMoved:(AZEvent *)e;
 
 /*****************************************************************************\
 |* Mouse-dragged event, return YES if we consume the event
 \*****************************************************************************/
-- (BOOL) mouseDragged:(struct SDL_MouseMotionEvent *)e;
+- (BOOL) mouseDragged:(AZEvent *)e;
 
 /*****************************************************************************\
 |* Mouse-wheel event, return YES if we consume the event
 \*****************************************************************************/
-- (BOOL) mouseWheeled:(struct SDL_MouseWheelEvent *)e;
+- (BOOL) mouseWheeled:(AZEvent *)e;
 
 /*****************************************************************************\
 |* Key event handling. This copes with composition as well as simple key

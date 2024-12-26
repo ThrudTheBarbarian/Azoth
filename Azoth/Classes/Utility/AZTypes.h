@@ -74,6 +74,73 @@ typedef enum {
     AZTableViewDropAbove
 } AZTableViewDropOperation;
 
+
+/*****************************************************************************\
+|* AZEvent types
+\*****************************************************************************/
+typedef enum
+	{
+    AZLeftMouseDown 				= 1,
+    AZLeftMouseUp 					= 2,
+    AZRightMouseDown 				= 3,
+    AZRightMouseUp 					= 4,
+    AZMouseMoved 					= 5,
+    AZLeftMouseDragged 				= 6,
+    AZRightMouseDragged 			= 7,
+    AZMouseEntered 					= 8,
+    AZMouseExited 					= 9,
+    AZKeyDown 						= 10,
+    AZKeyUp 						= 11,
+    AZFlagsChanged 					= 12,
+    AZPeriodic 						= 13,
+    AZCursorUpdate 					= 14,
+    AZPlatformSpecific 				= 15,
+    AZPlatformSpecificDisplayEvent 	= 16,
+    AZAppKitSystem 					= 17,
+    AZScrollWheel 					= 18,
+    AZApplicationDefined 			= 19,
+    AZAppKitDefined 				= 20
+	} AZEventType;
+
+/*****************************************************************************\
+|* AZEvent button masks
+\*****************************************************************************/
+typedef enum
+	{
+	AZButtonLeft					= (1<<0),
+	AZButtonMiddle					= (1<<1),
+	AZButtonRight					= (1<<2),
+	AZButton_X1						= (1<<3),
+	AZButton_X2						= (1<<4)
+	} AZButtonMask;
+
+/*****************************************************************************\
+|* AZEvent type masks
+\*****************************************************************************/
+enum
+	{
+    AZLeftMouseDownMask 			= 1 << AZLeftMouseDown,
+    AZLeftMouseUpMask 				= 1 << AZLeftMouseUp,
+    AZRightMouseDownMask 			= 1 << AZRightMouseDown,
+    AZRightMouseUpMask 				= 1 << AZRightMouseUp,
+    AZMouseMovedMask 				= 1 << AZMouseMoved,
+    AZLeftMouseDraggedMask 			= 1 << AZLeftMouseDragged,
+    AZRightMouseDraggedMask 		= 1 << AZRightMouseDragged,
+    AZMouseEnteredMask 				= 1 << AZMouseEntered,
+    AZMouseExitedMask 				= 1 << AZMouseExited,
+    AZKeyDownMask 					= 1 << AZKeyDown,
+    AZKeyUpMask 					= 1 << AZKeyUp,
+    AZFlagsChangedMask 				= 1 << AZFlagsChanged,
+    AZPeriodicMask 					= 1 << AZPeriodic,
+    AZCursorUpdateMask 				= 1 << AZCursorUpdate,
+    AZScrollWheelMask 				= 1 << AZScrollWheel,
+    AZApplicationDefinedMask 		= 1 << AZApplicationDefined,
+    AZAppKitDefinedMask 			= 1 << AZAppKitDefined,
+    AZAnyEventMask = 0xffffffff,
+
+    AZPlatformSpecificDisplayMask 	= 1 << AZPlatformSpecificDisplayEvent,
+	};
+
 /*****************************************************************************\
 |* Types of splitview pane divider
 \*****************************************************************************/

@@ -9,6 +9,7 @@
 
 #import "AZApp.h"
 #import "AZColour.h"
+#import "AZEvent.h"
 #import "AZFont.h"
 #import "AZPainter.h"
 #import "AZRenderer.h"
@@ -128,13 +129,12 @@ typedef struct
 /*****************************************************************************\
 |* We got a mouse-down, see if we need to re-select
 \*****************************************************************************/
-- (BOOL) mouseDown:(SDL_MouseButtonEvent *)e
+- (BOOL) mouseDown:(AZEvent *)e
 	{
 	if (self.state == ControlStateDisabled)
 		return NO;
 
- 	NSPoint p 		= (NSPoint){e->x, e->y};
-	p 				= [self convertPoint:p fromView:nil];
+	NSPoint p = [self convertPoint:e.locationInWindow fromView:nil];
 
 	NSInteger segment = [self _segmentForPoint:p];
 	if (segment >= 0)

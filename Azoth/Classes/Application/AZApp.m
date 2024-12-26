@@ -11,6 +11,7 @@
 
 #import "AZApp.h"
 #import "AZAppDelegate.h"
+#import "AZEvent.h"
 #import "AZEventSink.h"
 #import "AZFont.h"
 #import "AZGeometry.h"
@@ -209,6 +210,7 @@ NSString * const kTextureType	= @"texture";
 	SDL_AppResult result 	= SDL_APP_CONTINUE;
 	AZView *cv 				= [AZWindow contentViewForWindow:_window];
 	NSPoint p				= (NSPoint){-1,-1};
+	AZEvent * event			= nil;
 
 	/*************************************************************************\
 	|* If we have an event-sink installed, and it matches this event, then
@@ -236,21 +238,18 @@ NSString * const kTextureType	= @"texture";
 		\*********************************************************************/
 		case SDL_EVENT_MOUSE_BUTTON_DOWN:
 		case SDL_EVENT_MOUSE_BUTTON_UP:
-			p.x = ((SDL_MouseButtonEvent *)e)->x;
-			p.y = ((SDL_MouseButtonEvent *)e)->y;
-			[cv processMouseEvent:e atPoint:p];
+			event = [[AZEvent alloc] initWithMouseButtonEvent:e];
+			[cv processMouseEvent:event atPoint:event.locationInWindow];
 			break;
 
 		case SDL_EVENT_MOUSE_MOTION:
-			p.x = ((SDL_MouseMotionEvent *)e)->x;
-			p.y = ((SDL_MouseMotionEvent *)e)->y;
-			[cv processMouseEvent:e atPoint:p];
+			event = [[AZEvent alloc] initWithMouseMotionEvent:e];
+			[cv processMouseEvent:event atPoint:event.locationInWindow];
 			break;
 
 		case SDL_EVENT_MOUSE_WHEEL:
-			p.x = ((SDL_MouseMotionEvent *)e)->x;
-			p.y = ((SDL_MouseMotionEvent *)e)->y;
-			[cv processMouseEvent:e atPoint:p];
+			event = [[AZEvent alloc] initWithMouseMotionEvent:e];
+			[cv processMouseEvent:event atPoint:event.locationInWindow];
 			break;
 
 		/*********************************************************************\

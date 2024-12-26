@@ -139,6 +139,7 @@
 								target:self
 								action:@selector(segmentClicked:)];
 	[_ctrl setFrameOrigin:NSMakePoint(segx,320)];
+		[_ctrl setEnabled:YES];
 	[self addSubview:_ctrl];
 
 //	NSRect b = self.bounds;
@@ -163,13 +164,14 @@
 /*****************************************************************************\
 |* Mouse-button-down event, return YES if we consume the event
 \*****************************************************************************/
-- (BOOL) mouseDown:(struct SDL_MouseButtonEvent *)e
+- (BOOL) mouseDown:(AZEvent *)e
 	{
-	NSPoint p = NSMakePoint(e->x, e->y);
-	p 		  = [self convertPoint:p fromView:nil];
+	NSPoint p = [self convertPoint:e.locationInWindow fromView:nil];
 
 	NSLog(@"Down in %@ at (%d,%d) (from %d,%d)",
-		self.identifier, (int)p.x, (int)p.y, (int)e->x, (int)e->y);
+		self.identifier, (int)p.x, (int)p.y,
+		(int)e.locationInWindow.x,
+		(int)e.locationInWindow.y);
 	return YES;
 	}
 
@@ -177,13 +179,14 @@
 /*****************************************************************************\
 |* Mouse-button-up event, return YES if we consume the event
 \*****************************************************************************/
-- (BOOL) mouseUp:(struct SDL_MouseButtonEvent *)e
+- (BOOL) mouseUp:(AZEvent *)e
 	{
-	NSPoint p = NSMakePoint(e->x, e->y);
-	p 		  = [self convertPoint:p fromView:nil];
+	NSPoint p = [self convertPoint:e.locationInWindow fromView:nil];
 
 	NSLog(@"Up in %@ at (%d,%d) (from %d,%d)",
-		self.identifier, (int)p.x, (int)p.y, (int)e->x, (int)e->y);
+		self.identifier, (int)p.x, (int)p.y,
+		(int)e.locationInWindow.x,
+		(int)e.locationInWindow.y);
 	[[AZWindow contentViewForWindow:self.window] setNeedsDisplay:YES];
 	return YES;
 	}
@@ -192,13 +195,14 @@
 /*****************************************************************************\
 |* Mouse-dragged event, return YES if we consume the event
 \*****************************************************************************/
-- (BOOL) mouseDragged:(struct SDL_MouseMotionEvent *)e
+- (BOOL) mouseDragged:(AZEvent *)e
 	{
-	NSPoint p = NSMakePoint(e->x, e->y);
-	p 		  = [self convertPoint:p fromView:nil];
+	NSPoint p = [self convertPoint:e.locationInWindow fromView:nil];
 
 	NSLog(@"Dragged in %@ at (%d,%d) (from %d,%d)",
-		self.identifier, (int)p.x, (int)p.y, (int)e->x, (int)e->y);
+		self.identifier, (int)p.x, (int)p.y,
+		(int)e.locationInWindow.x,
+		(int)e.locationInWindow.y);
 	return YES;
 	}
 

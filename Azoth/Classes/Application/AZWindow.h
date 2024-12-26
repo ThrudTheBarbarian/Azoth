@@ -39,6 +39,11 @@ struct SDL_Window;
 + (AZView *) contentViewForSDLWindow:(struct SDL_Window *)window;
 
 /*****************************************************************************\
+|* End editing in table-views. Should this move to AZTableView ?
+\*****************************************************************************/
+- (void)endEditingFor:(nullable id)sender;
+
+/*****************************************************************************\
 |* Make an AZResponder the first-responder
 \*****************************************************************************/
 - (BOOL) makeFirstResponder:(AZResponder *)responder;

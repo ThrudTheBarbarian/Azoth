@@ -22,8 +22,6 @@
 |* "Private" properties
 \*****************************************************************************/
 @interface AZView()
-// Current 'visible rect' or NSZeroRect if not known
-@property(assign, nonatomic) NSRect						visRect;
 
 // Post notifications when the frame is changed
 @property(assign, nonatomic) BOOL						postFrameNotifications;
@@ -399,10 +397,8 @@
 \*****************************************************************************/
 - (NSRect) visibleRect
 	{
-	if (NSEqualRects(_visRect, NSZeroRect))
-		_visRect = [self _calculateVisibleRect];
-
-	return _visRect;
+	_buildTransformsIfNeeded(self);
+	return _visibleRect;
 	}
 
 
@@ -446,7 +442,6 @@
 	if (!NSEqualRects(bounds, self.bounds))
 		{
 		_bounds = bounds;
-		self.visRect = NSZeroRect;
 		[self _invalidateTransforms];
 
 		// this also invalidates tracking areas
@@ -483,7 +478,6 @@
 		[self resizeSubviewsWithOldSize:oldSize];
 
 	// Invalidate the visible rect
-	_visRect = NSZeroRect;
 	[self _invalidateTransforms];
 
 	if (self.postFrameNotifications)

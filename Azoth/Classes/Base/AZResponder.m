@@ -58,31 +58,31 @@
 /*****************************************************************************\
 |* Mouse-button-down event, return YES if we consume the event
 \*****************************************************************************/
-- (BOOL) mouseDown:(struct SDL_MouseButtonEvent *)e
+- (BOOL) mouseDown:(AZEvent *)e
 	{ return NO; }
 
 /*****************************************************************************\
 |* Mouse-button-up event, return YES if we consume the event
 \*****************************************************************************/
-- (BOOL) mouseUp:(struct SDL_MouseButtonEvent *)e
+- (BOOL) mouseUp:(AZEvent *)e
 	{ return NO; }
 
 /*****************************************************************************\
 |* Mouse-moved event, return YES if we consume the event
 \*****************************************************************************/
-- (BOOL) mouseMoved:(struct SDL_MouseMotionEvent *)e
+- (BOOL) mouseMoved:(AZEvent *)e
 	{ return NO; }
 
 /*****************************************************************************\
 |* Mouse-dragged event, return YES if we consume the event
 \*****************************************************************************/
-- (BOOL) mouseDragged:(struct SDL_MouseMotionEvent *)e
+- (BOOL) mouseDragged:(AZEvent *)e
 	{ return NO; }
 
 /*****************************************************************************\
 |* Mouse-wheel event, return YES if we consume the event
 \*****************************************************************************/
-- (BOOL) mouseWheeled:(struct SDL_MouseWheelEvent *)e;
+- (BOOL) mouseWheeled:(AZEvent *)e;
 	{ return NO; }
 
 /*****************************************************************************\

@@ -5,13 +5,13 @@
 //  Created by Simon Gornall on 12/25/24.
 //
 
-#import <Azoth/AZView.h>
+#import <Azoth/AZTextField.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class AZTableView;
 
-@interface AZTableHeaderView : AZView
+@interface AZTableHeaderView : AZTextField
 
 /*****************************************************************************\
 |* The size of the rectangle for the header view
@@ -32,6 +32,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 // The table-view we belong to
 @property(assign, nonatomic) NSInteger 							resizedColumn;
+
+// Whether we're highlighted
+@property(assign, nonatomic) BOOL 								highlighted;
 
 @end
 

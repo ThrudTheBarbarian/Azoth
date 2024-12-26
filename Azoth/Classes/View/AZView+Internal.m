@@ -10,6 +10,7 @@
 
 #import "AZApp.h"
 #import "AZColour.h"
+#import "AZEvent.h"
 #import "AZGeometry.h"
 #import "AZPainter.h"
 #import "AZRenderer.h"
@@ -27,7 +28,7 @@
 |* Process a mouse event through the subview list recursively, seeing if the
 |* view wants to handle it
 \*****************************************************************************/
-- (BOOL) processMouseEvent:(SDL_Event *)e atPoint:(NSPoint)p
+- (BOOL) processMouseEvent:(AZEvent *)e atPoint:(NSPoint)p
 	{
 	static AZView * dragView = nil;
 
@@ -42,12 +43,12 @@
 	|*    recursive call)
 	|*  - return whether handled
 	\*************************************************************************/
-//
-//	if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN)
-//		NSLog(@"click!");
 
 	NSRect global 	= [self visibleRect];
 	global			= [self convertRect:global toView:nil];
+
+	if (e.type == AZLeftMouseDown)
+		NSLog(@"click!");
 
 	BOOL done 	= NO;
 	for (AZView *subview in self.subviews)
@@ -71,48 +72,45 @@
 		global 	= [self bounds];
 		global	= [self convertRect:global toView:nil];
 
+
 		if (NSPointInRect(p, global))
 			{
 			NSPoint local	= [self convertPoint:p fromView:nil];
 
 			if ([self hitTestAtPoint:local])
 				{
-				SDL_MouseMotionEvent *mme = (SDL_MouseMotionEvent *)e;
-				SDL_MouseButtonEvent *mbe = (SDL_MouseButtonEvent *)e;
-				SDL_MouseWheelEvent  *mwe = (SDL_MouseWheelEvent *)e;
-
-				switch (e->type)
+				switch (e.type)
 					{
-					case SDL_EVENT_MOUSE_BUTTON_DOWN:
-						done = [self mouseDown:mbe];
+					case AZLeftMouseDown:
+						done = [self mouseDown:e];
 						dragView = self;
 						break;
 
-					case SDL_EVENT_MOUSE_BUTTON_UP:
+					case AZLeftMouseUp:
 						done = (dragView != nil)
-							 ? [dragView mouseUp:mbe]
-							 : [self mouseUp:mbe];
+							 ? [dragView mouseUp:e]
+							 : [self mouseUp:e];
 						dragView = nil;
 						break;
 
-					case SDL_EVENT_MOUSE_MOTION:
+					case AZMouseMoved:
 						// If we're no longer pressing the button, we might
 						// have dragged out of window and released it. Zero out
 						// the dragging-view
-						if ((mme->state & SDL_BUTTON_LEFT) == 0)
+						if ((e.state & AZButtonLeft) == 0)
 							dragView = nil;
 
 						done = (dragView != nil)
-							 ? [dragView mouseDragged:mme]
-							 : [self mouseMoved:mme];
+							 ? [dragView mouseDragged:e]
+							 : [self mouseMoved:e];
 						break;
 
-					case SDL_EVENT_MOUSE_WHEEL:
-						done = [self mouseWheeled:mwe];
+					case AZScrollWheel:
+						done = [self mouseWheeled:e];
 						break;
 
 					default:
-						SDL_Log("Got unknown mouse event type:%d", e->type);
+						SDL_Log("Got unknown mouse event type:%d", e.type);
 						break;
 					}
 				}

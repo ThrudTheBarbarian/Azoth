@@ -21,6 +21,7 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZClipView.h>
 #import <Azoth/AZColour.h>
 #import <Azoth/AZControl.h>
+#import <Azoth/AZEvent.h>
 #import <Azoth/AZEventSink.h>
 #import <Azoth/AZFont.h>
 #import <Azoth/AZGeometry.h>
@@ -39,6 +40,9 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZSegmentedControl.h>
 #import <Azoth/AZSlider.h>
 #import <Azoth/AZSplitView.h>
+#import <Azoth/AZTableColumn.h>
+#import <Azoth/AZTableHeaderView.h>
+#import <Azoth/AZTableView.h>
 #import <Azoth/AZTextField.h>
 #import <Azoth/AZTextPainter.h>
 #import <Azoth/AZTransform.h>

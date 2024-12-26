@@ -8,6 +8,7 @@
 #import <SDL3/SDL.h>
 
 #import "AZColour.h"
+#import "AZEvent.h"
 #import "AZNotifications.h"
 #import "AZPainter.h"
 #import "AZSplitView.h"
@@ -210,11 +211,10 @@
 /*****************************************************************************\
 |* Handle a mouse press
 \*****************************************************************************/
-- (BOOL) mouseDown:(struct SDL_MouseButtonEvent *)e;
+- (BOOL) mouseDown:(AZEvent *)e;
 	{
-	NSPoint firstPoint 	= (NSPoint){e->x, e->y};
-	firstPoint			= [self convertPoint:firstPoint fromView:nil];
-    _divider			= [self _dividerIndexAtPoint:firstPoint];
+	NSPoint p = [self convertPoint:e.locationInWindow fromView:nil];
+    _divider			= [self _dividerIndexAtPoint:p];
 
     if (_divider == NSNotFound)
         {
@@ -230,13 +230,12 @@
 /*****************************************************************************\
 |* And if we're dragging on the divider, handle that
 \*****************************************************************************/
-- (BOOL) mouseDragged:(struct SDL_MouseMotionEvent *)e
+- (BOOL) mouseDragged:(AZEvent *)e
 	{
 	BOOL handled = NO;
 	if (self.isDragging)
 		{
-		NSPoint p 	= (NSPoint){e->x, e->y};
-		p			= [self convertPoint:p fromView:nil];
+		NSPoint p = [self convertPoint:e.locationInWindow fromView:nil];
 
        if (self.isVertical)
            [self setPosition:p.x ofDividerAtIndex:_divider];
@@ -251,7 +250,7 @@
 /*****************************************************************************\
 |* Handle a mouse-release
 \*****************************************************************************/
-- (BOOL) mouseUp:(struct SDL_MouseButtonEvent *)e
+- (BOOL) mouseUp:(AZEvent *)e
 	{
 	BOOL handled = NO;
 	if (_isDragging)

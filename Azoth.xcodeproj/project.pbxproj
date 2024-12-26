@@ -110,6 +110,7 @@
 				Classes/Menu/AZMenu.h,
 				Classes/Menu/AZMenuItem.h,
 				Classes/Utility/AZColour.h,
+				Classes/Utility/AZEvent.h,
 				Classes/Utility/AZEventSink.h,
 				Classes/Utility/AZGeometry.h,
 				Classes/Utility/AZNotifications.h,
@@ -121,6 +122,9 @@
 				Classes/View/Scrollview/AZClipView.h,
 				Classes/View/Scrollview/AZRulerView.h,
 				Classes/View/Scrollview/AZScrollView.h,
+				Classes/View/TableView/AZTableColumn.h,
+				Classes/View/TableView/AZTableHeaderView.h,
+				Classes/View/TableView/AZTableView.h,
 			);
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
 		};

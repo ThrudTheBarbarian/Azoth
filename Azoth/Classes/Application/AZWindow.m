@@ -178,4 +178,12 @@ static NSMutableDictionary<NSNumber *, AZWindow *> * _windows = nil;
 	return changed;
 	}
 
+/*****************************************************************************\
+|* End editing
+\*****************************************************************************/
+- (void) endEditingFor:(id)sender
+	{
+	// FIXME: Not implemented yet
+	}
+
 @end
