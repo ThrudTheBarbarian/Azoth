@@ -9,6 +9,7 @@
 
 #import "AZEvent.h"
 #import "AZTableColumn.h"
+#import "AZTableColumn+Private.h"
 #import "AZTableHeaderView.h"
 #import "AZTableView.h"
 #import "AZWindow.h"
@@ -17,6 +18,12 @@
 -(void)noteColumnDidResizeWithOldWidth:(float)oldWidth;
 @end
 
+@interface AZTableHeaderView()
+@property(assign, nonatomic) BOOL							activelyResizing;
+@property(assign, nonatomic) float							oldColumnWidth;
+@property(assign, nonatomic) NSPoint						resizeLocation;
+@property(strong, nonatomic) AZTableColumn *				resizingColumn;
+@end
 
 @implementation AZTableHeaderView
 
@@ -79,16 +86,18 @@
 	}
 
 // Event handling
-#if 0
+
 /*****************************************************************************\
 |* We got a mouse click in the header view
 \*****************************************************************************/
 - (BOOL) mouseDown:(AZEvent *)e
 	{
- 	NSArray<AZTableColumn *> *cols 	= _tableView.tableColumns;
-	NSPoint location = [self convertPoint:e.locationInWindow fromView:nil];
+	_activelyResizing 	= NO;
 
-    NSInteger col 					= [self columnAtPoint:location];
+ 	NSArray<AZTableColumn *> *cols 	= _tableView.tableColumns;
+	_resizeLocation = [self convertPoint:e.locationInWindow fromView:nil];
+
+    NSInteger col 					= [self columnAtPoint:_resizeLocation];
 	id<NSTableViewDelegate>delegate	= _tableView.delegate;
 
 	SEL mdSel = @selector(tableView:mouseDownInHeaderOfTableColumn:);
@@ -109,83 +118,98 @@
 
         for (NSInteger i = 1; i < count; ++i)
 			{
-            if (NSPointInRect(location, [self _resizeRectBeforeColumn:i]))
+            if (NSPointInRect(_resizeLocation, [self _resizeRectBeforeColumn:i]))
 				{
-                AZTableColumn *resizingColumn 	= [cols objectAtIndex:i-1];
-                float resizedColumnWidth 		= [resizingColumn width];
+                _resizingColumn 	= [cols objectAtIndex:i-1];
+                _oldColumnWidth		= [_resizingColumn width];
 
-                if (![resizingColumn resizable])
+                if (![_resizingColumn resizable])
                     return NO;
 
-                _resizedColumn = i - 1;
-				location = [self convertPoint:e.locationInWindow fromView:nil];
-                do
-					{
-					// greatly simplified code...
-                    NSPoint newPoint;
-                    NSRect newRect;
-                    int q;
-                    float newWidth=newPoint.x;
-
-                    theEvent=[[self window] nextEventMatchingMask:NSLeftMouseUpMask|NSLeftMouseDraggedMask];
-                    newPoint=[self convertPoint:[theEvent locationInWindow] fromView:nil];
-
-                    newWidth=newPoint.x;
-                    for (q = 0; q < _resizedColumn; ++q) {
-                        newWidth -= [[[_tableView tableColumns] objectAtIndex:q] width];
-                        newWidth -= [_tableView intercellSpacing].width;
-                    }
-
-                    [resizingColumn setWidth:newWidth];
-
-                    [_tableView tile];
-                    newRect.origin=[_tableView convertPoint:newPoint fromView:self];
-                    newRect.size=NSMakeSize(10,10);
-                    [_tableView scrollRectToVisible:newRect];
-                    
-                    location=newPoint;
-                } while ([theEvent type] != NSLeftMouseUp);
-
-                [[self window] invalidateCursorRectsForView:self];
-
-                [_tableView noteColumnDidResizeWithOldWidth:resizedColumnWidth];
-         
-                _resizedColumn = -1;
-                return;
-            }
-        }
-    }
+                _resizedColumn 		= i - 1;
+				_activelyResizing 	= YES;
+				_resizeLocation 	= [self convertPoint:e.locationInWindow
+												fromView:nil];
+                return YES;
+				}
+			}
+		}
 	
-    if ([_tableView allowsColumnSelection]) {
-        if ([theEvent modifierFlags] & NSAlternateKeyMask) {		// extend/change selection
-            if ([_tableView isColumnSelected:clickedColumn])		// deselect previously selected?
-                [_tableView deselectColumn:clickedColumn];
-            else if ([_tableView allowsMultipleSelection] == YES) {
-                [_tableView selectColumn:clickedColumn byExtendingSelection:YES];	// add to selection
-            }
-        }
-        else if ([theEvent modifierFlags] & NSShiftKeyMask) {
-            int startColumn = [_tableView selectedColumn];
-            int endColumn = clickedColumn;
+    if ([_tableView allowsColumnSelection])
+		{
+		// extend/change selection
+        if (e.modifierFlags & AZAlternateKeyMask)
+			{
+            // deselect previously selected?
+            if ([_tableView isColumnSelected:col])
+                [_tableView deselectColumn:col];
+            else if ([_tableView allowsMultipleSelection] == YES)
+				// add to selection
+                [_tableView selectColumn:col byExtendingSelection:YES];
+
+			}
+        else if (e.modifierFlags & AZShiftKeyMask)
+			{
+            NSInteger startColumn 	= _tableView.selectedColumn;
+            NSInteger endColumn 	= col;
 
             if (startColumn == -1)
                 startColumn = 0;
-            if (startColumn > endColumn) {
-                endColumn = startColumn;
-                startColumn = clickedColumn;
-            }
+            if (startColumn > endColumn)
+				{
+                endColumn 	= startColumn;
+                startColumn = col;
+				}
 
             [_tableView deselectAll:nil];
             while (startColumn <= endColumn)
                 [_tableView selectColumn:startColumn++ byExtendingSelection:YES];
-        }
+			}
         else
-            [_tableView selectColumn:clickedColumn byExtendingSelection:NO];
-    }
+            [_tableView selectColumn:col byExtendingSelection:NO];
+		}
 	
-	[[[_tableView tableColumns] objectAtIndex:clickedColumn] _sort];
-}
-#endif
+	[[_tableView.tableColumns objectAtIndex:col] _sort];
+	return YES;
+	}
+
+- (BOOL) mouseDragged:(AZEvent *)e
+	{
+	if (_activelyResizing)
+		{
+		// greatly simplified code...
+		NSRect newRect;
+
+		NSPoint newPoint=[self convertPoint:[e locationInWindow] fromView:nil];
+		float newWidth=newPoint.x;
+
+		for (NSInteger q = 0; q < _resizedColumn; ++q)
+			{
+			newWidth -= [_tableView.tableColumns objectAtIndex:q].width;
+			newWidth -= _tableView.interViewSpacing.width;
+			}
+
+		[_resizingColumn setWidth:newWidth];
+
+		[_tableView tile];
+		newRect.origin = [_tableView convertPoint:newPoint fromView:self];
+		newRect.size = NSMakeSize(10,10);
+		[_tableView scrollRectToVisible:newRect];
+		_resizeLocation = newPoint;
+		return YES;
+		}
+	return NO;
+	}
+
+- (BOOL) mouseUp:(AZEvent *)e
+	{
+	//[[self window] invalidateCursorRectsForView:self];
+
+	[_tableView noteColumnDidResizeWithOldWidth:_oldColumnWidth];
+	_resizedColumn 		= -1;
+	_activelyResizing 	= NO;
+	return YES;
+	}
 
 // MARK: Private methods
 

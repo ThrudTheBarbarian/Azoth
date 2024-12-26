@@ -41,7 +41,10 @@ union SDL_Event;
 @property(assign, nonatomic, readonly) NSPoint				locationInWindow;
 
 // Which buttons are pressed (from AZButtonMask)
-@property(assign, nonatomic, readonly) int					state;
+@property(assign, nonatomic, readonly) NSInteger			state;
+
+// AZEvent key modifier masks
+@property(assign, nonatomic, readonly) NSInteger			modifierFlags;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -29,6 +29,7 @@
 		_type				= AZAppKitSystem;
 		_sdlEvent 			= e;
 		_locationInWindow	= (NSPoint){0,0};
+		_modifierFlags		= 0;
 		}
 	return self;
 	}
@@ -52,6 +53,7 @@
 		_state				= 1 << (e->button.button - 1);
 		_sdlEvent 			= e;
 		_locationInWindow	= (NSPoint){e->button.x, e->button.y};
+		_modifierFlags		= SDL_GetModState();
 		}
 	return self;
 	}
@@ -67,6 +69,7 @@
 		_sdlEvent 			= e;
 		_state				= e->motion.state;
 		_locationInWindow	= (NSPoint){e->motion.x, e->motion.y};
+		_modifierFlags		= SDL_GetModState();
 		}
 	return self;
 	}
@@ -82,6 +85,7 @@
 		_sdlEvent 			= e;
 		_state				= 0;
 		_locationInWindow	= (NSPoint){e->wheel.x, e->wheel.y};
+		_modifierFlags		= SDL_GetModState();
 		}
 	return self;
 	}

@@ -53,6 +53,19 @@ NS_ASSUME_NONNULL_BEGIN
 + (AZView *) viewWithFrame:(NSRect)frame;
 
 
+// MARK: scrolling
+
+/*****************************************************************************\
+|* Scroll a view within an enclosing scrollview until the rect is visible
+\*****************************************************************************/
+- (BOOL) scrollRectToVisible:(NSRect)rect;
+
+
+/*****************************************************************************\
+|* Scroll a view within an enclosing scrollview until the point is visible
+\*****************************************************************************/
+-(void)scrollPoint:(NSPoint)point;
+
 // MARK: View processing and redraw
 
 /*****************************************************************************\

@@ -13,12 +13,6 @@
 |* "private" methods / properties
 \*****************************************************************************/
 @interface AZTableColumn()
-
-// Prepare the view at a given row
-- (void) _prepareView:(AZView *)view inRow:(NSInteger)row;
-
-// Sort the column
-- (void) _sort;
 @end
 
 @implementation AZTableColumn

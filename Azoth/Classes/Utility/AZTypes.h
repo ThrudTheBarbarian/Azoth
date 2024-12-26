@@ -115,6 +115,19 @@ typedef enum
 	} AZButtonMask;
 
 /*****************************************************************************\
+|* AZEvent key modifier masks
+\*****************************************************************************/
+enum
+	{
+    AZAlphaShiftKeyMask 					= (0x0001u|0x0002u),
+    AZShiftKeyMask 							= (0x0001u|0x0002u),
+    AZControlKeyMask 						= (0x0040u|0x0080u),
+    AZAlternateKeyMask 						= (0x0100u|0x0200u),
+    AZCommandKeyMask 						= (0x0400u|0x0800u),
+    AZDeviceIndependentModifierFlagsMask 	= 0xffff0000UL
+	};
+
+/*****************************************************************************\
 |* AZEvent type masks
 \*****************************************************************************/
 enum

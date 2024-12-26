@@ -225,17 +225,17 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Set a set of selected rows, optionally add to the selection
 \*****************************************************************************/
-- (void)selectRowIndexes:(NSIndexSet *)indexes byExtendingSelection:(BOOL)extend;
+- (void)selectRowIndexes:(NSIndexSet *)indexes byExtendingSelection:(BOOL)yn;
 
 /*****************************************************************************\
 |* Select a row, optionally add to the selection
 \*****************************************************************************/
-- (void)selectRow:(int)row byExtendingSelection:(BOOL)extend;
+- (void)selectRow:(NSInteger)row byExtendingSelection:(BOOL)extend;
 
 /*****************************************************************************\
 |* Select a column, optionally add to the selection
 \*****************************************************************************/
-- (void)selectColumn:(int)column byExtendingSelection:(BOOL)extend;
+- (void)selectColumn:(NSInteger)column byExtendingSelection:(BOOL)extend;
 
 /*****************************************************************************\
 |* Deselect a row
@@ -264,12 +264,12 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Scroll so that a row is visible
 \*****************************************************************************/
-- (void)scrollRowToVisible:(int)index;
+- (void)scrollRowToVisible:(NSInteger)index;
 
 /*****************************************************************************\
 |* Scroll so that a column is visible
 \*****************************************************************************/
-- (void)scrollColumnToVisible:(int)index;
+- (void)scrollColumnToVisible:(NSInteger)index;
 
 
 // MARK: Layout

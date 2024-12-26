@@ -128,9 +128,9 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 	|* get an 'up' and take an action
 	\*************************************************************************/
 	SDL_Event up;
-	SDL_PumpEvents();
 	while (true)
 		{
+		SDL_PumpEvents();
 		SDL_PollEvent(&up);
 		if (up.type == SDL_EVENT_MOUSE_BUTTON_UP)
 			break;

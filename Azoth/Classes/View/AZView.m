@@ -8,6 +8,7 @@
 #import <SDL3/SDL.h>
 
 #import "AZApp.h"
+#import "AZClipView.h"
 #import "AZColour.h"
 #import "AZGeometry.h"
 #import "AZNotifications.h"
@@ -587,9 +588,99 @@
 	return YES;
 	}
 
+// MARK: Scrolling
 
+/*****************************************************************************\
+|* Scroll a view within an enclosing scrollview until the rect is visible
+\*****************************************************************************/
+- (BOOL) scrollRectToVisible:(NSRect)rect
+	{
+    AZClipView *clipView = [self _enclosingClipView];
+    AZView *documentView = [clipView documentView];
+
+    // Fetch the document view visible rect in document view space
+    NSRect vRect = [clipView documentVisibleRect];
+
+    // Convert what we want in the document view space
+    rect = [documentView convertRect:rect fromView:self];
+    
+    // Do the minimal amount of scrolling to show the rect
+    
+    // Missing amount on the four directions
+    float missingLeft 	= NSMinX(vRect) - NSMinX(rect);
+    float missingRight 	= NSMaxX(rect)  - NSMaxX(vRect);
+
+    float missingTop 	= NSMinY(vRect) - NSMinY(rect);
+    float missingBottom = NSMaxY(rect)  - NSMaxY(vRect);
+
+    float dx = 0.f;
+    float dy = 0.f;
+
+    if (missingLeft * missingRight < 0)
+		{
+        // We need to scroll in one direction - no need to scroll if we're
+        // missing bits both ways or if everything is visible
+
+        // Let's do the minimal amount of scrolling
+        if (fabs(missingLeft) < fabs(missingRight))
+            dx = -missingLeft;
+         else
+            dx = missingRight;
+		}
+
+    if (missingTop * missingBottom < 0)
+		{
+        // We need to scroll in one direction - no need to scroll if we're  both ways or
+        // missing bits if everything is visible
+
+        // Let's do the minimal amount of scrolling
+        if (fabs(missingTop) < fabs(missingBottom))
+            dy = -missingTop;
+        else
+            dy = missingBottom;
+        }
+
+    if (dx != 0 || dy != 0)
+		{
+        NSPoint pt = vRect.origin;
+        pt.x += dx;
+        pt.y += dy;
+        pt = [documentView convertPoint:pt toView:clipView];
+        [clipView scrollToPoint:pt];
+        return YES;
+		}
+    return NO;
+	}
+
+/*****************************************************************************\
+|* Scroll to a point
+\*****************************************************************************/
+-(void)scrollPoint:(NSPoint)point
+	{
+	AZClipView *clipView = [self _enclosingClipView];
+
+	if (clipView != nil)
+		{
+		NSPoint origin=[self convertPoint:point toView:clipView];
+		[clipView scrollToPoint:origin];
+		}
+	}
 
 // MARK: Private methods
+
+/*****************************************************************************\
+|* Find an enclosing clipview
+\*****************************************************************************/
+-(nullable AZClipView *) _enclosingClipView
+	{
+	AZView *result = self.superview;
+
+	for(;result != nil; result = result.superview)
+		if ([result isKindOfClass:[AZClipView class]])
+			return (AZClipView *)result;
+
+	return nil;
+	}
 
 /*****************************************************************************\
 |* Calculate the visible rect
