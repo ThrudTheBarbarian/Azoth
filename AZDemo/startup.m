@@ -77,7 +77,7 @@ void _testMouseEvents(void)
 	[sv setBorderType: AZLineBorder];
 	[sv setDocumentView:v1];
 	sv.autoresizingMask = AZViewHeightSizable|AZViewWidthSizable;
-	[cv addSubview:sv];
+	//[cv addSubview:sv];
 
 	NSRect r = NSMakeRect(100, 470, 600, 360);
 	AZSplitView *spv = [[AZSplitView alloc] initWithFrame:r];
@@ -87,9 +87,10 @@ void _testMouseEvents(void)
 	c1.backgroundColour = AZColour.redColour;
 	[spv addSubview:c1];
 
-	AZView *c2 = [[AZView alloc] initWithFrame:NSMakeRect(0, 180, 600, 180)];
-	c2.backgroundColour = AZColour.blueColour;
-	[spv addSubview:c2];
+//	AZView *c2 = [[AZView alloc] initWithFrame:NSMakeRect(0, 180, 600, 180)];
+//	c2.backgroundColour = AZColour.blueColour;
+//	[spv addSubview:c2];
+	[spv addSubview:sv];
 	spv.isVertical = YES;
 	spv.dividerStyle = AZSplitViewDividerStyleThin;
 	[cv addSubview:spv];

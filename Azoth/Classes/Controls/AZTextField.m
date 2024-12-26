@@ -129,7 +129,7 @@ static int 			_lineHeight = 29;
 \*****************************************************************************/
 - (BOOL) becomeFirstResponder
 	{
-	if (self.state == ControlStateNormal)
+	if (self.enabled && (self.state == ControlStateNormal))
 		{
 		self.state = ControlStateHighlighted;
 		SDL_StartTextInput(self.window.window);
@@ -151,8 +151,9 @@ static int 			_lineHeight = 29;
 					}
 				}];
 		[self setNeedsDisplay:YES];
+		return YES;
 		}
-	return YES;
+	return NO;
 	}
 
 /*****************************************************************************\
@@ -200,14 +201,6 @@ static int 			_lineHeight = 29;
 	}
 
 /*****************************************************************************\
-|* Return YES to accept un-becoming the first responder. Called from the
-|* AZWindow makeFirstResponder method. Do not invoke directly. Subclasses can
-|* override this method to update state or perform some action such as
-|* unhighlighting the selection, or to return false, refusing to relinquish
-|* first responder status
-\*****************************************************************************/
-
-/*****************************************************************************\
 |* Draw the textField
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
@@ -218,11 +211,17 @@ static int 			_lineHeight = 29;
 							_textColour.green,
 							_textColour.blue,
 							_textColour.alpha);
-
-	if (_type == TextFieldSquare)
+	if (!self.enabled)
+		[self _drawAsLabelWithRect:dirtyRect andPainter:painter];
+	else if (_type == TextFieldSquare)
 		[self _drawSquareTextFieldWithRect:dirtyRect andPainter:painter];
 	else
 		[self _drawRoundTextFieldWithRect:dirtyRect andPainter:painter];
+	}
+
+- (void) _drawAsLabelWithRect:(NSRect)r andPainter:(AZPainter *)p
+	{
+	[self _drawTextInRect:_editArea withPainter:p];
 	}
 
 - (void) _drawRoundTextFieldWithRect:(NSRect)r andPainter:(AZPainter *)p
@@ -487,71 +486,78 @@ static int 			_lineHeight = 29;
                 [self _editCopy];
 			handled = YES;
             break;
-
-        case SDLK_V:
-            if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
-                [self _editPaste];
-			handled = YES;
-            break;
-
-        case SDLK_X:
-            if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
-                [self _editCut];
-			handled = YES;
-            break;
-
-        case SDLK_LEFT:
-            if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
-				[self _moveCursorToStartOfLine];
-            else
-                [self _moveCursorLeft];
-			handled = YES;
-            break;
-
-        case SDLK_RIGHT:
-            if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
-				[self _moveCursorToEndOfLine];
-            else
-                [self _moveCursorRight];
-			handled = YES;
-            break;
-
-        case SDLK_END:
-		case SDLK_DOWN:
-            if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
-				[self _moveCursorToEndOfLine];
-			handled = YES;
-            break;
-
-        case SDLK_HOME:
-        case SDLK_UP:
-            if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
-				[self _moveCursorToStartOfLine];
-			handled = YES;
-            break;
-
-       case SDLK_BACKSPACE:
-            if (e->mod & SDL_KMOD_CTRL)
-                [self _editBackspaceToBeginning];
-            else
-                [self _editBackspace];
-			handled = YES;
-            break;
-
-       case SDLK_DELETE:
-            if (e->mod & SDL_KMOD_CTRL)
-                [self _editDeleteToEnd];
-            else
-                [self _editDelete];
-			handled = YES;
-            break;
-
-        case SDLK_RETURN:
-            [self _editAction];
-            handled = YES;
-            break;
 		}
-	[self _editEnsureCursorVisible];
+
+	if (self.enabled)
+		{
+		switch(e->key)
+			{
+			case SDLK_V:
+				if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+					[self _editPaste];
+				handled = YES;
+				break;
+
+			case SDLK_X:
+				if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+					[self _editCut];
+				handled = YES;
+				break;
+
+			case SDLK_LEFT:
+				if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+					[self _moveCursorToStartOfLine];
+				else
+					[self _moveCursorLeft];
+				handled = YES;
+				break;
+
+			case SDLK_RIGHT:
+				if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+					[self _moveCursorToEndOfLine];
+				else
+					[self _moveCursorRight];
+				handled = YES;
+				break;
+
+			case SDLK_END:
+			case SDLK_DOWN:
+				if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+					[self _moveCursorToEndOfLine];
+				handled = YES;
+				break;
+
+			case SDLK_HOME:
+			case SDLK_UP:
+				if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+					[self _moveCursorToStartOfLine];
+				handled = YES;
+				break;
+
+		   case SDLK_BACKSPACE:
+				if (e->mod & SDL_KMOD_CTRL)
+					[self _editBackspaceToBeginning];
+				else
+					[self _editBackspace];
+				handled = YES;
+				break;
+
+		   case SDLK_DELETE:
+				if (e->mod & SDL_KMOD_CTRL)
+					[self _editDeleteToEnd];
+				else
+					[self _editDelete];
+				handled = YES;
+				break;
+
+			case SDLK_RETURN:
+				[self _editAction];
+				handled = YES;
+				break;
+			}
+
+		[self _editEnsureCursorVisible];
+		}
 
 	if (handled)
 		[self setNeedsDisplay:YES];
@@ -563,8 +569,12 @@ static int 			_lineHeight = 29;
 \*****************************************************************************/
 - (BOOL) textInput:(SDL_TextInputEvent *)e
 	{
-	[self _editInsert:e->text];
-	return YES;
+	if (self.enabled)
+		{
+		[self _editInsert:e->text];
+		return YES;
+		}
+	return NO;
 	}
 
 /*****************************************************************************\
@@ -572,8 +582,12 @@ static int 			_lineHeight = 29;
 \*****************************************************************************/
 - (BOOL) textEditing:(SDL_TextEditingEvent *)e
 	{
-	[self _editHandleComposition:e];
-	return YES;
+	if (self.enabled)
+		{
+		[self _editHandleComposition:e];
+		return YES;
+		}
+	return NO;
 	}
 
 /*****************************************************************************\
@@ -581,9 +595,13 @@ static int 			_lineHeight = 29;
 \*****************************************************************************/
 - (BOOL) textEditingCandidates:(SDL_Event *)e
 	{
-	[self _editClearCandidates];
-	[self _editSaveCandidates:e];
-	return YES;
+	if (self.enabled)
+		{
+		[self _editClearCandidates];
+		[self _editSaveCandidates:e];
+		return YES;
+		}
+	return NO;
 	}
 
 // MARK: Drawing routines
@@ -594,7 +612,8 @@ static int 			_lineHeight = 29;
 - (void) _drawTextInRect:(NSRect)r withPainter:(AZPainter *)P
 	{
 	[self _editDrawText];
-	[self _editDrawCursor];
+	if (self.enabled)
+		[self _editDrawCursor];
 	}
 
 /*****************************************************************************\

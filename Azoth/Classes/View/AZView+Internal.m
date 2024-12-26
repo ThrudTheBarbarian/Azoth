@@ -42,9 +42,9 @@
 	|*    recursive call)
 	|*  - return whether handled
 	\*************************************************************************/
-
-	if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN)
-		NSLog(@"click!");
+//
+//	if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+//		NSLog(@"click!");
 
 	NSRect global 	= [self visibleRect];
 	global			= [self convertRect:global toView:nil];

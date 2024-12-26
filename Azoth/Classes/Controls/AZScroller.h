@@ -21,6 +21,11 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 + (float) scrollerWidth;
 
+
+/*****************************************************************************\
+|* Properties
+\*****************************************************************************/
+
 // Set/Get the proportion of the scroller extent taken up
 // by the knob part
 @property(assign, nonatomic) double								knobProportion;

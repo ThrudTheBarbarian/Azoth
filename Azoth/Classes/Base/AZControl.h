@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void) sendAction:(nullable SEL)action to:(nullable NSObject *)target;
 
 @property(assign, nonatomic) SEL 								action;
+@property(assign, nonatomic) SEL 								doubleAction;
 @property(strong, nonatomic) NSObject *							target;
 
 @property(assign, nonatomic) AZControlState						state;

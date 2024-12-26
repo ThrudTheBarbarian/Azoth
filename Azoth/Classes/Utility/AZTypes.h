@@ -38,6 +38,43 @@ typedef struct AZFontStyle
 	} AZFontStyle;
 
 /*****************************************************************************\
+|* Resizing types for table columns
+\*****************************************************************************/
+enum
+	{
+    AZTableColumnNoResizing 		= 0x00,
+    AZTableColumnAutoresizingMask 	= 0x01,
+    AZTableColumnUserResizingMask 	= 0x02,
+	};
+
+/*****************************************************************************\
+|* Whether to draw table grid lines
+\*****************************************************************************/
+enum {
+    AZTableViewGridNone,
+    AZTableViewSolidVerticalGridLineMask,
+    AZTableViewSolidHorizontalGridLineMask
+};
+
+
+/*****************************************************************************\
+|* Forms that highlighting can take
+\*****************************************************************************/
+enum {
+    AZTableViewSelectionHighlightStyleNone 			= -1,
+    AZTableViewSelectionHighlightStyleRegular 		= 0,
+    AZTableViewSelectionHighlightStyleSourceList 	= 1,
+};
+
+/*****************************************************************************\
+|* How drops work in tableviews
+\*****************************************************************************/
+typedef enum {
+    AZTableViewDropOn,
+    AZTableViewDropAbove
+} AZTableViewDropOperation;
+
+/*****************************************************************************\
 |* Types of splitview pane divider
 \*****************************************************************************/
 typedef enum

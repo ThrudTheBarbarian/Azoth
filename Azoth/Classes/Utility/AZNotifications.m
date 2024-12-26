@@ -15,5 +15,11 @@ NSString * const AZPopUpButtonWillPopUpNotification = @"AZ:PopupWillShow";
 
 NSString * const AZRadioButtonPressedNotification 	= @"AZ:RadioButtonPressed";
 
-NSString * const AZSplitViewDidResizeSubviewsNotification 	= @"AZ:SplitviewWillResize";
-NSString * const AZSplitViewWillResizeSubviewsNotification 	= @"AZ:SplitviewDidResize";
+NSString * const AZSplitViewDidResizeSubviewsNotification 	= @"AZ:SplitviewDidResize";
+NSString * const AZSplitViewWillResizeSubviewsNotification 	= @"AZ:SplitviewWillResize";
+
+NSString * const AZTableViewSelectionIsChangingNotification	= @"AZ:TvSelIsChanging";
+NSString * const AZTableViewSelectionDidChangeNotification 	= @"AZ:TvSelDidChange";
+NSString * const AZTableViewColumnDidMoveNotification 		= @"AZ:TvColDidMove";
+NSString * const AZTableViewColumnDidResizeNotification 	= @"AZ:TvColDidResize";
+
