@@ -28,7 +28,7 @@
 |* Process a mouse event through the subview list recursively, seeing if the
 |* view wants to handle it
 \*****************************************************************************/
-- (BOOL) processMouseEvent:(AZEvent *)e atPoint:(NSPoint)p
+- (BOOL) processMouseEvent:(AZEvent *)e
 	{
 	static AZView * dragView = nil;
 
@@ -43,7 +43,7 @@
 	|*    recursive call)
 	|*  - return whether handled
 	\*************************************************************************/
-
+	NSPoint p		= e.locationInWindow;
 	NSRect global 	= [self visibleRect];
 	global			= [self convertRect:global toView:nil];
 
@@ -55,7 +55,7 @@
 		{
 		// Only want to check against visible rect
 		if (NSPointInRect(p, global))
-			done = [subview processMouseEvent:e atPoint:p];
+			done = [subview processMouseEvent:e];
 		if (done)
 			break;
 		}

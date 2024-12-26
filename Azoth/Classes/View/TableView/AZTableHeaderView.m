@@ -7,6 +7,7 @@
 
 #import <SDL3/SDL.h>
 
+#import "AZEvent.h"
 #import "AZTableColumn.h"
 #import "AZTableHeaderView.h"
 #import "AZTableView.h"
@@ -78,15 +79,14 @@
 	}
 
 // Event handling
- #if 0
+#if 0
 /*****************************************************************************\
 |* We got a mouse click in the header view
 \*****************************************************************************/
-- (BOOL) mouseDown:(struct SDL_MouseButtonEvent *)e
+- (BOOL) mouseDown:(AZEvent *)e
 	{
  	NSArray<AZTableColumn *> *cols 	= _tableView.tableColumns;
-	NSPoint location 				= (NSPoint){e->x, e->y};
-	location						= [self convertPoint:location fromView:nil];
+	NSPoint location = [self convertPoint:e.locationInWindow fromView:nil];
 
     NSInteger col 					= [self columnAtPoint:location];
 	id<NSTableViewDelegate>delegate	= _tableView.delegate;
@@ -118,7 +118,7 @@
                     return NO;
 
                 _resizedColumn = i - 1;
-				location = [self convertPoint:(NSPoint){e->x,e->y} fromView:nil];
+				location = [self convertPoint:e.locationInWindow fromView:nil];
                 do
 					{
 					// greatly simplified code...

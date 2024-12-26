@@ -209,7 +209,6 @@ NSString * const kTextureType	= @"texture";
 	{
 	SDL_AppResult result 	= SDL_APP_CONTINUE;
 	AZView *cv 				= [AZWindow contentViewForWindow:_window];
-	NSPoint p				= (NSPoint){-1,-1};
 	AZEvent * event			= nil;
 
 	/*************************************************************************\
@@ -239,17 +238,17 @@ NSString * const kTextureType	= @"texture";
 		case SDL_EVENT_MOUSE_BUTTON_DOWN:
 		case SDL_EVENT_MOUSE_BUTTON_UP:
 			event = [[AZEvent alloc] initWithMouseButtonEvent:e];
-			[cv processMouseEvent:event atPoint:event.locationInWindow];
+			[cv processMouseEvent:event];
 			break;
 
 		case SDL_EVENT_MOUSE_MOTION:
 			event = [[AZEvent alloc] initWithMouseMotionEvent:e];
-			[cv processMouseEvent:event atPoint:event.locationInWindow];
+			[cv processMouseEvent:event];
 			break;
 
 		case SDL_EVENT_MOUSE_WHEEL:
 			event = [[AZEvent alloc] initWithMouseMotionEvent:e];
-			[cv processMouseEvent:event atPoint:event.locationInWindow];
+			[cv processMouseEvent:event];
 			break;
 
 		/*********************************************************************\

@@ -22,7 +22,7 @@
 |* Events : handle the mouse-based events, using the view-coords to determine
 |* 			which view gets to see the event
 \*****************************************************************************/
-- (BOOL) processMouseEvent:(AZEvent *)event atPoint:(NSPoint)p;
+- (BOOL) processMouseEvent:(AZEvent *)event;
 
 /*****************************************************************************\
 |* Rendering: Install a SDL_Texture as backing for the view.
