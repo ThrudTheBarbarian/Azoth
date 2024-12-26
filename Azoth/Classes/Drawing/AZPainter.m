@@ -282,7 +282,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 // MARK: Edge effects
 
 /*****************************************************************************\
-|* Rectangle routines (edge effects)
+|* Rectangle routines (edge effects) : bezel
 \*****************************************************************************/
 - (void) rectangleWithBezel:(NSRect)r withClip:(NSRect)clip
 	{
@@ -315,7 +315,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	}
 
 /*****************************************************************************\
-|* Rectangle routines (edge effects)
+|* Rectangle routines (edge effects) : groove
 \*****************************************************************************/
 - (void) rectangleWithGroove:(NSRect)r withClip:(NSRect)clip
 	{
@@ -347,6 +347,58 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	[self.renderer setClip:originalClip];
 	}
 
+/*****************************************************************************\
+|* Rectangle routines (edge effects) : button
+\*****************************************************************************/
+- (void) rectangleWithButton:(NSRect)r withClip:(NSRect)clip
+	{
+	NSRect originalClip = self.renderer.clipRect;
+	NSRect intersection	= NSIntersectionRect(originalClip, clip);
+	[self.renderer setClip:intersection];
+
+	NSRect r2 = r;
+	r2.origin.y += r.size.height -1;
+	r2.size.height = 1;
+	[self rectangleWithRect:r2 colour:AZColour.blackColour];
+
+	r2 = r;
+	r2.origin.x += r.size.width -1;
+	r2.size.width = 1;
+	[self rectangleWithRect:r2 colour:AZColour.blackColour];
+
+	r2 = r;
+	r2.origin.x += 1;
+	r2.size.width -= 2;
+	r2.origin.y += r.size.height - 2;
+	r2.size.height = 1;
+	[self rectangleWithRect:r2 colour:AZColour.grey25Colour];
+
+	r2 = r;
+	r2.origin.x += r.size.width -2;
+	r2.size.width = 1;
+	r2.origin.y += 1;
+	r2.size.height -= 2;
+	[self rectangleWithRect:r2 colour:AZColour.grey25Colour];
+
+	r2 = r;
+	r2.size.width -= 1;
+	r2.size.height = 1;
+	[self rectangleWithRect:r2 colour:AZColour.whiteColour];
+
+	r2 = r;
+	r2.size.width = 1;
+	r2.size.height -= 1;
+	[self rectangleWithRect:r2 colour:AZColour.whiteColour];
+
+	r2 = r;
+	r2.origin.x += 1;
+	r2.size.width -= 3;
+	r2.origin.y += 1;
+	r2.size.height -= 3;
+	[self rectangleWithRect:r2 colour:AZColour.controlColour];
+
+	[self.renderer setClip:originalClip];
+	}
 
 // MARK: Rounded Rectangle drawing routines
 

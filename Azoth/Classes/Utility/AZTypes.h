@@ -314,4 +314,14 @@ typedef void (^MenuDoneBlock)(BOOL menuClicked);
 #define NS_RECT(sdlrect)													\
 	NSMakeRect(sdlrect.x, sdlrect.y, sdlrect.w, sdlrect.h)
 
+/*****************************************************************************\
+|* Memory aids
+\*****************************************************************************/
+#define SAFELY_FREE(x) do													\
+		{                                                       			\
+		free((void *)x);                      								\
+		x = NULL;     		                       							\
+		}                                                       			\
+	while (false)
+
 #endif // ! __AZTypes_header__

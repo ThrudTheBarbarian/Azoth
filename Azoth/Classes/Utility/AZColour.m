@@ -288,7 +288,7 @@
 	}
 
 /*****************************************************************************\
-|* Predefined colours : 'control' colour
+|* Predefined colours : 'control' background colour
 \*****************************************************************************/
 + (AZColour *) controlBackgroundColour
 	{
@@ -297,7 +297,22 @@
 
 	dispatch_once(&onceToken,
 		^{
-		colour = [[AZColour alloc] initWithR:.89f g:.89f b:.89f a:1.f];
+		colour = [[AZColour alloc] initWithR:.95f g:.95f b:.95f a:1.f];
+		});
+	return colour;
+	}
+
+/*****************************************************************************\
+|* Predefined colours : 'grid' colour
+\*****************************************************************************/
++ (AZColour *) gridColour
+	{
+	static AZColour *colour = nil;
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken,
+		^{
+		colour = [[AZColour alloc] initWithR:.8f g:.8f b:.8f a:1.f];
 		});
 	return colour;
 	}

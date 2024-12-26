@@ -41,6 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (AZColour *) clearColour;
 + (AZColour *) controlColour;
 + (AZColour *) controlBackgroundColour;
++ (AZColour *) gridColour;
 
 
 

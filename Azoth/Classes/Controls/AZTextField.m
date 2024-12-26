@@ -719,6 +719,16 @@ static int 			_lineHeight = 29;
 
 	}
 
+// MARK: Selection
+
+/*****************************************************************************\
+|* Programmatically select everything
+\*****************************************************************************/
+- (void) selectAll
+	{
+	[self _editSelectAll];
+	}
+
 // MARK: Editing methods
 
 

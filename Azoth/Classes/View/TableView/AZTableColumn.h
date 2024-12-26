@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(strong, nonatomic) NSObject *							identifier;
 
 // The table-view we belong to
-@property(strong, nonatomic) AZTableView *						tableView;
+@property(strong, nonatomic, nullable) AZTableView *			tableView;
 
 // The header view for this column
 @property(strong, nonatomic) AZTableHeaderView *				headerView;

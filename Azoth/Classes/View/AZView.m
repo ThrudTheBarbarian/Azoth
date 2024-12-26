@@ -14,6 +14,7 @@
 #import "AZNotifications.h"
 #import "AZPainter.h"
 #import "AZRenderer.h"
+#import "AZScrollView.h"
 #import "AZTransform.h"
 #import "AZView.h"
 #import "AZView+Internal.h"
@@ -664,6 +665,20 @@
 		NSPoint origin=[self convertPoint:point toView:clipView];
 		[clipView scrollToPoint:origin];
 		}
+	}
+
+/*****************************************************************************\
+|* Find the closest scrollview upwards in the hierarchy
+\*****************************************************************************/
+- (nullable AZScrollView *)enclosingScrollView
+	{
+	AZView * result = self.superview;
+
+	for (;result != nil; result = result.superview)
+		if ([result isKindOfClass:AZScrollView.class])
+     return (AZScrollView *) result;
+
+	return nil;
 	}
 
 // MARK: Private methods

@@ -106,17 +106,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface AZTableView : AZControl
 
-/*****************************************************************************\
-|* Row height
-\*****************************************************************************/
-- (float) rowHeight;
-
-/*****************************************************************************\
-|* Whether to autosave columns
-\*****************************************************************************/
-- (BOOL) autosaveTableColumns;
-
-
 // MARK: Geometry methods
 
 /*****************************************************************************\
@@ -142,17 +131,17 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Return the row at a given point
 \*****************************************************************************/
-- (int)rowAtPoint:(NSPoint)point;
+- (NSInteger)rowAtPoint:(NSPoint)point;
 
 /*****************************************************************************\
 |* Return the column at a given point
 \*****************************************************************************/
-- (int)columnAtPoint:(NSPoint)point;
+- (NSInteger)columnAtPoint:(NSPoint)point;
 
 /*****************************************************************************\
 |* Return the frame of the view at a given row,column intersection
 \*****************************************************************************/
-- (NSRect)frameOfViewAtColumn:(int)column row:(int)row;
+- (NSRect)frameOfViewAtColumn:(NSInteger)column row:(NSInteger)row;
 
 // MARK: Table columns
 
@@ -161,7 +150,7 @@ NS_ASSUME_NONNULL_BEGIN
 |* Get the index (or column) of a column with a given identifier
 \*****************************************************************************/
 - (NSInteger) columnWithIdentifier:(NSObject *)identifier;
-- (AZTableColumn *)tableColumnWithIdentifier:(NSObject *)identifier;
+- (nullable AZTableColumn *)tableColumnWithIdentifier:(NSObject *)identifier;
 
 /*****************************************************************************\
 |* Add a table column to the table
@@ -173,21 +162,13 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 - (void)removeTableColumn:(AZTableColumn *)column;
 
-/*****************************************************************************\
-|* Move a table column to a different index
-\*****************************************************************************/
-- (void)moveColumn:(NSInteger)columnIndex toColumn:(NSInteger)newIndex;
-
 
 // MARK: Editing
 
 /*****************************************************************************\
 |* Perform an edit
 \*****************************************************************************/
-//- (void)editColumn:(NSInteger)column
-//			   row:(NSInteger)row
-//		 withEvent:(AZEvent *)event
-//			select:(BOOL)select;
+- (void)editColumn:(NSInteger)column row:(NSInteger)row select:(BOOL)select;
 
 
 // MARK: Selection
@@ -195,12 +176,12 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Number of rows selected (invalidates the single-row property)
 \*****************************************************************************/
-- (int)numberOfSelectedRows;
+- (NSInteger)numberOfSelectedRows;
 
 /*****************************************************************************\
 |* Number of columns selected (invalidates the single-row property)
 \*****************************************************************************/
-- (int)numberOfSelectedColumns;
+- (NSInteger)numberOfSelectedColumns;
 
 /*****************************************************************************\
 |* Is a particular column selected
@@ -218,19 +199,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSIndexSet *)selectedColumnIndexes;
 
 /*****************************************************************************\
-|* The set of selected rows
-\*****************************************************************************/
-- (NSIndexSet *)selectedRowIndexes;
-
-/*****************************************************************************\
 |* Set a set of selected rows, optionally add to the selection
 \*****************************************************************************/
 - (void)selectRowIndexes:(NSIndexSet *)indexes byExtendingSelection:(BOOL)yn;
-
-/*****************************************************************************\
-|* Select a row, optionally add to the selection
-\*****************************************************************************/
-- (void)selectRow:(NSInteger)row byExtendingSelection:(BOOL)extend;
 
 /*****************************************************************************\
 |* Select a column, optionally add to the selection
@@ -337,7 +308,8 @@ NS_ASSUME_NONNULL_BEGIN
 id<NSTableViewDelegate>						delegate;
 
 // The tableview datasource
-@property(strong, nonatomic) NSObject *		datasource;
+@property(strong, nonatomic)
+id<NSTableViewDataSource>					dataSource;
 
 // The tableview header view
 @property(strong, nonatomic)
@@ -375,7 +347,7 @@ NSMutableArray<AZTableColumn *> *			tableColumns;
 @property(assign, nonatomic) BOOL			allowsColumnSelection;
 
 // Alternate colours in view backgrounds
-@property(assign, nonatomic) BOOL			usesAlternatingRowBackgroundColors;
+@property(assign, nonatomic) BOOL			alternatesRowColours;
 
 // Mask for how to draw grid lines
 @property(assign, nonatomic) NSInteger		gridStyleMask;
@@ -386,14 +358,11 @@ NSMutableArray<AZTableColumn *> *			tableColumns;
 // number of rows in the table
 @property(assign, nonatomic) NSInteger		numberOfRows;
 
+// Default row-height
+@property(assign, nonatomic) float			rowHeight;
+
 // number of rows in the table
 @property(assign, nonatomic) NSInteger		numberOfColumns;
-
-// The autosave name
-@property(strong, nonatomic) NSString *		autosaveName;
-
-// Do we draw the grid
-@property(assign, nonatomic) BOOL			drawsGrid;
 
 // column edited
 @property(assign, nonatomic, readonly)
@@ -418,6 +387,15 @@ NSInteger									selectedColumn;
 // row selected
 @property(assign, nonatomic, readonly)
 NSInteger									selectedRow;
+
+// selected row indices
+@property(strong, nonatomic) NSIndexSet *	selectedRowIndexes;
+
+// List of sort descriptors
+@property(strong, nonatomic)
+NSArray<NSSortDescriptor *> *				sortDescriptors;
+
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -60,6 +60,10 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 - (BOOL) scrollRectToVisible:(NSRect)rect;
 
+/*****************************************************************************\
+|* Find the closest scrollview upwards in the hierarchy
+\*****************************************************************************/
+- (nullable AZScrollView *)enclosingScrollView;
 
 /*****************************************************************************\
 |* Scroll a view within an enclosing scrollview until the point is visible
