@@ -7,9 +7,12 @@
 
 #import <SDL3/SDL.h>
 
+#import "AZApp.h"
+#import "AZButton.h"
 #import "AZClipView.h"
 #import "AZColour.h"
 #import "AZControl.h"
+#import "AZFont.h"
 #import "AZPainter.h"
 #import "AZPopupButton.h"
 #import "AZScrollView.h"
@@ -142,7 +145,7 @@ typedef struct
 /*****************************************************************************\
 |* Return the number of rows
 \*****************************************************************************/
--(NSInteger)numberOfRows
+- (NSInteger) numberOfRows
 	{
     if (_numberOfRows < 0)
 		{
@@ -400,7 +403,7 @@ typedef struct
 /*****************************************************************************\
 |* Properly replace the delegate, invalidating any old notifications etc.
 \*****************************************************************************/
-- (void) setDelegate:(id<NSTableViewDelegate>)delegate
+- (void) setDelegate:(id<AZTableViewDelegate>)delegate
 	{
 	NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
 
@@ -455,8 +458,6 @@ typedef struct
 \*****************************************************************************/
 - (void) setRowHeight:(float)height
 	{
-    NSInteger numberOfRows = self.numberOfRows;
-
     if (height > 0.f)
         _rowHeight = height;
     else
@@ -580,7 +581,7 @@ static float _rowHeightAtIndex(AZTableView *self, NSInteger index)
 -(void)editColumn:(NSInteger)column row:(NSInteger)row select:(BOOL)select
 	{
 	if (_editingView)
-		[self _textDidEndEditing:nil];
+		[self textDidEndEditing:nil];
 
 	NSInteger numberOfRows		= self.numberOfRows;
 	NSInteger numberOfCols		= self.numberOfColumns;
@@ -678,7 +679,6 @@ static float _rowHeightAtIndex(AZTableView *self, NSInteger index)
 \*****************************************************************************/
 - (void)selectRowIndexes:(NSIndexSet *)indexes byExtendingSelection:(BOOL)extend
 	{
-	NSInteger index;
 	NSIndexSet * newIndexes = nil;
 	BOOL changed 			= NO;
 	NSInteger numRows 		= self.numberOfRows;
@@ -1083,18 +1083,21 @@ static float _rowHeightAtIndex(AZTableView *self, NSInteger index)
 - (AZView *) preparedViewAtColumn:(NSInteger)columnNumber row:(NSInteger)row
 	{
 	AZTableColumn *column 	= [_tableColumns objectAtIndex:columnNumber];
-	AZControl *dataView 	= (AZControl *)[column dataViewForRow:row];
+	AZView *dataView 		= [column dataViewForRow:row];
 
 	//[dataView setControlView:self];
 
-    id value = [self dataSourceObjectValueForTableColumn:column row:row];
+    id value = [self _dataSourceObjectValueForColumn:column row:row];
     if ([dataView isKindOfClass:AZPopupButton.class])
         [(AZPopupButton *)dataView selectItemAtIndex: [value intValue]];
-	else
+	else if ([dataView isKindOfClass:AZControl.class])
         {
-        [dataView setObjectValue:value];
+        [(AZControl *)dataView setObjectValue:value];
 		[dataView setNeedsDisplay:YES];
 		}
+	else
+		SDL_Log("Got class of type %s instead of AZControl at col %d, row %d",
+			dataView.class.description.UTF8String, (int)columnNumber, (int)row);
 
 	SEL textColour = @selector(setTextColour:);
 	if ([dataView respondsToSelector:textColour])
@@ -1617,5 +1620,502 @@ static float _rowHeightAtIndex(AZTableView *self, NSInteger index)
 
 
 // MARK: Event handling
+
+/*****************************************************************************\
+|* We got a mouse-down...
+\*****************************************************************************/
+- (BOOL) mouseDown:(AZEvent *)event
+	{
+	NSObject *value	 = nil;
+    NSPoint location = [self convertPoint:event.locationInWindow fromView:nil];
+    //NSInteger numberOfRows = self.numberOfRows;
+
+    _clickedColumn	= [self columnAtPoint:location];
+    _clickedRow		= [self rowAtPoint:location];
+
+	/*************************************************************************\
+	|* Was the click out of bounds ?
+	\*************************************************************************/
+    if (_clickedRow < 0)
+		{
+        if (_editingView != nil)
+            [self textDidEndEditing:nil];
+        [self selectRowIndexes:[NSIndexSet new] byExtendingSelection:NO];
+        [_selectedColumns removeAllObjects];
+        return NO;
+		}
+
+	/*************************************************************************\
+	|* Make sure the delegate is allowing us to do something
+	\*************************************************************************/
+    AZTableColumn *clickedColumnObject = _tableColumns[_clickedColumn];
+
+    if (![self delegateShouldSelectTableColumn:clickedColumnObject])
+		return NO;
+    if (![self delegateShouldSelectRow:_clickedRow])
+		return NO;
+
+    AZView *clickedView = [clickedColumnObject dataViewForRow:_clickedRow];
+
+    //[clickedView setControlView:self];
+
+	/*************************************************************************\
+	|* Handle clicking on a button
+	\*************************************************************************/
+	BOOL isButton = [clickedView isKindOfClass:AZButton.class];
+	BOOL isPopup  = [clickedView isKindOfClass:AZPopupButton.class];
+    if (isButton || isPopup)
+		{
+		value = [self _dataSourceObjectValueForColumn:clickedColumnObject
+												  row:_clickedRow];
+		[(AZControl *)clickedView setObjectValue:value];
+		[self setNeedsDisplay:YES];
+		return YES;
+		}
+
+    // NSLog(@"click in col %d row %d", _clickedColumn, _clickedRow);
+
+	/*************************************************************************\
+	|* single click behavior
+	\*************************************************************************/
+    if (event.clickCount < 2)
+		{
+		BOOL allowsEmpty 	= self.allowsEmptySelection;
+		BOOL moreThanOne	= self.numberOfSelectedColumns > 1;
+		BOOL allowsMultiple	= self.allowsMultipleSelection;
+
+		/*********************************************************************\
+		|* Make sure the delegate is allowing us to do something
+		\*********************************************************************/
+        if ([self delegateSelectionShouldChange] == NO)
+            return NO;
+
+		/*********************************************************************\
+		|* Was ALT pressed ?
+		\*********************************************************************/
+        if (event.modifierFlags & AZAlternateKeyMask)
+			{
+
+			// deselect previously selected?
+            if ([self isRowSelected:_clickedRow])
+				{
+				if (allowsEmpty || moreThanOne)
+                    [self deselectRow:_clickedRow];
+				}
+            else if (allowsMultiple)
+				{
+                [self selectRowIndexes:[NSIndexSet indexSetWithIndex:_clickedRow]
+				  byExtendingSelection:YES];  // add to selection
+				}
+			}
+
+ 		/*********************************************************************\
+		|* How about SHIFT ?
+		\*********************************************************************/
+		else if ([event modifierFlags] & AZShiftKeyMask)
+			{
+            if (allowsMultiple && (self.selectedRow != -1))
+				{
+                NSInteger startRow 	= self.selectedRow;
+                NSInteger endRow 	= _clickedRow;
+
+                if (_clickedRow < startRow)
+					{
+                    endRow 		= startRow;
+                    startRow 	= _clickedRow;
+					}
+
+				NSRange range 	= NSMakeRange(startRow, endRow-startRow+1);
+				NSIndexSet *set	= [NSIndexSet indexSetWithIndexesInRange:range];
+                [self selectRowIndexes:set byExtendingSelection:NO];
+				}
+            else
+				{
+				NSIndexSet *set	= [NSIndexSet indexSetWithIndex:_clickedRow];
+                [self selectRowIndexes:set byExtendingSelection:NO];
+                }
+			}
+
+  		/*********************************************************************\
+		|* Normal selection, allow for dragging
+		\*********************************************************************/
+		else
+			{
+			BOOL dragging 	= NO;
+			// Get rid of the dragging stuff until we have pasteboards
+//			SEL writeRows	= SELECTOR(@"tableView:writeRowsWithIndexes:toPasteboard:");
+//			if ([_dataSource respondsToSelector:writeRows])
+//				{
+//				NSPoint currentPoint;
+//				do
+//					{
+//					event = [_window nextEventMatchingMask:NSLeftMouseUpMask|NSLeftMouseDraggedMask untilDate:[NSDate distantFuture] inMode:NSEventTrackingRunLoopMode dequeue:NO];
+//					if([event type] == NSLeftMouseDragged)
+//						event = [_window nextEventMatchingMask:NSLeftMouseUpMask| NSLeftMouseDraggedMask];
+//					else
+//						break;
+//					currentPoint = [self convertPoint:[event locationInWindow] fromView:nil];
+//					if(abs(location.x - currentPoint.x) > 5 || abs(location.y - currentPoint.y) > 5)
+//						{
+//						dragging = YES;
+//						break;
+//						}
+//					}
+//				while([event type] != NSLeftMouseUp);
+//				}
+//
+//			if(dragging)
+//				{
+//				NSIndexSet *rowIndexes = [self selectedRowIndexes];
+//				if([rowIndexes containsIndex: _clickedRow] == NO)
+//						rowIndexes = [NSIndexSet indexSetWithIndex: _clickedRow];
+//
+//				NSPasteboard *pasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
+//				if([_dataSource tableView:self writeRowsWithIndexes:rowIndexes toPasteboard:pasteboard] == NO)
+//						dragging = NO;
+//				else
+//					{
+//					NSImage *image = [[[NSImage alloc] initWithSize:NSMakeSize(0,0)] autorelease];
+//					[self dragImage:image
+//											 at:NSMakePoint(0,0)
+//									 offset:NSMakeSize(0,0)
+//									  event:event
+//							 pasteboard:pasteboard
+//									 source:self
+//							slideBack:YES];
+//					}
+//				}
+//
+			if(dragging == NO)
+				{
+				// normal selection,
+//				NSInteger firstClickedRow = _clickedRow;
+
+				[self selectRowIndexes:[NSIndexSet indexSetWithIndex:_clickedRow]
+				  byExtendingSelection:NO];
+
+//				get rid of the dragging here too, need to separate out the logic
+//				into the mouseDragged: and mouseUp: handlers since we can't
+// 				poll events like Cocoa can
+//
+//				if (allowsMultiple)
+//					{
+//					do
+//						{
+//						NSPoint point;
+//						int row;
+//						point=[self convertPoint:[event locationInWindow] fromView:nil];
+//
+//						row = [self rowAtPoint:point];
+//						if (row != -1)
+//							{
+//							// we need to smooth out the selection granularity. on my slow system, the mouse moves
+//							// too quickly for the NSEvents to show up for each row..
+//							int startRow, endRow, i;
+//
+//							if (firstClickedRow > row)
+//								{
+//								endRow = firstClickedRow;
+//								startRow = row;
+//								}
+//							else
+//								{
+//								startRow = firstClickedRow;
+//								endRow = row;
+//								}
+//
+//							for (i = 0; i < numberOfRows; i++)
+//								{
+//								if (i >= startRow && i <= endRow)
+//									[self selectRowIndexes:[NSIndexSet indexSetWithIndex:i] byExtendingSelection:YES];
+//								else
+//									[self deselectRow:i];
+//								}
+//							}
+//
+//						[self noteSelectionIsChanging];
+//						}
+//					while([event type] != NSLeftMouseUp);
+//					}
+				}
+			}
+
+		[self sendAction:[self action] to:[self target]];
+		}
+
+    else if ([event clickCount] == 2)
+		{
+		BOOL interpretedAsEdit = NO;
+		if (_tableColumns[_clickedColumn].editable)
+			{
+			if ([self dataSourceCanSetObjectValue])
+				{
+				if (_clickedColumn != -1 && _clickedRow != -1)
+					{
+					AZTableColumn *col = _tableColumns[_clickedColumn];
+					if ([self delegateShouldEditTableColumn:col
+														row:_clickedRow])
+						{
+						interpretedAsEdit=YES;
+						[self editColumn:[self clickedColumn]
+									 row:_clickedRow
+								  select:YES];
+						}
+					}
+				}
+			}
+		if(!interpretedAsEdit)
+			[self sendAction:[self doubleAction] to:[self target]];
+		}
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Size things in a column so that everything just fits
+\*****************************************************************************/
+-(void)_tightenUpColumn:(AZTableColumn *)column
+	{
+    NSInteger numberOfRows = self.numberOfRows;
+    float minWidth = 0.f;
+    float width;
+	AZFont *font = AZApp.sharedInstance.controlFont;
+
+	NSString *text = column.headerView.stringValue;
+	if (text.length > 0)
+		{
+		width = [font textWidthFor:text];
+		if (width > minWidth)
+			minWidth = width;
+		}
+
+    for (NSInteger i = 0; i < numberOfRows; ++i)
+		{
+        AZView *dataView = [column dataViewForRow:i];
+		if ([dataView isKindOfClass:AZControl.class])
+			{
+			AZControl *ctrl = (AZControl *)dataView;
+
+			//[dataView setControlView:self];
+			NSObject *val = [self _dataSourceObjectValueForColumn:column row:i];
+			[ctrl setObjectValue:val];
+
+			NSString *text = ctrl.stringValue;
+			if (text.length > 0)
+				{
+				width = [font textWidthFor:text];
+				if (width > minWidth)
+					minWidth = width;
+				}
+			}
+		else
+			SDL_Log("Got unexpected class type %s in column with identifier %s",
+					dataView.class.description.UTF8String,
+					column.identifier.description.UTF8String);
+		}
+
+    [column setMinWidth:minWidth];
+	}
+
+/*****************************************************************************\
+|* Make all the columns just fit their contents
+\*****************************************************************************/
+-(void)sizeToFit
+	{
+    NSInteger count = _tableColumns.count;
+
+    for (NSInteger i = 0; i < count; ++i)
+		{
+        AZTableColumn *column = _tableColumns[i];
+
+        [self _tightenUpColumn:column];
+        [column setWidth:column.minWidth];
+		}
+
+    [self tile];
+	}
+
+/*****************************************************************************\
+|* Identify the drag and drop we support. Doesn't really matter right now
+\*****************************************************************************/
+- (unsigned)draggingSourceOperationMaskForLocal:(BOOL)isLocal
+	{
+	return AZDragOperationCopy;
+	}
+
+/*****************************************************************************\
+|* Return the row dragged
+|* Need AZDraggingInfo to be written...
+\*****************************************************************************/
+//- (int)_getDraggedRow:(id <AZDraggingInfo>)info
+//	{
+//	NSPoint from			= info.draggingLocation;
+//	NSPoint dragPoint 		= [self convertPoint:from fromView:nil];
+//	NSInteger draggedRow 	= [self rowAtPoint:dragPoint];
+//	if (-1 == draggedRow)
+//		{
+//		if (dragPoint.y >= [self rectOfRow:[self numberOfRows]-1].origin.y)
+//			draggedRow = self.numberOfRows;
+//		}
+//    return draggedRow;
+//	}
+
+/*****************************************************************************\
+|* Validate the row dragged
+|* Need AZDraggingInfo to be written...
+\*****************************************************************************/
+//- (unsigned)_validateDraggedRow:(id <NSDraggingInfo>)info
+//	{
+//	BOOL result;
+//	int proposedRow = [self _getDraggedRow:info];
+//
+//	SEL validate = SELECTOR(@"tableView:validateDrop:proposedRow:proposedDropOperation:");
+//	if ([_dataSource respondsToSelector:validate])
+//		{
+//		if ((result = [_dataSource tableView:self
+//								validateDrop:info
+//								 proposedRow:proposedRow
+//					   proposedDropOperation:AZTableViewDropAbove]))
+//			_draggingRow = proposedRow;
+//		else
+//			_draggingRow = -1;
+//		}
+//
+//	[self display];
+//	return result;
+//	}
+
+/*****************************************************************************\
+|* Dragging entered the table
+|* Need AZDraggingInfo to be written...
+\*****************************************************************************/
+//- (NSInteger) draggingEntered:(id <NSDraggingInfo>)sender
+//	{
+//	int i;
+//	for(i = 0; i < [[self _draggedTypes] count]; i++)
+//		{
+//		if ([[[sender draggingPasteboard] types] containsObject:[[self _draggedTypes] objectAtIndex: i]])
+//				return [self _validateDraggedRow:sender];
+//		}
+//	return NSDragOperationNone;
+//	}
+
+/*****************************************************************************\
+|* Dragging updated
+|* Need AZDraggingInfo to be written...
+\*****************************************************************************/
+//- (unsigned)draggingUpdated:(id <NSDraggingInfo>)sender
+//	{
+//	int i;
+//	for(i = 0; i < [[self _draggedTypes] count]; i++)
+//		{
+//		if ([[[sender draggingPasteboard] types] containsObject:[[self _draggedTypes] objectAtIndex: i]])
+//			return [self _validateDraggedRow:sender];
+//		}
+//	return NSDragOperationNone;
+//	}
+
+/*****************************************************************************\
+|* Dragging exited the table
+|* Need AZDraggingInfo to be written...
+\*****************************************************************************/
+//- (void)draggingExited:(id <NSDraggingInfo>)sender 
+//	{
+//	_draggingRow = -1;
+//	[self display];
+//	}
+
+/*****************************************************************************\
+|* Prepare for a drag
+|* Need AZDraggingInfo to be written...
+\*****************************************************************************/
+//- (BOOL)prepareForDragOperation:(id <NSDraggingInfo>)sender
+//	{
+//	_draggingRow = -1;
+//	[self display];
+//    return YES;
+//	}
+
+/*****************************************************************************\
+|* Perform a drag
+|* Need AZDraggingInfo to be written...
+\*****************************************************************************/
+//- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
+//	{
+//	return [_dataSource tableView:self acceptDrop:sender row:[self _getDraggedRow:sender] dropOperation:NSTableViewDropAbove];
+//	}
+
+/*****************************************************************************\
+|* Debugging
+\*****************************************************************************/
+-(NSString *)description
+	{
+    return [NSString stringWithFormat:@"<%@ %p tableColumns: %@>",
+        [self class], self, _tableColumns];
+	}
+
+/*****************************************************************************\
+|* Selection modification by keys
+\*****************************************************************************/
+-(void)_moveUp:(BOOL)up extend:(BOOL)extend
+	{
+    NSInteger rowToSelect = -1;
+    
+    if (_selectedRowIndexes.count == 0)
+        rowToSelect = 0;
+    else if (up)
+		{
+        NSInteger first = _selectedRowIndexes.firstIndex;
+        if (first > 0)
+            rowToSelect = first-1;
+        else if (!extend)
+            rowToSelect = first;
+		}
+    else
+		{
+        NSInteger last = _selectedRowIndexes.lastIndex;
+        if (last < [self numberOfRows]-1)
+            rowToSelect = last+1;
+        else if (!extend)
+            rowToSelect = last;
+		}
+    
+    if (rowToSelect != -1)
+		{
+        [self selectRow:rowToSelect byExtendingSelection:extend];   
+        [self scrollRowToVisible:rowToSelect];
+		}
+	}
+
+/*****************************************************************************\
+|* Selection modification by keys
+\*****************************************************************************/
+- (void) moveUp:(id)sender
+	{
+	[self _moveUp:YES extend:NO];
+	}
+
+/*****************************************************************************\
+|* Selection modification by keys
+\*****************************************************************************/
+- (void) moveUpAndModifySelection:(id)sender
+	{
+	[self _moveUp:YES extend:YES];
+	}
+
+/*****************************************************************************\
+|* Selection modification by keys
+\*****************************************************************************/
+- (void) moveDown:(id)sender
+	{
+	[self _moveUp:NO extend:NO];
+	}
+
+/*****************************************************************************\
+|* Selection modification by keys
+\*****************************************************************************/
+- (void) moveDownAndModifySelection:(id)sender
+	{
+	[self _moveUp:NO extend:YES];
+	}
 
 @end

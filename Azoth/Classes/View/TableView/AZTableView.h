@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Table-view datasource protocol
 \*****************************************************************************/
-@protocol NSTableViewDataSource <NSObject>
+@protocol AZTableViewDataSource <NSObject>
 @optional
 
 // Return the number of rows in the table view
@@ -59,9 +59,14 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Table-view delegate protocol
 \*****************************************************************************/
-@protocol NSTableViewDelegate <NSObject>
+@protocol AZTableViewDelegate <NSObject>
 @optional
 
+// Return a view for a table-column/row combination
+- (AZView *) tableView:(AZTableView *)tableView
+	viewForTableColumn:(AZTableColumn *)column
+				   row:(NSInteger)row;
+				   
 // Determine whether the user can edit a given row/col
 - (BOOL)tableView:(AZTableView *)tableView
 		shouldEditTableColumn:(AZTableColumn *)tableColumn
@@ -310,11 +315,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 // The tableview delegate
 @property(strong, nonatomic)
-id<NSTableViewDelegate>						delegate;
+id<AZTableViewDelegate>						delegate;
 
 // The tableview datasource
 @property(strong, nonatomic)
-id<NSTableViewDataSource>					dataSource;
+id<AZTableViewDataSource>					dataSource;
 
 // The tableview header view
 @property(strong, nonatomic)

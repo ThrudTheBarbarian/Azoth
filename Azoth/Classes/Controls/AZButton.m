@@ -211,6 +211,19 @@ static NSRect	_bRight[STATE_NUM];
 	}
 
 /*****************************************************************************\
+|* Handle an objectValue being set
+\*****************************************************************************/
+- (void) setObjectValue:(nullable NSObject *)value
+	{
+	if (value == nil)
+		self.state = ControlStateNormal;
+	else if ([value isKindOfClass:NSNumber.class])
+		self.state = [(NSNumber *)value intValue];
+	else
+		self.state = ControlStateHighlighted;
+	}
+
+/*****************************************************************************\
 |* Handle a mouse press
 \*****************************************************************************/
 - (BOOL) mouseDown:(AZEvent *)e

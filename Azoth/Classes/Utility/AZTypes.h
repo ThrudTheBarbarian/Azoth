@@ -58,6 +58,23 @@ enum {
 
 #define IS_GRID_STYLE(x, type) (((x) & (type)) == type)
 
+
+/*****************************************************************************\
+|* Drag and drop styles. NB: Drag and drop not yet supported. These are just
+|* the constants
+\*****************************************************************************/
+typedef enum
+	{
+	AZDragOperationCopy 		= 1<<0,
+	AZDragOperationLink			= 1<<1,
+	AZDragOperationGeneric		= 1<<2,
+	AZDragOperationPrivate		= 1<<3,
+	AZDragOperationMove			= 1<<4,
+	AZDragOperationDelete		= 1<<5,
+	AZDragOperationEvery		= -1,
+	AZDragOperationNone			= 0
+	} NSDragOperation;
+
 /*****************************************************************************\
 |* Forms that highlighting can take
 \*****************************************************************************/

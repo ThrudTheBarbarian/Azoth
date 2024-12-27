@@ -84,7 +84,7 @@ struct SDL_TextInputEvent;
 |* Properties
 \*****************************************************************************/
 
-// Identifier, purely for debugging
+// Identifier, used for table views etc.
 @property(copy, nonatomic) NSString *						identifier;
 
 @end

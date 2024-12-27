@@ -54,6 +54,7 @@
 		_sdlEvent 			= e;
 		_locationInWindow	= (NSPoint){e->button.x, e->button.y};
 		_modifierFlags		= SDL_GetModState();
+		_clickCount			= e->button.clicks;
 		}
 	return self;
 	}
@@ -70,6 +71,7 @@
 		_state				= e->motion.state;
 		_locationInWindow	= (NSPoint){e->motion.x, e->motion.y};
 		_modifierFlags		= SDL_GetModState();
+		_clickCount			= 0;
 		}
 	return self;
 	}
@@ -86,6 +88,7 @@
 		_state				= 0;
 		_locationInWindow	= (NSPoint){e->wheel.x, e->wheel.y};
 		_modifierFlags		= SDL_GetModState();
+		_clickCount			= 0;
 		}
 	return self;
 	}

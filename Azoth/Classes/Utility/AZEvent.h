@@ -45,6 +45,9 @@ union SDL_Event;
 
 // AZEvent key modifier masks
 @property(assign, nonatomic, readonly) NSInteger			modifierFlags;
+
+// How many clicks
+@property(assign, nonatomic, readonly) NSInteger			clickCount;
 @end
 
 NS_ASSUME_NONNULL_END

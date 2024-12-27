@@ -98,7 +98,7 @@
 	_resizeLocation = [self convertPoint:e.locationInWindow fromView:nil];
 
     NSInteger col 					= [self columnAtPoint:_resizeLocation];
-	id<NSTableViewDelegate>delegate	= _tableView.delegate;
+	id<AZTableViewDelegate>delegate	= _tableView.delegate;
 
 	SEL mdSel = @selector(tableView:mouseDownInHeaderOfTableColumn:);
     if ([delegate respondsToSelector:mdSel])

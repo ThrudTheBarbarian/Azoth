@@ -8,12 +8,14 @@
 #ifndef AZTableColumn_Private_h
 #define AZTableColumn_Private_h
 
+@class AZControl;
+
 @interface AZTableColumn (PrivateMethods)
 
 /*****************************************************************************\
 |* Prepare the view at a given row
 \*****************************************************************************/
-- (void) _prepareView:(AZView *)view inRow:(NSInteger)row;
+- (void) _prepareView:(AZControl *)view inRow:(NSInteger)row;
 
 /*****************************************************************************\
 |* Sort the column
