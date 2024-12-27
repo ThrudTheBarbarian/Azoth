@@ -155,10 +155,22 @@ static NSMutableDictionary<NSNumber *, AZWindow *> * _windows = nil;
 /*****************************************************************************\
 |* Make an AZResponder the first-responder
 \*****************************************************************************/
-- (BOOL) makeFirstResponder:(AZResponder *)responder
+- (BOOL) makeFirstResponder:(nullable AZResponder *)responder
 	{
 	BOOL changed = NO;
-	if ([responder acceptsFirstResponder])
+	if (responder == nil)
+		{
+		if (self.responders.count == 0)
+			_firstResponder = nil;
+		else
+			{
+			if ([self.responders.lastObject becomeFirstResponder])
+				_firstResponder = self.responders.lastObject;
+			else
+				_firstResponder = nil;
+			}
+		}
+	else if ([responder acceptsFirstResponder])
 		{
 		if (self.firstResponder != nil)
 			{

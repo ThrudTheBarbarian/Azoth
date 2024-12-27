@@ -41,6 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(assign, nonatomic) AZControlState						state;
 @property(assign, nonatomic) BOOL 								enabled;
 
+@property(stromg, nonatomic) NSObject *							objectValue;
 @property(copy, nonatomic) NSString *							stringValue;
 @property(assign, nonatomic) double								doubleValue;
 @property(assign, nonatomic) BOOL								continuous;

@@ -39,6 +39,7 @@ struct SDL_Mutex;
 
 @class AZColour;
 @class AZPainter;
+@class AZScrollView;
 @class AZTransform;
 @class AZWindow;
 

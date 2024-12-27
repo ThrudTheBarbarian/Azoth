@@ -7,7 +7,12 @@
 
 #import <SDL3/SDL.h>
 
+#import "AZClipView.h"
 #import "AZColour.h"
+#import "AZControl.h"
+#import "AZPainter.h"
+#import "AZPopupButton.h"
+#import "AZScrollView.h"
 #import "AZTableColumn.h"
 #import "AZTableColumn+Private.h"
 #import "AZTableCornerView.h"
@@ -53,7 +58,7 @@ NSMutableArray<AZTableColumn *> *						selectedColumns;
 
 
 // The View being used as an editor
-@property(strong, nonatomic) AZView *					editingView;
+@property(strong, nonatomic) AZControl *				editingView;
 
 // Rect for the editing view
 @property(assign, nonatomic) NSRect						editingFrame;
@@ -815,6 +820,34 @@ static float _rowHeightAtIndex(AZTableView *self, NSInteger index)
 	}
 
 /*****************************************************************************\
+|* Select a row, optionally extending the selection
+\*****************************************************************************/
+- (void) selectRow:(NSInteger)row byExtendingSelection:(BOOL)extend
+	{
+	NSIndexSet *set = nil;
+	if (extend)
+		{
+		NSInteger startRow 	= [self selectedRow];
+		NSInteger endRow	= row;
+
+		if (startRow > endRow)
+			{
+			endRow 		= startRow;
+			startRow	= row;
+			}
+
+		NSRange range = NSMakeRange(startRow, endRow-startRow+1);
+		set 		  = [NSIndexSet indexSetWithIndexesInRange:range];
+		[self selectRowIndexes:set byExtendingSelection:NO];
+		}
+	else
+		{
+		set = [NSIndexSet indexSetWithIndex:row];
+		[self selectRowIndexes:set byExtendingSelection:NO];
+		}
+	}
+
+/*****************************************************************************\
 |* Select a column, optionally extending the selection
 \*****************************************************************************/
 -(void)selectColumn:(NSInteger)column byExtendingSelection:(BOOL)extend
@@ -895,5 +928,694 @@ static float _rowHeightAtIndex(AZTableView *self, NSInteger index)
 	{
     [self scrollRectToVisible:[self rectOfColumn:index]];
 	}
+
+/*****************************************************************************\
+|* Handle row-height changes. This also resizes the row heights cache
+|* size as appropriate.
+\*****************************************************************************/
+- (void) noteHeightOfRowsWithIndexesChanged:(NSIndexSet *)indexSet
+	{
+	NSInteger rowCount = self.numberOfRows;
+	BOOL found = (indexSet.firstIndex != NSNotFound);
+	BOOL oub   = (indexSet.firstIndex <0) || (indexSet.lastIndex >= rowCount);
+	if (found && oub)
+		{
+		SDL_Log("Index set %s out of range (valid are 0 to %ld).",
+				indexSet.description.UTF8String, (long)rowCount);
+		return;
+		}
+
+   _rowHeights = realloc(_rowHeights, sizeof(float) * rowCount);
+
+   NSInteger row = indexSet.firstIndex;
+   SEL getter    = @selector(tableView:heightOfRow:);
+
+	if (_delegate != nil && [_delegate respondsToSelector:getter] == YES)
+		{
+		while (row != NSNotFound)
+			{
+			_rowHeights[row] = [_delegate tableView:self heightOfRow:row];
+			row				 = [indexSet indexGreaterThanIndex:row];
+			}
+		}
+	else
+		{
+		while (row != NSNotFound)
+			{
+			_rowHeights[row] = _rowHeight;
+			row				 = [indexSet indexGreaterThanIndex:row];
+			}
+		}
+	}
+
+/*****************************************************************************\
+|* Handle number-of-rows changes. Calls into row-height changes to establish
+|* the row-cache for the new values
+\*****************************************************************************/
+- (void) noteNumberOfRowsChanged
+	{
+    NSSize size 			= self.frame.size;
+    NSSize headerSize 		= _headerView.frame.size;
+
+	// Set to <0 to force a re-count
+    _numberOfRows 			= -1;
+    NSInteger numberOfRows	= [self numberOfRows];
+
+    // There isn't much point in trying to validate the heights of
+    // visible rows only, as the often used -rectOfColumn: needs them all.
+    NSRange rowRange		= NSMakeRange(0, numberOfRows);
+    NSIndexSet *rows 		= [NSIndexSet indexSetWithIndexesInRange:rowRange];
+    [self noteHeightOfRowsWithIndexesChanged:rows];
+
+    // if there's any editing going on, we'd better stop it.
+    if (_editingView != nil)
+		[self textDidEndEditing:nil];
+
+    if (numberOfRows > 0)
+        size.width = [self rectOfRow:0].size.width;
+
+    if (_tableColumns.count > 0)
+        size.height = [self rectOfColumn:0].size.height;
+
+    headerSize.width = size.width;
+
+    [self setFrameSize:size];
+    [_headerView setFrameSize:headerSize];
+
+    NSMutableIndexSet *selection = _selectedRowIndexes.mutableCopy;
+    NSInteger count 			 = selection.count;
+    NSUInteger indexes[count];
+    [selection getIndexes:indexes maxCount:count inIndexRange:NULL];
+    
+    while (--count >= 0)
+		if (indexes[count] >= numberOfRows)
+			[selection removeIndex:indexes[count]];
+
+	// Do not change the selection if it didnt change. _setSelectedRowIndexes
+	// posts a notification and doing it unnecessarily can cause performance
+	// and behavior problems. For example, if there is no selection in a newly
+	// created tableview and you post the notification indirectly with
+	// setDataSource:, an application which expects a non-empty selection
+	// will have problems.
+	//
+	// FIXME: investigate whether _setSelectedRowIndexes: should do this check.
+	if (![selection isEqualToIndexSet:_selectedRowIndexes])
+		[self _setSelectedRowIndexes:selection];
+	}
+
+/*****************************************************************************\
+|* Something changed. Figure it out...
+\*****************************************************************************/
+-(void)reloadData
+	{
+    [self noteNumberOfRowsChanged];
+    [self setNeedsDisplay:YES];
+    [_headerView setNeedsDisplay:YES];
+	}
+
+/*****************************************************************************\
+|* Lay out the view
+\*****************************************************************************/
+-(void)tile
+	{
+    [self sizeLastColumnToFit];
+    [self noteNumberOfRowsChanged];
+
+    NSRect rect 	= _headerView.frame;
+    rect.size.width = self.frame.size.width;
+    [_headerView setFrameSize:rect.size];
+
+	float height 	= _rowHeight + _interViewSpacing.height;
+    [[self enclosingScrollView] setVerticalLineScroll:height];
+
+    [self setNeedsDisplay:YES];
+    [_headerView setNeedsDisplay:YES];
+	}
+
+/*****************************************************************************\
+|* Use up all the space by resizing the last column
+\*****************************************************************************/
+- (void) sizeLastColumnToFit
+	{
+    AZClipView *clipView = (AZClipView *)self.superview;
+
+    if ([clipView isKindOfClass:AZClipView.class])
+		{
+        NSSize size 	= clipView.bounds.size;
+        NSInteger count = _tableColumns.count;
+        float lastWidth = size.width - (count * _interViewSpacing.width);
+
+        AZTableColumn *lastColumn = _tableColumns.lastObject;
+
+        for (NSInteger i = 0; i < count-1; ++i)
+            lastWidth -= _tableColumns[i].width;
+
+        if (lastWidth > 0)
+            lastColumn.width = lastWidth;
+        else if (lastWidth < 0)
+            lastColumn.width = lastColumn.width + lastWidth;
+
+        [self setNeedsDisplay:YES];
+		}
+	}
+
+
+- (AZView *) preparedViewAtColumn:(NSInteger)columnNumber row:(NSInteger)row
+	{
+	AZTableColumn *column 	= [_tableColumns objectAtIndex:columnNumber];
+	AZControl *dataView 	= (AZControl *)[column dataViewForRow:row];
+
+	//[dataView setControlView:self];
+
+    id value = [self dataSourceObjectValueForTableColumn:column row:row];
+    if ([dataView isKindOfClass:AZPopupButton.class])
+        [(AZPopupButton *)dataView selectItemAtIndex: [value intValue]];
+	else
+        {
+        [dataView setObjectValue:value];
+		[dataView setNeedsDisplay:YES];
+		}
+
+	SEL textColour = @selector(setTextColour:);
+	if ([dataView respondsToSelector:textColour])
+		{
+		AZTextField *tf = (AZTextField *)dataView;
+
+		if ([self isRowSelected:row] || [self isColumnSelected:columnNumber])
+			{
+			// so the selection shows properly, dont just set the colour
+			// so custom background works
+			[tf setIsOpaque:NO];
+			[tf setTextColour:AZColour.selectedTextColour];
+			}
+		else
+			[tf setTextColour:AZColour.textColour];
+		}
+   
+	//[column prepareCell:dataCell inRow:row];
+
+	SEL willShow = SELECTOR(@"tableView:willDisplayCell:forTableColumn:row:");
+	if ([_delegate respondsToSelector:willShow])
+		[_delegate tableView:self
+			 willDisplayView:dataView
+			  forTableColumn:column
+						 row:row];
+
+	return dataView;
+	}
+
+// MARK: Drawing
+
+/*****************************************************************************\
+|* Top-level view drawing routine
+\*****************************************************************************/
+- (void) drawInRect:(NSRect)clipRect withPainter:(AZPainter *)painter
+	{
+	NSRange visibleRows;
+	NSInteger row;
+	NSInteger numberOfRows = self.numberOfRows;
+
+	[self drawBackgroundInClipRect:clipRect withPainter:painter];
+
+	if (numberOfRows > 0)
+		{
+		[self highlightSelectionInClipRect:clipRect withPainter:painter];
+
+		visibleRows = [self rowsInRect:clipRect];
+		if (visibleRows.length > 0)
+			{
+			row = visibleRows.location;
+
+			// FIXME: Always drawing entire rows is inefficient.
+			//        Should draw visible cells, only.
+			while ((row < NSMaxRange(visibleRows)) && (row < numberOfRows))
+				[self drawRow:row++ clipRect:clipRect withPainter:painter];
+			}
+		}
+   
+	if ([self gridStyleMask])
+		[self drawGridInClipRect:clipRect withPainter:painter];
+
+	if(_draggingRow >= 0)
+		{
+		int W = (int) self.bounds.size.width;
+
+		if ([self numberOfRows] == 0)
+			[painter lineAtX:0 y:0 toX:W y:0 colour:AZColour.blackColour];
+		else
+			{
+			if (_draggingRow == self.numberOfRows)
+				{
+				NSRect rowRect = NSIntersectionRect(
+									[self rectOfRow: _draggingRow-1],
+									self.visibleRect);
+				[painter lineAtX:0
+							   y:NSMaxY(rowRect)
+							 toX:NSWidth(rowRect)
+							   y:NSMaxY(rowRect)
+						  colour:AZColour.blackColour];
+				}
+			else
+				{
+				NSRect rowRect = NSIntersectionRect(
+									[self rectOfRow: _draggingRow],
+									self.visibleRect);
+				[painter lineAtX:0
+							   y:NSMinY(rowRect)
+							 toX:NSWidth(rowRect)
+							   y:NSMinY(rowRect)
+						  colour:AZColour.blackColour];
+				}
+			}
+		}
+	}
+
+/*****************************************************************************\
+|* Actually draw the highlight
+\*****************************************************************************/
+- (void) _drawHighlightedSelectionInRect:(NSRect)rect withPainter:(AZPainter *)P
+	{
+	[P rectangleWithRect:rect filled:YES colour:AZColour.selectedControlColour];
+	}
+
+/*****************************************************************************\
+|* Highlight the selection within a rectangle
+\*****************************************************************************/
+- (void)highlightSelectionInClipRect:(NSRect)rect withPainter:(AZPainter *)P
+	{
+    NSInteger numberOfRows = self.numberOfRows;
+    NSInteger numberOfCols = _tableColumns.count;
+
+    for (NSInteger column = 0; column < numberOfCols; ++column)
+		for (NSInteger row = 0; row < numberOfRows; ++row)
+			if ([self isColumnSelected:column] || [self isRowSelected:row])
+				if (!(row == _editedRow && column == _editedColumn))
+					{
+					NSRect r = [self frameOfViewAtColumn:column row:row];
+					[self _drawHighlightedSelectionInRect:r withPainter:P];
+					}
+	}
+
+
+/*****************************************************************************\
+|* Draw a row within a rectangle
+\*****************************************************************************/
+- (void)drawRow:(NSInteger)row clipRect:(NSRect)rect withPainter:(AZPainter *)P
+	{
+    // draw only visible columns.
+    NSRange visibleColumns 		= [self columnsInRect:rect];
+    NSInteger drawColumn 		= visibleColumns.location;
+    NSInteger numberOfRows		= self.numberOfRows;
+
+    if (row < 0 || row >= numberOfRows)
+		{
+		SDL_Log("invalid row %ld (valid = 0..%ld) in drawRow:clipRect:",
+				(long)row, (long)numberOfRows-1);
+		return;
+		}
+
+	for(;drawColumn < NSMaxRange(visibleColumns); drawColumn++)
+		{
+		BOOL isEdit = (row == _editedRow) && (drawColumn == _editedColumn);
+		if (isEdit && (_editingView != nil))
+			{
+			[P rectangleWithRect:_editingBorder
+						  filled:YES
+						  colour:self.backgroundColour];
+			[_editingView setNeedsDisplay:YES];
+			}
+		else
+			{
+			AZView *dataView = [self preparedViewAtColumn:drawColumn row:row];
+			[dataView setNeedsDisplay:YES];
+			}
+		}
+	}
+
+/*****************************************************************************\
+|* Draw the background within a rectangle
+\*****************************************************************************/
+- (void)drawBackgroundInClipRect:(NSRect)rect withPainter:(AZPainter *)P
+	{
+	NSArray *rowColours		= AZColour.controlAlternatingRowBackgroundColours;
+	NSInteger colourCount  	= rowColours.count;
+
+	if (colourCount == 0 || !_alternatesRowColours)
+		[P rectangleWithRect:rect filled:YES colour:self.backgroundColour];
+
+	else if (colourCount == 1)
+		[P rectangleWithRect:rect filled:YES colour:rowColours[0]];
+
+	else
+		{
+        NSRange rangeOfRows = [self rowsInRect:rect];
+        NSRect rectToFill 	= rect;
+        float heightFilled 	= 0.f;
+		NSInteger max 		= rangeOfRows.location + rangeOfRows.length;
+
+		NSInteger i;
+        for (i = rangeOfRows.location; i < max; i++)
+			{
+            rectToFill 			= [self rectOfRow:i];
+			AZColour *colour	= rowColours[i % colourCount];
+			[P rectangleWithRect:rectToFill filled:YES colour:colour];
+
+			// This is for beyond the loop.
+            rectToFill.origin.y += rectToFill.size.height;
+            heightFilled = rectToFill.origin.y;
+			}
+
+        if (_rowHeight > 0.f)
+			{
+            rectToFill.size.height = _rowHeight + _interViewSpacing.height;
+            while (heightFilled < rect.size.height)
+				{
+				AZColour *colour	= rowColours[i % colourCount];
+				[P rectangleWithRect:rectToFill filled:YES colour:colour];
+
+                heightFilled 		+= rectToFill.size.height;
+                rectToFill.origin.y += rectToFill.size.height;
+                i++;
+				}
+			}
+		}
+	}
+
+/*****************************************************************************\
+|* Draw the grid within a rectangle
+\*****************************************************************************/
+- (void)drawGridInClipRect:(NSRect)rect withPainter:(AZPainter *)P
+	{
+	if (IS_GRID_STYLE(_gridStyleMask, AZTableViewSolidVerticalGridLineMask))
+		{
+        NSRange rangeOfColumns = [self columnsInRect:rect];
+        NSInteger n = rangeOfColumns.location + rangeOfColumns.length;
+        for (NSInteger i = rangeOfColumns.location; i < n; i++)
+			{
+            NSRect columnRect = [self rectOfColumn:i];
+            float x = NSMaxX(columnRect) + ((i < n-1) ? -0.5 : 0.5);
+            float y1 = rect.origin.y;
+			float y2 = y1 + NSHeight(rect);
+			[P lineAtX:x y:y1 toX:x y:y2 colour:self.gridColour];
+			}
+		}
+
+	if (IS_GRID_STYLE(_gridStyleMask, AZTableViewSolidHorizontalGridLineMask))
+		{
+        NSRange rangeOfRows = [self rowsInRect:rect];
+        NSInteger n 		= rangeOfRows.location + rangeOfRows.length;
+        float y				= -0.5;
+
+        for (NSInteger i = rangeOfRows.location; i < n; i++)
+			{
+            NSRect rowRect = [self rectOfRow:i];
+            float x1 	= rect.origin.x;
+            y 			= NSMaxY(rowRect) - 0.5;
+			float x2	= x1 + rect.size.width;
+			[P lineAtX:x1 y:y toX:x2 y:y colour:self.gridColour];
+			}
+
+        if (_rowHeight > 0.0)
+			{
+            while (y < rect.size.height)
+				{
+                y 		   += _rowHeight + _interViewSpacing.height;
+				float x1	= rect.origin.x;
+				float x2	= x1 + rect.size.width;
+				[P lineAtX:x1 y:y toX:x2 y:y colour:self.gridColour];
+				}
+			}
+		}
+	}
+
+
+/*****************************************************************************\
+|* Find the width of all the columns. Can't use rectOfRow because empty
+|* tableviews will explode
+\*****************************************************************************/
+- (float) _displayWidthOfColumns
+	{
+    NSInteger count = _tableColumns.count;
+    float result = 0;
+
+    for (NSInteger i = 0; i < count; ++i)
+        result += _tableColumns[i].width + _interViewSpacing.width;
+
+    return result;
+	}
+
+// MARK: AZView...
+
+/*****************************************************************************\
+|* We need to resize everything
+\*****************************************************************************/
+-(void)resizeWithOldSuperviewSize:(NSSize)oldSize
+	{
+    NSSize size = self.frame.size;
+
+    if (size.width < self.superview.bounds.size.width)
+		{
+		size.width = self.superview.bounds.size.width;
+		[self setFrameSize:size];
+		}
+
+	if (self.autoresizeAllColumnsToFit)
+		{
+        float delta 	= self.enclosingScrollView.contentSize.width
+						- [self _displayWidthOfColumns];
+        NSInteger count = _tableColumns.count;
+
+        for (NSInteger i = 0; i < count; ++i)
+			{
+            AZTableColumn *column = _tableColumns[i];
+            [column setWidth:column.width + floor((delta/count))];
+			}
+		}
+    else
+        [self sizeLastColumnToFit];
+
+	[self tile];
+	}
+
+
+/*****************************************************************************\
+|* Check if we should select a column
+\*****************************************************************************/
+- (BOOL) delegateShouldSelectTableColumn:(AZTableColumn *)tableColumn
+	{
+	SEL shouldSelect = SELECTOR(@"tableView:shouldSelectTableColumn:");
+    if ([_delegate respondsToSelector:shouldSelect])
+        return [_delegate tableView:self shouldSelectTableColumn:tableColumn];
+
+	// Default to YES
+    return YES;
+	}
+
+/*****************************************************************************\
+|* Check if we should select a row
+\*****************************************************************************/
+- (BOOL) delegateShouldSelectRow:(NSInteger)row
+	{
+	SEL shouldSelect = SELECTOR(@"tableView:shouldSelectRow:");
+    if ([_delegate respondsToSelector:shouldSelect])
+        return [_delegate tableView:self shouldSelectRow:row];
+
+	// Default to YES
+    return YES;
+	}
+
+/*****************************************************************************\
+|* Set the object value back into the data-source
+\*****************************************************************************/
+-(void)dataSourceSetObjectValue:object
+				 forTableColumn:(AZTableColumn *)tableColumn
+							row:(NSInteger)row
+	{
+	SEL shouldSet = SELECTOR(@"tableView:setObjectValue:forTableColumn:row:");
+	if([_dataSource respondsToSelector:shouldSet])
+		[_dataSource tableView:self
+			    setObjectValue:object
+			    forTableColumn:tableColumn
+						   row:row];
+	}
+
+
+/*****************************************************************************\
+|* Abort editing
+\*****************************************************************************/
+-(BOOL)abortEditing
+	{
+    //[super abortEditing];
+    _editingView = nil;
+    [self setNeedsDisplayInRect:NSInsetRect(_editingBorder, -1, -1)];
+    _editingFrame 	= NSMakeRect(-1,-1,-1,-1);
+    _editedRow		= -1;
+    _editedColumn	= -1;
+    return NO;
+	}
+
+/*****************************************************************************\
+|* A text-editing widget ended editing, or we did to ourselves
+\*****************************************************************************/
+-(void) textDidEndEditing:(NSNotification *)note
+	{
+    AZTableColumn *editedColumn 				= _tableColumns[_editedColumn];
+    NSDictionary<NSString *, NSNumber*> *info 	= note.userInfo;
+
+    NSInteger textMovement 	= info[AZTextMovementUserInfoKey].integerValue;
+    NSInteger numberOfRows	= self.numberOfRows;
+
+    //[_editingView endEditing:_currentEditor];
+
+    if (_editedRow >= 0 && _editedRow < numberOfRows)
+        if ([self dataSourceCanSetObjectValue])
+            [self dataSourceSetObjectValue:[_editingView objectValue]
+							forTableColumn:editedColumn
+									   row:_editedRow];
+
+    [self abortEditing];
+    [self.window makeFirstResponder:nil];
+
+	/*************************************************************************\
+	|* Return key goes to the next row down
+	\*************************************************************************/
+    if (textMovement == AZReturnTextMovement)
+		{
+        NSInteger nextRow = _editedRow + 1;
+        if (nextRow >= numberOfRows)
+            nextRow = 0;
+
+		[self selectRow:nextRow byExtendingSelection:NO];
+        [self editColumn:_editedColumn row:nextRow select:YES];
+		}
+
+ 	/*************************************************************************\
+	|* Tab key goes to the next available editable view rightwards
+	\*************************************************************************/
+	else if (textMovement == AZTabTextMovement)
+		{
+        NSInteger nextColumn 	= _editedColumn;
+        NSInteger nextRow 		= _editedRow;
+
+        do
+			{
+			nextColumn++;
+			if (nextColumn >= _tableColumns.count)
+				{
+				nextColumn=0;
+				nextRow++;
+				if (nextRow >= numberOfRows)
+					nextRow=0;
+				}
+
+			if ([_tableColumns[nextColumn] editable])
+				break;
+			}
+		while(YES);
+
+        [self selectRow:nextRow byExtendingSelection:NO];
+        [self editColumn:nextColumn row:nextRow select:YES];
+		}
+
+	/*************************************************************************\
+	|* shift-Tab key goes to the next available editable view leftwards
+	\*************************************************************************/
+    else if (textMovement == AZBacktabTextMovement)
+		{
+        NSInteger prevColumn 	= _editedColumn-1;
+        NSInteger prevRow 		= _editedRow;
+
+        if (prevColumn < 0)
+			{
+            prevColumn = _tableColumns.count - 1;
+            prevRow -= 1;
+            if (prevRow < 0)
+                prevRow = numberOfRows - 1;
+			}
+
+        [self selectRow:prevRow byExtendingSelection:NO];
+        [self editColumn:prevColumn row:prevRow select:YES];
+		}
+
+	/*************************************************************************\
+	|* Give up
+	\*************************************************************************/
+    else
+		{
+        _editedColumn = -1;
+        _editedRow = -1;
+		}
+	}
+
+/*****************************************************************************\
+|* Ask the delegate if we should edit this table row/col combo
+\*****************************************************************************/
+- (BOOL)delegateShouldEditTableColumn:(AZTableColumn *)col row:(NSInteger)row
+	{
+	SEL shouldEdit = SELECTOR(@"tableView:shouldEditTableColumn:row:");
+    if ([_delegate respondsToSelector:shouldEdit])
+        return [_delegate tableView:self
+			  shouldEditTableColumn:col
+								row:row];
+
+	// Default to YES
+    return YES;
+	}
+
+/*****************************************************************************\
+|* Ask the delegate if we can change the selection
+\*****************************************************************************/
+- (BOOL) delegateSelectionShouldChange
+	{
+	SEL shouldChange = SELECTOR(@"selectionShouldChangeInTableView:");
+    if ([_delegate respondsToSelector:shouldChange])
+        return [_delegate selectionShouldChangeInTableView:self];
+    
+	// Default to YES
+    return YES;
+	}
+
+/*****************************************************************************\
+|* Notify that the selection is changing
+\*****************************************************************************/
+- (void) noteSelectionIsChanging
+	{
+	NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
+    [nc postNotificationName:AZTableViewSelectionIsChangingNotification
+                      object:self];
+	}
+
+/*****************************************************************************\
+|* Notify that the selection actually changed
+\*****************************************************************************/
+- (void) noteSelectionDidChange
+	{
+	NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
+    [nc postNotificationName:AZTableViewSelectionDidChangeNotification
+                      object:self];
+	}
+	
+/*****************************************************************************\
+|* Notify that the column resized, giving the old width for context
+\*****************************************************************************/
+- (void) noteColumnDidResizeWithOldWidth:(float)oldWidth
+	{
+ 	NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
+	[nc postNotificationName:AZTableViewColumnDidResizeNotification
+					  object:self
+				    userInfo:@{@"AZOldWidth" : @(oldWidth)}];
+	}
+
+/*****************************************************************************\
+|* Determine if the dataSource can set values as well as provide them
+\*****************************************************************************/
+- (BOOL) dataSourceCanSetObjectValue
+	{
+	SEL canWrite = SELECTOR(@"tableView:setObjectValue:forTableColumn:row:");
+    return [_dataSource respondsToSelector:canWrite];
+	}
+
+
+// MARK: Event handling
 
 @end

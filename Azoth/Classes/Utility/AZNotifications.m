@@ -23,3 +23,4 @@ NSString * const AZTableViewSelectionDidChangeNotification 	= @"AZ:TvSelDidChang
 NSString * const AZTableViewColumnDidMoveNotification 		= @"AZ:TvColDidMove";
 NSString * const AZTableViewColumnDidResizeNotification 	= @"AZ:TvColDidResize";
 
+NSString * const AZTextDidEndEditingNotification			= @"AZ:TextEndEdit";

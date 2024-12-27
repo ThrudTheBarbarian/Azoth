@@ -25,5 +25,7 @@ extern NSString * const AZTableViewSelectionDidChangeNotification;
 extern NSString * const AZTableViewColumnDidMoveNotification;
 extern NSString * const AZTableViewColumnDidResizeNotification;
 
+extern NSString * const AZTextDidEndEditingNotification;
+
 
 NS_ASSUME_NONNULL_END

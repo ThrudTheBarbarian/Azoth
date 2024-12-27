@@ -46,7 +46,7 @@ struct SDL_Window;
 /*****************************************************************************\
 |* Make an AZResponder the first-responder
 \*****************************************************************************/
-- (BOOL) makeFirstResponder:(AZResponder *)responder;
+- (BOOL) makeFirstResponder:(nullable AZResponder *)responder;
 
 // The main window, where the rendering happens
 @property(assign, nonatomic) struct SDL_Window *			window;

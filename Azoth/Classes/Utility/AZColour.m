@@ -122,6 +122,21 @@
 	}
 
 /*****************************************************************************\
+|* Predefined colours : very light grey
+\*****************************************************************************/
++ (AZColour *) grey12Colour
+	{
+	static AZColour *colour = nil;
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken,
+		^{
+		colour = [[AZColour alloc] initWithR:0.12f g:0.12f b:0.12f a:1.f];
+		});
+	return colour;
+	}
+
+/*****************************************************************************\
 |* Predefined colours : light grey
 \*****************************************************************************/
 + (AZColour *) grey25Colour
@@ -132,6 +147,21 @@
 	dispatch_once(&onceToken,
 		^{
 		colour = [[AZColour alloc] initWithR:0.25f g:0.25f b:0.25f a:1.f];
+		});
+	return colour;
+	}
+
+/*****************************************************************************\
+|* Predefined colours : sort of light grey
+\*****************************************************************************/
++ (AZColour *) grey37Colour
+	{
+	static AZColour *colour = nil;
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken,
+		^{
+		colour = [[AZColour alloc] initWithR:0.37f g:0.37f b:0.37f a:1.f];
 		});
 	return colour;
 	}
@@ -288,6 +318,51 @@
 	}
 
 /*****************************************************************************\
+|* Predefined colours : 'selected control' colour
+\*****************************************************************************/
++ (AZColour *) selectedControlColour
+	{
+	static AZColour *colour = nil;
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken,
+		^{
+		colour = [[AZColour alloc] initWithR:.95f g:.95f b:.95f a:1.f];
+		});
+	return colour;
+	}
+
+/*****************************************************************************\
+|* Predefined colours : 'selected text' colour
+\*****************************************************************************/
++ (AZColour *) selectedTextColour
+	{
+	static AZColour *colour = nil;
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken,
+		^{
+		colour = [[AZColour alloc] initWithR:.0f g:.0f b:.0f a:1.f];
+		});
+	return colour;
+	}
+
+/*****************************************************************************\
+|* Predefined colours : 'text' colour
+\*****************************************************************************/
++ (AZColour *) textColour
+	{
+	static AZColour *colour = nil;
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken,
+		^{
+		colour = [[AZColour alloc] initWithR:.0f g:.0f b:.0f a:1.f];
+		});
+	return colour;
+	}
+
+/*****************************************************************************\
 |* Predefined colours : 'control' background colour
 \*****************************************************************************/
 + (AZColour *) controlBackgroundColour
@@ -315,6 +390,12 @@
 		colour = [[AZColour alloc] initWithR:.8f g:.8f b:.8f a:1.f];
 		});
 	return colour;
+	}
+
+
++ (NSArray<AZColour *> *) controlAlternatingRowBackgroundColours
+	{
+	return @[self.grey12Colour, self.grey37Colour];
 	}
 
 

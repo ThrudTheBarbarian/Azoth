@@ -416,9 +416,10 @@
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
-	[painter rectangleWithRect:dirtyRect
-						filled:YES
-					    colour:self.backgroundColour];
+	if (self.isOpaque)
+		[painter rectangleWithRect:dirtyRect
+							filled:YES
+							colour:self.backgroundColour];
 	}
 
 

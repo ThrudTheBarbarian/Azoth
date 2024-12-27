@@ -29,7 +29,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (AZColour *) blueColour;
 + (AZColour *) blackColour;
 + (AZColour *) whiteColour;
++ (AZColour *) grey12Colour;
 + (AZColour *) grey25Colour;
++ (AZColour *) grey37Colour;
 + (AZColour *) grey50Colour;
 + (AZColour *) grey75Colour;
 + (AZColour *) magentaColour;
@@ -42,7 +44,11 @@ NS_ASSUME_NONNULL_BEGIN
 + (AZColour *) controlColour;
 + (AZColour *) controlBackgroundColour;
 + (AZColour *) gridColour;
++ (AZColour *) selectedControlColour;
++ (AZColour *) selectedTextColour;
++ (AZColour *) textColour;
 
++ (NSArray<AZColour *> *) controlAlternatingRowBackgroundColours;
 
 
 // MARK: uint8_t accessors

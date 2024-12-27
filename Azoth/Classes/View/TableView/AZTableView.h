@@ -204,6 +204,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)selectRowIndexes:(NSIndexSet *)indexes byExtendingSelection:(BOOL)yn;
 
 /*****************************************************************************\
+|* Select a row, optionally extending the selection
+\*****************************************************************************/
+- (void) selectRow:(NSInteger)row byExtendingSelection:(BOOL)extend;
+
+/*****************************************************************************\
 |* Select a column, optionally add to the selection
 \*****************************************************************************/
 - (void)selectColumn:(NSInteger)column byExtendingSelection:(BOOL)extend;
@@ -286,7 +291,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Draw a row within a rectangle
 \*****************************************************************************/
-- (void)drawRow:(int)row clipRect:(NSRect)rect withPainter:(AZPainter *)P;
+- (void)drawRow:(NSInteger)row clipRect:(NSRect)rect withPainter:(AZPainter *)P;
 
 /*****************************************************************************\
 |* Draw the background within a rectangle

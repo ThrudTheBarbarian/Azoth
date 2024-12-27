@@ -51,11 +51,12 @@ enum
 |* Whether to draw table grid lines
 \*****************************************************************************/
 enum {
-    AZTableViewGridNone,
+    AZTableViewGridNone						= 0,
     AZTableViewSolidVerticalGridLineMask,
     AZTableViewSolidHorizontalGridLineMask
 };
 
+#define IS_GRID_STYLE(x, type) (((x) & (type)) == type)
 
 /*****************************************************************************\
 |* Forms that highlighting can take
@@ -179,6 +180,25 @@ typedef enum
 
 	AZTextAlignmentMax
 	} AZTextAlignment;
+
+/*****************************************************************************\
+|* Text-movement constants
+\*****************************************************************************/
+typedef enum
+	{
+	AZIllegalTextMovement	= 0,
+	AZReturnTextMovement	= 1,
+	AZTabTextMovement		= 2,
+	AZBacktabTextMovement	= 3,
+	AZLeftTextMovement		= 4,
+	AZRightTextMovement		= 5,
+	AZUpTextMovement		= 6,
+	AZDownTextMovement		= 7,
+	AZCancelTextMovement	= 8,
+	AZOtherTextMovement		= 9
+	} AZTextMovement;
+
+#define AZTextMovementUserInfoKey	@"TextMovementUserInfoKey"
 
 /*****************************************************************************\
 |* Ruler view types
@@ -313,6 +333,11 @@ typedef void (^MenuDoneBlock)(BOOL menuClicked);
 
 #define NS_RECT(sdlrect)													\
 	NSMakeRect(sdlrect.x, sdlrect.y, sdlrect.w, sdlrect.h)
+
+/*****************************************************************************\
+|* Less typing :)
+\*****************************************************************************/
+#define SELECTOR(x)		NSSelectorFromString(x)
 
 /*****************************************************************************\
 |* Memory aids

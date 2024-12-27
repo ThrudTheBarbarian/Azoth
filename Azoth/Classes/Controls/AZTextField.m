@@ -193,6 +193,11 @@ static int 			_lineHeight = 29;
 		}
 	}
 
+- (void) setObjectValue:(NSObject *)objectValue
+	{
+	return [self setStringValue:objectValue.description];
+	}
+
 /*****************************************************************************\
 |* Likewise, return the string from the TTF_Text
 \*****************************************************************************/
@@ -549,8 +554,9 @@ static int 			_lineHeight = 29;
 				handled = YES;
 				break;
 
+			case SDLK_TAB:
 			case SDLK_RETURN:
-				[self _editAction];
+				[self _editAction:e->key];
 				handled = YES;
 				break;
 			}
@@ -735,8 +741,24 @@ static int 			_lineHeight = 29;
 /*****************************************************************************\
 |* Send an action to the target if we have both
 \*****************************************************************************/
-- (void) _editAction
+- (void) _editAction:(NSInteger)key
 	{
+	// Send a notification that we have finished editing, in case anyone is
+	// listening
+	NSInteger movement 		 = (key == SDLK_TAB)   ? AZTabTextMovement
+							 : (key == SDLK_RETURN)? AZReturnTextMovement
+							 : AZOtherTextMovement;
+
+	NSDictionary *userInfo	 =
+		@{
+		AZTextMovementUserInfoKey : @(movement)
+		};
+
+	self.objectValue = self.stringValue;
+	NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
+	[nc postNotificationName:AZTextDidEndEditingNotification
+					  object:self
+					userInfo:userInfo];
 	[self sendAction:self.action to:self.target];
 	}
 
