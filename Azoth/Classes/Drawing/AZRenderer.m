@@ -247,7 +247,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 										&p,
 										(SDL_FlipMode)flip);
 		}
-	SDL_Log("Cannot find texture %d to blit from", (int)textureId);
+	SDL_Log("Cannot find texture %d to [complex] blit from", (int)textureId);
 	return -1;
 	}
 

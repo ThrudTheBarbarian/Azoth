@@ -181,8 +181,8 @@
 	\*************************************************************************/
 	else
 		{
-		w = self.frame.size.width;
-		h = self.frame.size.height;
+		w = self.textureSize.width;
+		h = self.textureSize.height;
 		}
 
 	/*************************************************************************\
@@ -263,6 +263,7 @@
 	NSRect src 		= self.bounds;
 	NSRect dst		= frame;
 
+
 	/*************************************************************************\
 	|* We also want to clip to the every parent view's frame in the list down
 	|* from the window's content-view
@@ -274,6 +275,21 @@
 		view = view.superview;
 		NSRect frameClip 	= [view convertRect:view.bounds toView:nil];
 		clip				= NSIntersectionRect(clip, frameClip);
+		}
+
+	/*************************************************************************\
+	|* For views that can grow without bound, the backing texture idea is not
+	|* sufficient - because GPUs place limits on texture-sizes. So, we allow
+	|* these views to render into a window-sized texture instead.
+	|*
+	|* If a view returns YES from -(BOOL)directRendering then it is
+	|* responsible for drawing as if it were at the correct position, and we
+	|* will render from (0,0) +-> (W,H), where W,H come from the clip rect
+	\*************************************************************************/
+	if (self.directRendering)
+		{
+		src 	   	= NSMakeRect(0, 0, clip.size.width, clip.size.height);
+		dst			= clip;
 		}
 
 	/*************************************************************************\

@@ -9,12 +9,14 @@
 #import "AZApp.h"
 #import "AZClipView.h"
 #import "AZColour.h"
+#import "AZPainter.h"
+#import "AZScrollView.h"
 #import "AZTableColumn.h"
 #import "AZTableRowRecord.h"
 #import "AZTableView.h"
 #import "AZView+Internal.h"
 
-#define DEFAULT_ROWHEIGHT		(30.f)
+#define DEFAULT_ROWHEIGHT		(25.f)
 
 /*****************************************************************************\
 |* "private" methods / properties
@@ -31,6 +33,9 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 // The indexes of rows which we are currently showing
 @property (strong, nonatomic, nullable) NSMutableIndexSet* 			visibleRows;
 
+// The current offset of the tableview
+@property (assign, nonatomic) NSPoint		 						offset;
+
 @end
 
 @implementation AZTableView
@@ -43,11 +48,12 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
     if (self = [super initWithFrame:frame])
 		{
 		_rowHeight 					= DEFAULT_ROWHEIGHT;
-		_spacing 					= NSMakeSize(3.0,2.0);
+		_spacing 					= NSMakeSize(3.0,1.0);
+		_offset				 		= NSMakePoint(0,0);
 
 		// the default isn't actually given in the spec, but this seems
 		// more like default behavior
-		_autoresizeColumns 			= NO;
+		_autoresizeColumns 			= YES;
 
 //		float height				= _rowHeight + _spacing.height;
 //		float width					= NSWidth(self.bounds);
@@ -56,7 +62,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		_tableColumns 				= [NSMutableArray  new];
 		self.backgroundColour 		= AZColour.controlBackgroundColour;
 		_gridColour 				= AZColour.gridColour;
-		_gridStyleMask 				= AZTableViewGridNone;
+		_gridStyleMask 				= AZTableViewSolidGridLineMask;
 		_alternateRowColours 		= NO;
 
 		_pool 						= [NSMutableDictionary new];
@@ -117,6 +123,15 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	{
     [_tableColumns addObject:column];
     [column setTableView:self];
+
+	if (self.autoresizeColumns)
+		{
+		int num = (int) _tableColumns.count;
+
+		int width = (self.bounds.size.width - (num-1) * _spacing.width)  / num;
+		for (AZTableColumn *col in _tableColumns)
+			col.width = width;
+		}
     [self reloadData];
     //[_headerView setNeedsDisplay:YES];
 	}
@@ -150,6 +165,94 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
     [self _layoutTableRows];
 	}
 
+/*****************************************************************************\
+|* Emulate 'scrollToPoint' in the clipview
+\*****************************************************************************/
+- (void) scrollToPoint:(NSPoint)point
+	{
+	_offset = point;
+	[self reloadData];
+	[self setNeedsDisplay:YES];
+	}
+
+/*****************************************************************************\
+|* Return the size of the texture to create. This is used when the view could
+|* possibly grow outside of the size-limit of a GPU texture - eg when inside
+|* an enormous scrollview. In that instance, it ought to implement the clipView
+|* delegate -scrollToPoint:(NSPoint) to get where it is "scrolled" to, and
+|* handle drawing specially with a window-sized texture rather than a backing-
+|* sized texture. By default this method just returns the view's frame.size
+\*****************************************************************************/
+- (NSSize) textureSize
+	{
+	AZScrollView *sv = self.enclosingScrollView;
+	if (sv)
+		return sv.frame.size;
+	return self.frame.size;
+	}
+
+/*****************************************************************************\
+|* The companion method is -(BOOL)directRendering which turns off the view
+|* translation and will always render from 0,0->W,H (where W,H are taken from
+|* -(NSSize)textureSize. The default return from this method is NO
+\*****************************************************************************/
+- (BOOL) directRendering
+	{
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Draw the background
+\*****************************************************************************/
+- (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
+	{
+	if (self.gridStyleMask)
+		[self drawGridWithPainter:painter];
+	}
+
+/*****************************************************************************\
+|* Draw the grid. Note that this takes into account the offset of the
+|* enclosing scrollview (well, clipview of the scrollview) so the co-ordinates
+|* in local space are mapped correctly when blitted into global space.
+\*****************************************************************************/
+- (void) drawGridWithPainter:(AZPainter *)painter
+	{
+	if (_numberOfRows > 0)
+		{
+		if (_gridStyleMask & AZTableViewSolidVerticalGridLineMask)
+			{
+			float x 	= - _offset.x;
+			float xMax	= self.bounds.size.width;
+			float h		= self.bounds.size.height;
+			int idx		= 0;
+			while ((x < xMax) && (idx < self.numberOfColumns))
+				{
+				if (x >= 0)
+					[painter lineAtX:x y:0 toX:x y:h colour:self.gridColour];
+				x += _tableColumns[idx].width + _spacing.width/2;
+				idx ++;
+				}
+			}
+
+		if (_gridStyleMask & AZTableViewSolidHorizontalGridLineMask)
+			{
+			float y 	= _rowRecords[0].start - _offset.y - _spacing.height/2.f;
+			float yMax 	= self.textureSize.height;
+			float w		= self.bounds.size.width;
+
+			int idx = 0;
+			while ((y < yMax) && (idx < _numberOfRows))
+				{
+				y = _rowRecords[idx].start - _offset.y - _spacing.height/2.f;
+				if (y >= 0)
+					{
+					[painter lineAtX:0 y:y toX:w y:y colour:self.gridColour];
+					}
+				idx ++;
+				}
+			}
+		}
+	}
 
 
 // MARK: View pool management
@@ -215,7 +318,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 \*****************************************************************************/
 - (void) _generateHeightAndOffsetData
 	{
-	SEL perRow = SELECTOR(@"tableView:heightForRow:");
+	SEL perRow = SELECTOR(@"tableView:heightOfRow:");
 	BOOL checkHeightForEachRow = [_delegate respondsToSelector:perRow];
 
     NSMutableArray* newRecords 	= [NSMutableArray new];
@@ -275,8 +378,9 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 \*****************************************************************************/
 - (void) _layoutTableRows
 	{
-    CGFloat currentStartY 		= [self enclosingClipView].scrollPoint.y;
-    CGFloat currentEndY 		= currentStartY + self.frame.size.height;
+	AZClipView *clipview		= self.enclosingClipView;
+    float currentStartY 		= clipview.scrollPoint.y;
+    float currentEndY 			= currentStartY + clipview.frame.size.height;
 
 	NSInteger max 				= self.rowRecords.count;
 	NSRange range				= NSMakeRange(0, max);
@@ -285,11 +389,11 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 
     NSMutableIndexSet* visible	= [NSMutableIndexSet new];
 
-    float x, y, rowHeight, viewHeight;
+    int x, y, rowHeight, viewHeight;
     do
 		{
         [visible addIndex: rowToDisplay];
-		x 	= 0.f;
+		x 	= 0;
         y 	= _rowRecords[rowToDisplay].start;
         rowHeight 	= _rowRecords[rowToDisplay].height;
 		viewHeight 	= rowHeight - _spacing.height;
@@ -297,6 +401,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		for (AZTableColumn *col in _tableColumns)
 			{
 			AZView *view = [col dataViewForRow:rowToDisplay];
+			view.postFrameNotifications = NO;
 			NSRect frame = NSMakeRect(x, y, col.width, viewHeight);
 			[view setFrame:frame];
 			x += col.width + _spacing.width;

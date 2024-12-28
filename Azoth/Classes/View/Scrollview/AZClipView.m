@@ -282,14 +282,29 @@
 \*****************************************************************************/
 -(void)scrollToPoint:(NSPoint)point
 	{
-	point = [self constrainScrollPoint:point];
-
-	// No need for more work and a full redisplay if we don't really scroll
 	if (!NSEqualPoints(point, self.bounds.origin))
 		{
 		[self setBoundsOrigin:point];
 		[self setNeedsDisplay:YES];
 
+		/*********************************************************************\
+		|* If the document-view understands that it's being scrolled, give it
+		|* a chance to optimise its display, so it doesnt have to maintain an
+		|* enormous backing texture
+		\*********************************************************************/
+		SEL scrollToPoint = SELECTOR(@"scrollToPoint:");
+		if ([self.documentView respondsToSelector:scrollToPoint])
+			{
+			IMP imp = [self.documentView methodForSelector:scrollToPoint];
+			void (*func)(id, SEL, NSPoint) = (void *)imp;
+			func(self.documentView, scrollToPoint, point);
+			}
+
+		/*********************************************************************\
+		|* If we're in a ScrollView (which seems likely...) then reflect the
+		|* current state of the scroll position into the scrollbars managed by
+		|* the enclosing scrollview
+		\*********************************************************************/
 		if ([self.superview isKindOfClass:AZScrollView.class])
 			[(AZScrollView *)self.superview reflectScrolledClipView:self];
 		}
