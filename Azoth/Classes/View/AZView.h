@@ -37,6 +37,7 @@ struct SDL_Texture;
 struct SDL_Window;
 struct SDL_Mutex;
 
+@class AZClipView;
 @class AZColour;
 @class AZPainter;
 @class AZScrollView;
@@ -65,6 +66,11 @@ NS_ASSUME_NONNULL_BEGIN
 |* Find the closest scrollview upwards in the hierarchy
 \*****************************************************************************/
 - (nullable AZScrollView *)enclosingScrollView;
+
+/*****************************************************************************\
+|* Find an enclosing clipview
+\*****************************************************************************/
+-(nullable AZClipView *) enclosingClipView;
 
 /*****************************************************************************\
 |* Scroll a view within an enclosing scrollview until the point is visible

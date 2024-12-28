@@ -11,11 +11,14 @@
 #import "AZTableHeaderView.h"
 #import "AZTableView.h"
 #import "AZTextField.h"
+#import "AZView.h"
 
 /*****************************************************************************\
 |* "private" methods / properties
 \*****************************************************************************/
 @interface AZTableColumn()
+@property(strong, nonatomic)
+NSMutableDictionary<NSNumber *,AZView *> *							cache;
 @end
 
 @implementation AZTableColumn
@@ -24,7 +27,7 @@
 |* Initialise: NSOutlineView needs to programmatically instantiated as IB/WOF4
 |* doesn't have an editor for it.. a
 \*****************************************************************************/
-- (instancetype) initWithIdentifier:(NSObject *)identifier
+- (instancetype) initWithIdentifier:(NSString *)identifier
 	{
 	if (self = [super init])
 		{
@@ -34,10 +37,11 @@
 		_maxWidth	= FLT_MAX;
 		_resizable	= YES;
 		_editable	= YES;
+		_cache		= [NSMutableDictionary new];
 
 		NSRect standardFrame = NSMakeRect(0, 0, 100, 20);
-        _headerView = [[AZTableHeaderView alloc] initWithFrame:standardFrame];
-        _dataView 	= [[AZTextField alloc] initWithFrame:standardFrame];
+//        _headerView = [[AZTableHeaderView alloc] initWithFrame:standardFrame];
+//        _dataView 	= [[AZTextField alloc] initWithFrame:standardFrame];
 		}
     return self;
 	}
@@ -46,7 +50,7 @@
 /*****************************************************************************\
 |* Constrain the width when setting
 \*****************************************************************************/
--(void)setWidth:(float)width
+-(void) setWidth:(float)width
 	{
     if (width > _maxWidth)
         width = _maxWidth;
@@ -67,16 +71,58 @@
 \*****************************************************************************/
 - (nullable AZView *) dataViewForRow:(NSInteger)row
 	{
-	AZView *view = nil;
+	/*************************************************************************\
+	|* First check to see if its in the cache
+	\*************************************************************************/
+	AZView *view = [_cache objectForKey:@(row)];
 
-	id<AZTableViewDelegate> delegate = _tableView.delegate;
-	SEL getView = SELECTOR(@"tableView:viewForTableColumn:row:");
-	if ([delegate respondsToSelector:getView])
-		view = [delegate tableView:_tableView viewForTableColumn:self row:row];
-	else
-		SDL_Log("TableView delegate does not supply views!");
+	/*************************************************************************\
+	|* If we can't find it in the cache, ask the delegate to provide one
+	\*************************************************************************/
+	if (view == nil)
+		{
+		id<AZTableViewDelegate> delegate = _tableView.delegate;
+		SEL getView = SELECTOR(@"tableView:viewForTableColumn:row:");
+		if ([delegate respondsToSelector:getView])
+			{
+			view = [delegate tableView:_tableView
+					viewForTableColumn:self
+								   row:row];
+			_cache[@(row)] = view;
+			}
+		else
+			SDL_Log("TableView delegate does not supply views!");
+
+		/*********************************************************************\
+		|* And home it inside the table-view
+		\*********************************************************************/
+		[_tableView addSubview:view];
+		}
 
 	return view;
 	}
+
+/*****************************************************************************\
+|* Return any cached rows to the pool
+\*****************************************************************************/
+- (void) returnViewsInSet:(NSIndexSet *)set
+	{
+	NSMutableArray<AZView *> *views = [NSMutableArray new];
+
+	[set enumerateIndexesUsingBlock:
+		^(NSUInteger row, BOOL * _Nonnull stop)
+			{
+			AZView *view = _cache[@(row)];
+			if (view)
+				{
+				[views addObject:view];
+				[view removeFromSuperview];
+				[_cache removeObjectForKey:@(row)];
+				}
+			}];
+
+	[_tableView addToPool:views];
+	}
+
 
 @end

@@ -829,24 +829,27 @@ static int 			_lineHeight = 29;
 - (void) _editEnsureCursorVisible
 	{
 	TTF_SubString cursor;
- 	if (TTF_GetTextSubString(_text, _cursor, &cursor))
+	if (_text->text != NULL)
 		{
-		// If the cursor would go off the screen to the right, push the
-		// editArea off to the left to compensate
-		int cx = cursor.rect.w + cursor.rect.x;
-		int cumulativeWidth = 0;
-		int maxX = _origArea.size.width
-				- _bCL[0].size.width
-				- _bCR[0].size.width;
-		TTF_SubString prefix, next;
-		TTF_GetTextSubString(_text, 0, &prefix);
-		while (cx - cumulativeWidth > maxX)
+		if (TTF_GetTextSubString(_text, _cursor, &cursor))
 			{
-			cumulativeWidth += prefix.rect.w;
-			TTF_GetNextTextSubString(_text, &prefix, &next);
-			prefix = next;
+			// If the cursor would go off the screen to the right, push the
+			// editArea off to the left to compensate
+			int cx = cursor.rect.w + cursor.rect.x;
+			int cumulativeWidth = 0;
+			int maxX = _origArea.size.width
+					- _bCL[0].size.width
+					- _bCR[0].size.width;
+			TTF_SubString prefix, next;
+			TTF_GetTextSubString(_text, 0, &prefix);
+			while (cx - cumulativeWidth > maxX)
+				{
+				cumulativeWidth += prefix.rect.w;
+				TTF_GetNextTextSubString(_text, &prefix, &next);
+				prefix = next;
+				}
+			_editArea.origin.x = _origArea.origin.x - cumulativeWidth;
 			}
-		_editArea.origin.x = _origArea.origin.x - cumulativeWidth;
 		}
 	}
 

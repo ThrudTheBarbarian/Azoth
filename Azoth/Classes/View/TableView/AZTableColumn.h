@@ -14,19 +14,27 @@ NS_ASSUME_NONNULL_BEGIN
 @class AZView;
 
 @interface AZTableColumn : NSObject
+/*****************************************************************************\
+|* Initialise: programmatically
+\*****************************************************************************/
+- (instancetype) initWithIdentifier:(NSString *)identifier;
 
 /*****************************************************************************\
-|* Return a view for a given row
+|* Provide a view for a given row
 \*****************************************************************************/
 - (nullable AZView *) dataViewForRow:(NSInteger)row;
 
+/*****************************************************************************\
+|* Return any cached rows to the pool
+\*****************************************************************************/
+- (void) returnViewsInSet:(NSIndexSet *)set;
 
 /*****************************************************************************\
 |* Properties
 \*****************************************************************************/
 
 // Identifier for the column
-@property(strong, nonatomic) NSObject *							identifier;
+@property(strong, nonatomic) NSString *							identifier;
 
 // The table-view we belong to
 @property(strong, nonatomic, nullable) AZTableView *			tableView;

@@ -597,7 +597,7 @@
 \*****************************************************************************/
 - (BOOL) scrollRectToVisible:(NSRect)rect
 	{
-    AZClipView *clipView = [self _enclosingClipView];
+    AZClipView *clipView = [self enclosingClipView];
     AZView *documentView = [clipView documentView];
 
     // Fetch the document view visible rect in document view space
@@ -659,7 +659,7 @@
 \*****************************************************************************/
 -(void)scrollPoint:(NSPoint)point
 	{
-	AZClipView *clipView = [self _enclosingClipView];
+	AZClipView *clipView = [self enclosingClipView];
 
 	if (clipView != nil)
 		{
@@ -682,12 +682,10 @@
 	return nil;
 	}
 
-// MARK: Private methods
-
 /*****************************************************************************\
 |* Find an enclosing clipview
 \*****************************************************************************/
--(nullable AZClipView *) _enclosingClipView
+-(nullable AZClipView *) enclosingClipView
 	{
 	AZView *result = self.superview;
 
@@ -697,6 +695,8 @@
 
 	return nil;
 	}
+
+// MARK: Private methods
 
 /*****************************************************************************\
 |* Calculate the visible rect
