@@ -37,6 +37,7 @@ struct SDL_Texture;
 struct SDL_Window;
 struct SDL_Mutex;
 
+@class AZClipView;
 @class AZColour;
 @class AZPainter;
 @class AZScrollView;
@@ -65,6 +66,11 @@ NS_ASSUME_NONNULL_BEGIN
 |* Find the closest scrollview upwards in the hierarchy
 \*****************************************************************************/
 - (nullable AZScrollView *)enclosingScrollView;
+
+/*****************************************************************************\
+|* Find an enclosing clipview
+\*****************************************************************************/
+-(nullable AZClipView *) enclosingClipView;
 
 /*****************************************************************************\
 |* Scroll a view within an enclosing scrollview until the point is visible
@@ -116,6 +122,26 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 -(void)setBoundsSize:(NSSize)size;
 -(void)setBoundsOrigin:(NSPoint)origin;
+
+/*****************************************************************************\
+|* Called on a view when it resizes
+\*****************************************************************************/
+- (void) didResizeFrom:(NSRect)oldFrame;
+
+/*****************************************************************************\
+|* Return the size of the texture to create. This is used when the view could
+|* possibly grow outside of the size-limit of a GPU texture - eg when inside
+|* an enormous scrollview. In that instance, it ought to implement the clipView
+|* delegate -scrollToPoint:(NSPoint) to get where it is "scrolled" to, and
+|* handle drawing specially with a window-sized texture rather than a backing-
+|* sized texture. By default this method just returns the view's frame.size.
+|*
+|* The companion method is -(BOOL)directRendering which turns off the view
+|* translation and will always render from 0,0->W,H (where W,H are taken from
+|* -(NSSize)textureSize. The default return from this method is NO
+\*****************************************************************************/
+- (NSSize) textureSize;
+- (BOOL) directRendering;
 
 /*****************************************************************************\
 |* Determine if this, or any view further up the view hierarchy, is hidden
@@ -207,6 +233,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Whether the view is hidden (not displayed)
 @property(assign, nonatomic) BOOL							hidden;
+
+// Post notifications when the frame is changed
+@property(assign, nonatomic) BOOL						postFrameNotifications;
+
+// Post notifications when the bounds are changed
+@property(assign, nonatomic) BOOL						postBoundsNotifications;
 @end
 
 NS_ASSUME_NONNULL_END

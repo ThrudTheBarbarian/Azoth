@@ -9,26 +9,39 @@
 /* Begin PBXBuildFile section */
 		F41BC6AD2D0A720700E61EDD /* Azoth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; };
 		F41BC6AE2D0A720700E61EDD /* Azoth.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		F45ED9282D1145BA00CE8B28 /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9212D1145B900CE8B28 /* SDL3_ttf.xcframework */; };
 		F45ED92A2D1145BA00CE8B28 /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
 		F45ED92B2D1145BA00CE8B28 /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
 		F45ED92C2D1145BA00CE8B28 /* avif.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; };
 		F45ED9312D1146DE00CE8B28 /* avif.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; };
 		F45ED9322D1146DE00CE8B28 /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
-		F45ED9352D1146DE00CE8B28 /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9212D1145B900CE8B28 /* SDL3_ttf.xcframework */; };
 		F45ED9362D1146DE00CE8B28 /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
 		F45ED9382D11471000CE8B28 /* SDL3_image.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; };
 		F45ED9392D1147EB00CE8B28 /* SDL3_image.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; };
 		F45ED93A2D11480800CE8B28 /* SDL3_image.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F45ED93B2D11480A00CE8B28 /* avif.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F45ED93C2D11480D00CE8B28 /* jxl.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		F45ED93E2D11481300CE8B28 /* SDL3_test.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9222D1145B900CE8B28 /* SDL3_test.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		F45ED93F2D11481500CE8B28 /* SDL3_ttf.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9212D1145B900CE8B28 /* SDL3_ttf.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F45ED9402D11481600CE8B28 /* webp.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F49528402D1F4B3100D6B8A6 /* avif.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; };
+		F49528412D1F4B3100D6B8A6 /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
+		F49528442D1F4B3100D6B8A6 /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
+		F49528452D1F4B4700D6B8A6 /* Azoth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; };
+		F49528482D1F4C8000D6B8A6 /* SDL3_image.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F49528492D1F4C8000D6B8A6 /* avif.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F495284A2D1F4C8000D6B8A6 /* jxl.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F495284D2D1F4C8000D6B8A6 /* webp.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F495284E2D1F4C8000D6B8A6 /* Azoth.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F495337F2D1F840800D6B8A6 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
+		F49533812D1F841200D6B8A6 /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
+		F49533822D1F841800D6B8A6 /* SDL3_ttf.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F49533832D1F841B00D6B8A6 /* SDL3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F49533842D1F842200D6B8A6 /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
+		F49533852D1F842500D6B8A6 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
+		F49533862D1F8DAB00D6B8A6 /* SDL3_image.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; };
+		F49533872D1F8DCA00D6B8A6 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
+		F49533882D1F8DCD00D6B8A6 /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
+		F49533892D1F8DD100D6B8A6 /* SDL3_ttf.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F495338A2D1F8DD300D6B8A6 /* SDL3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F4B6A1412D0BB0E80033580D /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = F4B6A1402D0BB0E80033580D /* README.md */; };
-		F4B8E14C2D1B32D100C9B479 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4B8E14B2D1B32D100C9B479 /* SDL3.xcframework */; };
-		F4B8E14D2D1B337A00C9B479 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4B8E14B2D1B32D100C9B479 /* SDL3.xcframework */; };
-		F4B8E14E2D1B33DB00C9B479 /* SDL3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F4B8E14B2D1B32D100C9B479 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,14 +61,30 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				F41BC6AE2D0A720700E61EDD /* Azoth.framework in Embed Frameworks */,
+				F49533892D1F8DD100D6B8A6 /* SDL3_ttf.xcframework in Embed Frameworks */,
+				F495338A2D1F8DD300D6B8A6 /* SDL3.xcframework in Embed Frameworks */,
 				F45ED93A2D11480800CE8B28 /* SDL3_image.xcframework in Embed Frameworks */,
-				F45ED93E2D11481300CE8B28 /* SDL3_test.framework in Embed Frameworks */,
-				F45ED9402D11481600CE8B28 /* webp.xcframework in Embed Frameworks */,
-				F45ED93F2D11481500CE8B28 /* SDL3_ttf.xcframework in Embed Frameworks */,
-				F45ED93C2D11480D00CE8B28 /* jxl.xcframework in Embed Frameworks */,
-				F4B8E14E2D1B33DB00C9B479 /* SDL3.xcframework in Embed Frameworks */,
 				F45ED93B2D11480A00CE8B28 /* avif.xcframework in Embed Frameworks */,
+				F45ED93C2D11480D00CE8B28 /* jxl.xcframework in Embed Frameworks */,
+				F41BC6AE2D0A720700E61EDD /* Azoth.framework in Embed Frameworks */,
+				F45ED9402D11481600CE8B28 /* webp.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F49528462D1F4C6300D6B8A6 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F49533832D1F841B00D6B8A6 /* SDL3.xcframework in Embed Frameworks */,
+				F49533822D1F841800D6B8A6 /* SDL3_ttf.xcframework in Embed Frameworks */,
+				F49528482D1F4C8000D6B8A6 /* SDL3_image.xcframework in Embed Frameworks */,
+				F49528492D1F4C8000D6B8A6 /* avif.xcframework in Embed Frameworks */,
+				F495284A2D1F4C8000D6B8A6 /* jxl.xcframework in Embed Frameworks */,
+				F495284E2D1F4C8000D6B8A6 /* Azoth.framework in Embed Frameworks */,
+				F495284D2D1F4C8000D6B8A6 /* webp.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -75,15 +104,15 @@
 /* Begin PBXFileReference section */
 		F41BC6522D0A61BA00E61EDD /* Azoth.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Azoth.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F41BC69C2D0A71FD00E61EDD /* AZDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		F45ED9212D1145B900CE8B28 /* SDL3_ttf.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3_ttf.xcframework; path = ../../../../opt/SDL3/SDL3_ttf.xcframework; sourceTree = "<group>"; };
-		F45ED9222D1145B900CE8B28 /* SDL3_test.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL3_test.framework; path = ../../../../opt/SDL3/SDL3_test.framework; sourceTree = "<group>"; };
 		F45ED9232D1145B900CE8B28 /* webp.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = webp.xcframework; path = ../../../../opt/SDL3/webp.xcframework; sourceTree = "<group>"; };
 		F45ED9242D1145B900CE8B28 /* jxl.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = jxl.xcframework; path = ../../../../opt/SDL3/jxl.xcframework; sourceTree = "<group>"; };
 		F45ED9252D1145B900CE8B28 /* avif.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = avif.xcframework; path = ../../../../opt/SDL3/avif.xcframework; sourceTree = "<group>"; };
 		F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3_image.xcframework; path = ../../../../opt/SDL3/SDL3_image.xcframework; sourceTree = "<group>"; };
+		F495282B2D1F496200D6B8A6 /* AZTable.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZTable.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F495337E2D1F840800D6B8A6 /* SDL3.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3.xcframework; path = ../../../../opt/SDL3/SDL3.xcframework; sourceTree = "<group>"; };
+		F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3_ttf.xcframework; path = ../../../../opt/SDL3/SDL3_ttf.xcframework; sourceTree = "<group>"; };
 		F4B6A1402D0BB0E80033580D /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		F4B6A3B62D0F84C00033580D /* genRsrc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = genRsrc.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		F4B8E14B2D1B32D100C9B479 /* SDL3.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3.xcframework; path = ../../../../opt/SDL3/SDL3.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -144,6 +173,11 @@
 			path = AZDemo;
 			sourceTree = "<group>";
 		};
+		F495282C2D1F496200D6B8A6 /* AZTable */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AZTable;
+			sourceTree = "<group>";
+		};
 		F4B6A3B72D0F84C00033580D /* genRsrc */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = genRsrc;
@@ -156,11 +190,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F4B8E14C2D1B32D100C9B479 /* SDL3.xcframework in Frameworks */,
+				F49533852D1F842500D6B8A6 /* SDL3.xcframework in Frameworks */,
+				F49533842D1F842200D6B8A6 /* SDL3_ttf.xcframework in Frameworks */,
 				F45ED9312D1146DE00CE8B28 /* avif.xcframework in Frameworks */,
 				F45ED9322D1146DE00CE8B28 /* jxl.xcframework in Frameworks */,
 				F45ED9382D11471000CE8B28 /* SDL3_image.xcframework in Frameworks */,
-				F45ED9352D1146DE00CE8B28 /* SDL3_ttf.xcframework in Frameworks */,
 				F45ED9362D1146DE00CE8B28 /* webp.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -169,13 +203,27 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F45ED9282D1145BA00CE8B28 /* SDL3_ttf.xcframework in Frameworks */,
+				F49533872D1F8DCA00D6B8A6 /* SDL3.xcframework in Frameworks */,
+				F49533882D1F8DCD00D6B8A6 /* SDL3_ttf.xcframework in Frameworks */,
 				F45ED92A2D1145BA00CE8B28 /* webp.xcframework in Frameworks */,
 				F45ED92B2D1145BA00CE8B28 /* jxl.xcframework in Frameworks */,
 				F45ED92C2D1145BA00CE8B28 /* avif.xcframework in Frameworks */,
 				F45ED9392D1147EB00CE8B28 /* SDL3_image.xcframework in Frameworks */,
 				F41BC6AD2D0A720700E61EDD /* Azoth.framework in Frameworks */,
-				F4B8E14D2D1B337A00C9B479 /* SDL3.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F49528282D1F496200D6B8A6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F49528442D1F4B3100D6B8A6 /* webp.xcframework in Frameworks */,
+				F49533812D1F841200D6B8A6 /* SDL3_ttf.xcframework in Frameworks */,
+				F49533862D1F8DAB00D6B8A6 /* SDL3_image.xcframework in Frameworks */,
+				F495337F2D1F840800D6B8A6 /* SDL3.xcframework in Frameworks */,
+				F49528412D1F4B3100D6B8A6 /* jxl.xcframework in Frameworks */,
+				F49528402D1F4B3100D6B8A6 /* avif.xcframework in Frameworks */,
+				F49528452D1F4B4700D6B8A6 /* Azoth.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -196,6 +244,7 @@
 				F41BC6542D0A61BA00E61EDD /* Azoth */,
 				F41BC69D2D0A71FD00E61EDD /* AZDemo */,
 				F4B6A3B72D0F84C00033580D /* genRsrc */,
+				F495282C2D1F496200D6B8A6 /* AZTable */,
 				F4B6A11B2D0A977D0033580D /* Frameworks */,
 				F41BC6532D0A61BA00E61EDD /* Products */,
 			);
@@ -207,6 +256,7 @@
 				F41BC6522D0A61BA00E61EDD /* Azoth.framework */,
 				F41BC69C2D0A71FD00E61EDD /* AZDemo.app */,
 				F4B6A3B62D0F84C00033580D /* genRsrc.app */,
+				F495282B2D1F496200D6B8A6 /* AZTable.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -214,12 +264,11 @@
 		F4B6A11B2D0A977D0033580D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				F4B8E14B2D1B32D100C9B479 /* SDL3.xcframework */,
+				F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */,
+				F495337E2D1F840800D6B8A6 /* SDL3.xcframework */,
 				F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */,
 				F45ED9252D1145B900CE8B28 /* avif.xcframework */,
 				F45ED9242D1145B900CE8B28 /* jxl.xcframework */,
-				F45ED9222D1145B900CE8B28 /* SDL3_test.framework */,
-				F45ED9212D1145B900CE8B28 /* SDL3_ttf.xcframework */,
 				F45ED9232D1145B900CE8B28 /* webp.xcframework */,
 			);
 			name = Frameworks;
@@ -285,6 +334,29 @@
 			productReference = F41BC69C2D0A71FD00E61EDD /* AZDemo.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F495282A2D1F496200D6B8A6 /* AZTable */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F49528382D1F496300D6B8A6 /* Build configuration list for PBXNativeTarget "AZTable" */;
+			buildPhases = (
+				F49528272D1F496200D6B8A6 /* Sources */,
+				F49528282D1F496200D6B8A6 /* Frameworks */,
+				F49528292D1F496200D6B8A6 /* Resources */,
+				F49528462D1F4C6300D6B8A6 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F495282C2D1F496200D6B8A6 /* AZTable */,
+			);
+			name = AZTable;
+			packageProductDependencies = (
+			);
+			productName = AZTable;
+			productReference = F495282B2D1F496200D6B8A6 /* AZTable.app */;
+			productType = "com.apple.product-type.application";
+		};
 		F4B6A3B52D0F84C00033580D /* genRsrc */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F4B6A3C32D0F84C10033580D /* Build configuration list for PBXNativeTarget "genRsrc" */;
@@ -324,6 +396,9 @@
 						CreatedOnToolsVersion = 16.1;
 						LastSwiftMigration = 1610;
 					};
+					F495282A2D1F496200D6B8A6 = {
+						CreatedOnToolsVersion = 16.1;
+					};
 					F4B6A3B52D0F84C00033580D = {
 						CreatedOnToolsVersion = 16.1;
 					};
@@ -346,6 +421,7 @@
 				F41BC6512D0A61BA00E61EDD /* Azoth */,
 				F41BC69B2D0A71FD00E61EDD /* AZDemo */,
 				F4B6A3B52D0F84C00033580D /* genRsrc */,
+				F495282A2D1F496200D6B8A6 /* AZTable */,
 			);
 		};
 /* End PBXProject section */
@@ -360,6 +436,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F41BC69A2D0A71FD00E61EDD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F49528292D1F496200D6B8A6 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -384,6 +467,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F41BC6982D0A71FD00E61EDD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F49528272D1F496200D6B8A6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -664,6 +754,62 @@
 			};
 			name = Release;
 		};
+		F49528392D1F496300D6B8A6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AZTable/AZTable.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					/opt/SDL3,
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainNibFile = MainMenu;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.moebius-tech.AZTable";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Debug;
+		};
+		F495283A2D1F496300D6B8A6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AZTable/AZTable.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					/opt/SDL3,
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainNibFile = MainMenu;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.moebius-tech.AZTable";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Release;
+		};
 		F4B6A3C42D0F84C10033580D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -746,6 +892,15 @@
 			buildConfigurations = (
 				F41BC6A92D0A71FE00E61EDD /* Debug */,
 				F41BC6AA2D0A71FE00E61EDD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F49528382D1F496300D6B8A6 /* Build configuration list for PBXNativeTarget "AZTable" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F49528392D1F496300D6B8A6 /* Debug */,
+				F495283A2D1F496300D6B8A6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -52,7 +52,7 @@
 
 	int w = btn.frame.size.width;
 
-	r = NSMakeRect(30, 250, w, 29);
+	r = NSMakeRect(30, 250, w, 34);
 	_text = [AZTextField textfieldWithFrame:r];
 	[_text setTarget:self];
 	[_text setAction:@selector(textEntered:)];

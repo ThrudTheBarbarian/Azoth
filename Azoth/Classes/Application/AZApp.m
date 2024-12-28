@@ -158,7 +158,10 @@ NSString * const kTextureType	= @"texture";
 		NSNotification *n = [NSNotification notificationWithName:name
 														  object:self
 														userInfo:info];
-		[_delegate applicationDidFinishLaunching:n];
+
+		SEL willLaunch = SELECTOR(@"applicationWillLaunch:");
+		if ([_delegate respondsToSelector:willLaunch])
+			[_delegate applicationWillLaunch:n];
 
 		/*********************************************************************\
 		|* Load the system font after notifying the delegate, so it has a
@@ -182,6 +185,13 @@ NSString * const kTextureType	= @"texture";
 						  "Failed to load control font at %s!",
 						  _systemFontInfo.name.fileSystemRepresentation);
 			}
+
+		/*********************************************************************\
+		|* And tell the app we're ready to go
+		\*********************************************************************/
+		SEL didLaunch = SELECTOR(@"applicationDidFinishLaunching:");
+		if ([_delegate respondsToSelector:didLaunch])
+			[_delegate applicationDidFinishLaunching:n];
 		}
 	}
 

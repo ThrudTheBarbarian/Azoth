@@ -1,0 +1,48 @@
+//
+//  main.m
+//  AZTable
+//
+//  Created by Simon Gornall on 12/27/24.
+//
+
+#define SDL_MAIN_USE_CALLBACKS 1
+#import <SDL3/SDL.h>
+#import <SDL3/SDL_main.h>
+
+#import <Azoth/Azoth.h>
+#import "AppDelegate.h"
+
+/*****************************************************************************\
+|* File-private variables
+\*****************************************************************************/
+static AZApp *			_app		= NULL;
+
+/*****************************************************************************\
+|* Callback: This function is called at startup
+\*****************************************************************************/
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
+	{
+    SDL_SetAppMetadata("Azoth table-testing app",
+					   "1.0",
+					   "com.moebius-tech.azoth");
+
+	/*************************************************************************\
+    |* Create the application.
+    \*************************************************************************/
+	_app 				= [AZApp sharedInstance];
+	_app.delegate		= [AppDelegate new];
+	_app.initialFrame	= NSMakeRect(50, 50, 1280, 960);
+	_app.windowFlags	= SDL_WINDOW_RESIZABLE;
+	*appstate			= (__bridge void *)(_app);
+
+	[_app startWithArgc:argc argv:argv];
+
+	if (_app.viability == SDL_APP_CONTINUE)
+		{
+		/*********************************************************************\
+		|* .. carry on with any initialisation
+		\*********************************************************************/
+		}
+    return _app.viability;
+	}
+

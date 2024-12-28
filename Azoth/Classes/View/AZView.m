@@ -25,12 +25,6 @@
 \*****************************************************************************/
 @interface AZView()
 
-// Post notifications when the frame is changed
-@property(assign, nonatomic) BOOL						postFrameNotifications;
-
-// Post notifications when the bounds are changed
-@property(assign, nonatomic) BOOL						postBoundsNotifications;
-
 // Whether the transforms are currently valid
 @property(assign, nonatomic) BOOL						transformsAreValid;
 
@@ -367,14 +361,16 @@
 \*****************************************************************************/
 - (void) setFrameOrigin:(NSPoint)p
 	{
-	_frame.origin = p;
-	[self setFrame:_frame];
+	NSRect frame = frame;
+	frame.origin = p;
+	[self setFrame:frame];
 	}
 
 - (void) setFrameSize:(NSSize)s;
 	{
-	_frame.size = s;
-	[self setFrame:_frame];
+	NSRect frame = frame;
+	frame.size = s;
+	[self setFrame:frame];
 	}
 
 /*****************************************************************************\
@@ -384,14 +380,14 @@
 	{
 	NSRect bounds 	= self.bounds;
 	bounds.size		= size;
-	self.bounds 	= bounds;
+	[self setBounds:bounds];
 	}
 
 -(void)setBoundsOrigin:(NSPoint)origin
 	{
 	NSRect bounds	= self.bounds;
 	bounds.origin	= origin;
-	self.bounds 	= bounds;
+	[self setBounds:bounds];
 	}
 
 /*****************************************************************************\
@@ -403,6 +399,28 @@
 	return _visibleRect;
 	}
 
+/*****************************************************************************\
+|* Return the size of the texture to create. This is used when the view could
+|* possibly grow outside of the size-limit of a GPU texture - eg when inside
+|* an enormous scrollview. In that instance, it ought to implement the clipView
+|* delegate -scrollToPoint:(NSPoint) to get where it is "scrolled" to, and
+|* handle drawing specially with a window-sized texture rather than a backing-
+|* sized texture. By default this method just returns the view's frame.size
+\*****************************************************************************/
+- (NSSize) textureSize
+	{
+	return _frame.size;
+	}
+
+/*****************************************************************************\
+|* The companion method is -(BOOL)directRendering which turns off the view
+|* translation and will always render from 0,0->W,H (where W,H are taken from
+|* -(NSSize)textureSize. The default return from this method is NO
+\*****************************************************************************/
+- (BOOL) directRendering
+	{
+	return NO;
+	}
 
 
 // MARK: Redraw
@@ -581,14 +599,23 @@
 	// Finally, set the frame
 	if (!NSEqualRects(frame, _frame))
 		{
-		_frame 		 = frame;
-		_bounds.size = _frame.size;
+		NSRect oldFrame	= _frame;
+		_frame 		 	= frame;
+		_bounds.size 	= _frame.size;
 		[self _installBackingTexture];
+		[self didResizeFrom:oldFrame];
 		}
 		
 	[self setNeedsDisplay:YES];
 	return YES;
 	}
+
+
+/*****************************************************************************\
+|* Called on a view when it resizes
+\*****************************************************************************/
+- (void) didResizeFrom:(NSRect)oldFrame
+	{}
 
 // MARK: Scrolling
 
@@ -597,7 +624,7 @@
 \*****************************************************************************/
 - (BOOL) scrollRectToVisible:(NSRect)rect
 	{
-    AZClipView *clipView = [self _enclosingClipView];
+    AZClipView *clipView = [self enclosingClipView];
     AZView *documentView = [clipView documentView];
 
     // Fetch the document view visible rect in document view space
@@ -659,7 +686,7 @@
 \*****************************************************************************/
 -(void)scrollPoint:(NSPoint)point
 	{
-	AZClipView *clipView = [self _enclosingClipView];
+	AZClipView *clipView = [self enclosingClipView];
 
 	if (clipView != nil)
 		{
@@ -682,12 +709,10 @@
 	return nil;
 	}
 
-// MARK: Private methods
-
 /*****************************************************************************\
 |* Find an enclosing clipview
 \*****************************************************************************/
--(nullable AZClipView *) _enclosingClipView
+-(nullable AZClipView *) enclosingClipView
 	{
 	AZView *result = self.superview;
 
@@ -697,6 +722,8 @@
 
 	return nil;
 	}
+
+// MARK: Private methods
 
 /*****************************************************************************\
 |* Calculate the visible rect

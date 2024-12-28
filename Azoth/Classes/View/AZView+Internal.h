@@ -11,6 +11,9 @@
 #ifndef AZView_Internal_h
 #define AZView_Internal_h
 
+NS_ASSUME_NONNULL_BEGIN
+
+@class AZClipView;
 @class AZEvent;
 
 
@@ -50,5 +53,7 @@
 - (void) _removeSubview:(AZView *)subview;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif /* AZView_Internal_h */

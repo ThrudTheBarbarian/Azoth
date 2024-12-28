@@ -2,71 +2,36 @@
 //  AZTableView.h
 //  Azoth
 //
-//  Created by Simon Gornall on 12/25/24.
+//  Created by Simon Gornall on 12/27/24.
 //
 
-#import <Azoth/AZControl.h>
+#import <Azoth/AZView.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class AZPainter;
-@class AZTableColumn;
-@class AZTableHeaderView;
-@class AZTableView;
 @class AZView;
-
+@class AZColour;
 
 /*****************************************************************************\
 |* Table-view datasource protocol
 \*****************************************************************************/
 @protocol AZTableViewDataSource <NSObject>
-@optional
 
 // Return the number of rows in the table view
 - (NSInteger)numberOfRowsInTableView:(AZTableView *)tableView;
-
-// Return an object representing the value at a row/col
-- (NSObject *)tableView:(AZTableView *)tableView
-		objectValueForTableColumn:(AZTableColumn *)tableColumn
-		row:(NSInteger)row;
-
-// Set an object value at a row/col
-- (void)tableView:(AZTableView *)tableView
-	    setObjectValue:object
-	    forTableColumn:(AZTableColumn *)tableColumn
-	    row:(NSInteger)row;
-
-// Returns whether a drag operation is allowed
-//- (BOOL)tableView:(AZTableView *)tableView
-//		writeRowsWithIndexes:(NSIndexSet *)indexes
-//		toPasteboard:(AZPasteboard *)pasteboard;
-
-// USed to determine a valid drop target
-//- (AZDragOperation)tableView:(AZTableView *)tableView
-//		validateDrop:(id<AZDraggingInfo>)draggingInfo
-//		proposedRow:(int)proposedRow
-//		proposedDropOperation:(AZTableViewDropOperation)dropOperation;
-
-// Called when the mouse is released over a tableview that already
-// said it would accept a drop
-//- (BOOL)tableView:(AZTableView *)tableView
-//	acceptDrop:(id<AZDraggingInfo>)draggingInfo
-//	row:(NSInteger)row
-//	dropOperation:(AZTableViewDropOperation)dropOperation;
 @end
-
 
 /*****************************************************************************\
 |* Table-view delegate protocol
 \*****************************************************************************/
 @protocol AZTableViewDelegate <NSObject>
-@optional
 
 // Return a view for a table-column/row combination
 - (AZView *) tableView:(AZTableView *)tableView
 	viewForTableColumn:(AZTableColumn *)column
 				   row:(NSInteger)row;
 				   
+@optional
 // Determine whether the user can edit a given row/col
 - (BOOL)tableView:(AZTableView *)tableView
 		shouldEditTableColumn:(AZTableColumn *)tableColumn
@@ -109,205 +74,55 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 
-@interface AZTableView : AZControl
+@interface AZTableView : AZView
 
-// MARK: Geometry methods
-
-/*****************************************************************************\
-|* Return the rect of a given row
-\*****************************************************************************/
-- (NSRect)rectOfRow:(NSInteger)row;
+// MARK: rows and columns
 
 /*****************************************************************************\
-|* Return the rect of a given column
+|* Return the number of rows and optionally force a recount
 \*****************************************************************************/
-- (NSRect)rectOfColumn:(NSInteger)column;
+- (NSInteger) numberOfRows:(BOOL)recount;
 
 /*****************************************************************************\
-|* Return the range of rows in a given rect
+|* Add/remove a table column
 \*****************************************************************************/
-- (NSRange)rowsInRect:(NSRect)rect;
+-(void)addTableColumn:(AZTableColumn *)column;
+-(void)removeTableColumn:(AZTableColumn *)column;
+
+
+// MARK: Layout and redraw
 
 /*****************************************************************************\
-|* Return the range of columsn in a given rect
+|* Tile the view
 \*****************************************************************************/
-- (NSRange)columnsInRect:(NSRect)rect;
+- (void) tile;
 
 /*****************************************************************************\
-|* Return the row at a given point
+|* Tell the tableview to reload its data
 \*****************************************************************************/
-- (NSInteger)rowAtPoint:(NSPoint)point;
+- (void) reloadData;
 
 /*****************************************************************************\
-|* Return the column at a given point
+|* Use up all the space by resizing the last column
 \*****************************************************************************/
-- (NSInteger)columnAtPoint:(NSPoint)point;
+- (void) sizeLastColumnToFit;
+
+
+// MARK: View pool management
 
 /*****************************************************************************\
-|* Return the frame of the view at a given row,column intersection
+|* Return an AZView from the pool of views we have, or nil if there's none
+|* left of that type. If we don't find one, we create the set for next time
+|* around...
 \*****************************************************************************/
-- (NSRect)frameOfViewAtColumn:(NSInteger)column row:(NSInteger)row;
-
-// MARK: Table columns
-
+- (nullable AZView *) dequeueViewWithIdentifier:(NSString *)identifier;
 
 /*****************************************************************************\
-|* Get the index (or column) of a column with a given identifier
+|* Allow the table columns to repopulate the pool. Views should be in the
+|* column's cache, or in the pool, but not in both. The column will return
+|* the views to the pool when the tableview's -tile method is called
 \*****************************************************************************/
-- (NSInteger) columnWithIdentifier:(NSObject *)identifier;
-- (nullable AZTableColumn *)tableColumnWithIdentifier:(NSObject *)identifier;
-
-/*****************************************************************************\
-|* Add a table column to the table
-\*****************************************************************************/
-- (void)addTableColumn:(AZTableColumn *)column;
-
-/*****************************************************************************\
-|* Remove a table column from the table
-\*****************************************************************************/
-- (void)removeTableColumn:(AZTableColumn *)column;
-
-
-// MARK: Editing
-
-/*****************************************************************************\
-|* Perform an edit
-\*****************************************************************************/
-- (void)editColumn:(NSInteger)column row:(NSInteger)row select:(BOOL)select;
-
-
-// MARK: Selection
-
-/*****************************************************************************\
-|* Number of rows selected (invalidates the single-row property)
-\*****************************************************************************/
-- (NSInteger)numberOfSelectedRows;
-
-/*****************************************************************************\
-|* Number of columns selected (invalidates the single-row property)
-\*****************************************************************************/
-- (NSInteger)numberOfSelectedColumns;
-
-/*****************************************************************************\
-|* Is a particular column selected
-\*****************************************************************************/
-- (BOOL)isColumnSelected:(NSInteger)row;
-
-/*****************************************************************************\
-|* Is a particular row selected
-\*****************************************************************************/
-- (BOOL)isRowSelected:(NSInteger)row;
-
-/*****************************************************************************\
-|* The set of selected columns
-\*****************************************************************************/
-- (NSIndexSet *)selectedColumnIndexes;
-
-/*****************************************************************************\
-|* Set a set of selected rows, optionally add to the selection
-\*****************************************************************************/
-- (void)selectRowIndexes:(NSIndexSet *)indexes byExtendingSelection:(BOOL)yn;
-
-/*****************************************************************************\
-|* Select a row, optionally extending the selection
-\*****************************************************************************/
-- (void) selectRow:(NSInteger)row byExtendingSelection:(BOOL)extend;
-
-/*****************************************************************************\
-|* Select a column, optionally add to the selection
-\*****************************************************************************/
-- (void)selectColumn:(NSInteger)column byExtendingSelection:(BOOL)extend;
-
-/*****************************************************************************\
-|* Deselect a row
-\*****************************************************************************/
-- (void)deselectRow:(NSInteger)row;
-
-/*****************************************************************************\
-|* Deselect a column
-\*****************************************************************************/
-- (void)deselectColumn:(NSInteger)column;
-
-
-/*****************************************************************************\
-|* Select everything
-\*****************************************************************************/
-- (void)selectAll:sender;
-
-/*****************************************************************************\
-|* Deselect everything
-\*****************************************************************************/
-- (void)deselectAll:sender;
-
-// MARK: Scrolling support
-
-
-/*****************************************************************************\
-|* Scroll so that a row is visible
-\*****************************************************************************/
-- (void)scrollRowToVisible:(NSInteger)index;
-
-/*****************************************************************************\
-|* Scroll so that a column is visible
-\*****************************************************************************/
-- (void)scrollColumnToVisible:(NSInteger)index;
-
-
-// MARK: Layout
-
-/*****************************************************************************\
-|* Send a notification that the number of rows has changed
-\*****************************************************************************/
-- (void)noteNumberOfRowsChanged;
-
-/*****************************************************************************\
-|* Send a notification that row-heights have changed
-\*****************************************************************************/
-- (void)noteHeightOfRowsWithIndexesChanged:(NSIndexSet *)indexSet;
-
-/*****************************************************************************\
-|* Call on the delegate to supply data to show
-\*****************************************************************************/
-- (void)reloadData;
-
-/*****************************************************************************\
-|* Lay the table out
-\*****************************************************************************/
-- (void)tile;
-
-/*****************************************************************************\
-|* Make the last column whatever size fits the table bounds
-\*****************************************************************************/
-- (void)sizeLastColumnToFit;
-
-/*****************************************************************************\
-|* Fetch the view at a given row / column
-\*****************************************************************************/
-- (AZView *) preparedViewAtColumn:(NSInteger)columnNumber row:(NSInteger)row;
-
-
-// MARK: Drawing
-
-/*****************************************************************************\
-|* Highlight the selection within a rectangle
-\*****************************************************************************/
-- (void)highlightSelectionInClipRect:(NSRect)rect withPainter:(AZPainter *)P;
-
-/*****************************************************************************\
-|* Draw a row within a rectangle
-\*****************************************************************************/
-- (void)drawRow:(NSInteger)row clipRect:(NSRect)rect withPainter:(AZPainter *)P;
-
-/*****************************************************************************\
-|* Draw the background within a rectangle
-\*****************************************************************************/
-- (void)drawBackgroundInClipRect:(NSRect)rect withPainter:(AZPainter *)P;
-
-/*****************************************************************************\
-|* Draw the grid within a rectangle
-\*****************************************************************************/
-- (void)drawGridInClipRect:(NSRect)rect withPainter:(AZPainter *)P;
-
+- (void) addToPool:(NSArray<AZView *> *)views;
 
 /*****************************************************************************\
 |* Properties
@@ -315,95 +130,46 @@ NS_ASSUME_NONNULL_BEGIN
 
 // The tableview delegate
 @property(strong, nonatomic)
-id<AZTableViewDelegate>						delegate;
+id<AZTableViewDelegate>										delegate;
 
 // The tableview datasource
 @property(strong, nonatomic)
-id<AZTableViewDataSource>					dataSource;
+id<AZTableViewDataSource>									dataSource;
 
 // The tableview header view
 @property(strong, nonatomic)
-AZTableHeaderView *							headerView;
+AZTableHeaderView *											headerView;
 
 // The tableview corner view
-@property(strong, nonatomic) AZView *		cornerView;
+@property(strong, nonatomic) AZView *						cornerView;
 
 // The columns of the table
 @property(strong, nonatomic)
-NSMutableArray<AZTableColumn *> *			tableColumns;
+NSMutableArray<AZTableColumn *> *							tableColumns;
 
 // spacing between data-views
-@property(assign, nonatomic) NSSize			interViewSpacing;
+@property(assign, nonatomic) NSSize							spacing;
 
 // Grid-drawing colour
-@property(strong, nonatomic) AZColour * 	gridColour;
-
-// Allow the user to re-order columns
-@property(assign, nonatomic) BOOL			allowsColumnReordering;
-
-// Allow the user to resize columns
-@property(assign, nonatomic) BOOL			allowsColumnResizing;
-
-// Auto-resize columns to fit bounds
-@property(assign, nonatomic) BOOL			autoresizeAllColumnsToFit;
-
-// Do we allow multiple selection
-@property(assign, nonatomic) BOOL			allowsMultipleSelection;
-
-// Do we allow _no_ selection
-@property(assign, nonatomic) BOOL			allowsEmptySelection;
-
-// Do we allow column selection
-@property(assign, nonatomic) BOOL			allowsColumnSelection;
-
-// Alternate colours in view backgrounds
-@property(assign, nonatomic) BOOL			alternatesRowColours;
-
-// Mask for how to draw grid lines
-@property(assign, nonatomic) NSInteger		gridStyleMask;
-
-// How to highlight selections
-@property(assign, nonatomic) NSInteger		selectionHighlightStyle;
-
-// number of rows in the table
-@property(assign, nonatomic) NSInteger		numberOfRows;
+@property(strong, nonatomic) AZColour * 					gridColour;
 
 // Default row-height
-@property(assign, nonatomic) float			rowHeight;
+@property(assign, nonatomic) float							rowHeight;
+
+// Auto-resize columns to fit bounds
+@property(assign, nonatomic) BOOL							autoresizeColumns;
+
+// Alternate colours in view backgrounds
+@property(assign, nonatomic) BOOL							alternateRowColours;
+
+// Mask for how to draw grid lines
+@property(assign, nonatomic) NSInteger						gridStyleMask;
+
+// number of rows in the table
+@property(assign, nonatomic) NSInteger						numberOfRows;
 
 // number of rows in the table
 @property(assign, nonatomic) NSInteger		numberOfColumns;
-
-// column edited
-@property(assign, nonatomic, readonly)
-NSInteger									editedColumn;
-
-// row edited
-@property(assign, nonatomic, readonly)
-NSInteger 									editedRow;
-
-// column clicked on
-@property(assign, nonatomic, readonly)
-NSInteger									clickedColumn;
-
-// row clicked on
-@property(assign, nonatomic, readonly)
-NSInteger									clickedRow;
-
-// column selected
-@property(assign, nonatomic, readonly)
-NSInteger									selectedColumn;
-
-// row selected
-@property(assign, nonatomic, readonly)
-NSInteger									selectedRow;
-
-// selected row indices
-@property(strong, nonatomic) NSIndexSet *	selectedRowIndexes;
-
-// List of sort descriptors
-@property(strong, nonatomic)
-NSArray<NSSortDescriptor *> *				sortDescriptors;
 
 
 @end

@@ -52,9 +52,10 @@ enum
 \*****************************************************************************/
 enum {
     AZTableViewGridNone						= 0,
-    AZTableViewSolidVerticalGridLineMask,
-    AZTableViewSolidHorizontalGridLineMask
-};
+    AZTableViewSolidVerticalGridLineMask	= 1,
+    AZTableViewSolidHorizontalGridLineMask	= 2,
+	AZTableViewSolidGridLineMask			= 1|2
+	};
 
 #define IS_GRID_STYLE(x, type) (((x) & (type)) == type)
 

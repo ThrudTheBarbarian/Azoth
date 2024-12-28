@@ -4,7 +4,7 @@
 //
 //  Created by Simon Gornall on 12/25/24.
 //
-
+#if 0
 #import <SDL3/SDL.h>
 
 #import "AZEvent.h"
@@ -27,6 +27,7 @@
 
 @implementation AZTableHeaderView
 
+
 /*****************************************************************************\
 |* The size of the rectangle for the header view of a given column
 \*****************************************************************************/
@@ -34,7 +35,7 @@
 	{
     NSArray<AZTableColumn *> * cols = _tableView.tableColumns;
     NSRect headerRect 				= self.bounds;
-    NSSize sz 					= _tableView.interViewSpacing;
+    NSSize sz 						= _tableView.spacing;
 
     if (column < 0 || column >= cols.count)
 		{
@@ -71,7 +72,7 @@
 	NSArray<AZTableColumn *> *cols 	= _tableView.tableColumns;
     NSInteger count 				= cols.count;
     NSRect columnRect 				= self.bounds;
-    NSSize spacing 					= _tableView.interViewSpacing;
+    NSSize spacing 					= _tableView.spacing;
 
     for (NSInteger i = 0; i < count; ++i)
 		{
@@ -224,5 +225,5 @@
     return rect;
 	}
 
-
 @end
+#endif
