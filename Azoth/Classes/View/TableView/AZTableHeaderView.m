@@ -4,15 +4,29 @@
 //
 //  Created by Simon Gornall on 12/25/24.
 //
-#if 0
+
 #import <SDL3/SDL.h>
 
+#import "AZApp.h"
+#import "AZColour.h"
 #import "AZEvent.h"
+#import "AZPainter.h"
+#import "AZRenderer.h"
 #import "AZTableColumn.h"
 #import "AZTableColumn+Private.h"
 #import "AZTableHeaderView.h"
 #import "AZTableView.h"
 #import "AZWindow.h"
+
+enum
+	{
+	STATE_N	= 0,				// Normal
+	STATE_H,					// Highlighted
+	STATE_P,					// Pressed
+	STATE_HP,					// Highlighted and pressed
+
+	STATE_NUM
+	};
 
 @interface AZTableView(NSTableView_private)
 -(void)noteColumnDidResizeWithOldWidth:(float)oldWidth;
@@ -25,8 +39,30 @@
 @property(strong, nonatomic) AZTableColumn *				resizingColumn;
 @end
 
+static NSRect	_hdr[STATE_NUM];		// See states above
+static NSRect	_sortUp;
+static NSRect	_sortDn;
+
 @implementation AZTableHeaderView
 
+
+/*****************************************************************************\
+|* Initialisation
+\*****************************************************************************/
+- (instancetype) initWithFrame:(NSRect)frame
+	{
+	if (self = [super initWithFrame:frame])
+		{
+		static dispatch_once_t onceToken;
+		dispatch_once(&onceToken,
+			^{
+			[self _fetchRects];
+			});
+
+		self.backgroundColour 		= AZColour.controlBackgroundColour;
+		}
+	return self;
+	}
 
 /*****************************************************************************\
 |* The size of the rectangle for the header view of a given column
@@ -74,14 +110,29 @@
     NSRect columnRect 				= self.bounds;
     NSSize spacing 					= _tableView.spacing;
 
+	AZRenderer *azr					= AZRenderer.renderer;
+	NSInteger ui					= AZApp.sharedInstance.ui;
+
+	[painter setTextColour:AZColour.blackColour];
     for (NSInteger i = 0; i < count; ++i)
 		{
-        AZTableColumn *column = [cols objectAtIndex:i];
+        AZTableColumn *column 	= cols[i];
         columnRect.size.width 	= column.width + spacing.width;
-		NSInteger idx			= [cols indexOfObject:column];
-		[column.headerView setHighlighted:[_tableView isColumnSelected:idx]];
-		[column.headerView setFrame:columnRect];
-		[column.headerView setNeedsDisplay:YES];
+		int state				= column.headerState;
+
+		NSRect src				= _hdr[state];
+		NSRect dst				= columnRect;
+		dst.size.width		   -= spacing.width;
+		[azr tileFrom:ui src:src dst:dst];
+
+		[painter setTextAlignment:AZTextAlignmentCenter];
+		columnRect.origin.y += 1;
+		[painter drawInBox:columnRect text:column.title];
+
+		//NSInteger idx			= [cols indexOfObject:column];
+		//[column.headerView setHighlighted:[_tableView isColumnSelected:idx]];
+		//[column.headerView setFrame:columnRect];
+		//[column.headerView setNeedsDisplay:YES];
         columnRect.origin.x += [column width] + spacing.width;
 		}
 	}
@@ -106,6 +157,10 @@
         [delegate tableView:_tableView
 				  mouseDownInHeaderOfTableColumn:[cols objectAtIndex:col]];
 
+	[self _highlightColumn:cols[col]];
+	[self setNeedsDisplay:YES];
+
+#if 0
     if (_tableView.allowsColumnResizing)
 		{
         NSInteger count = cols.count;
@@ -171,6 +226,7 @@
 		}
 	
 	[[_tableView.tableColumns objectAtIndex:col] _sort];
+#endif
 	return YES;
 	}
 
@@ -187,7 +243,7 @@
 		for (NSInteger q = 0; q < _resizedColumn; ++q)
 			{
 			newWidth -= [_tableView.tableColumns objectAtIndex:q].width;
-			newWidth -= _tableView.interViewSpacing.width;
+			newWidth -= _tableView.spacing.width;
 			}
 
 		[_resizingColumn setWidth:newWidth];
@@ -204,9 +260,10 @@
 
 - (BOOL) mouseUp:(AZEvent *)e
 	{
+    NSInteger col 					= [self columnAtPoint:_resizeLocation];
 	//[[self window] invalidateCursorRectsForView:self];
 
-	[_tableView noteColumnDidResizeWithOldWidth:_oldColumnWidth];
+	//[_tableView noteColumnDidResizeWithOldWidth:_oldColumnWidth];
 	_resizedColumn 		= -1;
 	_activelyResizing 	= NO;
 	return YES;
@@ -225,5 +282,31 @@
     return rect;
 	}
 
+/*****************************************************************************\
+|* Populate the rectangles from the UI texture atlas
+\*****************************************************************************/
+- (void) _fetchRects
+	{
+	AZApp *app 		  = AZApp.sharedInstance;
+
+	_hdr[STATE_N]   = [app srcRectFor:@"tableview-headerview"];
+	_hdr[STATE_H]   = [app srcRectFor:@"tableview-headerview-highlighted"];
+	_hdr[STATE_P]   = [app srcRectFor:@"tableview-headerview-pressed"];
+	_hdr[STATE_HP]  = [app srcRectFor:@"tableview-headerview-highlighted-pressed"];
+
+	_sortUp		   	= [app srcRectFor:@"tableview-headerview-ascending"];
+	_sortDn  		= [app srcRectFor:@"tableview-headerview-descending"];
+	}
+
+- (void) _highlightColumn:(AZTableColumn *)selected
+	{
+	for (AZTableColumn *column in _tableView.tableColumns)
+		{
+		if (column == selected)
+			column.headerState = STATE_H;
+		else
+			column.headerState = STATE_N;
+		}
+	}
 @end
-#endif
+

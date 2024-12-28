@@ -12,11 +12,13 @@
 #import "AZPainter.h"
 #import "AZScrollView.h"
 #import "AZTableColumn.h"
+#import "AZTableHeaderView.h"
 #import "AZTableRowRecord.h"
 #import "AZTableView.h"
 #import "AZView+Internal.h"
 
-#define DEFAULT_ROWHEIGHT		(25.f)
+#define DEFAULT_ROWHEIGHT		(30.f)
+#define HEADER_ROWHEIGHT		(25.f)
 
 /*****************************************************************************\
 |* "private" methods / properties
@@ -55,16 +57,13 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		// more like default behavior
 		_autoresizeColumns 			= YES;
 
-//		float height				= _rowHeight + _spacing.height;
-//		float width					= NSWidth(self.bounds);
-//		NSRect headerRect			= NSMakeRect(0,0,width,height);
-
 		_tableColumns 				= [NSMutableArray  new];
 		self.backgroundColour 		= AZColour.controlBackgroundColour;
 		_gridColour 				= AZColour.gridColour;
 		_gridStyleMask 				= AZTableViewSolidGridLineMask;
 		_alternateRowColours 		= NO;
-
+		_usesHeader					= NO;
+		_headerView				 	= nil;
 		_pool 						= [NSMutableDictionary new];
 		_visibleRows			 	= [NSMutableIndexSet new];
 		}
@@ -123,16 +122,12 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	{
     [_tableColumns addObject:column];
     [column setTableView:self];
-
-    //[_headerView setNeedsDisplay:YES];
 	}
 
 -(void)removeTableColumn:(AZTableColumn *)column
 	{
     [column setTableView:nil];
     [_tableColumns removeObject:column];
-
-    //[_headerView setNeedsDisplay:YES];
 	}
 
 /*****************************************************************************\
@@ -161,6 +156,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		}
 	else
 		[self sizeLastColumnToFit];
+	[self.headerView setNeedsDisplay:YES];
 	}
 
 /*****************************************************************************\
@@ -258,12 +254,13 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 			{
 			float x 	= - _offset.x;
 			float xMax	= self.bounds.size.width;
+			float y		= self.bounds.origin.y;
 			float h		= self.bounds.size.height;
 			int idx		= 0;
 			while ((x < xMax) && (idx < self.numberOfColumns))
 				{
 				if (x >= 0)
-					[painter lineAtX:x y:0 toX:x y:h colour:self.gridColour];
+					[painter lineAtX:x y:y toX:x y:h colour:self.gridColour];
 				x += _tableColumns[idx].width + _spacing.width/2;
 				idx ++;
 				}
@@ -274,6 +271,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 			float y 	= _rowRecords[0].start - _offset.y - _spacing.height/2.f;
 			float yMax 	= self.textureSize.height;
 			float w		= self.bounds.size.width;
+			float dby   = self.bounds.origin.y;
 
 			int idx = 0;
 			while ((y < yMax) && (idx < _numberOfRows))
@@ -281,6 +279,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 				y = _rowRecords[idx].start - _offset.y - _spacing.height/2.f;
 				if (y >= 0)
 					{
+					y = MAX(y, dby);
 					[painter lineAtX:0 y:y toX:w y:y colour:self.gridColour];
 					}
 				idx ++;
@@ -335,7 +334,39 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		}
 	}
 
+/*****************************************************************************\
+|* Enable the header views. Can be called simply by setting a title on a column
+\*****************************************************************************/
+- (void) setUsesHeader:(BOOL)usesHeader
+	{
+	if (usesHeader != _usesHeader)
+		{
+		_usesHeader = usesHeader;
+		if (_usesHeader == YES)
+			[self _makeHeaderViewIfNeeded];
+
+		[self tile];
+		}
+	}
+
 // MARK: Private methods
+
+/*****************************************************************************\
+|* Make the header view if it's currently nil
+\*****************************************************************************/
+- (void) _makeHeaderViewIfNeeded
+	{
+	if (_headerView == nil)
+		{
+		NSRect bounds	= self.bounds;
+		NSRect frame 	= NSMakeRect(0, 0, NSWidth(bounds), HEADER_ROWHEIGHT);
+		_headerView 	= [[AZTableHeaderView alloc] initWithFrame:frame];
+		[self addSubview:_headerView];
+		_headerView.autoresizingMask = AZViewWidthSizable;
+		_headerView.tableView = self;
+		[_headerView setNeedsDisplay:YES];
+		}
+	}
 
 /*****************************************************************************\
 |* Figure out which rows we can return to the pool
@@ -446,9 +477,6 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
         rowToDisplay++;
 		}
     while ((y + rowHeight < currentEndY) && (rowToDisplay < max));
-
-    
-  //  NSLog(@"laying out %d rows", (int)visible.count);
 
     [self _returnNonVisibleRowsToThePool: visible];
 	}

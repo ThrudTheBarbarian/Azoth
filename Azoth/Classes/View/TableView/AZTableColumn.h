@@ -39,9 +39,6 @@ NS_ASSUME_NONNULL_BEGIN
 // The table-view we belong to
 @property(strong, nonatomic, nullable) AZTableView *			tableView;
 
-// The header view for this column
-@property(strong, nonatomic) AZTableHeaderView *				headerView;
-
 // The default prototype view for this column's data
 @property(strong, nonatomic) AZView *							dataView;
 
@@ -62,8 +59,11 @@ NS_ASSUME_NONNULL_BEGIN
 // The default sort descriptor
 @property(strong, nonatomic) NSSortDescriptor *					sortPrototype;
 
-// The header's tooltip
-@property(strong, nonatomic) NSString *							headerToolTip;
+// The header's title
+@property(copy, nonatomic) NSString *							title;
+
+// The header's state
+@property(assign, nonatomic) int								headerState;
 
 @end
 

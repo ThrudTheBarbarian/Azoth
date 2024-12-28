@@ -4,14 +4,14 @@
 //
 //  Created by Simon Gornall on 12/25/24.
 //
-#if 0
+
 #import <Azoth/AZTextField.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class AZTableView;
 
-@interface AZTableHeaderView : AZTextField
+@interface AZTableHeaderView : AZView
 
 /*****************************************************************************\
 |* The size of the rectangle for the header view
@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 // The table-view we belong to
 @property(strong, nonatomic) AZTableView *						tableView;
 
-// The table-view we belong to
+// The column view being resized
 @property(assign, nonatomic) NSInteger 							resizedColumn;
 
 // Whether we're highlighted
@@ -39,4 +39,4 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
-#endif
+

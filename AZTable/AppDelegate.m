@@ -29,6 +29,7 @@
 	[tv setDataSource:self];
 	[tv addTableColumn:[[AZTableColumn alloc] initWithIdentifier:@"col1"]];
 	[tv addTableColumn:[[AZTableColumn alloc] initWithIdentifier:@"col2"]];
+	tv.tableColumns[0].title = @"column 1";
 
 	// Add it to a scrollview
 	frame = NSMakeRect(100, 100, 300, 360);

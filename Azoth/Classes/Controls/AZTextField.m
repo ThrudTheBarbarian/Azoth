@@ -804,11 +804,11 @@ static int 			_lineHeight = 29;
 /*****************************************************************************\
 |* Called on a view when it resizes
 \*****************************************************************************/
-- (void) didResizeFrom:(NSRect)oldFrame
-	{
-	NSLog(@"did resize from %@ to %@", NSStringFromRect(oldFrame),
-		NSStringFromRect(self.frame));
-	}
+//- (void) didResizeFrom:(NSRect)oldFrame
+//	{
+//	NSLog(@"did resize from %@ to %@", NSStringFromRect(oldFrame),
+//		NSStringFromRect(self.frame));
+//	}
 
 /*****************************************************************************\
 |* Insert text

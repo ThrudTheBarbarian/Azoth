@@ -17,6 +17,8 @@
 |* "private" methods / properties
 \*****************************************************************************/
 @interface AZTableColumn()
+
+// Cache of all the views (by row-number) in our column
 @property(strong, nonatomic)
 NSMutableDictionary<NSNumber *,AZView *> *							cache;
 @end
@@ -31,17 +33,14 @@ NSMutableDictionary<NSNumber *,AZView *> *							cache;
 	{
 	if (self = [super init])
 		{
-		_identifier = identifier;
-		_width		= 100.f;
-		_minWidth	= 10.f;
-		_maxWidth	= FLT_MAX;
-		_resizable	= YES;
-		_editable	= YES;
-		_cache		= [NSMutableDictionary new];
-
-		NSRect standardFrame = NSMakeRect(0, 0, 100, 20);
-//        _headerView = [[AZTableHeaderView alloc] initWithFrame:standardFrame];
-//        _dataView 	= [[AZTextField alloc] initWithFrame:standardFrame];
+		_identifier 	= identifier;
+		_width			= 100.f;
+		_minWidth		= 10.f;
+		_maxWidth		= FLT_MAX;
+		_resizable		= YES;
+		_editable		= YES;
+		_cache			= [NSMutableDictionary new];
+		_title 			= @"";
 		}
     return self;
 	}
@@ -58,6 +57,20 @@ NSMutableDictionary<NSNumber *,AZView *> *							cache;
         width = _minWidth;
 	_width = width;
 	}
+
+// MARK: Headers
+
+/*****************************************************************************\
+|* If a column has a title set on it, then make sure the parent table enables
+|* headers
+\*****************************************************************************/
+- (void) setTitle:(NSString *)title
+	{
+	_title 					= title;
+	_tableView.usesHeader 	= YES;
+	}
+
+// MARK: Pool management
 
 /*****************************************************************************\
 |* When asked for a view for a given row, we in turn ask the delegate to

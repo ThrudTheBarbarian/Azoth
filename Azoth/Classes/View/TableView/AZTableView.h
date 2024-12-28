@@ -137,7 +137,7 @@ id<AZTableViewDelegate>										delegate;
 id<AZTableViewDataSource>									dataSource;
 
 // The tableview header view
-@property(strong, nonatomic)
+@property(strong, nonatomic, nullable)
 AZTableHeaderView *											headerView;
 
 // The tableview corner view
@@ -169,7 +169,10 @@ NSMutableArray<AZTableColumn *> *							tableColumns;
 @property(assign, nonatomic) NSInteger						numberOfRows;
 
 // number of rows in the table
-@property(assign, nonatomic) NSInteger		numberOfColumns;
+@property(assign, nonatomic) NSInteger						numberOfColumns;
+
+// Whether the table view shows a header-view
+@property(assign, nonatomic) BOOL							usesHeader;
 
 
 @end
