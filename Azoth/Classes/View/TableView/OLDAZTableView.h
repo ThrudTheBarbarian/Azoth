@@ -278,7 +278,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Make the last column whatever size fits the table bounds
 \*****************************************************************************/
-- (void)sizeLastColumnToFit;
+- (void);
 
 /*****************************************************************************\
 |* Fetch the view at a given row / column

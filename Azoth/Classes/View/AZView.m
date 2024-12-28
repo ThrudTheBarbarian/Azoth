@@ -599,14 +599,23 @@
 	// Finally, set the frame
 	if (!NSEqualRects(frame, _frame))
 		{
-		_frame 		 = frame;
-		_bounds.size = _frame.size;
+		NSRect oldFrame	= _frame;
+		_frame 		 	= frame;
+		_bounds.size 	= _frame.size;
 		[self _installBackingTexture];
+		[self didResizeFrom:oldFrame];
 		}
 		
 	[self setNeedsDisplay:YES];
 	return YES;
 	}
+
+
+/*****************************************************************************\
+|* Called on a view when it resizes
+\*****************************************************************************/
+- (void) didResizeFrom:(NSRect)oldFrame
+	{}
 
 // MARK: Scrolling
 

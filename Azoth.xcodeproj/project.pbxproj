@@ -766,7 +766,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					/opt/SDL3,
-					"$(PROJECT_DIR)/AZTable/Frameworks",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -795,7 +794,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					/opt/SDL3,
-					"$(PROJECT_DIR)/AZTable/Frameworks",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";

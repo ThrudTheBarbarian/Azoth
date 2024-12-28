@@ -124,15 +124,6 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
     [_tableColumns addObject:column];
     [column setTableView:self];
 
-	if (self.autoresizeColumns)
-		{
-		int num = (int) _tableColumns.count;
-
-		int width = (self.bounds.size.width - (num-1) * _spacing.width)  / num;
-		for (AZTableColumn *col in _tableColumns)
-			col.width = width;
-		}
-    [self reloadData];
     //[_headerView setNeedsDisplay:YES];
 	}
 
@@ -140,7 +131,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	{
     [column setTableView:nil];
     [_tableColumns removeObject:column];
-    [self reloadData];
+
     //[_headerView setNeedsDisplay:YES];
 	}
 
@@ -154,6 +145,50 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 
 
 // MARK: Layout and redraw
+
+/*****************************************************************************\
+|* Tile the view
+\*****************************************************************************/
+- (void) tile
+	{
+	if (self.autoresizeColumns)
+		{
+		int num = (int) _tableColumns.count;
+
+		int width = (self.bounds.size.width - (num-1) * _spacing.width)  / num;
+		for (AZTableColumn *col in _tableColumns)
+			col.width = width;
+		}
+	else
+		[self sizeLastColumnToFit];
+	}
+
+/*****************************************************************************\
+|* Use up all the space by resizing the last column
+\*****************************************************************************/
+- (void) sizeLastColumnToFit
+	{
+    AZClipView *clipView = (AZClipView *)self.superview;
+
+    if ([clipView isKindOfClass:AZClipView.class])
+		{
+        NSSize size 	= clipView.bounds.size;
+        NSInteger count = _tableColumns.count;
+        float lastWidth = size.width - (count * _spacing.width);
+
+        AZTableColumn *lastColumn = _tableColumns.lastObject;
+
+        for (NSInteger i = 0; i < count-1; ++i)
+            lastWidth -= _tableColumns[i].width;
+
+        if (lastWidth > 0)
+            lastColumn.width = lastWidth;
+        else if (lastWidth < 0)
+            lastColumn.width = lastColumn.width + lastWidth;
+
+        [self setNeedsDisplay:YES];
+		}
+	}
 
 /*****************************************************************************\
 |* Tell the tableview to reload its data
@@ -413,7 +448,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
     while ((y + rowHeight < currentEndY) && (rowToDisplay < max));
 
     
-    NSLog(@"laying out %d rows", (int)visible.count);
+  //  NSLog(@"laying out %d rows", (int)visible.count);
 
     [self _returnNonVisibleRowsToThePool: visible];
 	}

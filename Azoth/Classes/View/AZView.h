@@ -124,6 +124,11 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)setBoundsOrigin:(NSPoint)origin;
 
 /*****************************************************************************\
+|* Called on a view when it resizes
+\*****************************************************************************/
+- (void) didResizeFrom:(NSRect)oldFrame;
+
+/*****************************************************************************\
 |* Return the size of the texture to create. This is used when the view could
 |* possibly grow outside of the size-limit of a GPU texture - eg when inside
 |* an enormous scrollview. In that instance, it ought to implement the clipView
