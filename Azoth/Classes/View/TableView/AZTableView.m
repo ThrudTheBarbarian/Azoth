@@ -66,6 +66,9 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 // row clicked on
 @property(assign, nonatomic, readonly) NSInteger					clickedRow;
 
+// IndexSet of selection on mousedown
+@property(strong, nonatomic) NSIndexSet *							draggedSet;
+
 
 @end
 
@@ -211,7 +214,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 				break;
 				}
 			}
-		range.length = last - row + 1;
+		range.length = last - row;
 		}
 	else
 		range = NSMakeRange(NSNotFound, 0);
@@ -226,7 +229,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	{
     NSInteger row = -1;
     NSRange range = [self rowsInRect:NSMakeRect(p.x, p.y, 0.f, 0.f)];
-    if (range.length != 0)
+    if (range.location != NSNotFound)
         row = range.location;
 
     return row;
@@ -242,6 +245,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	{
     NSPoint at 		= [self convertPoint:e.locationInWindow fromView:nil];
     _clickedRow		= [self rowAtPoint:at];
+	_draggedSet		= _selectedRowIndexes.copy;
 
 	if ((_clickedRow >= 0) && (_clickedRow < self.numberOfRows))
 		{
@@ -251,6 +255,44 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 			[self selectRow:_clickedRow byExtendingSelection:_allowsMultipleSelection];
 		}
 
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Handle dragging the selection
+\*****************************************************************************/
+- (BOOL) mouseDragged:(AZEvent *)e
+	{
+    NSPoint at 		= [self convertPoint:e.locationInWindow fromView:nil];
+	NSInteger row	= [self rowAtPoint:at];
+
+	NSRange range	= NSMakeRange(NSNotFound, 0);
+	if (row > _clickedRow)
+		range = NSMakeRange(_clickedRow, row - _clickedRow);
+	else if (row < _clickedRow)
+		range = NSMakeRange(row, _clickedRow - row +1);
+
+	if (range.length > 0)
+		{
+		_selectedRowIndexes = _draggedSet;
+
+		if (self.allowsMultipleSelection)
+			{
+			NSIndexSet *changes = [NSIndexSet indexSetWithIndexesInRange:range];
+			[self toggleRowIndexes:changes];
+			}
+		else
+			[self toggleRow:row byExtendingSelection:NO];
+		}
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Handle mouse-up. Just clean up
+\*****************************************************************************/
+- (BOOL) mouseUp:(AZEvent *)e
+	{
+	_draggedSet = nil;
 	return YES;
 	}
 
@@ -478,7 +520,6 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 - (void)selectRowIndexes:(NSIndexSet *)indexes byExtendingSelection:(BOOL)extend
 	{
 	NSIndexSet * newIndexes = nil;
-	BOOL changed 			= NO;
 	NSInteger numRows 		= self.numberOfRows;
 
 	// Mac OS X doesn't raise an exception if one of the indices
@@ -497,12 +538,70 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		}
 	else
 		newIndexes = indexes;
+	[self _updateSelectionIndices:newIndexes];
+	}
 
-   // Find the changed rows and mark them for redraw.
-   NSInteger i = _selectedRowIndexes.firstIndex;
-   if (i == NSNotFound)
+/*****************************************************************************\
+|* Toggle a set of selected rows, optionally add to the selection
+\*****************************************************************************/
+- (void)toggleRowIndexes:(NSIndexSet *)indexes
+	{
+	NSInteger numRows 		= self.numberOfRows;
+
+	// Mac OS X doesn't raise an exception if one of the indices
+	// is out of range. Instead, the selection is left untouched.
+	BOOL found = (indexes.firstIndex != NSNotFound);
+	BOOL oub   = (indexes.firstIndex < 0) || (indexes.lastIndex > numRows);
+	if (found && oub)
+		return;
+
+	NSMutableIndexSet * newIndexes = [NSMutableIndexSet new];
+	[newIndexes addIndexes:_selectedRowIndexes];
+
+	NSInteger index = indexes.firstIndex;
+	while (index != NSNotFound)
+		{
+		if ([newIndexes containsIndex:index])
+			[newIndexes removeIndex:index];
+		else
+			[newIndexes addIndex:index];
+		index = [indexes indexGreaterThanIndex:index];
+		}
+
+	[self _updateSelectionIndices:newIndexes];
+	}
+
+/*****************************************************************************\
+|* Toggle a single row
+\*****************************************************************************/
+- (void) toggleRow:(NSInteger)row byExtendingSelection:(BOOL)extend
+	{
+	if ([_selectedRowIndexes containsIndex:row])
+		{
+		if (extend)
+			[self toggleRowIndexes:[NSIndexSet indexSetWithIndex:row]];
+		else
+			{
+			_selectedRowIndexes = [NSIndexSet new];
+			[self setNeedsDisplay:YES];
+			}
+		}
+	else
+		[self selectRow:row byExtendingSelection:extend];
+	}
+
+/*****************************************************************************\
+|* Internal method to do the housekeeping after a selection change
+\*****************************************************************************/
+- (void) _updateSelectionIndices:(NSIndexSet *)newIndexes
+	{
+	BOOL changed = NO;
+
+	// Find the changed rows and mark them for redraw.
+	NSInteger i = _selectedRowIndexes.firstIndex;
+	if (i == NSNotFound)
 		i = [newIndexes firstIndex];
-   else
+	else
 		{
 		NSInteger try = newIndexes.firstIndex;
 		if (try != NSNotFound && try < i)
@@ -630,7 +729,8 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	if (extend)
 		{
 		set = [NSIndexSet indexSetWithIndex:row];
-		[self selectRowIndexes:set byExtendingSelection:YES];
+			[self selectRowIndexes:set
+			  byExtendingSelection:self.allowsMultipleSelection];
 		}
 	else
 		{

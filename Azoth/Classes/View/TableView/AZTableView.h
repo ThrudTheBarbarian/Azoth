@@ -150,6 +150,16 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 - (void)deselectAll:sender;
 
+/*****************************************************************************\
+|* Toggle a set of selected rows, optionally add to the selection
+\*****************************************************************************/
+- (void)toggleRowIndexes:(NSIndexSet *)indexes;
+
+/*****************************************************************************\
+|* Toggle a single row
+\*****************************************************************************/
+- (void) toggleRow:(NSInteger)row byExtendingSelection:(BOOL)extend;
+
 
 // MARK: View pool management
 

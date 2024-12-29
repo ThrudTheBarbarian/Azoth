@@ -47,6 +47,7 @@
 	[tv tile];
 	[tv reloadData];
 
+	[tv setAllowsMultipleSelection:YES];
 	[tv selectRow:4 byExtendingSelection:NO];
 	[tv selectRow:7 byExtendingSelection:YES];
 
