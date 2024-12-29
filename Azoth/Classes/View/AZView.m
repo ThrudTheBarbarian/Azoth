@@ -258,7 +258,11 @@
 	[_subviews addObject:view];
 	view.superview 	= self;
 	view.window		= _window;
-	[view _installBackingTexture];
+	if (![view _installBackingTexture])
+		SDL_Log("Cannot install backing texture into %s [frame:%s]",
+				view.description.UTF8String,
+				NSStringFromRect(view.frame).UTF8String);
+
 	[view _invalidateTransforms];
 	return YES;
 	}
@@ -361,14 +365,14 @@
 \*****************************************************************************/
 - (void) setFrameOrigin:(NSPoint)p
 	{
-	NSRect frame = frame;
+	NSRect frame = self.frame;
 	frame.origin = p;
 	[self setFrame:frame];
 	}
 
 - (void) setFrameSize:(NSSize)s;
 	{
-	NSRect frame = frame;
+	NSRect frame = self.frame;
 	frame.size = s;
 	[self setFrame:frame];
 	}

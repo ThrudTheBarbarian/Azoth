@@ -250,7 +250,7 @@ static int 			_lineHeight = 29;
 				   sCR.size.height};
 
 	AZRenderer *azr = AZRenderer.renderer;
-	NSInteger ui	= AZApp.sharedInstance.ui;
+	NSInteger ui	= [AZApp.sharedInstance textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 
@@ -315,7 +315,7 @@ static int 			_lineHeight = 29;
 	NSRect dBR	= {W-sBR.size.width, 0, sBR.size.width, sBR.size.height};
 
 	AZRenderer *azr = AZRenderer.renderer;
-	NSInteger ui	= AZApp.sharedInstance.ui;
+	NSInteger ui	= [AZApp.sharedInstance textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 
@@ -344,47 +344,47 @@ static int 			_lineHeight = 29;
 	{
 	AZApp *app 			 = AZApp.sharedInstance;
 
-	_bBL[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-0"];
-	_bBM[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-1"];
-	_bBR[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-2"];
-	_bCL[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-3"];
-	_bCM[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-4"];
-	_bCR[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-5"];
-	_bTL[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-6"];
-	_bTM[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-7"];
-	_bTR[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-8"];
+	_bBL[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-0" in:kUiMap];
+	_bBM[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-1" in:kUiMap];
+	_bBR[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-2" in:kUiMap];
+	_bCL[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-3" in:kUiMap];
+	_bCM[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-4" in:kUiMap];
+	_bCR[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-5" in:kUiMap];
+	_bTL[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-6" in:kUiMap];
+	_bTM[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-7" in:kUiMap];
+	_bTR[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-8" in:kUiMap];
 
-	_bBL[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-0"];
-	_bBM[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-1"];
-	_bBR[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-2"];
-	_bCL[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-3"];
-	_bCM[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-4"];
-	_bCR[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-5"];
-	_bTL[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-6"];
-	_bTM[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-7"];
-	_bTR[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-8"];
+	_bBL[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-0" in:kUiMap];
+	_bBM[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-1" in:kUiMap];
+	_bBR[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-2" in:kUiMap];
+	_bCL[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-3" in:kUiMap];
+	_bCM[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-4" in:kUiMap];
+	_bCR[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-5" in:kUiMap];
+	_bTL[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-6" in:kUiMap];
+	_bTM[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-7" in:kUiMap];
+	_bTR[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-8" in:kUiMap];
 
-	_bBL[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-0"];
-	_bBM[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-1"];
-	_bBR[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-2"];
-	_bCL[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-3"];
-	_bCM[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-4"];
-	_bCR[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-5"];
-	_bTL[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-6"];
-	_bTM[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-7"];
-	_bTR[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-8"];
+	_bBL[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-0" in:kUiMap];
+	_bBM[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-1" in:kUiMap];
+	_bBR[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-2" in:kUiMap];
+	_bCL[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-3" in:kUiMap];
+	_bCM[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-4" in:kUiMap];
+	_bCR[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-5" in:kUiMap];
+	_bTL[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-6" in:kUiMap];
+	_bTM[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-7" in:kUiMap];
+	_bTR[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-8" in:kUiMap];
 
-	_bCL[STATE_RN] = [app srcRectFor:@"textfield-bezel-rounded-left"];
-	_bCM[STATE_RN] = [app srcRectFor:@"textfield-bezel-rounded-center"];
-	_bCR[STATE_RN] = [app srcRectFor:@"textfield-bezel-rounded-right"];
+	_bCL[STATE_RN] = [app srcRectFor:@"textfield-bezel-rounded-left" in:kUiMap];
+	_bCM[STATE_RN] = [app srcRectFor:@"textfield-bezel-rounded-center" in:kUiMap];
+	_bCR[STATE_RN] = [app srcRectFor:@"textfield-bezel-rounded-right" in:kUiMap];
 
-	_bCL[STATE_RF] = [app srcRectFor:@"textfield-bezel-rounded-focused-left"];
-	_bCM[STATE_RF] = [app srcRectFor:@"textfield-bezel-rounded-focused-center"];
-	_bCR[STATE_RF] = [app srcRectFor:@"textfield-bezel-rounded-focused-right"];
+	_bCL[STATE_RF] = [app srcRectFor:@"textfield-bezel-rounded-focused-left" in:kUiMap];
+	_bCM[STATE_RF] = [app srcRectFor:@"textfield-bezel-rounded-focused-center" in:kUiMap];
+	_bCR[STATE_RF] = [app srcRectFor:@"textfield-bezel-rounded-focused-right" in:kUiMap];
 
-	_bCL[STATE_RD] = [app srcRectFor:@"textfield-bezel-rounded-disabled-left"];
-	_bCM[STATE_RD] = [app srcRectFor:@"textfield-bezel-rounded-disabled-center"];
-	_bCR[STATE_RD] = [app srcRectFor:@"textfield-bezel-rounded-disabled-right"];
+	_bCL[STATE_RD] = [app srcRectFor:@"textfield-bezel-rounded-disabled-left" in:kUiMap];
+	_bCM[STATE_RD] = [app srcRectFor:@"textfield-bezel-rounded-disabled-center" in:kUiMap];
+	_bCR[STATE_RD] = [app srcRectFor:@"textfield-bezel-rounded-disabled-right" in:kUiMap];
 
 	for (int i=STATE_RN; i<=STATE_RD; i++)
 		{

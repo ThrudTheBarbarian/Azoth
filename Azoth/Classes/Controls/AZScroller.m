@@ -114,7 +114,7 @@ static NSRect	_sR[STATE_NUM];
 - (void) _drawHorizontalScrollerInRect:(NSRect)dirty with:(AZPainter *)P
 	{
 	NSRect b 			= self.bounds;
-	NSInteger ui		= AZApp.sharedInstance.ui;
+	NSInteger ui		= [AZApp.sharedInstance textureFor:kUiMap];
 	AZRenderer *azr		= AZRenderer.renderer;
 
 	// Map the track source rectangles
@@ -204,7 +204,7 @@ static NSRect	_sR[STATE_NUM];
 - (void) _drawVerticalScrollerInRect:(NSRect)dirty with:(AZPainter *)P
 	{
 	NSRect b 			= self.bounds;
-	NSInteger ui		= AZApp.sharedInstance.ui;
+	NSInteger ui		= [AZApp.sharedInstance textureFor:kUiMap];
 	AZRenderer *azr		= AZRenderer.renderer;
 
 	// Map the track source rectangles
@@ -421,34 +421,34 @@ static NSRect	_sR[STATE_NUM];
 + (void) _fetchRects
 	{
 	AZApp *app 		  = AZApp.sharedInstance;
-	_sL[STATE_HN]   = [app srcRectFor:@"scroller-horizontal-knob-left"];
-	_sC[STATE_HN]   = [app srcRectFor:@"scroller-horizontal-knob-center"];
-	_sR[STATE_HN]   = [app srcRectFor:@"scroller-horizontal-knob-right"];
+	_sL[STATE_HN]   = [app srcRectFor:@"scroller-horizontal-knob-left" in:kUiMap];
+	_sC[STATE_HN]   = [app srcRectFor:@"scroller-horizontal-knob-center" in:kUiMap];
+	_sR[STATE_HN]   = [app srcRectFor:@"scroller-horizontal-knob-right" in:kUiMap];
 
-	_sL[STATE_HT]   = [app srcRectFor:@"scroller-horizontal-track-left"];
-	_sC[STATE_HT]   = [app srcRectFor:@"scroller-horizontal-track-center"];
-	_sR[STATE_HT]   = [app srcRectFor:@"scroller-horizontal-track-right"];
+	_sL[STATE_HT]   = [app srcRectFor:@"scroller-horizontal-track-left" in:kUiMap];
+	_sC[STATE_HT]   = [app srcRectFor:@"scroller-horizontal-track-center" in:kUiMap];
+	_sR[STATE_HT]   = [app srcRectFor:@"scroller-horizontal-track-right" in:kUiMap];
 
-	_sL[STATE_HD]   = [app srcRectFor:@"scroller-horizontal-knob-disabled-left"];
-	_sC[STATE_HD]   = [app srcRectFor:@"scroller-horizontal-knob-disabled-center"];
-	_sR[STATE_HD]   = [app srcRectFor:@"scroller-horizontal-knob-disabled-right"];
+	_sL[STATE_HD]   = [app srcRectFor:@"scroller-horizontal-knob-disabled-left" in:kUiMap];
+	_sC[STATE_HD]   = [app srcRectFor:@"scroller-horizontal-knob-disabled-center" in:kUiMap];
+	_sR[STATE_HD]   = [app srcRectFor:@"scroller-horizontal-knob-disabled-right" in:kUiMap];
 
-	_sC[STATE_HTD]   = [app srcRectFor:@"scroller-horizontal-track-disabled"];
+	_sC[STATE_HTD]   = [app srcRectFor:@"scroller-horizontal-track-disabled" in:kUiMap];
 
 
-	_sL[STATE_VN]   = [app srcRectFor:@"scroller-vertical-knob-top"];
-	_sC[STATE_VN]   = [app srcRectFor:@"scroller-vertical-knob-center"];
-	_sR[STATE_VN]   = [app srcRectFor:@"scroller-vertical-knob-bottom"];
+	_sL[STATE_VN]   = [app srcRectFor:@"scroller-vertical-knob-top" in:kUiMap];
+	_sC[STATE_VN]   = [app srcRectFor:@"scroller-vertical-knob-center" in:kUiMap];
+	_sR[STATE_VN]   = [app srcRectFor:@"scroller-vertical-knob-bottom" in:kUiMap];
 
-	_sL[STATE_VT]   = [app srcRectFor:@"scroller-vertical-track-top"];
-	_sC[STATE_VT]   = [app srcRectFor:@"scroller-vertical-track-center"];
-	_sR[STATE_VT]   = [app srcRectFor:@"scroller-vertical-track-bottom"];
+	_sL[STATE_VT]   = [app srcRectFor:@"scroller-vertical-track-top" in:kUiMap];
+	_sC[STATE_VT]   = [app srcRectFor:@"scroller-vertical-track-center" in:kUiMap];
+	_sR[STATE_VT]   = [app srcRectFor:@"scroller-vertical-track-bottom" in:kUiMap];
 
-	_sL[STATE_VD]   = [app srcRectFor:@"scroller-vertical-knob-disabled-top"];
-	_sC[STATE_VD]   = [app srcRectFor:@"scroller-vertical-knob-disabled-center"];
-	_sR[STATE_VD]   = [app srcRectFor:@"scroller-vertical-knob-disabled-bottom"];
+	_sL[STATE_VD]   = [app srcRectFor:@"scroller-vertical-knob-disabled-top" in:kUiMap];
+	_sC[STATE_VD]   = [app srcRectFor:@"scroller-vertical-knob-disabled-center" in:kUiMap];
+	_sR[STATE_VD]   = [app srcRectFor:@"scroller-vertical-knob-disabled-bottom" in:kUiMap];
 
-	_sC[STATE_VTD]  = [app srcRectFor:@"scroller-vertical-track-disabled"];
+	_sC[STATE_VTD]  = [app srcRectFor:@"scroller-vertical-track-disabled" in:kUiMap];
 	}
 
 @end

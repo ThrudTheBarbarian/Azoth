@@ -9,6 +9,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class AZColour;
+
 struct SDL_Renderer;
 struct SDL_Texture;
 struct SDL_FPoint;

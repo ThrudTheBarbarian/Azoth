@@ -413,7 +413,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		float w		= self.bounds.size.width;
 
 		AZRenderer *azr = AZRenderer.renderer;
-		NSInteger ui	= AZApp.sharedInstance.ui;
+		NSInteger ui	= [AZApp.sharedInstance textureFor:kUiMap];
 
 		int idx = 0;
 		while ((y < yMax) && (idx < _numberOfRows))
@@ -1039,8 +1039,8 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	{
 	AZApp *app		= AZApp.sharedInstance;
 
-	_rM[STATE_N]   = [app srcRectFor:@"tableview-rowview"];
-	_rM[STATE_H]   = [app srcRectFor:@"menu-bar-window-background-selected"];
+	_rM[STATE_N]   = [app srcRectFor:@"tableview-rowview" in:kUiMap];
+	_rM[STATE_H]   = [app srcRectFor:@"menu-bar-window-background-selected" in:kUiMap];
 
 	// Split by height so we can tile any row-height
 	for (int i=0; i<STATE_NUM; i++)

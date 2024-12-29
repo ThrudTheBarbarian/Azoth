@@ -166,7 +166,7 @@ typedef struct
 
 	NSRect b 			= self.bounds;
 	AZRenderer *azr		= AZRenderer.renderer;
-	NSInteger ui		= AZApp.sharedInstance.ui;
+	NSInteger ui		= [AZApp.sharedInstance textureFor:kUiMap];
 	BOOL allDisabled 	= (self.state == ControlStateDisabled);
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
@@ -558,35 +558,35 @@ typedef struct
 	dispatch_once(&onceToken,
 		^{
 		AZApp *app 		= AZApp.sharedInstance;
-		_cL[STATE_N]  	= [app srcRectFor:@"segmented-control-bezel-left"];
-		_cC[STATE_N]  	= [app srcRectFor:@"segmented-control-bezel-center"];
-		_cR[STATE_N]  	= [app srcRectFor:@"segmented-control-bezel-right"];
-		_cD[STATE_N]  	= [app srcRectFor:@"segmented-control-bezel-divider"];
+		_cL[STATE_N]  	= [app srcRectFor:@"segmented-control-bezel-left" in:kUiMap];
+		_cC[STATE_N]  	= [app srcRectFor:@"segmented-control-bezel-center" in:kUiMap];
+		_cR[STATE_N]  	= [app srcRectFor:@"segmented-control-bezel-right" in:kUiMap];
+		_cD[STATE_N]  	= [app srcRectFor:@"segmented-control-bezel-divider" in:kUiMap];
 
-		_cL[STATE_H]  	= [app srcRectFor:@"segmented-control-bezel-highlighted-left"];
-		_cC[STATE_H]  	= [app srcRectFor:@"segmented-control-bezel-highlighted-center"];
-		_cR[STATE_H]  	= [app srcRectFor:@"segmented-control-bezel-highlighted-right"];
-		_cD[STATE_H]  	= [app srcRectFor:@"segmented-control-bezel-highlighted-divider"];
+		_cL[STATE_H]  	= [app srcRectFor:@"segmented-control-bezel-highlighted-left" in:kUiMap];
+		_cC[STATE_H]  	= [app srcRectFor:@"segmented-control-bezel-highlighted-center" in:kUiMap];
+		_cR[STATE_H]  	= [app srcRectFor:@"segmented-control-bezel-highlighted-right" in:kUiMap];
+		_cD[STATE_H]  	= [app srcRectFor:@"segmented-control-bezel-highlighted-divider" in:kUiMap];
 
-		_cL[STATE_D]  	= [app srcRectFor:@"segmented-control-bezel-disabled-left"];
-		_cC[STATE_D]  	= [app srcRectFor:@"segmented-control-bezel-disabled-center"];
-		_cR[STATE_D]  	= [app srcRectFor:@"segmented-control-bezel-disabled-right"];
-		_cD[STATE_D]  	= [app srcRectFor:@"segmented-control-bezel-disabled-divider"];
+		_cL[STATE_D]  	= [app srcRectFor:@"segmented-control-bezel-disabled-left" in:kUiMap];
+		_cC[STATE_D]  	= [app srcRectFor:@"segmented-control-bezel-disabled-center" in:kUiMap];
+		_cR[STATE_D]  	= [app srcRectFor:@"segmented-control-bezel-disabled-right" in:kUiMap];
+		_cD[STATE_D]  	= [app srcRectFor:@"segmented-control-bezel-disabled-divider" in:kUiMap];
 
-		_cL[STATE_HD]  	= [app srcRectFor:@"segmented-control-bezel-highlighted-disabled-left"];
-		_cC[STATE_HD]  	= [app srcRectFor:@"segmented-control-bezel-highlighted-disabled-center"];
-		_cR[STATE_HD]  	= [app srcRectFor:@"segmented-control-bezel-highlighted-disabled-right"];
-		_cD[STATE_HD]  	= [app srcRectFor:@"segmented-control-bezel-highlighted-disabled-divider"];
+		_cL[STATE_HD]  	= [app srcRectFor:@"segmented-control-bezel-highlighted-disabled-left" in:kUiMap];
+		_cC[STATE_HD]  	= [app srcRectFor:@"segmented-control-bezel-highlighted-disabled-center" in:kUiMap];
+		_cR[STATE_HD]  	= [app srcRectFor:@"segmented-control-bezel-highlighted-disabled-right" in:kUiMap];
+		_cD[STATE_HD]  	= [app srcRectFor:@"segmented-control-bezel-highlighted-disabled-divider" in:kUiMap];
 
-		_cL[STATE_P]  	= [app srcRectFor:@"segmented-control-bezel-pushed-left"];
-		_cC[STATE_P]  	= [app srcRectFor:@"segmented-control-bezel-pushed-center"];
-		_cR[STATE_P]  	= [app srcRectFor:@"segmented-control-bezel-pushed-right"];
-		_cD[STATE_P]  	= [app srcRectFor:@"segmented-control-bezel-divider"];
+		_cL[STATE_P]  	= [app srcRectFor:@"segmented-control-bezel-pushed-left" in:kUiMap];
+		_cC[STATE_P]  	= [app srcRectFor:@"segmented-control-bezel-pushed-center" in:kUiMap];
+		_cR[STATE_P]  	= [app srcRectFor:@"segmented-control-bezel-pushed-right" in:kUiMap];
+		_cD[STATE_P]  	= [app srcRectFor:@"segmented-control-bezel-divider" in:kUiMap];
 
-		_cL[STATE_HP]  	= [app srcRectFor:@"segmented-control-bezel-pushed-highlighted-left"];
-		_cC[STATE_HP]  	= [app srcRectFor:@"segmented-control-bezel-pushed-highlighted-center"];
-		_cR[STATE_HP]  	= [app srcRectFor:@"segmented-control-bezel-pushed-highlighted-right"];
-		_cD[STATE_HP]  	= [app srcRectFor:@"segmented-control-bezel-highlighted-divider"];
+		_cL[STATE_HP]  	= [app srcRectFor:@"segmented-control-bezel-pushed-highlighted-left" in:kUiMap];
+		_cC[STATE_HP]  	= [app srcRectFor:@"segmented-control-bezel-pushed-highlighted-center" in:kUiMap];
+		_cR[STATE_HP]  	= [app srcRectFor:@"segmented-control-bezel-pushed-highlighted-right" in:kUiMap];
+		_cD[STATE_HP]  	= [app srcRectFor:@"segmented-control-bezel-highlighted-divider" in:kUiMap];
 		});
 	}
 

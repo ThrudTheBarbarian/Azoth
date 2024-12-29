@@ -57,11 +57,11 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-x 1024 -y 1024"
+            argument = "-x 2048 -y 4096"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-o /tmp/atlas"
+            argument = "-o /tmp"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

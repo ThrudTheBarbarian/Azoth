@@ -263,7 +263,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 				  sR.size.height};
 
 	AZRenderer *azr = AZRenderer.renderer;
-	NSInteger ui	= AZApp.sharedInstance.ui;
+	NSInteger ui	= [AZApp.sharedInstance textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 
@@ -316,7 +316,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 				  sB.size.height};
 
 	AZRenderer *azr = AZRenderer.renderer;
-	NSInteger ui	= AZApp.sharedInstance.ui;
+	NSInteger ui	= [AZApp.sharedInstance textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 
@@ -357,7 +357,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 							sC.size.height};
 
 	AZRenderer *azr = AZRenderer.renderer;
-	NSInteger ui	= AZApp.sharedInstance.ui;
+	NSInteger ui	= [AZApp.sharedInstance textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 
@@ -390,30 +390,30 @@ static NSRect	_knob[STATE_NUM];	// knobs
 - (void) _fetchRects
 	{
 	AZApp *app			= AZApp.sharedInstance;
-	_trackL[STATE_N]	= [app srcRectFor:@"horizontal-track-left"];
-	_trackM[STATE_N]	= [app srcRectFor:@"horizontal-track-center"];
-	_trackR[STATE_N]	= [app srcRectFor:@"horizontal-track-right"];
+	_trackL[STATE_N]	= [app srcRectFor:@"horizontal-track-left" in:kUiMap];
+	_trackM[STATE_N]	= [app srcRectFor:@"horizontal-track-center" in:kUiMap];
+	_trackR[STATE_N]	= [app srcRectFor:@"horizontal-track-right" in:kUiMap];
 
-	_trackL[STATE_D]	= [app srcRectFor:@"horizontal-track-disabled-left"];
-	_trackM[STATE_D]	= [app srcRectFor:@"horizontal-track-disabled-center"];
-	_trackR[STATE_D]	= [app srcRectFor:@"horizontal-track-disabled-right"];
+	_trackL[STATE_D]	= [app srcRectFor:@"horizontal-track-disabled-left" in:kUiMap];
+	_trackM[STATE_D]	= [app srcRectFor:@"horizontal-track-disabled-center" in:kUiMap];
+	_trackR[STATE_D]	= [app srcRectFor:@"horizontal-track-disabled-right" in:kUiMap];
 
-	_trackB[STATE_N]	= [app srcRectFor:@"vertical-track-bottom"];
-	_trackC[STATE_N]	= [app srcRectFor:@"vertical-track-center"];
-	_trackT[STATE_N]	= [app srcRectFor:@"vertical-track-top"];
+	_trackB[STATE_N]	= [app srcRectFor:@"vertical-track-bottom" in:kUiMap];
+	_trackC[STATE_N]	= [app srcRectFor:@"vertical-track-center" in:kUiMap];
+	_trackT[STATE_N]	= [app srcRectFor:@"vertical-track-top" in:kUiMap];
 
-	_trackB[STATE_D]	= [app srcRectFor:@"vertical-track-disabled-bottom"];
-	_trackC[STATE_D]	= [app srcRectFor:@"vertical-track-disabled-center"];
-	_trackT[STATE_D]	= [app srcRectFor:@"vertical-track-disabled-top"];
+	_trackB[STATE_D]	= [app srcRectFor:@"vertical-track-disabled-bottom" in:kUiMap];
+	_trackC[STATE_D]	= [app srcRectFor:@"vertical-track-disabled-center" in:kUiMap];
+	_trackT[STATE_D]	= [app srcRectFor:@"vertical-track-disabled-top" in:kUiMap];
 
-	_knob[STATE_N]		= [app srcRectFor:@"knob"];
-	_knob[STATE_H]		= [app srcRectFor:@"knob-highlighted"];
-	_knob[STATE_D]		= [app srcRectFor:@"knob-disabled"];
+	_knob[STATE_N]		= [app srcRectFor:@"knob" in:kUiMap];
+	_knob[STATE_H]		= [app srcRectFor:@"knob-highlighted" in:kUiMap];
+	_knob[STATE_D]		= [app srcRectFor:@"knob-disabled" in:kUiMap];
 
-	_circ[STATE_N]		= [app srcRectFor:@"slider-circular-bezel"];
-	_cKnob[STATE_N]		= [app srcRectFor:@"slider-circular-knob"];
-	_circ[STATE_D]		= [app srcRectFor:@"slider-circular-disabled-bezel"];
-	_cKnob[STATE_D]		= [app srcRectFor:@"slider-circular-disabled-knob"];
+	_circ[STATE_N]		= [app srcRectFor:@"slider-circular-bezel" in:kUiMap];
+	_cKnob[STATE_N]		= [app srcRectFor:@"slider-circular-knob" in:kUiMap];
+	_circ[STATE_D]		= [app srcRectFor:@"slider-circular-disabled-bezel" in:kUiMap];
+	_cKnob[STATE_D]		= [app srcRectFor:@"slider-circular-disabled-knob" in:kUiMap];
 	}
 
 @end

@@ -119,7 +119,8 @@ static NSRect	_sortDn;
     NSSize spacing 					= _tableView.spacing;
 
 	AZRenderer *azr					= AZRenderer.renderer;
-	NSInteger ui					= AZApp.sharedInstance.ui;
+	NSInteger ui					= [AZApp.sharedInstance textureFor:kUiMap];
+
 	[painter setTextColour:AZColour.blackColour];
     for (NSInteger i = 0; i < count; ++i)
 		{
@@ -294,13 +295,13 @@ static NSRect	_sortDn;
 	{
 	AZApp *app		= AZApp.sharedInstance;
 
-	_hdr[STATE_N]   = [app srcRectFor:@"tableview-headerview"];
-	_hdr[STATE_H]   = [app srcRectFor:@"tableview-headerview-highlighted"];
-	_hdr[STATE_P]   = [app srcRectFor:@"tableview-headerview-pressed"];
-	_hdr[STATE_HP]  = [app srcRectFor:@"tableview-headerview-highlighted-pressed"];
+	_hdr[STATE_N]   = [app srcRectFor:@"tableview-headerview" in:kUiMap];
+	_hdr[STATE_H]   = [app srcRectFor:@"tableview-headerview-highlighted" in:kUiMap];
+	_hdr[STATE_P]   = [app srcRectFor:@"tableview-headerview-pressed" in:kUiMap];
+	_hdr[STATE_HP]  = [app srcRectFor:@"tableview-headerview-highlighted-pressed" in:kUiMap];
 
-	_sortUp		   	= [app srcRectFor:@"tableview-headerview-ascending"];
-	_sortDn  		= [app srcRectFor:@"tableview-headerview-descending"];
+	_sortUp		   	= [app srcRectFor:@"tableview-headerview-ascending" in:kUiMap];
+	_sortDn  		= [app srcRectFor:@"tableview-headerview-descending" in:kUiMap];
 	}
 
 /*****************************************************************************\

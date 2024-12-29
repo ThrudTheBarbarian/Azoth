@@ -149,7 +149,7 @@ static NSRect	_bRight[STATE_NUM];
 								 srcR.size.width, srcR.size.height);
 
 	AZRenderer *azr		= AZRenderer.renderer;
-	NSInteger ui		= AZApp.sharedInstance.ui;
+	NSInteger ui		= [AZApp.sharedInstance textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 	[azr blitFrom:ui src:srcL dst:dstL];
@@ -192,7 +192,7 @@ static NSRect	_bRight[STATE_NUM];
 	dst.origin  	= rhs ? NSMakePoint(W-NSWidth(src), by) : NSMakePoint(0, by);
 
 	AZRenderer *azr	= AZRenderer.renderer;
-	NSInteger ui	= AZApp.sharedInstance.ui;
+	NSInteger ui	= [AZApp.sharedInstance textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 	[azr blitFrom:ui src:src dst:dst];
@@ -306,61 +306,61 @@ static NSRect	_bRight[STATE_NUM];
 - (void) _fetchRects
 	{
 	AZApp *app 		  = AZApp.sharedInstance;
-	_bLeft[STATE_N]   = [app srcRectFor:@"button-bezel-left"];
-	_bLeft[STATE_H]   = [app srcRectFor:@"button-bezel-highlighted-left"];
-	_bLeft[STATE_D]   = [app srcRectFor:@"button-bezel-disabled-left"];
+	_bLeft[STATE_N]   = [app srcRectFor:@"button-bezel-left" in:kUiMap];
+	_bLeft[STATE_H]   = [app srcRectFor:@"button-bezel-highlighted-left" in:kUiMap];
+	_bLeft[STATE_D]   = [app srcRectFor:@"button-bezel-disabled-left" in:kUiMap];
 
-	_bLeft[STATE_RN]  = [app srcRectFor:@"button-bezel-rounded-left"];
-	_bLeft[STATE_RH]  = [app srcRectFor:@"button-bezel-rounded-highlighted-left"];
-	_bLeft[STATE_RD]  = [app srcRectFor:@"button-bezel-rounded-disabled-left"];
+	_bLeft[STATE_RN]  = [app srcRectFor:@"button-bezel-rounded-left" in:kUiMap];
+	_bLeft[STATE_RH]  = [app srcRectFor:@"button-bezel-rounded-highlighted-left" in:kUiMap];
+	_bLeft[STATE_RD]  = [app srcRectFor:@"button-bezel-rounded-disabled-left" in:kUiMap];
 
-	_bLeft[STATE_DN]  = [app srcRectFor:@"default-button-bezel-left"];
-	_bLeft[STATE_DH]  = [app srcRectFor:@"default-button-bezel-highlighted-left"];
-	_bLeft[STATE_DD]  = [app srcRectFor:@"default-button-bezel-disabled-left"];
+	_bLeft[STATE_DN]  = [app srcRectFor:@"default-button-bezel-left" in:kUiMap];
+	_bLeft[STATE_DH]  = [app srcRectFor:@"default-button-bezel-highlighted-left" in:kUiMap];
+	_bLeft[STATE_DD]  = [app srcRectFor:@"default-button-bezel-disabled-left" in:kUiMap];
 
-	_bLeft[STATE_RDN] = [app srcRectFor:@"default-button-bezel-rounded-left"];
-	_bLeft[STATE_RDH] = [app srcRectFor:@"default-button-bezel-rounded-highlighted-left"];
-	_bLeft[STATE_RDD] = [app srcRectFor:@"default-button-bezel-rounded-disabled-left"];
+	_bLeft[STATE_RDN] = [app srcRectFor:@"default-button-bezel-rounded-left" in:kUiMap];
+	_bLeft[STATE_RDH] = [app srcRectFor:@"default-button-bezel-rounded-highlighted-left" in:kUiMap];
+	_bLeft[STATE_RDD] = [app srcRectFor:@"default-button-bezel-rounded-disabled-left" in:kUiMap];
 
 
-	_bCenter[STATE_N]   = [app srcRectFor:@"button-bezel-center"];
-	_bCenter[STATE_H]   = [app srcRectFor:@"button-bezel-highlighted-center"];
-	_bCenter[STATE_D]   = [app srcRectFor:@"button-bezel-disabled-center"];
+	_bCenter[STATE_N]   = [app srcRectFor:@"button-bezel-center" in:kUiMap];
+	_bCenter[STATE_H]   = [app srcRectFor:@"button-bezel-highlighted-center" in:kUiMap];
+	_bCenter[STATE_D]   = [app srcRectFor:@"button-bezel-disabled-center" in:kUiMap];
 
-	_bCenter[STATE_RN]  = [app srcRectFor:@"button-bezel-rounded-center"];
-	_bCenter[STATE_RH]  = [app srcRectFor:@"button-bezel-rounded-highlighted-center"];
-	_bCenter[STATE_RD]  = [app srcRectFor:@"button-bezel-rounded-disabled-center"];
+	_bCenter[STATE_RN]  = [app srcRectFor:@"button-bezel-rounded-center" in:kUiMap];
+	_bCenter[STATE_RH]  = [app srcRectFor:@"button-bezel-rounded-highlighted-center" in:kUiMap];
+	_bCenter[STATE_RD]  = [app srcRectFor:@"button-bezel-rounded-disabled-center" in:kUiMap];
 
-	_bCenter[STATE_DN]  = [app srcRectFor:@"default-button-bezel-center"];
-	_bCenter[STATE_DH]  = [app srcRectFor:@"default-button-bezel-highlighted-center"];
-	_bCenter[STATE_DD]  = [app srcRectFor:@"default-button-bezel-disabled-center"];
+	_bCenter[STATE_DN]  = [app srcRectFor:@"default-button-bezel-center" in:kUiMap];
+	_bCenter[STATE_DH]  = [app srcRectFor:@"default-button-bezel-highlighted-center" in:kUiMap];
+	_bCenter[STATE_DD]  = [app srcRectFor:@"default-button-bezel-disabled-center" in:kUiMap];
 
-	_bCenter[STATE_RDN] = [app srcRectFor:@"default-button-bezel-rounded-center"];
-	_bCenter[STATE_RDH] = [app srcRectFor:@"default-button-bezel-rounded-highlighted-center"];
-	_bCenter[STATE_RDD] = [app srcRectFor:@"default-button-bezel-rounded-disabled-center"];
+	_bCenter[STATE_RDN] = [app srcRectFor:@"default-button-bezel-rounded-center" in:kUiMap];
+	_bCenter[STATE_RDH] = [app srcRectFor:@"default-button-bezel-rounded-highlighted-center" in:kUiMap];
+	_bCenter[STATE_RDD] = [app srcRectFor:@"default-button-bezel-rounded-disabled-center" in:kUiMap];
 
-	_bCenter[STATE_CN]	= [app srcRectFor:@"check-box-image"];
-	_bCenter[STATE_CK]	= [app srcRectFor:@"check-box-image-selected"];
-	_bCenter[STATE_CD]	= [app srcRectFor:@"check-box-image"];
+	_bCenter[STATE_CN]	= [app srcRectFor:@"check-box-image" in:kUiMap];
+	_bCenter[STATE_CK]	= [app srcRectFor:@"check-box-image-selected" in:kUiMap];
+	_bCenter[STATE_CD]	= [app srcRectFor:@"check-box-image" in:kUiMap];
 
-	_bCenter[STATE_NR]	= [app srcRectFor:@"radio-image"];
-	_bCenter[STATE_SR]	= [app srcRectFor:@"radio-image-selected"];
-	_bCenter[STATE_DR]	= [app srcRectFor:@"radio-image"];
+	_bCenter[STATE_NR]	= [app srcRectFor:@"radio-image" in:kUiMap];
+	_bCenter[STATE_SR]	= [app srcRectFor:@"radio-image-selected" in:kUiMap];
+	_bCenter[STATE_DR]	= [app srcRectFor:@"radio-image" in:kUiMap];
 
-	_bRight[STATE_N]   = [app srcRectFor:@"button-bezel-right"];
-	_bRight[STATE_H]   = [app srcRectFor:@"button-bezel-highlighted-right"];
-	_bRight[STATE_D]   = [app srcRectFor:@"button-bezel-disabled-right"];
+	_bRight[STATE_N]   = [app srcRectFor:@"button-bezel-right" in:kUiMap];
+	_bRight[STATE_H]   = [app srcRectFor:@"button-bezel-highlighted-right" in:kUiMap];
+	_bRight[STATE_D]   = [app srcRectFor:@"button-bezel-disabled-right" in:kUiMap];
 
-	_bRight[STATE_RN]  = [app srcRectFor:@"button-bezel-rounded-right"];
-	_bRight[STATE_RH]  = [app srcRectFor:@"button-bezel-rounded-highlighted-right"];
-	_bRight[STATE_RD]  = [app srcRectFor:@"button-bezel-rounded-disabled-right"];
+	_bRight[STATE_RN]  = [app srcRectFor:@"button-bezel-rounded-right" in:kUiMap];
+	_bRight[STATE_RH]  = [app srcRectFor:@"button-bezel-rounded-highlighted-right" in:kUiMap];
+	_bRight[STATE_RD]  = [app srcRectFor:@"button-bezel-rounded-disabled-right" in:kUiMap];
 
-	_bRight[STATE_DN]  = [app srcRectFor:@"default-button-bezel-right"];
-	_bRight[STATE_DH]  = [app srcRectFor:@"default-button-bezel-highlighted-right"];
-	_bRight[STATE_DD]  = [app srcRectFor:@"default-button-bezel-disabled-right"];
+	_bRight[STATE_DN]  = [app srcRectFor:@"default-button-bezel-right" in:kUiMap];
+	_bRight[STATE_DH]  = [app srcRectFor:@"default-button-bezel-highlighted-right" in:kUiMap];
+	_bRight[STATE_DD]  = [app srcRectFor:@"default-button-bezel-disabled-right" in:kUiMap];
 
-	_bRight[STATE_RDN] = [app srcRectFor:@"default-button-bezel-rounded-right"];
-	_bRight[STATE_RDH] = [app srcRectFor:@"default-button-bezel-rounded-highlighted-right"];
-	_bRight[STATE_RDD] = [app srcRectFor:@"default-button-bezel-rounded-disabled-right"];
+	_bRight[STATE_RDN] = [app srcRectFor:@"default-button-bezel-rounded-right" in:kUiMap];
+	_bRight[STATE_RDH] = [app srcRectFor:@"default-button-bezel-rounded-highlighted-right" in:kUiMap];
+	_bRight[STATE_RDD] = [app srcRectFor:@"default-button-bezel-rounded-disabled-right" in:kUiMap];
 	}
 @end

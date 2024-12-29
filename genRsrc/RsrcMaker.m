@@ -16,6 +16,8 @@
 @property(assign, nonatomic) int									x;
 @property(assign, nonatomic) int									y;
 @property(assign, nonatomic) int									maxH;
+@property(assign, nonatomic) int									resultW;
+@property(assign, nonatomic) int									resultH;
 @property(assign, nonatomic) int									w;
 @property(assign, nonatomic) int									h;
 @end
@@ -52,8 +54,8 @@
 	NSString *output = [self _findArg:@"-o"
 						  longform:@"--output-file-stem"
 							  from:args
-						    reason:@"specify the output file stem"
-					   withDefault:@"rsrc"];
+						    reason:@"specify the output file directory"
+					   withDefault:@"."];
 
 	NSString *oWidth = [self _findArg:@"-x"
 						     longform:@"--output-x-size"
@@ -75,10 +77,44 @@
 		[self _usage];
 
 	/*************************************************************************\
-	|* Create the atlas texture
+	|* Store width and height for later
 	\*************************************************************************/
 	_w = oHeight.intValue;
 	_h = oWidth.intValue;
+
+	/*************************************************************************\
+	|* Open the target dir, and get a list of subdirs
+	\*************************************************************************/
+	NSError *error  		   = nil;
+	NSFileManager *fm 		   = NSFileManager.defaultManager;
+	NSArray<NSString *> *dirs = [fm contentsOfDirectoryAtPath:src error:&error];
+	for (NSString *dir in dirs)
+		{
+		_x = 0;
+		_y = 0;
+		_maxH = 0;
+		_resultW = 0;
+		_resultH = 0;
+
+		BOOL isDir;
+		NSString *path = [src stringByAppendingPathComponent:dir];
+		if ([fm fileExistsAtPath:path isDirectory:&isDir])
+			{
+			NSLog(@"Examining %@...", path);
+			if (isDir && ![dir hasPrefix:@"."])
+				{
+				NSLog(@"Converting %@...", path);
+				[self _processDir:dir at:path to:output];
+				}
+			}
+		}
+	}
+
+- (void) _processDir:(NSString *)dir at:(NSString *)fulldir to:(NSString *)output
+	{
+	/*************************************************************************\
+	|* Create the atlas texture
+	\*************************************************************************/
 	SDL_Surface *atlas = SDL_CreateSurface(_w, _h, SDL_PIXELFORMAT_ABGR8888);
 	if (!atlas)
 		{
@@ -89,27 +125,44 @@
 	/*************************************************************************\
 	|* Read the images and copy to the atlas
 	\*************************************************************************/
-	NSFileManager *fm 		   = NSFileManager.defaultManager;
 	NSError *error  		   = nil;
-	NSArray<NSString *> *paths = [fm contentsOfDirectoryAtPath:src error:&error];
+	NSFileManager *fm 		   = NSFileManager.defaultManager;
+	NSArray<NSString *> *paths = [fm contentsOfDirectoryAtPath:fulldir error:&error];
 	for (NSString *path in paths)
 		{
-		NSString *fullpath = [NSString stringWithFormat:@"%@/%@", src, path];
+		NSString *fullpath = [NSString stringWithFormat:@"%@/%@", fulldir, path];
 		[self _copy:fullpath to:atlas];
 		}
 
 	/*************************************************************************\
+	|* Create a new atlas that only has the required height
+	\*************************************************************************/
+	SDL_Surface *result = SDL_CreateSurface(_resultW,
+											_resultH,
+											SDL_PIXELFORMAT_ABGR8888);
+	if (!result)
+		{
+		SDL_Log("Cannot create surface of size %dx%d", _resultW, _resultH);
+		exit(0);
+		}
+
+	SDL_Rect srcRect = {0, 0, _resultW, _resultH};
+	SDL_Rect dstRect = srcRect;
+	SDL_BlitSurface(atlas, &srcRect, result, &dstRect);
+
+	/*************************************************************************\
 	|* Write out the atlas
 	\*************************************************************************/
-	NSString *oFile = [NSString stringWithFormat:@"%@.png", output];
+	NSString *oFile = [NSString stringWithFormat:@"%@/%@.png", output, dir];
 	NSLog(@"Saving to %@", oFile);
-	IMG_SavePNG(atlas, oFile.UTF8String);
+	IMG_SavePNG(result, oFile.UTF8String);
 	SDL_DestroySurface(atlas);
+	SDL_DestroySurface(result);
 
 	/*************************************************************************\
 	|* Write out the metadata
 	\*************************************************************************/
-	oFile = [NSString stringWithFormat:@"%@.plist", output];
+	oFile = [NSString stringWithFormat:@"%@/%@.plist", output, dir];
 	[_meta writeToFile:oFile atomically:NO];
 	}
 
@@ -124,6 +177,7 @@
 
 	if (_x + w > _w)
 		{
+		_resultW = _w;
 		if (_y + h > _h)
 			{
 			SDL_Log("Aborting, cannot fit image into atlas");
@@ -152,6 +206,8 @@
 	SDL_BlitSurface(glyph, NULL, img, &dst);
 	SDL_DestroySurface(glyph);
 	_x += w+1;
+	_resultW = (_resultW > _x) ? _resultW : _x;
+	_resultH = _y + _maxH;
 	}
 
 /*****************************************************************************\

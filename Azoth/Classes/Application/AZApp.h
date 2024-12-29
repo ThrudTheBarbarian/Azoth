@@ -12,6 +12,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 extern NSString * const kTextureType;
 
+extern NSString * const kUiMap;
+extern NSString * const kIconsMap;
+extern NSString * const kHudMap;
+extern NSString * const kCursorsMap;
+
 enum SDL_AppResult;
 union SDL_Event;
 struct TTF_TextEngine;
@@ -56,12 +61,15 @@ struct TTF_TextEngine;
 \*****************************************************************************/
 - (void) registerTextureForDisposal:(NSNumber *)texture;
 
-
 /*****************************************************************************\
 |* Fill out a box that defines a particular named piece of the UI texture atlas
 \*****************************************************************************/
-- (NSRect) srcRectFor:(NSString *)uiName;
+- (NSRect) srcRectFor:(NSString *)symbol in:(NSString *)atlasName;
 
+/*****************************************************************************\
+|* Return the texture-id (or -ve number on error) for a given atlas-by-name
+\*****************************************************************************/
+- (NSInteger) textureFor:(NSString *)atlasName;
 
 // MARK: Event sinks
 
@@ -94,9 +102,6 @@ struct TTF_TextEngine;
 
 // And an appropriately sized control font
 @property(strong, nonatomic) AZFont *					controlFont;
-
-// The UI texture atlas id
-@property(assign, nonatomic) NSInteger 					ui;
 
 // The Initial frame at startup. If not set, a default
 // 640x480 size will be used

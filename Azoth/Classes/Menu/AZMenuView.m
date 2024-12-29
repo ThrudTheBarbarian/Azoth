@@ -206,19 +206,19 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 + (void) _fetchRects
 	{
 	AZApp *app	= AZApp.sharedInstance;
-	_barSel		= [app srcRectFor:@"menu-bar-window-background-selected"];
+	_barSel		= [app srcRectFor:@"menu-bar-window-background-selected" in:kUiMap];
 
-	_menuTL		= [app srcRectFor:@"menu-window-rounded-0"];
-	_menuTM		= [app srcRectFor:@"menu-window-1"];
-	_menuTR		= [app srcRectFor:@"menu-window-rounded-2"];
+	_menuTL		= [app srcRectFor:@"menu-window-rounded-0" in:kUiMap];
+	_menuTM		= [app srcRectFor:@"menu-window-1" in:kUiMap];
+	_menuTR		= [app srcRectFor:@"menu-window-rounded-2" in:kUiMap];
 
-	_menuCL		= [app srcRectFor:@"menu-window-3"];
-	_menuCM		= [app srcRectFor:@"menu-window-4"];
-	_menuCR		= [app srcRectFor:@"menu-window-5"];
+	_menuCL		= [app srcRectFor:@"menu-window-3" in:kUiMap];
+	_menuCM		= [app srcRectFor:@"menu-window-4" in:kUiMap];
+	_menuCR		= [app srcRectFor:@"menu-window-5" in:kUiMap];
 
-	_menuBL		= [app srcRectFor:@"menu-window-rounded-6"];
-	_menuBM		= [app srcRectFor:@"menu-window-7"];
-	_menuBR		= [app srcRectFor:@"menu-window-rounded-8"];
+	_menuBL		= [app srcRectFor:@"menu-window-rounded-6" in:kUiMap];
+	_menuBM		= [app srcRectFor:@"menu-window-7" in:kUiMap];
+	_menuBR		= [app srcRectFor:@"menu-window-rounded-8" in:kUiMap];
 	}
 
 
@@ -233,7 +233,7 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 	AZRenderer *azr		= AZRenderer.renderer;
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 
-	NSInteger ui		= AZApp.sharedInstance.ui;
+	NSInteger ui		= [AZApp.sharedInstance textureFor:kUiMap];
 	int y 				= 0;
 	int H				= _measure.fontHeight;
 

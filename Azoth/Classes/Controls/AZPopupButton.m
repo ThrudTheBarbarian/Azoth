@@ -115,20 +115,20 @@ static NSRect	_bR[STATE_NUM];			// Right-hand-side image
 	dispatch_once(&onceToken,
 		^{
 		AZApp *app		= AZApp.sharedInstance;
-		_bL[STATE_N]   	= [app srcRectFor:@"button-bezel-left"];
-		_bL[STATE_P]   	= [app srcRectFor:@"button-bezel-left"];
-		_bL[STATE_DN]  	= [app srcRectFor:@"popup-bezel-disabled-left"];
-		_bL[STATE_DP]   = [app srcRectFor:@"popup-bezel-disabled-left"];
+		_bL[STATE_N]   	= [app srcRectFor:@"button-bezel-left" in:kUiMap];
+		_bL[STATE_P]   	= [app srcRectFor:@"button-bezel-left" in:kUiMap];
+		_bL[STATE_DN]  	= [app srcRectFor:@"popup-bezel-disabled-left" in:kUiMap];
+		_bL[STATE_DP]   = [app srcRectFor:@"popup-bezel-disabled-left" in:kUiMap];
 
-		_bC[STATE_N]   	= [app srcRectFor:@"popup-bezel-center"];
-		_bC[STATE_P]   	= [app srcRectFor:@"popup-bezel-center"];
-		_bC[STATE_DN]  	= [app srcRectFor:@"popup-bezel-disabled-center"];
-		_bC[STATE_DP]   = [app srcRectFor:@"popup-bezel-disabled-center"];
+		_bC[STATE_N]   	= [app srcRectFor:@"popup-bezel-center" in:kUiMap];
+		_bC[STATE_P]   	= [app srcRectFor:@"popup-bezel-center" in:kUiMap];
+		_bC[STATE_DN]  	= [app srcRectFor:@"popup-bezel-disabled-center" in:kUiMap];
+		_bC[STATE_DP]   = [app srcRectFor:@"popup-bezel-disabled-center" in:kUiMap];
 
-		_bR[STATE_N]   	= [app srcRectFor:@"popup-bezel-right"];
-		_bR[STATE_P]   	= [app srcRectFor:@"popup-bezel-right-pullsdown"];
-		_bR[STATE_DN]   = [app srcRectFor:@"popup-bezel-disabled-right"];
-		_bR[STATE_DP]   = [app srcRectFor:@"popup-bezel-disabled-right-pullsdown"];
+		_bR[STATE_N]   	= [app srcRectFor:@"popup-bezel-right" in:kUiMap];
+		_bR[STATE_P]   	= [app srcRectFor:@"popup-bezel-right-pullsdown" in:kUiMap];
+		_bR[STATE_DN]   = [app srcRectFor:@"popup-bezel-disabled-right" in:kUiMap];
+		_bR[STATE_DP]   = [app srcRectFor:@"popup-bezel-disabled-right-pullsdown" in:kUiMap];
 		});
 	}
 
@@ -154,7 +154,7 @@ static NSRect	_bR[STATE_NUM];			// Right-hand-side image
 								 srcR.size.width, srcR.size.height);
 
 	AZRenderer *azr		= AZRenderer.renderer;
-	NSInteger ui		= AZApp.sharedInstance.ui;
+	NSInteger ui		= [AZApp.sharedInstance textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 	[azr blitFrom:ui src:srcL dst:dstL];

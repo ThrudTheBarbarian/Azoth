@@ -15,14 +15,21 @@
 #import "AZEventSink.h"
 #import "AZFont.h"
 #import "AZGeometry.h"
+#import "AZIconAtlas.h"
 #import "AZNotifications.h"
 #import "AZObject.h"
 #import "AZRenderer.h"
+#import "AZTypes.h"
 #import "AZView.h"
 #import "AZView+Internal.h"
 #import "AZWindow.h"
 
 NSString * const kTextureType	= @"texture";
+
+NSString * const kUiMap			= @"ui";
+NSString * const kIconsMap		= @"icons";
+NSString * const kHudMap		= @"hud";
+NSString * const kCursorsMap	= @"cursors";
 
 @interface AZApp()
 // This is a place to temporarily store things that the renderer (for example)
@@ -30,11 +37,15 @@ NSString * const kTextureType	= @"texture";
 // time they will be deleted
 @property(strong, nonatomic) NSMutableArray<NSNumber *> * 		bin;
 
-// This provides the x,y,w,h metadata for graphical UI items
-@property(strong, nonatomic) NSDictionary *						uiMap;
-
-// This provides the x,y,w,h metadata for graphical UI items
+// A list of event-sinks that allow events to be temporarily
+// diverted away from the main event-handling loop
 @property(strong, nonatomic) NSMutableArray *					eventSinks;
+
+// A map of integer:dictionary where the dictionary holds
+// all the mappings of icons within the texture referenced
+// by the integer
+@property(strong, nonatomic)
+NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 @end
 
 @implementation AZApp
@@ -48,6 +59,7 @@ NSString * const kTextureType	= @"texture";
 		{
 		_bin 			= [NSMutableArray new];
 		_eventSinks		= [NSMutableArray new];
+		_atlantes		= [NSMutableDictionary new];
 		}
 	return self;
 	}
@@ -96,38 +108,13 @@ NSString * const kTextureType	= @"texture";
 	self.textEngine = TTF_CreateRendererTextEngine(azr.renderer);
 
 	/*************************************************************************\
-	|* Get the texture atlas for the UI and put it into a GPU texture
+	|* Get the texture atlases for the UI etc. and put them into a GPU texture
 	\*************************************************************************/
-	NSString *rsrc = [[NSBundle bundleForClass:[self class]] resourcePath];
-	NSString *atlasPath = [NSString stringWithFormat:@"%@/atlas.png", rsrc];
-	SDL_Surface *atlasSurface = IMG_Load(atlasPath.fileSystemRepresentation);
-	if (!atlasSurface)
+	for (NSString *name in @[kUiMap, kIconsMap, kHudMap, kCursorsMap])
 		{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-					  "Failed to load UI atlas at %s!",
-					  atlasPath.fileSystemRepresentation);
-        self.viability =  SDL_APP_FAILURE;
-		}
-	else
-		{
-		self.ui = [azr createTextureWithSurface:atlasSurface];
-		if (self.ui < 0)
-			{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-						  "Failed to create UI atlas!");
-			self.viability =  SDL_APP_FAILURE;
-			}
-
-		SDL_DestroySurface(atlasSurface);
-		atlasPath = [NSString stringWithFormat:@"%@/atlas.plist", rsrc];
-		self.uiMap = [NSDictionary dictionaryWithContentsOfFile:atlasPath];
-		if (!_uiMap)
-			{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-						  "Failed to load UI atlas metdata at %s!",
-						  atlasPath.fileSystemRepresentation);
-			self.viability =  SDL_APP_FAILURE;
-			}
+		AZIconAtlas *atlas = [AZIconAtlas atlasWithName:name];
+		if (atlas)
+			_atlantes[name] = atlas;
 		}
 
 	/*************************************************************************\
@@ -196,12 +183,26 @@ NSString * const kTextureType	= @"texture";
 	}
 
 /*****************************************************************************\
+|* Return the texture-id (or -ve number on error) for a given atlas-by-name
+\*****************************************************************************/
+- (NSInteger) textureFor:(NSString *)atlasName
+	{
+	AZIconAtlas *atlas	= _atlantes[atlasName];
+	if (atlas)
+		return atlas.texture;
+	return -2;
+	}
+
+
+/*****************************************************************************\
 |* Fill out a box that defines a particular named piece of the UI texture atlas
 \*****************************************************************************/
-- (NSRect) srcRectFor:(NSString *)uiName
+- (NSRect) srcRectFor:(NSString *)symbol in:(NSString *)atlasName
 	{
-	NSRect rect = NSZeroRect;
-	NSDictionary *info = [_uiMap objectForKey:uiName];
+	NSRect rect 		= NSZeroRect;
+	AZIconAtlas *atlas	= _atlantes[atlasName];
+
+	NSDictionary *info = [atlas.metadata objectForKey:symbol];
 	if (info)
 		{
 		rect.origin.x	 	= ((NSNumber *)info[@"x"]).floatValue;
@@ -405,6 +406,10 @@ void SDL_AppQuit(void *appState, SDL_AppResult result)
 
 // MARK: Private methods
 
+/*****************************************************************************\
+|* When we have assets that need to be disposed of at the end of the rendering
+|* loop, they can be put in the bin, and will be purged here.
+\*****************************************************************************/
 - (void) _purgeBin
 	{
 	AZRenderer *azr = [AZRenderer renderer];
