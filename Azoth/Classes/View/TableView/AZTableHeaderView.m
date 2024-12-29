@@ -18,6 +18,9 @@
 #import "AZTableView.h"
 #import "AZWindow.h"
 
+/*****************************************************************************\
+|* Define the UI
+\*****************************************************************************/
 enum
 	{
 	STATE_N	= 0,				// Normal
@@ -28,20 +31,26 @@ enum
 	STATE_NUM
 	};
 
+static NSRect	_hdr[STATE_NUM];		// See states above
+static NSRect	_sortUp;
+static NSRect	_sortDn;
+
+/*****************************************************************************\
+|* Tableview accessors
+\*****************************************************************************/
 @interface AZTableView(NSTableView_private)
 -(void)noteColumnDidResizeWithOldWidth:(float)oldWidth;
 @end
 
+/*****************************************************************************\
+|* "Private" properties
+\*****************************************************************************/
 @interface AZTableHeaderView()
 @property(assign, nonatomic) BOOL							activelyResizing;
 @property(assign, nonatomic) float							oldColumnWidth;
 @property(assign, nonatomic) NSPoint						resizeLocation;
 @property(strong, nonatomic) AZTableColumn *				resizingColumn;
 @end
-
-static NSRect	_hdr[STATE_NUM];		// See states above
-static NSRect	_sortUp;
-static NSRect	_sortDn;
 
 @implementation AZTableHeaderView
 
@@ -58,7 +67,6 @@ static NSRect	_sortDn;
 			^{
 			[self _fetchRects];
 			});
-
 		self.backgroundColour 		= AZColour.controlBackgroundColour;
 		}
 	return self;
@@ -105,35 +113,33 @@ static NSRect	_sortDn;
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
-	NSArray<AZTableColumn *> *cols 	= _tableView.tableColumns;
-    NSInteger count 				= cols.count;
-    NSRect columnRect 				= self.bounds;
+	//NSArray<AZTableColumn *> *cols 	= _tableView.tableColumns;
+    NSInteger count 				= _tableView.tableColumns.count;
+   // NSRect columnRect 				= self.bounds;
     NSSize spacing 					= _tableView.spacing;
 
 	AZRenderer *azr					= AZRenderer.renderer;
 	NSInteger ui					= AZApp.sharedInstance.ui;
-
 	[painter setTextColour:AZColour.blackColour];
     for (NSInteger i = 0; i < count; ++i)
 		{
-        AZTableColumn *column 	= cols[i];
-        columnRect.size.width 	= column.width + spacing.width;
+        AZTableColumn *column 	= _tableView.tableColumns[i];
+		NSRect r 				= [self headerRectOfColumn:i];
 		int state				= column.headerState;
 
 		NSRect src				= _hdr[state];
-		NSRect dst				= columnRect;
+		NSRect dst				= r;
 		dst.size.width		   -= spacing.width;
 		[azr tileFrom:ui src:src dst:dst];
 
 		[painter setTextAlignment:AZTextAlignmentCenter];
-		columnRect.origin.y += 1;
-		[painter drawInBox:columnRect text:column.title];
+		[painter drawInBox:r text:column.title];
 
 		//NSInteger idx			= [cols indexOfObject:column];
 		//[column.headerView setHighlighted:[_tableView isColumnSelected:idx]];
 		//[column.headerView setFrame:columnRect];
 		//[column.headerView setNeedsDisplay:YES];
-        columnRect.origin.x += [column width] + spacing.width;
+        //columnRect.origin.x += [column width] + spacing.width;
 		}
 	}
 
@@ -260,7 +266,6 @@ static NSRect	_sortDn;
 
 - (BOOL) mouseUp:(AZEvent *)e
 	{
-    NSInteger col 					= [self columnAtPoint:_resizeLocation];
 	//[[self window] invalidateCursorRectsForView:self];
 
 	//[_tableView noteColumnDidResizeWithOldWidth:_oldColumnWidth];
@@ -287,7 +292,7 @@ static NSRect	_sortDn;
 \*****************************************************************************/
 - (void) _fetchRects
 	{
-	AZApp *app 		  = AZApp.sharedInstance;
+	AZApp *app		= AZApp.sharedInstance;
 
 	_hdr[STATE_N]   = [app srcRectFor:@"tableview-headerview"];
 	_hdr[STATE_H]   = [app srcRectFor:@"tableview-headerview-highlighted"];
@@ -298,6 +303,9 @@ static NSRect	_sortDn;
 	_sortDn  		= [app srcRectFor:@"tableview-headerview-descending"];
 	}
 
+/*****************************************************************************\
+|* Handle a column being clicked on
+\*****************************************************************************/
 - (void) _highlightColumn:(AZTableColumn *)selected
 	{
 	for (AZTableColumn *column in _tableView.tableColumns)

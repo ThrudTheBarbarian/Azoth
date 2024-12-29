@@ -424,7 +424,7 @@ static int 			_lineHeight = 29;
     _highlightFrom	= _cursor;
     _highlightTo 	= -1;
 
-	return YES;
+	return self.enabled;
 	}
 
 /*****************************************************************************\
@@ -616,7 +616,7 @@ static int 			_lineHeight = 29;
 \*****************************************************************************/
 - (void) _drawTextInRect:(NSRect)r withPainter:(AZPainter *)P
 	{
-	[self _editDrawText];
+	[self _editDrawTextWithPainter:P];
 	if (self.enabled)
 		[self _editDrawCursor];
 	}
@@ -639,16 +639,16 @@ static int 			_lineHeight = 29;
 |* Draw the actual text itself
 \*****************************************************************************/
 - (void) _editDrawText:(TTF_Text *)text atX:(int)x y:(int)y
+		   withPainter:(AZPainter *)P
 	{
-//	if (x < 0)
-//		fprintf(stderr, "draw at %d, %d\n", x, y-1);
-    TTF_DrawRendererText(text, x, y-1);
+    TTF_DrawRendererText(text, x, y);
+	//[P drawAtX:x y:y+2 text:[NSString stringWithUTF8String:text->text]];
 	}
 
 /*****************************************************************************\
 |* Draw the editable contents
 \*****************************************************************************/
-- (void) _editDrawText
+- (void) _editDrawTextWithPainter:(AZPainter *)P
 	{
 	AZRenderer *azr	= AZRenderer.renderer;
 	[azr setBlendMode:SDL_BLENDMODE_BLEND];
@@ -662,7 +662,7 @@ static int 			_lineHeight = 29;
 	NSRect nsClip       = NSIntersectionRect(existing, _origArea);
 	[azr setClip:nsClip];
 
-	[self _editDrawText:_text atX:x y:y];
+	[self _editDrawText:_text atX:x y:y withPainter:P];
 
 	if ((existing.size.width > 0) && (existing.size.height > 0))
 		[azr setClip:existing];
@@ -723,7 +723,7 @@ static int 			_lineHeight = 29;
 		[self _editDrawComposition];
 
 	if (_candidates)
-		[self _editDrawCandidates];
+		[self _editDrawCandidatesWithPainter:P];
 
 	}
 
@@ -861,8 +861,6 @@ static int 			_lineHeight = 29;
 				prefix = next;
 				}
 			_editArea.origin.x = _origArea.origin.x - cumulativeWidth;
-			if (_editArea.origin.x < 0)
-				fprintf(stderr, "here");
 			}
 		}
 	}
@@ -1388,7 +1386,7 @@ static int UTF8ByteLength(const char *text, int num_codepoints)
 /*****************************************************************************\
 |* Draw the composition candidates
 \*****************************************************************************/
-- (void) _editDrawCandidates
+- (void) _editDrawCandidatesWithPainter:(AZPainter *)P
 	{
 	AZRenderer *azr	= AZRenderer.renderer;
  	TTF_Font *font 	= AZApp.sharedInstance.controlFont.ttfFont;
@@ -1431,7 +1429,7 @@ static int UTF8ByteLength(const char *text, int num_codepoints)
     // Draw the candidates
     x = candidates_rect.x + 3.0f;
     y = candidates_rect.y + 3.0f;
-	[self _editDrawText:_candidates atX:x y:y];
+	[self _editDrawText:_candidates atX:x y:y withPainter:P];
 
     // Underline the selected candidate
     if (_selectedCandidateLength > 0)

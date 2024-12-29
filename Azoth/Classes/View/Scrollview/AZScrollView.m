@@ -997,7 +997,8 @@ static Class _rulerViewClass = nil;
 
 	headerClipRect.origin.x = clipRect.origin.x;
 	[_contentView scrollToPoint:clipRect.origin];
-	[_headerClipView scrollToPoint:headerClipRect.origin];
+	//[_headerClipView scrollToPoint:headerClipRect.origin];
+	NSLog(@"scroll header to %@", NSStringFromPoint(headerClipRect.origin));
 	}
 
 @end

@@ -9,7 +9,10 @@
 #import "AZApp.h"
 #import "AZClipView.h"
 #import "AZColour.h"
+#import "AZEvent.h"
+#import "AZNotifications.h"
 #import "AZPainter.h"
+#import "AZRenderer.h"
 #import "AZScrollView.h"
 #import "AZTableColumn.h"
 #import "AZTableHeaderView.h"
@@ -19,6 +22,22 @@
 
 #define DEFAULT_ROWHEIGHT		(30.f)
 #define HEADER_ROWHEIGHT		(25.f)
+
+/*****************************************************************************\
+|* Define the UI
+\*****************************************************************************/
+enum
+	{
+	STATE_N	= 0,				// Normal
+	STATE_H,					// Highlighted
+
+	STATE_NUM
+	};
+
+static NSRect	_rT[STATE_NUM];
+static NSRect	_rM[STATE_NUM];
+static NSRect	_rB[STATE_NUM];
+
 
 /*****************************************************************************\
 |* "private" methods / properties
@@ -38,6 +57,16 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 // The current offset of the tableview
 @property (assign, nonatomic) NSPoint		 						offset;
 
+// The View being used as an editor
+@property(strong, nonatomic) AZControl *							editingView;
+
+// row edited
+@property(assign, nonatomic, readonly) NSInteger					editedRow;
+
+// row clicked on
+@property(assign, nonatomic, readonly) NSInteger					clickedRow;
+
+
 @end
 
 @implementation AZTableView
@@ -49,6 +78,12 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	{
     if (self = [super initWithFrame:frame])
 		{
+		static dispatch_once_t onceToken;
+		dispatch_once(&onceToken,
+			^{
+			[self _fetchRects];
+			});
+
 		_rowHeight 					= DEFAULT_ROWHEIGHT;
 		_spacing 					= NSMakeSize(3.0,1.0);
 		_offset				 		= NSMakePoint(0,0);
@@ -66,6 +101,10 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		_headerView				 	= nil;
 		_pool 						= [NSMutableDictionary new];
 		_visibleRows			 	= [NSMutableIndexSet new];
+		_selectedRowIndexes 		= [NSIndexSet new];
+		_editedRow 					= -1;
+		_allowsMultipleSelection 	= YES;
+		_allowsEmptySelection 		= YES;
 		}
     return self;
 	}
@@ -136,6 +175,83 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 -(NSInteger) numberOfColumns
 	{
     return _tableColumns.count;
+	}
+
+/*****************************************************************************\
+|* Return a range indicating which rows are within a given rect
+\*****************************************************************************/
+- (NSRange) rowsInRect:(NSRect)rect
+	{
+    NSRange range 			= NSMakeRange(0, 0);
+    NSInteger numberOfRows	= self.numberOfRows;
+	float height 			= rect.origin.y;
+	NSInteger row 			= -1;
+
+    for (NSInteger i = 0; i < numberOfRows; i++)
+		{
+		AZTableRowRecord *rec = _rowRecords[i];
+		if ((rec.start <= height) && (rec.start + rec.height > height))
+			{
+			row = i;
+			break;
+			}
+		}
+
+    if (row >= 0)
+		{
+        range.location = row;
+		NSInteger last = row;
+
+        for (NSInteger i = row; i < numberOfRows; i++)
+			{
+			AZTableRowRecord *rec = _rowRecords[i];
+			if ((rec.start <= height) && (rec.start + rec.height > height))
+				{
+				last = i;
+				break;
+				}
+			}
+		range.length = last - row + 1;
+		}
+	else
+		range = NSMakeRange(NSNotFound, 0);
+
+    return range;
+	}
+
+/*****************************************************************************\
+|* Return the row at a given point
+\*****************************************************************************/
+- (NSInteger) rowAtPoint:(NSPoint)p
+	{
+    NSInteger row = -1;
+    NSRange range = [self rowsInRect:NSMakeRect(p.x, p.y, 0.f, 0.f)];
+    if (range.length != 0)
+        row = range.location;
+
+    return row;
+	}
+
+
+// MARK: Events
+
+/*****************************************************************************\
+|* The mouse button was clicked
+\*****************************************************************************/
+- (BOOL) mouseDown:(AZEvent *)e
+	{
+    NSPoint at 		= [self convertPoint:e.locationInWindow fromView:nil];
+    _clickedRow		= [self rowAtPoint:at];
+
+	if ((_clickedRow >= 0) && (_clickedRow < self.numberOfRows))
+		{
+		if ([_selectedRowIndexes containsIndex:_clickedRow])
+			[self deselectRow:_clickedRow];
+		else
+			[self selectRow:_clickedRow byExtendingSelection:_allowsMultipleSelection];
+		}
+
+	return YES;
 	}
 
 
@@ -237,8 +353,60 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
+	[super drawInRect:dirtyRect withPainter:painter];
+	[self drawRowBackgroundsWithPainter:painter];
 	if (self.gridStyleMask)
 		[self drawGridWithPainter:painter];
+	}
+
+/*****************************************************************************\
+|* Draw the row background
+\*****************************************************************************/
+- (void) drawRowBackgroundsWithPainter:(AZPainter *)painter
+	{
+	if (_numberOfRows > 0)
+		{
+		float y 	= _rowRecords[0].start - _offset.y;
+		float yMax 	= self.textureSize.height;
+		float w		= self.bounds.size.width;
+
+		AZRenderer *azr = AZRenderer.renderer;
+		NSInteger ui	= AZApp.sharedInstance.ui;
+
+		int idx = 0;
+		while ((y < yMax) && (idx < _numberOfRows))
+			{
+			y = _rowRecords[idx].start - _offset.y - _spacing.height/2.f;
+			float bx = 0;
+			float by = y;
+			float bw = w;
+			float bh = _rowRecords[idx].height;
+			if (by+bh >= 0)
+				{
+				int state	= [_selectedRowIndexes containsIndex:idx];
+				NSRect sT	= _rT[state];
+				NSRect sM	= _rM[state];
+				NSRect sB	= _rB[state];
+
+				NSRect dT	= {bx, by, bw, sT.size.height};
+
+				NSRect dM	= {bx,
+							   by+sT.size.height,
+							   bw,
+							   bh - sT.size.height - sB.size.height};
+
+				NSRect dB	= {bx,
+							   by+dM.size.height,
+							   bw,
+							   sB.size.height};
+
+				[azr tileFrom:ui src:sT dst:dT];
+				[azr tileFrom:ui src:sM dst:dM];
+				[azr tileFrom:ui src:sB dst:dB];
+				}
+			idx ++;
+			}
+		}
 	}
 
 /*****************************************************************************\
@@ -271,22 +439,305 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 			float y 	= _rowRecords[0].start - _offset.y - _spacing.height/2.f;
 			float yMax 	= self.textureSize.height;
 			float w		= self.bounds.size.width;
-			float dby   = self.bounds.origin.y;
 
 			int idx = 0;
 			while ((y < yMax) && (idx < _numberOfRows))
 				{
 				y = _rowRecords[idx].start - _offset.y - _spacing.height/2.f;
 				if (y >= 0)
-					{
-					y = MAX(y, dby);
 					[painter lineAtX:0 y:y toX:w y:y colour:self.gridColour];
-					}
+
 				idx ++;
 				}
 			}
 		}
 	}
+
+
+// MARK: Selection
+
+/*****************************************************************************\
+|* Number of rows selected (invalidates the single-row property)
+\*****************************************************************************/
+- (NSInteger) numberOfSelectedRows
+	{
+    return _selectedRowIndexes.count;
+	}
+
+/*****************************************************************************\
+|* Is a particular row selected
+\*****************************************************************************/
+- (BOOL)isRowSelected:(NSInteger)row
+	{
+    return [_selectedRowIndexes containsIndex:row];
+	}
+
+/*****************************************************************************\
+|* Set a set of selected rows, optionally add to the selection
+\*****************************************************************************/
+- (void)selectRowIndexes:(NSIndexSet *)indexes byExtendingSelection:(BOOL)extend
+	{
+	NSIndexSet * newIndexes = nil;
+	BOOL changed 			= NO;
+	NSInteger numRows 		= self.numberOfRows;
+
+	// Mac OS X doesn't raise an exception if one of the indices
+	// is out of range. Instead, the selection is left untouched.
+	BOOL found = (indexes.firstIndex != NSNotFound);
+	BOOL oub   = (indexes.firstIndex < 0) || (indexes.lastIndex > numRows);
+	if (found && oub)
+		return;
+
+	if (extend)
+		{
+		NSMutableIndexSet * mutableIndexes = [NSMutableIndexSet new];
+		[mutableIndexes addIndexes:_selectedRowIndexes];
+		[mutableIndexes addIndexes:indexes];
+		newIndexes = [[NSIndexSet alloc] initWithIndexSet:mutableIndexes];
+		}
+	else
+		newIndexes = indexes;
+
+   // Find the changed rows and mark them for redraw.
+   NSInteger i = _selectedRowIndexes.firstIndex;
+   if (i == NSNotFound)
+		i = [newIndexes firstIndex];
+   else
+		{
+		NSInteger try = newIndexes.firstIndex;
+		if (try != NSNotFound && try < i)
+			i = try;
+		}
+
+	NSInteger last = [_selectedRowIndexes lastIndex];
+	if (last == NSNotFound)
+		last = newIndexes.lastIndex;
+	else
+		{
+		NSInteger try = newIndexes.lastIndex;
+		if (try != NSNotFound && try > last)
+			last = try;
+		}
+
+	// If i is valid, last is valid as well.
+	if (i != NSNotFound)
+		for ( ; i <= last; i++)
+			{
+			BOOL inSelected = [_selectedRowIndexes containsIndex:i];
+			BOOL inNew		= [newIndexes containsIndex:i];
+			if (inSelected != inNew)
+				{
+				if (_editedRow == i && _editingView != nil)
+					[self textDidEndEditing:nil];
+
+				[self setNeedsDisplay:YES];
+				changed = YES;
+				// NSLog(@"NSTableView row %d for redraw.", i);
+				}
+			}
+
+	if (changed)
+		[self _setSelectedRowIndexes:newIndexes];
+	}
+
+/*****************************************************************************\
+|* Internal housekeeping setter that other methods call
+\*****************************************************************************/
+-(void)_setSelectedRowIndexes:(NSIndexSet *)value
+	{
+	_selectedRowIndexes = value;
+
+	if ((_selectedRowIndexes.count == 0) && (!_allowsEmptySelection))
+		_selectedRowIndexes = [[NSIndexSet alloc] initWithIndex:0];
+
+	[self noteSelectionDidChange];
+	}
+
+
+
+// MARK: Send notifications
+
+/*****************************************************************************\
+|* Notify that the selection is changing
+\*****************************************************************************/
+- (void) noteSelectionIsChanging
+	{
+	NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
+    [nc postNotificationName:AZTableViewSelectionIsChangingNotification
+                      object:self];
+	}
+
+/*****************************************************************************\
+|* Notify that the selection actually changed
+\*****************************************************************************/
+- (void) noteSelectionDidChange
+	{
+	NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
+    [nc postNotificationName:AZTableViewSelectionDidChangeNotification
+                      object:self];
+	}
+
+/*****************************************************************************\
+|* (De)Select all
+\*****************************************************************************/
+- (void) selectAll:(id)sender
+	{
+	NSRange range		= NSMakeRange(0, self.numberOfRows);
+	NSIndexSet *rows	= [NSIndexSet indexSetWithIndexesInRange:range];
+    [self selectRowIndexes:rows byExtendingSelection:NO];
+	}
+
+- (void) deselectAll:(id)sender
+	{
+    [self selectRowIndexes:[NSIndexSet new] byExtendingSelection:NO];
+	}
+
+/*****************************************************************************\
+|* Deselect a row
+\*****************************************************************************/
+- (void) deselectRow:(NSInteger)row
+	{
+    NSIndexSet* selectedRowIndexes = self.selectedRowIndexes;
+
+    if ([selectedRowIndexes containsIndex:row])
+		{
+		NSMutableIndexSet *newSelection=[selectedRowIndexes mutableCopy];
+     
+		[newSelection removeIndex:row];
+		[self selectRowIndexes:newSelection byExtendingSelection:NO];
+		}
+	}
+
+/*****************************************************************************\
+|* Get the first (possibly only) selected row, or return -1
+\*****************************************************************************/
+- (NSInteger) selectedRow
+	{
+	NSInteger row = [_selectedRowIndexes firstIndex];
+
+	if (row == NSNotFound)
+		return -1;
+
+	return row;
+	}
+
+/*****************************************************************************\
+|* Select a row, optionally extending the selection
+\*****************************************************************************/
+- (void) selectRow:(NSInteger)row byExtendingSelection:(BOOL)extend
+	{
+	NSIndexSet *set = nil;
+	if (extend)
+		{
+		set = [NSIndexSet indexSetWithIndex:row];
+		[self selectRowIndexes:set byExtendingSelection:YES];
+		}
+	else
+		{
+		set = [NSIndexSet indexSetWithIndex:row];
+		[self selectRowIndexes:set byExtendingSelection:NO];
+		}
+	}
+
+
+
+// MARK: Editing...
+
+/*****************************************************************************\
+|* A text-editing widget ended editing, or we did to ourselves
+\*****************************************************************************/
+-(void) textDidEndEditing:(NSNotification *)note
+	{
+#if 0
+    AZTableColumn *editedColumn 				= _tableColumns[_editedColumn];
+    NSDictionary<NSString *, NSNumber*> *info 	= note.userInfo;
+
+    NSInteger textMovement 	= info[AZTextMovementUserInfoKey].integerValue;
+    NSInteger numberOfRows	= self.numberOfRows;
+
+    //[_editingView endEditing:_currentEditor];
+
+    if (_editedRow >= 0 && _editedRow < numberOfRows)
+        if ([self dataSourceCanSetObjectValue])
+            [self dataSourceSetObjectValue:[_editingView objectValue]
+							forTableColumn:editedColumn
+									   row:_editedRow];
+
+    [self abortEditing];
+    [self.window makeFirstResponder:nil];
+
+	/*************************************************************************\
+	|* Return key goes to the next row down
+	\*************************************************************************/
+    if (textMovement == AZReturnTextMovement)
+		{
+        NSInteger nextRow = _editedRow + 1;
+        if (nextRow >= numberOfRows)
+            nextRow = 0;
+
+		[self selectRow:nextRow byExtendingSelection:NO];
+        [self editColumn:_editedColumn row:nextRow select:YES];
+		}
+
+ 	/*************************************************************************\
+	|* Tab key goes to the next available editable view rightwards
+	\*************************************************************************/
+	else if (textMovement == AZTabTextMovement)
+		{
+        NSInteger nextColumn 	= _editedColumn;
+        NSInteger nextRow 		= _editedRow;
+
+        do
+			{
+			nextColumn++;
+			if (nextColumn >= _tableColumns.count)
+				{
+				nextColumn=0;
+				nextRow++;
+				if (nextRow >= numberOfRows)
+					nextRow=0;
+				}
+
+			if ([_tableColumns[nextColumn] editable])
+				break;
+			}
+		while(YES);
+
+        [self selectRow:nextRow byExtendingSelection:NO];
+        [self editColumn:nextColumn row:nextRow select:YES];
+		}
+
+	/*************************************************************************\
+	|* shift-Tab key goes to the next available editable view leftwards
+	\*************************************************************************/
+    else if (textMovement == AZBacktabTextMovement)
+		{
+        NSInteger prevColumn 	= _editedColumn-1;
+        NSInteger prevRow 		= _editedRow;
+
+        if (prevColumn < 0)
+			{
+            prevColumn = _tableColumns.count - 1;
+            prevRow -= 1;
+            if (prevRow < 0)
+                prevRow = numberOfRows - 1;
+			}
+
+        [self selectRow:prevRow byExtendingSelection:NO];
+        [self editColumn:prevColumn row:prevRow select:YES];
+		}
+
+	/*************************************************************************\
+	|* Give up
+	\*************************************************************************/
+    else
+		{
+        _editedColumn = -1;
+        _editedRow = -1;
+		}
+#endif
+	}
+
 
 
 // MARK: View pool management
@@ -352,7 +803,9 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 // MARK: Private methods
 
 /*****************************************************************************\
-|* Make the header view if it's currently nil
+|* Make the header view if it's currently nil. Note that we don't need to add
+|* the headerview to the tableview, it's the scrollview that manages it, and
+|* the scrollview will query for a non-nil header-view.
 \*****************************************************************************/
 - (void) _makeHeaderViewIfNeeded
 	{
@@ -361,10 +814,8 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		NSRect bounds	= self.bounds;
 		NSRect frame 	= NSMakeRect(0, 0, NSWidth(bounds), HEADER_ROWHEIGHT);
 		_headerView 	= [[AZTableHeaderView alloc] initWithFrame:frame];
-		[self addSubview:_headerView];
 		_headerView.autoresizingMask = AZViewWidthSizable;
 		_headerView.tableView = self;
-		[_headerView setNeedsDisplay:YES];
 		}
 	}
 
@@ -479,6 +930,32 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
     while ((y + rowHeight < currentEndY) && (rowToDisplay < max));
 
     [self _returnNonVisibleRowsToThePool: visible];
+	}
+
+/*****************************************************************************\
+|* Populate the rectangles from the UI texture atlas
+\*****************************************************************************/
+- (void) _fetchRects
+	{
+	AZApp *app		= AZApp.sharedInstance;
+
+	_rM[STATE_N]   = [app srcRectFor:@"tableview-rowview"];
+	_rM[STATE_H]   = [app srcRectFor:@"menu-bar-window-background-selected"];
+
+	// Split by height so we can tile any row-height
+	for (int i=0; i<STATE_NUM; i++)
+		{
+		_rT[i] = _rM[i];
+		_rB[i] = _rM[i];
+
+		_rT[i].size.height = 5;
+
+		_rB[i].size.height = 5;
+		_rB[i].origin.y += (_rM[i].size.height - 5);
+
+		_rM[i].size.height -= 10;
+		_rM[i].origin.y += 5;
+		}
 	}
 
 @end

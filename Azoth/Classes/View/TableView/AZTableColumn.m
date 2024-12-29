@@ -105,11 +105,6 @@ NSMutableDictionary<NSNumber *,AZView *> *							cache;
 			}
 		else
 			SDL_Log("TableView delegate does not supply views!");
-
-		/*********************************************************************\
-		|* And home it inside the table-view
-		\*********************************************************************/
-		[_tableView addSubview:view];
 		}
 
 	return view;

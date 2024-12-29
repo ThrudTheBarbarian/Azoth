@@ -47,6 +47,9 @@
 	[tv tile];
 	[tv reloadData];
 
+	[tv selectRow:4 byExtendingSelection:NO];
+	[tv selectRow:7 byExtendingSelection:YES];
+
 	}
 
 // MARK: tableview datasource
@@ -90,7 +93,8 @@
 			}
 		else
 			{
-			view			= [AZButton buttonWithFrame:frame];
+			//view			= [AZButton buttonWithFrame:frame];
+			view 			= [[AZTextField alloc] initWithFrame:frame];
 			view.identifier	= @"button";
 			}
 		}
@@ -99,15 +103,19 @@
 		{
 		AZTextField *tf = (AZTextField *)view;
 		tf.stringValue = [NSString stringWithFormat:@"hi there %d", (int)row];
-		tf.enabled = YES;
+		tf.enabled = NO;
 		tf.autoresizingMask = AZViewWidthSizable;
 		}
 
 	if ([type isEqualToString:@"button"])
 		{
-		AZButton *b = (AZButton *)view;
-		b.stringValue = [NSString stringWithFormat:@"hola! %d", (int)row];
-		b.autoresizingMask = AZViewWidthSizable;
+//		AZButton *b = (AZButton *)view;
+//		b.stringValue = [NSString stringWithFormat:@"hola! %d", (int)row];
+//		b.autoresizingMask = AZViewWidthSizable;
+		AZTextField *tf = (AZTextField *)view;
+		tf.stringValue = [NSString stringWithFormat:@"hola! %d", (int)row];
+		tf.enabled = NO;
+		tf.autoresizingMask = AZViewWidthSizable;
 		}
 	return view;
 	}

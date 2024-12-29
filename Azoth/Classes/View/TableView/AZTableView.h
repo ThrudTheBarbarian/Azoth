@@ -108,6 +108,49 @@ NS_ASSUME_NONNULL_BEGIN
 - (void) sizeLastColumnToFit;
 
 
+// MARK: Selection
+
+/*****************************************************************************\
+|* Number of rows selected (invalidates the single-row property)
+\*****************************************************************************/
+- (NSInteger)numberOfSelectedRows;
+
+/*****************************************************************************\
+|* Is a particular row selected
+\*****************************************************************************/
+- (BOOL)isRowSelected:(NSInteger)row;
+
+/*****************************************************************************\
+|* Set a set of selected rows, optionally add to the selection
+\*****************************************************************************/
+- (void)selectRowIndexes:(NSIndexSet *)indexes byExtendingSelection:(BOOL)yn;
+
+/*****************************************************************************\
+|* Select a row, optionally extending the selection
+\*****************************************************************************/
+- (void) selectRow:(NSInteger)row byExtendingSelection:(BOOL)extend;
+
+/*****************************************************************************\
+|* Get the first (possibly only) selected row, or return -1
+\*****************************************************************************/
+- (NSInteger) selectedRow;
+
+/*****************************************************************************\
+|* Deselect a row
+\*****************************************************************************/
+- (void)deselectRow:(NSInteger)row;
+
+/*****************************************************************************\
+|* Select everything
+\*****************************************************************************/
+- (void)selectAll:sender;
+
+/*****************************************************************************\
+|* Deselect everything
+\*****************************************************************************/
+- (void)deselectAll:sender;
+
+
 // MARK: View pool management
 
 /*****************************************************************************\
@@ -130,50 +173,58 @@ NS_ASSUME_NONNULL_BEGIN
 
 // The tableview delegate
 @property(strong, nonatomic)
-id<AZTableViewDelegate>										delegate;
+id<AZTableViewDelegate>									delegate;
 
 // The tableview datasource
 @property(strong, nonatomic)
-id<AZTableViewDataSource>									dataSource;
+id<AZTableViewDataSource>								dataSource;
 
 // The tableview header view
 @property(strong, nonatomic, nullable)
-AZTableHeaderView *											headerView;
+AZTableHeaderView *										headerView;
 
 // The tableview corner view
-@property(strong, nonatomic) AZView *						cornerView;
+@property(strong, nonatomic) AZView *					cornerView;
 
 // The columns of the table
 @property(strong, nonatomic)
-NSMutableArray<AZTableColumn *> *							tableColumns;
+NSMutableArray<AZTableColumn *> *						tableColumns;
 
 // spacing between data-views
-@property(assign, nonatomic) NSSize							spacing;
+@property(assign, nonatomic) NSSize						spacing;
 
 // Grid-drawing colour
-@property(strong, nonatomic) AZColour * 					gridColour;
+@property(strong, nonatomic) AZColour * 				gridColour;
 
 // Default row-height
-@property(assign, nonatomic) float							rowHeight;
+@property(assign, nonatomic) float						rowHeight;
 
 // Auto-resize columns to fit bounds
-@property(assign, nonatomic) BOOL							autoresizeColumns;
+@property(assign, nonatomic) BOOL						autoresizeColumns;
 
 // Alternate colours in view backgrounds
-@property(assign, nonatomic) BOOL							alternateRowColours;
+@property(assign, nonatomic) BOOL						alternateRowColours;
 
 // Mask for how to draw grid lines
-@property(assign, nonatomic) NSInteger						gridStyleMask;
+@property(assign, nonatomic) NSInteger					gridStyleMask;
 
 // number of rows in the table
-@property(assign, nonatomic) NSInteger						numberOfRows;
+@property(assign, nonatomic) NSInteger					numberOfRows;
 
 // number of rows in the table
-@property(assign, nonatomic) NSInteger						numberOfColumns;
+@property(assign, nonatomic) NSInteger					numberOfColumns;
 
 // Whether the table view shows a header-view
-@property(assign, nonatomic) BOOL							usesHeader;
+@property(assign, nonatomic) BOOL						usesHeader;
 
+// selected row indices
+@property(strong, nonatomic) NSIndexSet *				selectedRowIndexes;
+
+// Do we allow multiple selection
+@property(assign, nonatomic) BOOL						allowsMultipleSelection;
+
+// Do we allow _no_ selection
+@property(assign, nonatomic) BOOL						allowsEmptySelection;
 
 @end
 
