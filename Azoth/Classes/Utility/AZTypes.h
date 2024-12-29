@@ -352,6 +352,8 @@ typedef void (^MenuDoneBlock)(BOOL menuClicked);
 #define NS_RECT(sdlrect)													\
 	NSMakeRect(sdlrect.x, sdlrect.y, sdlrect.w, sdlrect.h)
 
+#define IS_ZERORECT(x)	NSEqualRects((x),NSZeroRect)
+
 /*****************************************************************************\
 |* Less typing :)
 \*****************************************************************************/

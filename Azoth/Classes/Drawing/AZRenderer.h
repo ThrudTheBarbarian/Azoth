@@ -50,6 +50,7 @@ struct SDL_FPoint;
 - (BOOL) lockFocusOn:(NSInteger)refId;
 - (void) unlockFocus;
 - (NSInteger) currentFocus;
+- (void) restoreFocus:(NSInteger)oldFocus;
 
 /*****************************************************************************\
 |* Perform a blit operation

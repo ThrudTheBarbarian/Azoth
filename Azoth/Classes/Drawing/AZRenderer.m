@@ -202,6 +202,14 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	return current ? [self textureIdFor:current] : -1;
 	}
 
+- (void) restoreFocus:(NSInteger)oldFocus
+	{
+	if (oldFocus < 0)
+		[self unlockFocus];
+	else
+		[self lockFocusOn:oldFocus];
+	}
+
 /*****************************************************************************\
 |* Perform a blit operation
 \*****************************************************************************/
@@ -214,8 +222,8 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 		SDL_FRect dst = SDL_FRECT(dstRect);
 		return SDL_RenderTexture(_renderer,
 								 texture,
-								 NSEqualRects(srcRect,NSZeroRect)? NULL : &src,
-								 NSEqualRects(dstRect,NSZeroRect)? NULL : &dst);
+								 IS_ZERORECT(srcRect) ? NULL : &src,
+								 IS_ZERORECT(dstRect) ? NULL : &dst);
 		}
 
 	SDL_Log("Cannot find texture %d to blit from", (int)textureId);
@@ -241,8 +249,8 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 
 		return SDL_RenderTextureRotated(_renderer,
 										texture,
-										&src,
-										&dst,
+										IS_ZERORECT(srcRect) ? NULL : &src,
+										IS_ZERORECT(dstRect) ? NULL : &dst,
 										degrees,
 										&p,
 										(SDL_FlipMode)flip);
