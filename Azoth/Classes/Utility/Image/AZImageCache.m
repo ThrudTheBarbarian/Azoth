@@ -7,7 +7,9 @@
 
 #import <SDL3/SDL.h>
 
+#import "AZColour.h"
 #import "AZImageCache.h"
+#import "AZPainter.h"
 #import "AZRenderer.h"
 
 @interface AZImageCache()
@@ -38,19 +40,21 @@
 		_height 		= height;
 		_size 			= size;
 
-		for (int i=0; i<height; i+=size)
-			for (int j=0; j<width; j+=size)
-				{
-				NSRect r = NSMakeRect(j, i, size, size);
-				[_slots addObject:NSStringFromRect(r)];
-				}
-
 		AZRenderer *azr	= AZRenderer.renderer;
-		NSSize tSize	= NSMakeSize(size, size);
+		NSSize tSize	= NSMakeSize(width, height);
 		_textureId		= [azr createTextureOfSize:tSize];
-
 		if (_textureId < 0)
 			self = nil;
+
+		if (self)
+			for (int i=0; i<height; i+=size)
+				for (int j=0; j<width; j+=size)
+					{
+					NSRect r = NSMakeRect(j, i, size, size);
+					[self _identifySlot:r atX:j y:i];
+					[_slots addObject:NSStringFromRect(r)];
+					}
+
 		}
 	return self;
 	}
@@ -97,5 +101,18 @@
 		[_slots addObject:entry];
 	}
 
+
+/*****************************************************************************\
+|* Debugging aide, label the center of the slot with identifying text
+\*****************************************************************************/
+- (void) _identifySlot:(NSRect)r atX:(int)x y:(int)y
+	{
+	AZPainter *P = [AZPainter painterForTexture:_textureId];
+	[P lockFocus:NO];
+	[P setTextColour:AZColour.redColour];
+
+	NSString *text = [NSString stringWithFormat:@"[%d,%d]", x, y];
+	[P drawAtX:NSMidX(r) y:NSMidY(r) text:text];
+	}
 
 @end

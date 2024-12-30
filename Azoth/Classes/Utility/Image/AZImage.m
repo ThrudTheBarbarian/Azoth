@@ -25,6 +25,9 @@
 // The location within the texture that defines this image
 @property(assign, nonatomic) NSRect									srcRect;
 
+// The texture box we were initially allocted
+@property(assign, nonatomic) NSRect									texRect;
+
 // The location within the texture that defines this image
 @property(strong, nonatomic, nullable) AZImageCache *				imageCache;
 
@@ -68,7 +71,7 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 \*****************************************************************************/
 - (void) dealloc
 	{
-	[_imageCache release:_srcRect];
+	[_imageCache release:_texRect];
 	}
 
 /*****************************************************************************\
@@ -382,6 +385,7 @@ SDL_Log("Start to save texture %d", (int)_texture);
 			for (AZImageCache *cache in domain)
 				{
 				_srcRect = cache.acquire;
+				_texRect = _srcRect;
 				if (!IS_ZERORECT(_srcRect))
 					{
 					ic = cache;
@@ -400,6 +404,7 @@ SDL_Log("Start to save texture %d", (int)_texture);
 										     size:sizes[i]];
 				[domain addObject:ic];
 				_srcRect = ic.acquire;
+				_texRect = _srcRect;
 				}
 
 			/*****************************************************************\
@@ -415,15 +420,19 @@ SDL_Log("Start to save texture %d", (int)_texture);
 				SDL_Log("Cannot convert surface to texture in AZImage");
 			else
 				{
+
 				NSInteger currentFocus = azr.currentFocus;
 				[azr lockFocusOn:ic.textureId];
 
-				[azr blitFrom:temp src:NSZeroRect dst:_srcRect];
+				NSRect from = NSMakeRect(0,0,surface->w, surface->h);
+				_srcRect.size = from.size;
+				[azr blitFrom:temp src:from dst:_srcRect];
 				[azr releaseTexture:temp];
-
-				inAtlas = YES;
 				[azr restoreFocus:currentFocus];
-				success = YES;
+
+				_texture 	= ic.textureId;
+				inAtlas 	= YES;
+				success 	= YES;
 				}
 			}
 		}

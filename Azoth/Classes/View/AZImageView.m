@@ -9,6 +9,7 @@
 #import "AZImage.h"
 #import "AZImageView.h"
 #import "AZPainter.h"
+#import "AZRenderer.h"
 
 @implementation AZImageView
 
@@ -73,6 +74,45 @@
 		}
 	}
 
+/*****************************************************************************\
+|* Make sure we refresh the view if we change the scaling
+\*****************************************************************************/
+- (void) setScaling:(AZImageScaling)scaling
+	{
+	_scaling = scaling;
+	[self setNeedsDisplay:YES];
+	}
+
+/*****************************************************************************\
+|* Make sure we refresh the view if we change the alignment
+\*****************************************************************************/
+- (void) setAlignment:(AZImageAlignment)alignment
+	{
+	_alignment = alignment;
+	[self setNeedsDisplay:YES];
+	}
+
+/*****************************************************************************\
+|* Make sure we refresh the view if we change the frame style
+\*****************************************************************************/
+- (void) setFrameStyle:(AZImageFrameStyle)frameStyle
+	{
+	_frameStyle = frameStyle;
+	[self setNeedsDisplay:YES];
+	}
+
+/*****************************************************************************\
+|* Make sure we refresh the view if we change the image
+\*****************************************************************************/
+- (void) setImage:(AZImage *)image
+	{
+	_image = image;
+	[self setNeedsDisplay:YES];
+	}
+
+
+
+// MARK: Private Methods
 
 /*****************************************************************************\
 |* Draw the image, unscaled, using the correct alignment
@@ -96,9 +136,7 @@
 	else
 		{
 		NSRect result 	= [self _align:rect forWidth:w height:h];
-		NSRect src 		= result;
-		src.origin 		= NSMakePoint(0, 0);
-		[P image:_image from:src at:rect.origin];
+		[P image:_image to:result];
 		}
 	}
 
@@ -112,18 +150,16 @@
 	if (aspect > 1.f)
 		{
 		W = rect.size.width;
-		H = rect.size.width * W / aspect;
+		H = W / aspect;
 		}
 	else
 		{
 		H = rect.size.height;
-		W = rect.size.width * H / aspect;
+		W = H * aspect;
 		}
 
 	NSRect result 	= [self _align:rect forWidth:W height:H];
-	NSRect src 		= result;
-	src.origin 		= NSMakePoint(0, 0);
-	[P image:_image from:src at:rect.origin];
+	[P image:_image to:result];
 	}
 
 /*****************************************************************************\
@@ -146,35 +182,32 @@
 
 	if ((xs >= 1.f) && (ys >= 1.f))
 		{
-		// both smaller than the available space, scale up by smallest
-		float scale = MIN(xs, ys);
-		W = _image.width * scale;
-		H = _image.height * scale;
+		// both smaller than the available space, but no scaling up
+		W = _image.width;
+		H = _image.height;
 		}
 	else if ((xs < 1.f) && (ys < 1.f))
 		{
 		// both larger than available space, scale down by largest
-		float scale = MAX(xs, ys);
-		W = _image.width / scale;
-		H = _image.width / scale;
+		float scale = MIN(xs, ys);
+		W = _image.width * scale;
+		H = _image.height * scale;
 		}
 	else if (ys < 1.f)
 		{
 		// Y is larger, scale down both by ys
 		W = _image.width / ys;
-		H = _image.width / ys;
+		H = _image.height / ys;
 		}
 	else
 		{
 		// X is larger, scale down both by xs
 		W = _image.width / xs;
-		H = _image.width / xs;
+		H = _image.height / xs;
 		}
 
 	NSRect result 	= [self _align:rect forWidth:W height:H];
-	NSRect src 		= result;
-	src.origin 		= NSMakePoint(0, 0);
-	[P image:_image from:src at:rect.origin];
+	[P image:_image to:result];
 	}
 
 /*****************************************************************************\
@@ -189,10 +222,101 @@
 	float dy = rh - h;
 
 	/*************************************************************************\
-	|* Are we too wide (in which case we're not tall enough
+	|* Are we smaller in both dimensions ?
 	\*************************************************************************/
-	if (dx < 0)
+	if ((dx >= 0) && (dy >= 0))
 		{
+		rect.size.width 	= w;
+		rect.size.height 	= h;
+		switch (_alignment)
+			{
+			case AZImageAlignTop:
+				rect.origin.y = 0;
+				rect.origin.x += dx / 2;
+				break;
+			case AZImageAlignTopLeft:
+				rect.origin.y = 0;
+				rect.origin.x = 0;
+				break;
+			case AZImageAlignTopRight:
+				rect.origin.y = 0;
+				rect.origin.x = dx;
+				break;
+			case AZImageAlignLeft:
+				rect.origin.x = 0;
+				rect.origin.y += dy / 2;
+				break;
+			case AZImageAlignCenter:
+				rect.origin.y += dy / 2;
+				rect.origin.x += dx / 2;
+				break;
+			case AZImageAlignRight:
+				rect.origin.y += dy / 2;
+				rect.origin.x = dx;
+				break;
+			case AZImageAlignBottom:
+				rect.origin.x += dx / 2;
+				rect.origin.y += dy;
+				break;
+			case AZImageAlignBottomLeft:
+				rect.origin.y += dy;
+				rect.origin.x = 0;
+				break;
+			case AZImageAlignBottomRight:
+				rect.origin.y += dy;
+				rect.origin.x = dx;
+				break;
+			}
+		}
+
+	/*************************************************************************\
+	|* Are we larger in both dimensions ?
+	\*************************************************************************/
+	else if ((dx < 0) && (dy < 0))
+		{
+		switch (_alignment)
+			{
+			case AZImageAlignTop:
+				rect.origin.y = 0;
+				break;
+			case AZImageAlignTopLeft:
+				rect.origin.y = 0;
+				rect.origin.x = 0;
+				break;
+			case AZImageAlignTopRight:
+				rect.origin.y = 0;
+				rect.origin.x = -dx;
+				break;
+			case AZImageAlignLeft:
+				rect.origin.x = 0;
+				break;
+			case AZImageAlignCenter:
+				rect.origin.y -= dy / 2;
+				rect.origin.x -= dx / 2;
+				break;
+			case AZImageAlignRight:
+				rect.origin.x = dx;
+				break;
+			case AZImageAlignBottom:
+				rect.origin.y -= dy;
+				break;
+			case AZImageAlignBottomLeft:
+				rect.origin.y -= dy;
+				rect.origin.x = 0;
+				break;
+			case AZImageAlignBottomRight:
+				rect.origin.y -= dy;
+				rect.origin.x = dx;
+				break;
+			}
+		}
+
+	/*************************************************************************\
+	|* Or are we too wide (in which case we're not tall enough
+	\*************************************************************************/
+	else if (dx < 0)
+		{
+		rect.size.height 	= h;
 		switch (_alignment)
 			{
 			case AZImageAlignCenter:
@@ -211,8 +335,9 @@
 	/*************************************************************************\
 	|* Or are we too tall (in which case we're not wide enough
 	\*************************************************************************/
-	if (dy < 0)
+	else if (dy < 0)
 		{
+		rect.size.width 	= w;
 		switch (_alignment)
 			{
 			case AZImageAlignCenter:
