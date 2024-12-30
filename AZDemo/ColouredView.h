@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype) initWithFrame:(NSRect)frame colour:(AZColour *)colour;
 
+@property(assign, nonatomic) int angle;
 @end
 
 NS_ASSUME_NONNULL_END

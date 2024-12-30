@@ -620,7 +620,7 @@ static float _constrainTo(float value, float min, float max)
             frame.size.width 	= width;
 
             subview.frame 		= frame;
-            
+
             frame.origin.y		+= NSHeight(frame);
             frame.origin.y		+= self.dividerThickness;
 			}

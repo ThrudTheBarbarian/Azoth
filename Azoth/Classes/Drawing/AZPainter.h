@@ -11,6 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class AZColour;
+@class AZImage;
 @class AZTextPainter;
 @class AZView;
 
@@ -19,13 +20,26 @@ struct SDL_Surface;
 @interface AZPainter : NSObject
 
 /*****************************************************************************\
-|* Initialisation
+|* Initialisation: view-based
 \*****************************************************************************/
 - (instancetype) initWithView:(AZView *)view;
 + (AZPainter *) painterForView:(AZView *)view;
 
+/*****************************************************************************\
+|* Initialisation: texture-based
+\*****************************************************************************/
+- (instancetype) initWithTexture:(NSInteger)texture;
++ (AZPainter *) painterForTexture:(NSInteger)texture;
 
 // MARK: Execution of the draw routine
+
+/*****************************************************************************\
+|* (Un)Lock focus. Internally (re)stores the previous focus and clip-rect. If
+|* the bool is set to YES, the renderer will clear the texture/view once focus
+|* is locked.
+\*****************************************************************************/
+- (void) lockFocus:(BOOL)clearTexture;
+- (void) unlockFocus;
 
 /*****************************************************************************\
 |* Set up the context and draw
@@ -260,6 +274,58 @@ struct SDL_Surface;
 |* Set text scale (for effects, use different sized fonts for "normal" use)
 \*****************************************************************************/
 - (void) setTextScale:(AZScale)scale;
+
+
+
+
+/*****************************************************************************\
+|* Draw an image at a point
+\*****************************************************************************/
+- (void) image:(AZImage *)img at:(NSPoint)xy;
+
+/*****************************************************************************\
+|* Draw an image into a rectangle
+\*****************************************************************************/
+- (void) image:(AZImage *)img to:(NSRect)dstRect;
+
+/*****************************************************************************\
+|* Draw part of an image to a point
+\*****************************************************************************/
+- (void) image:(AZImage *)img from:(NSRect)srcRect at:(NSPoint)xy;
+
+/*****************************************************************************\
+|* Draw part of an image into a rectangle
+\*****************************************************************************/
+- (void) image:(AZImage *)img from:(NSRect)srcRect to:(NSRect)dstRect;
+
+
+/*****************************************************************************\
+|* Draw an image at a point with a rotation about a point, possibly flipped
+|* The point is specifed relative to the center of the image srcRect.
+\*****************************************************************************/
+- (void) image:(AZImage *)img
+			at:(NSPoint)xy
+		 angle:(int)degrees
+		 about:(NSPoint)center
+		  flip:(AZFlipMode)flipMask;
+
+/*****************************************************************************\
+|* Draw a subset of an image with a rotation about a point, possibly flipped
+|* The point is specifed relative to the center of the image srcRect.
+\*****************************************************************************/
+- (void) image:(AZImage *)img
+		  from:(NSRect)srcRect
+			at:(NSPoint)xy
+		 angle:(int)degrees
+		 about:(NSPoint)center
+		  flip:(AZFlipMode)flipMask;
+
+
+
+
+/*****************************************************************************\
+|* Properties
+\*****************************************************************************/
 
 // Set to draw with the (slower, but nicer looking) anti-aliased line drawing
 // routines

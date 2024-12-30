@@ -9,6 +9,7 @@
 
 #import "AZApp.h"
 #import "AZColour.h"
+#import "AZImage.h"
 #import "AZGeometry.h"
 #import "AZObject.h"
 #import "AZPainter.h"
@@ -53,7 +54,19 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 \*****************************************************************************/
 @interface AZPainter()
 @property(assign, nonatomic) AZRenderer *						renderer;
-@property(strong, nonatomic) AZView * 							view;
+@property(strong, nonatomic, nullable) AZView * 				view;
+@property(assign, nonatomic) NSInteger 							texture;
+@property(assign, nonatomic) NSRect 							oldClip;
+@property(assign, nonatomic) NSInteger 							oldFocus;
+@property(assign, nonatomic) BOOL 								focusLocked;
+@end
+
+/*****************************************************************************\
+|* Access to AZImage
+\*****************************************************************************/
+@interface AZImage(AZPainter)
+- (NSRect) srcRect;
+- (AZImageDrawingHandler) handler;
 @end
 
 @implementation AZPainter
@@ -65,16 +78,64 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	{
 	if (self = [super init])
 		{
-		_view 				= view;
-		_usingAntiAliasing	= NO;
-		_drawAAEndpoint		= NO;
+		_view 		= view;
+		_texture	= view.bg;
+		if (![self _painterCommonInit])
+			self = nil;
 		}
 	return self;
+	}
+
+/*****************************************************************************\
+|* Initialisation
+\*****************************************************************************/
+- (instancetype) initWithTexture:(NSInteger)texture
+	{
+	if (self = [super init])
+		{
+		_view 		= nil;
+		_texture	= texture;
+		if (![self _painterCommonInit])
+			self = nil;
+		}
+	return self;
+	}
+
+/*****************************************************************************\
+|* Common initialisation
+\*****************************************************************************/
+- (BOOL) _painterCommonInit
+	{
+	_renderer = AZRenderer.renderer;
+	if (_renderer == NULL)
+		{
+		SDL_LogError(SDL_LOG_CATEGORY_GPU, "Cannot get window renderer");
+		return NO;
+		}
+	_usingAntiAliasing	= NO;
+	_drawAAEndpoint		= NO;
+	_textPainter		= [AZTextPainter painterWithRenderer:_renderer];
+	_textPainter.font	= AZApp.sharedInstance.systemFont;
+	return YES;
 	}
 
 + (AZPainter *) painterForView:(AZView *)view
 	{
 	return [[AZPainter alloc] initWithView:view];
+	}
+
++ (AZPainter *) painterForTexture:(NSInteger)texture
+	{
+	return [[AZPainter alloc] initWithTexture:texture];
+	}
+
+/*****************************************************************************\
+|* Tidy up on dealloc
+\*****************************************************************************/
+- (void) dealloc
+	{
+	if (_focusLocked)
+		[self unlockFocus];
 	}
 
 /*****************************************************************************\
@@ -83,28 +144,55 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 \*****************************************************************************/
 - (BOOL) execute
 	{
-	_renderer = AZRenderer.renderer;
-	if (_renderer == NULL)
-		{
-		SDL_LogError(SDL_LOG_CATEGORY_GPU, "Cannot get window renderer");
-		return NO;
-		}
-
-	_textPainter		= [AZTextPainter painterWithRenderer:_renderer];
-	_textPainter.font	= AZApp.sharedInstance.systemFont;
-
-	[_renderer lockFocusOn:_view.bg];
-	[_renderer setClip:_view.dirty];
-	[_renderer setDrawColour:_view.backgroundColour];
-	[_renderer clear];
+	[self lockFocus:YES];
 
 	[_view drawInRect:_view.dirty withPainter:self];
 	_view.dirty = NSZeroRect;
 
-	[_renderer unsetClip];
-	[_renderer unlockFocus];
+	[self unlockFocus];
 	return YES;
 	}
+
+/*****************************************************************************\
+|* Lock focus. Returns the previous focus
+\*****************************************************************************/
+- (void) lockFocus:(BOOL)clearTexture
+	{
+	AZColour *clearColour	= nil;
+	_oldClip 				= _renderer.clipRect;
+	_oldFocus 				= [_renderer currentFocus];
+	_focusLocked			= YES;
+
+	[_renderer lockFocusOn:_texture];
+	if (_view)
+		{
+		[_renderer setClip:_view.dirty];
+		clearColour = _view.backgroundColour;
+		}
+	else
+		{
+		[_renderer setClip:[_renderer boundsOfTexture:_texture]];
+		clearColour = AZColour.clearColour;
+		}
+
+	if (clearTexture)
+		{
+		[_renderer setDrawColour:clearColour];
+		[_renderer clear];
+		}
+	}
+
+
+/*****************************************************************************\
+|* Unlock focus
+\*****************************************************************************/
+- (void) unlockFocus
+	{
+	_focusLocked = NO;
+	[_renderer setClip:_oldClip];
+	[_renderer restoreFocus:_oldFocus];
+	}
+
 
 // MARK: Pixel Drawing routines
 
@@ -2103,8 +2191,154 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	}
 
 
-// MARK: Private methods
+// MARK: Images
 
+/*****************************************************************************\
+|* Draw an image at a point
+\*****************************************************************************/
+- (void) image:(AZImage *)img at:(NSPoint)xy
+	{
+	AZRenderer *azr = AZRenderer.renderer;
+	if (img.handler != nil)
+		[img draw];
+
+	NSRect srcRect = img.srcRect;
+	NSRect dstRect = srcRect;
+	dstRect.origin = xy;
+
+	[azr blitFrom:img.texture src:srcRect dst:dstRect];
+	}
+
+/*****************************************************************************\
+|* Draw part of an image to a point
+\*****************************************************************************/
+- (void) image:(AZImage *)img from:(NSRect)srcRect at:(NSPoint)p
+	{
+	// Make sure we have a reasonable srcRect. The image srcRect is possibly
+	// from an Atlas texture (else its origin will be at 0,0) so add in the
+	// origin of the image srcRect to the requested srcRect before taking
+	// the intersection
+	srcRect.origin.x += NSMinX(img.srcRect);
+	srcRect.origin.y += NSMinY(img.srcRect);
+	NSRect clipped    = NSIntersectionRect(img.srcRect, srcRect);
+	if ((NSWidth(clipped) == 0) || (NSHeight(clipped) == 0))
+		return;
+
+	NSRect dstRect = clipped;
+	dstRect.origin = p;
+
+	AZRenderer *azr = AZRenderer.renderer;
+	if (img.handler != nil)
+		[img draw];
+	[azr blitFrom:img.texture src:clipped dst:dstRect];
+	}
+
+/*****************************************************************************\
+|* Draw an image into a rectangle
+\*****************************************************************************/
+- (void) image:(AZImage *)img to:(NSRect)dstRect
+	{
+	AZRenderer *azr = AZRenderer.renderer;
+	if (img.handler != nil)
+		[img draw];
+	NSRect srcRect = img.srcRect;
+	[azr blitFrom:img.texture src:srcRect dst:dstRect];
+	}
+
+/*****************************************************************************\
+|* Draw part of an image into a rectangle
+\*****************************************************************************/
+- (void) image:(AZImage *)img from:(NSRect)srcRect to:(NSRect)dstRect;
+	{
+	// Make sure we have a reasonable srcRect. The image srcRect is possibly
+	// from an Atlas texture (else its origin will be at 0,0) so add in the
+	// origin of the image srcRect to the requested srcRect before taking
+	// the intersection
+	srcRect.origin.x += NSMinX(img.srcRect);
+	srcRect.origin.y += NSMinY(img.srcRect);
+	NSRect clipped    = NSIntersectionRect(img.srcRect, srcRect);
+	if ((NSWidth(clipped) == 0) || (NSHeight(clipped) == 0))
+		return;
+
+	AZRenderer *azr = AZRenderer.renderer;
+	if (img.handler != nil)
+		[img draw];
+	[azr blitFrom:img.texture src:clipped dst:dstRect];
+	}
+
+/*****************************************************************************\
+|* Draw an image at a point with a rotation about a point, possibly flipped.
+|* The point is specifed relative to the center of the image srcRect.
+|* the flipMask is
+\*****************************************************************************/
+- (void) image:(AZImage *)img
+			at:(NSPoint)xy
+		 angle:(int)degrees
+		 about:(NSPoint)center
+		  flip:(AZFlipMode)flipMask
+	{
+	AZRenderer *azr = AZRenderer.renderer;
+
+	NSRect srcRect = img.srcRect;
+	NSRect dstRect = srcRect;
+	dstRect.origin = xy;
+
+	NSPoint cxy		= NSMakePoint(center.x + srcRect.size.width / 2.f,
+								  center.y + srcRect.size.height/ 2.f);
+
+	if (img.handler != nil)
+		[img draw];
+	[azr blitFrom:img.texture
+			  src:srcRect
+			  dst:dstRect
+			angle:degrees
+		   center:cxy
+		     flip:flipMask];
+	}
+
+/*****************************************************************************\
+|* Draw a subset of an image with a rotation about a point, possibly flipped
+|* The point is specifed relative to the center of the image srcRect.
+\*****************************************************************************/
+- (void) image:(AZImage *)img
+		  from:(NSRect)srcRect
+			at:(NSPoint)xy
+		 angle:(int)degrees
+		 about:(NSPoint)center
+		  flip:(AZFlipMode)flipMask
+	{
+	AZRenderer *azr = AZRenderer.renderer;
+
+	// Make sure we have a reasonable srcRect. The image srcRect is possibly
+	// from an Atlas texture (else its origin will be at 0,0) so add in the
+	// origin of the image srcRect to the requested srcRect before taking
+	// the intersection
+	srcRect.origin.x += NSMinX(img.srcRect);
+	srcRect.origin.y += NSMinY(img.srcRect);
+	NSRect clipped    = NSIntersectionRect(img.srcRect, srcRect);
+	if ((NSWidth(clipped) == 0) || (NSHeight(clipped) == 0))
+		return;
+
+
+	NSRect dstRect = clipped;
+	dstRect.origin = xy;
+
+	NSPoint cxy		= NSMakePoint(center.x + clipped.size.width / 2.f,
+								  center.y + clipped.size.height / 2.f);
+
+	if (img.handler != nil)
+		[img draw];
+	[azr blitFrom:img.texture
+			  src:clipped
+			  dst:dstRect
+			angle:degrees
+		   center:cxy
+		     flip:flipMask];
+	}
+
+
+
+// MARK: Private methods
 
 /*****************************************************************************\
 |* Horizontal line as an optimisation over the generic version

@@ -756,6 +756,7 @@
 				Classes/Utility/AZObject.h,
 				Classes/Utility/AZTransform.h,
 				Classes/Utility/AZTypes.h,
+				Classes/Utility/Image/AZImage.h,
 				Classes/View/AZSplitView.h,
 				Classes/View/AZView.h,
 				Classes/View/Scrollview/AZClipView.h,

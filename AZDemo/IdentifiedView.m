@@ -310,8 +310,11 @@
 
 - (void) sliderValue:(id)sender
 	{
-	NSLog(@"slider:%@, value:%f", sender, ((AZSlider *)sender).doubleValue);
+	//NSLog(@"slider:%@, value:%f", sender, ((AZSlider *)sender).doubleValue);
 	_cb.enabled = (((AZSlider *)sender).doubleValue == 0);
+
+	NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
+	[nc postNotificationName:@"slider" object:[NSNumber numberWithInt:360 * ((AZSlider *)sender).doubleValue]];
 	}
 
 
@@ -324,6 +327,14 @@
 - (void) rbPressed:(id)sender
 	{
 	NSLog(@"radio button pressed:%@", sender);
+
+//	AZRenderer *azr = AZRenderer.renderer;
+//	SDL_Log("renderer:%s", azr.rendererName.UTF8String);
+//
+//	AZImage *img = [AZImage imageWithContentsOfFile:@"/Volumes/raid/Freya/Mapper/Resources/Backgrounds/Background_10.png"];
+//	SDL_Log("Loaded image, texture is %d", (int)img.texture);
+//
+//	[img saveAs:@"/tmp/test.png" inFormat:AZImageFormatPNG withQuality:10];
 	}
 
 //- (void) scrollerMoved:(id)sender

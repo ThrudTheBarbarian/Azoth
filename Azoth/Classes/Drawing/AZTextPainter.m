@@ -177,28 +177,19 @@
 	// Take a local copy since we modify it here
 	AZScale scale = _scale;
 
-//    float w = srcRect.size.width * scale.x;
-//    float h = srcRect.size.height * scale.y;
     NSRect result;
 
-	SDL_FlipMode flip = SDL_FLIP_NONE;
+	AZFlipMode flip = AZFlipNone;
 	if (scale.x < 0)
 		{
 		scale.x = -scale.x;
-		flip = (SDL_FlipMode) ((int)flip | (int)SDL_FLIP_HORIZONTAL);
+		flip =  (flip | AZFlipHorizontal);
 		}
 	if (scale.y < 0)
 		{
 		scale.y = -scale.y;
-		flip = (SDL_FlipMode) ((int)flip | (int)SDL_FLIP_VERTICAL);
+		flip = (flip | AZFlipVertical);
 		}
-
-//	SDL_FRect r = {
-//				  srcRect.origin.x,
-//				  srcRect.origin.y,
-//				  srcRect.size.width,
-//				  srcRect.size.height
-//				  };
 
 	float dstW		= scale.x * srcRect.size.width;
 	float dstH		= scale.y * srcRect.size.height;
@@ -209,9 +200,6 @@
 				  angle:_angle
 				 center:_rotateAbout
 				   flip:flip];
-
-	//SDL_FRect dr = {p.x, p.y, (int)(scale.x * r.w), (int)(scale.y * r.h)};
-	//SDL_RenderTextureRotated(_renderer, src, &r, &dr, _angle, &_rotateAbout, flip);
 
 	result.origin 		= p;
 	result.size.width 	= srcRect.size.width  * scale.x;

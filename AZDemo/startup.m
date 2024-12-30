@@ -83,9 +83,14 @@ void _testMouseEvents(void)
 	AZSplitView *spv = [[AZSplitView alloc] initWithFrame:r];
 	spv.autoresizingMask = AZViewHeightSizable|AZViewWidthSizable;
 
-	AZView *c1 = [[AZView alloc] initWithFrame:NSMakeRect(0, 0, 600, 180)];
-	c1.backgroundColour = AZColour.redColour;
+	r = NSMakeRect(0, 0, 600, 180);
+	AZView *c1 = [[ColouredView alloc] initWithFrame:r colour:AZColour.whiteColour];
 	[spv addSubview:c1];
+
+
+//	r = NSMakeRect(10, 10, 300, 300);
+//	AZView *c2 = [[ColouredView alloc] initWithFrame:r colour:AZColour.whiteColour];
+//	[cv addSubview:c2];
 
 //	AZView *c2 = [[AZView alloc] initWithFrame:NSMakeRect(0, 180, 600, 180)];
 //	c2.backgroundColour = AZColour.blueColour;

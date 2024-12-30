@@ -6,11 +6,13 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <Azoth/AZTypes.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class AZColour;
 
+struct SDL_Surface;
 struct SDL_Renderer;
 struct SDL_Texture;
 struct SDL_FPoint;
@@ -34,10 +36,19 @@ struct SDL_FPoint;
 						 withFlags:(int)flags;
 
 /*****************************************************************************\
+|* Return a surface for a given id
+\*****************************************************************************/
+- (nullable struct SDL_Surface *) surfaceFor:(NSInteger)refId;
+
+/*****************************************************************************\
 |* Return a texture for a given id
 \*****************************************************************************/
 - (nullable struct SDL_Texture *) textureFor:(NSInteger)refId;
 
+/*****************************************************************************\
+|* Return a bounds-rect for a given id, or NSZeroRect if not found
+\*****************************************************************************/
+- (NSRect) boundsOfTexture:(NSInteger)refId;
 
 /*****************************************************************************\
 |* Release a texture, removing it from the cache
@@ -72,7 +83,7 @@ struct SDL_FPoint;
 			 dst:(NSRect)dstRect		// If NSZeroRect, entire target
 		   angle:(NSInteger)degrees		// clockwise positive from x=0
 		  center:(NSPoint)p				// Point around which to rotate
-			flip:(NSInteger)flip;		// Flip-action on texture
+			flip:(AZFlipMode)flip;		// Flip-action on texture
 
 /*****************************************************************************\
 |* Set the blend mode
@@ -171,6 +182,9 @@ struct SDL_FPoint;
 - (BOOL) convertRx:(float)rx ry:(float)ry to:(float*)wx wy:(float*)wy;
 
 @property(assign, nonatomic) struct SDL_Renderer *					renderer;
+
+// The name of the renderer
+@property(strong, nonatomic) NSString *							rendererName;
 @end
 
 NS_ASSUME_NONNULL_END

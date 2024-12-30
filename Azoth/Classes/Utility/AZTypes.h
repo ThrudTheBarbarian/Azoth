@@ -249,6 +249,17 @@ typedef struct
 	} AZScale;
 
 /*****************************************************************************\
+|* Flip modes. Copied from the SDL ones, but duplicated to keep the framework
+|*             modularisation process happy
+\*****************************************************************************/
+typedef enum
+	{
+    AZFlipNone, 	     	// Do not flip
+    AZFlipHorizontal,    	// flip horizontally
+    AZFlipVertical       	// flip vertically
+	} AZFlipMode;
+
+/*****************************************************************************\
 |* Font effects
 \*****************************************************************************/
 typedef struct

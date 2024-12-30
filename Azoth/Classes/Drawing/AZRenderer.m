@@ -40,6 +40,9 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 		|* Prepare to store the textures
 		\*********************************************************************/
 		_textures 	= [NSMutableDictionary new];
+
+		_rendererName = [NSString stringWithFormat:@"%s",
+						SDL_GetRendererName(_renderer)];
 		}
 	return self;
 	}
@@ -148,6 +151,30 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	}
 
 /*****************************************************************************\
+|* Return a surface for a given id
+\*****************************************************************************/
+- (nullable struct SDL_Surface *) surfaceFor:(NSInteger)refId
+	{
+	SDL_Texture *texture = [self textureFor:refId];
+	if (texture)
+		{
+		NSInteger oldFocus = [self currentFocus];
+		SDL_SetRenderViewport(_renderer, NULL);
+		if ([self lockFocusOn:refId])
+			{
+			SDL_Surface *surface = SDL_RenderReadPixels(_renderer, NULL);
+			[self restoreFocus:oldFocus];
+			return surface;
+			}
+		else
+			SDL_Log("Couldn't lock onto texture %d", (int)refId);
+		}
+	else
+		SDL_Log("Couldn't find a texture for id %d", (int)refId);
+	return NULL;
+	}
+
+/*****************************************************************************\
 |* Return a texture for a given id
 \*****************************************************************************/
 - (nullable SDL_Texture *) textureFor:(NSInteger)refId
@@ -158,6 +185,23 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 
 	return NULL;
 	}
+
+/*****************************************************************************\
+|* Return a bounds-rect for a given id, or NSZeroRect if not found
+\*****************************************************************************/
+- (NSRect) boundsOfTexture:(NSInteger)refId
+	{
+	NSRect bounds = NSZeroRect;
+	AZObject *object = _textures[@(refId)];
+	if (object && [object.hint isEqualToString:kTextureType])
+		{
+		SDL_Texture *texture = (SDL_Texture *)object.ptr;
+		bounds.size.width = texture->w;
+		bounds.size.height = texture->h;
+		}
+	return bounds;
+	}
+
 
 /*****************************************************************************\
 |* Return a texture-id for a given texture. Should probably replace with a
@@ -185,6 +229,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	SDL_Texture *texture = [self textureFor:refId];
 	if (texture)
 		{
+		//SDL_Log("lock focus on %d", (int)refId);
 		SDL_SetRenderTarget(_renderer, texture);
 		ok = YES;
 		}
@@ -238,21 +283,20 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 			 dst:(NSRect)dstRect		// If NSZeroRect, entire target
 		   angle:(NSInteger)degrees		// clockwise positive from x=0
 		  center:(NSPoint)p				// Point around which to rotate
-			flip:(NSInteger)flip		// Flip-action on texture
+			flip:(AZFlipMode)flip		// Flip-action on texture
 	{
 	SDL_Texture *texture = [self textureFor:textureId];
 	if (texture)
 		{
-		SDL_FRect src = SDL_FRECT(srcRect);
-		SDL_FRect dst = SDL_FRECT(dstRect);
-		SDL_FPoint p  = (SDL_FPoint){p.x, p.y};
-
+		SDL_FRect src 		= SDL_FRECT(srcRect);
+		SDL_FRect dst 		= SDL_FRECT(dstRect);
+		SDL_FPoint about  	= (SDL_FPoint){p.x, p.y};
 		return SDL_RenderTextureRotated(_renderer,
 										texture,
 										IS_ZERORECT(srcRect) ? NULL : &src,
 										IS_ZERORECT(dstRect) ? NULL : &dst,
 										degrees,
-										&p,
+										&about,
 										(SDL_FlipMode)flip);
 		}
 	SDL_Log("Cannot find texture %d to [complex] blit from", (int)textureId);
