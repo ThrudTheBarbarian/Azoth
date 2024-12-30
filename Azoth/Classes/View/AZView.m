@@ -491,7 +491,7 @@
 	if(NSEqualRects(self.frame,frame))
 		return;
 
-	NSSize oldSize = self.bounds.size;
+	NSSize old = self.bounds.size;
 
 	_bounds.size = frame.size;
 	_frame=frame;
@@ -500,10 +500,16 @@
 	//[_window invalidateCursorRectsForView:self]; // this also invalidates tracking areas
 
    if (_autoresizesSubviews)
-		[self resizeSubviewsWithOldSize:oldSize];
+		[self resizeSubviewsWithOldSize:old];
 
 	// Invalidate the visible rect
 	[self _invalidateTransforms];
+
+	// If the current backing texture is smaller than the new size, then
+	// install a new backing texture to match
+	if ((old.width < frame.size.width) || (old.height < frame.size.height))
+		if (self.superview != nil)
+			[self _installBackingTexture];
 
 	if (self.postFrameNotifications)
 		{
