@@ -17,7 +17,7 @@
 	if (self = [super initWithFrame:frame])
 		{
 		self.stringValue 	= @"";
-		self.state		 	= ControlStateNormal;
+		self.state		 	= AZControlStateNormal;
 		_enabled			= YES;
 		_continuous			= NO;
 		}
@@ -33,7 +33,7 @@
 	if (_enabled != yn)
 		[self setNeedsDisplay:YES];
 	_enabled = yn;
-	self.state = (_enabled) ? ControlStateNormal : ControlStateDisabled;
+	self.state = (_enabled) ? AZControlStateNormal : AZControlStateDisabled;
 	}
 
 /*****************************************************************************\

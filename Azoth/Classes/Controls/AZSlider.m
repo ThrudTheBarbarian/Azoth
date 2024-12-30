@@ -108,7 +108,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 \*****************************************************************************/
 - (BOOL) mouseDown:(AZEvent *)e
 	{
-	if (self.state == ControlStateDisabled)
+	if (self.state == AZControlStateDisabled)
 		return NO;
 	return YES;
 	}
@@ -236,8 +236,8 @@ static NSRect	_knob[STATE_NUM];	// knobs
 	{
 	NSRect sK	= _knob[self.state];
 
-	int which	= self.state == ControlStateHighlighted
-				? ControlStateNormal
+	int which	= self.state == AZControlStateHighlighted
+				? AZControlStateNormal
 				: self.state;
 	NSRect sL	= _trackL[which];
 	NSRect sM	= _trackM[which];
@@ -288,8 +288,8 @@ static NSRect	_knob[STATE_NUM];	// knobs
 	{
 	NSRect sK	= _knob[self.state];
 
-	int which	= self.state == ControlStateHighlighted
-				? ControlStateNormal
+	int which	= self.state == AZControlStateHighlighted
+				? AZControlStateNormal
 				: self.state;
 	NSRect sB	= _trackB[which];
 	NSRect sC	= _trackC[which];
@@ -341,8 +341,8 @@ static NSRect	_knob[STATE_NUM];	// knobs
 	{
 	NSRect sK	= _cKnob[self.state];
 
-	int which	= self.state == ControlStateHighlighted
-				? ControlStateNormal
+	int which	= self.state == AZControlStateHighlighted
+				? AZControlStateNormal
 				: self.state;
 	NSRect sC	= _circ[which];
 

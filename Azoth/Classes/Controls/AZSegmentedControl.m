@@ -131,7 +131,7 @@ typedef struct
 \*****************************************************************************/
 - (BOOL) mouseDown:(AZEvent *)e
 	{
-	if (self.state == ControlStateDisabled)
+	if (self.state == AZControlStateDisabled)
 		return NO;
 
 	NSPoint p = [self convertPoint:e.locationInWindow fromView:nil];
@@ -167,7 +167,7 @@ typedef struct
 	NSRect b 			= self.bounds;
 	AZRenderer *azr		= AZRenderer.renderer;
 	NSInteger ui		= [AZApp.sharedInstance textureFor:kUiMap];
-	BOOL allDisabled 	= (self.state == ControlStateDisabled);
+	BOOL allDisabled 	= (self.state == AZControlStateDisabled);
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 

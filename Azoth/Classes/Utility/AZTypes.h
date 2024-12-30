@@ -340,9 +340,16 @@ typedef enum
 \*****************************************************************************/
 typedef enum
 	{
-	AZControlStateValueOff 	= 0,
-	AZControlStateValueOn 	= 1,
-	AZControlStateValueMixed 	= 2
+	AZControlStateNormal			= 0,
+	AZControlStateHighlighted		= 1,
+	AZControlStateDisabled			= 2
+	} AZControlState;
+
+typedef enum
+	{
+	AZControlStateValueOff 			= 0,
+	AZControlStateValueOn 			= 1,
+	AZControlStateValueMixed 		= 2
 	} AZControlStateValue;
 
 

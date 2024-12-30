@@ -130,9 +130,9 @@ static int 			_lineHeight = 29;
 \*****************************************************************************/
 - (BOOL) becomeFirstResponder
 	{
-	if (self.enabled && (self.state == ControlStateNormal))
+	if (self.enabled && (self.state == AZControlStateNormal))
 		{
-		self.state = ControlStateHighlighted;
+		self.state = AZControlStateHighlighted;
 		SDL_StartTextInput(self.window.window);
 		TTF_SetTextColor(_text, _textColour.red,
 								_textColour.green,
@@ -166,9 +166,9 @@ static int 			_lineHeight = 29;
 \*****************************************************************************/
 - (BOOL) resignFirstResponder
 	{
-	if (self.state != ControlStateNormal)
+	if (self.state != AZControlStateNormal)
 		{
-		self.state = ControlStateNormal;
+		self.state = AZControlStateNormal;
 		SDL_StopTextInput(self.window.window);
 		[_blinkTimer invalidate];
 		_blinkTimer = nil;

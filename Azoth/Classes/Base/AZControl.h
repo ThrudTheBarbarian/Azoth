@@ -7,13 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import <Azoth/AZView.h>
-
-typedef enum
-	{
-	ControlStateNormal			= 0,
-	ControlStateHighlighted		= 1,
-	ControlStateDisabled		= 2
-	} AZControlState;
+#import <Azoth/AZTypes.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

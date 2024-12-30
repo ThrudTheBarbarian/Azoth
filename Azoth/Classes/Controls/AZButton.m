@@ -216,11 +216,11 @@ static NSRect	_bRight[STATE_NUM];
 - (void) setObjectValue:(nullable NSObject *)value
 	{
 	if (value == nil)
-		self.state = ControlStateNormal;
+		self.state = AZControlStateNormal;
 	else if ([value isKindOfClass:NSNumber.class])
 		self.state = [(NSNumber *)value intValue];
 	else
-		self.state = ControlStateHighlighted;
+		self.state = AZControlStateHighlighted;
 	}
 
 /*****************************************************************************\
@@ -228,15 +228,15 @@ static NSRect	_bRight[STATE_NUM];
 \*****************************************************************************/
 - (BOOL) mouseDown:(AZEvent *)e
 	{
-	if (self.state ==ControlStateDisabled)
+	if (self.state == AZControlStateDisabled)
 		return NO;
 
 	if (self.type >= ButtonTypeCheckbox)
 		[self _toggleButtonToggled];
 
-	else if (self.state == ControlStateNormal)
+	else if (self.state == AZControlStateNormal)
 		{
-		self.state = ControlStateHighlighted;
+		self.state = AZControlStateHighlighted;
 		[self setNeedsDisplay:YES];
 		[self sendAction:self.action to:self.target];
 		}
@@ -249,13 +249,13 @@ static NSRect	_bRight[STATE_NUM];
 \*****************************************************************************/
 - (BOOL) mouseUp:(AZEvent *)e
 	{
-	if (self.state ==ControlStateDisabled)
+	if (self.state == AZControlStateDisabled)
 		return NO;
 
 	if (self.type < ButtonTypeCheckbox)
-		if (self.state == ControlStateHighlighted)
+		if (self.state == AZControlStateHighlighted)
 			{
-			self.state = ControlStateNormal;
+			self.state = AZControlStateNormal;
 			[self setNeedsDisplay:YES];
 			}
 	return YES;
@@ -271,7 +271,7 @@ static NSRect	_bRight[STATE_NUM];
 	if (![n.userInfo[@"group"] isEqualToString:_radioGroup])
 		return;
 
-	[self setState:ControlStateNormal];
+	[self setState:AZControlStateNormal];
 	[self setNeedsDisplay:YES];
 	}
 
@@ -282,9 +282,9 @@ static NSRect	_bRight[STATE_NUM];
 \*****************************************************************************/
 - (void) _toggleButtonToggled
 	{
-	self.state  = (self.state == ControlStateNormal)
-				? ControlStateHighlighted
-				: ControlStateNormal;
+	self.state  = (self.state == AZControlStateNormal)
+				? AZControlStateHighlighted
+				: AZControlStateNormal;
 	[self sendAction:self.action to:self.target];
 	[self setNeedsDisplay:YES];
 	if (self.type == ButtonTypeRadio)
