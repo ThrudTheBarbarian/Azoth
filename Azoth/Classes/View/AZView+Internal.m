@@ -294,6 +294,11 @@
 		dst			= clip;
 		}
 
+	if ((src.size.width == 0) || (src.size.height == 0))
+		return;
+	if ((dst.size.width == 0) || (dst.size.height == 0))
+		return;
+
 	/*************************************************************************\
 	|* Handle the transparency of alpha
 	\*************************************************************************/
