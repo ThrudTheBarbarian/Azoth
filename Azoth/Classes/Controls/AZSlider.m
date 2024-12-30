@@ -81,6 +81,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
+	[super drawInRect:dirtyRect withPainter:painter];
 	switch (_type)
 		{
 		case SliderTypeHorizontal:
