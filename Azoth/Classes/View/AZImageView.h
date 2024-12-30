@@ -1,0 +1,50 @@
+//
+//  AZImageView.h
+//  Azoth
+//
+//  Created by Simon Gornall on 12/29/24.
+//
+
+#import <Azoth/AZView.h>
+#import <Azoth/AZTypes.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+@class AZImage;
+
+@interface AZImageView : AZView
+
+/*****************************************************************************\
+|* Initialisation: Create with a frame
+\*****************************************************************************/
+- (instancetype) initWithFrame:(NSRect)frame;
+
+/*****************************************************************************\
+|* Initialisation: Create with an image. Frame calculated from the image size
+\*****************************************************************************/
++ (instancetype) imageViewWithImage:(AZImage *) image;
+
+/*****************************************************************************\
+|* Initialisation: Create with an image and frame. Image will be sized
+|* according to the properties below
+\*****************************************************************************/
++ (instancetype) imageViewWithImage:(AZImage *) image inFrame:(NSRect)frame;
+
+/*****************************************************************************\
+|* Properties
+\*****************************************************************************/
+
+// The image displayed within the frame
+@property(strong, nonatomic) AZImage *								image;
+
+// Which type of image alignment (default: AZImageAlignCenter)
+@property(assign, nonatomic) AZImageAlignment						alignment;
+
+// Which type of border (default AZImageFrameNone)
+@property(assign, nonatomic) AZImageFrameStyle						frameStyle;
+
+// Which type of scaling (default: AZImageScaleProportionallyDown)
+@property(assign, nonatomic) AZImageScaling							scaling;
+@end
+
+NS_ASSUME_NONNULL_END

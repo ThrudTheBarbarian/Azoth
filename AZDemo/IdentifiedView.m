@@ -312,9 +312,6 @@
 	{
 	//NSLog(@"slider:%@, value:%f", sender, ((AZSlider *)sender).doubleValue);
 	_cb.enabled = (((AZSlider *)sender).doubleValue == 0);
-
-	NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
-	[nc postNotificationName:@"slider" object:[NSNumber numberWithInt:360 * ((AZSlider *)sender).doubleValue]];
 	}
 
 

@@ -228,6 +228,47 @@ typedef enum
 	} AZRulerOrientation;
 
 /*****************************************************************************\
+|* AZImageView alignment types etc
+\*****************************************************************************/
+typedef enum
+	{
+    AZImageAlignCenter 		= 0,
+    AZImageAlignTop,
+    AZImageAlignTopLeft,
+    AZImageAlignTopRight,
+    AZImageAlignLeft,
+    AZImageAlignBottom,
+    AZImageAlignBottomLeft,
+    AZImageAlignBottomRight,
+    AZImageAlignRight
+	} AZImageAlignment;
+
+typedef enum
+	{
+    AZImageFrameNone = 0,
+    AZImageFramePhoto,
+    AZImageFrameGrayBezel,
+    AZImageFrameGroove,
+    AZImageFrameButton
+	} AZImageFrameStyle;
+
+typedef enum
+	{
+	// Scale image down if it is too large for destination. Preserve aspect.
+    AZImageScaleProportionallyDown = 0,
+
+	// Scale each dimension to exactly fit destination. Do not preserve aspect.
+    AZImageScaleAxesIndependently,
+
+    // Do not scale.
+    AZImageScaleNone,
+
+    // Scale image to maximum possible dimensions while (1) staying within
+    // destination area (2) preserving aspect ratio
+    AZImageScaleProportionallyUpOrDown,
+	} AZImageScaling;
+
+/*****************************************************************************\
 |* Scrollbar area types
 \*****************************************************************************/
 typedef enum
