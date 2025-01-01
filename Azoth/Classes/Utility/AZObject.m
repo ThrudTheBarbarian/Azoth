@@ -105,4 +105,15 @@
 	return [[AZObject alloc] initWithRect:r andHint:hint];
 	}
 
+/*****************************************************************************\
+|* ... implement a shallow copy, so we can act as keys in a dictionary
+\*****************************************************************************/
+- (nonnull id)copyWithZone:(nullable NSZone *)zone
+	{
+	AZObject *clone = [AZObject objectWithPointer:_ptr andHint:_hint];
+	clone.rect 		= _rect;
+	clone.p			= _p;
+	return clone;
+	}
+
 @end

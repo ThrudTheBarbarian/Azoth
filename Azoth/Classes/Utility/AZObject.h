@@ -18,7 +18,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AZObject : NSObject
+@interface AZObject : NSObject <NSCopying>
 
 /*****************************************************************************\
 |* Initialisation

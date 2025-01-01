@@ -25,6 +25,10 @@
 
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
+	int dashes[] = {5,7,9,3};
+	NSRect r = NSInsetRect(self.bounds, 5, 5);
+
+	[painter rectangleInRect:r num:4 dashes:dashes inColour:AZColour.greenColour withClip:self.bounds];
 	}
 
 @end

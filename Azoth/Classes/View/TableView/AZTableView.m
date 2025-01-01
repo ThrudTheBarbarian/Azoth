@@ -18,6 +18,7 @@
 #import "AZTableHeaderView.h"
 #import "AZTableRowRecord.h"
 #import "AZTableView.h"
+#import "AZTypes.h"
 #import "AZView+Internal.h"
 
 #define DEFAULT_ROWHEIGHT		(30.f)
@@ -283,6 +284,8 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 			}
 		else
 			[self toggleRow:row byExtendingSelection:NO];
+
+		[self noteSelectionIsChanging];
 		}
 	return YES;
 	}
@@ -495,6 +498,28 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		}
 	}
 
+/*****************************************************************************\
+|* Return the frame of the view at a given row,column intersection
+\*****************************************************************************/
+- (NSRect)frameOfViewAtColumn:(NSInteger)column row:(NSInteger)row
+	{
+	if ( (column < 0) || (column > self.numberOfColumns)
+	   ||(row < 0) || (row > self.numberOfRows))
+		return NSZeroRect;
+
+	NSRect frame = NSMakeRect(0,0,0,0);
+
+	for (NSInteger i = 0; i < column; i++)
+		frame.origin.x += _tableColumns[i].width + _spacing.width;
+
+	AZTableRowRecord *rec = _rowRecords[row];
+	frame.origin.y = rec.start;
+
+	frame.size.width  = _tableColumns[column].width + _spacing.width;
+	frame.size.height = rec.height;
+
+	return frame;
+	}
 
 // MARK: Selection
 
@@ -655,6 +680,93 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 
 
 // MARK: Send notifications
+
+/*****************************************************************************\
+|* Properly replace the delegate, invalidating any old notifications etc.
+\*****************************************************************************/
+- (void) setDelegate:(id<AZTableViewDelegate>)delegate
+	{
+	NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
+
+    AZNotifyMap notes[] =
+		{
+			{ AZTableViewSelectionDidChangeNotification,
+			  @selector(tableViewSelectionDidChange:) },
+			{ AZTableViewColumnDidMoveNotification,
+			  @selector(tableViewColumnDidMove:) },
+			{ AZTableViewColumnDidResizeNotification,
+			  @selector(tableViewColumnDidResize:) },
+			{ AZTableViewSelectionIsChangingNotification,
+			  @selector(tableViewSelectionIsChanging:) },
+			{ nil, NULL }
+		};
+
+    if (_delegate != nil)
+        for (int i = 0; notes[i].name != nil; ++i)
+            [nc removeObserver:_delegate name:notes[i].name object:self];
+
+    _delegate=delegate;
+
+    for (int i = 0; notes[i].name != nil; ++i)
+        if ([_delegate respondsToSelector:notes[i].selector])
+            [nc addObserver:_delegate
+				   selector:notes[i].selector
+					   name:notes[i].name
+					 object:self];
+	}
+
+/*****************************************************************************\
+|* Handle number-of-rows changes. Calls into row-height changes to establish
+|* the row-cache for the new values
+\*****************************************************************************/
+- (void) noteNumberOfRowsChanged
+	{
+    NSSize size 			= self.frame.size;
+    NSSize headerSize 		= _headerView.frame.size;
+
+	// Set to <0 to force a re-count
+    _numberOfRows 			= -1;
+    NSInteger numberOfRows	= [self numberOfRows];
+
+    // There isn't much point in trying to validate the heights of
+    // visible rows only, as the often used -rectOfColumn: needs them all.
+	[self _generateHeightAndOffsetData];
+
+    // if there's any editing going on, we'd better stop it.
+    if (_editingView != nil)
+		[self textDidEndEditing:nil];
+
+    if (numberOfRows > 0)
+        size.width = [self _rectOfRow:0].size.width;
+
+    if (_tableColumns.count > 0)
+        size.height = [self _rectOfColumn:0].size.height;
+
+    headerSize.width = size.width;
+
+    [self setFrameSize:size];
+    [_headerView setFrameSize:headerSize];
+
+    NSMutableIndexSet *selection = _selectedRowIndexes.mutableCopy;
+    NSInteger count 			 = selection.count;
+    NSUInteger indexes[count];
+    [selection getIndexes:indexes maxCount:count inIndexRange:NULL];
+    
+    while (--count >= 0)
+		if (indexes[count] >= numberOfRows)
+			[selection removeIndex:indexes[count]];
+
+	// Do not change the selection if it didnt change. _setSelectedRowIndexes
+	// posts a notification and doing it unnecessarily can cause performance
+	// and behavior problems. For example, if there is no selection in a newly
+	// created tableview and you post the notification indirectly with
+	// setDataSource:, an application which expects a non-empty selection
+	// will have problems.
+	//
+	// FIXME: investigate whether _setSelectedRowIndexes: should do this check.
+	if (![selection isEqualToIndexSet:_selectedRowIndexes])
+		[self _setSelectedRowIndexes:selection];
+	}
 
 /*****************************************************************************\
 |* Notify that the selection is changing
@@ -1056,6 +1168,57 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		_rM[i].size.height -= 10;
 		_rM[i].origin.y += 5;
 		}
+	}
+
+/*****************************************************************************\
+|* Return the rect for a given row
+\*****************************************************************************/
+- (NSRect) _rectOfRow:(NSInteger)row
+	{
+    if (row < 0 || row >= self.numberOfRows)
+        return NSZeroRect;
+
+	NSRect rect;
+	AZTableRowRecord *rec 	= _rowRecords[row];
+	rect.origin.y 			= rec.start;
+    rect.origin.x 			= 0.f;
+	rect.size.width 		= 0.f;
+	rect.size.height		= rec.height;
+
+	NSInteger count 		= _tableColumns.count;
+	for (NSInteger i = 0; i < count; i++)
+		rect.size.width += _tableColumns[i].width + _spacing.width;
+
+    return rect;
+	}
+
+/*****************************************************************************\
+|* Return the rect for a given column
+\*****************************************************************************/
+- (NSRect) _rectOfColumn:(NSInteger)column
+	{
+    NSInteger numberOfRows 	= self.numberOfRows;
+    NSInteger numberOfCols 	= _tableColumns.count;
+    NSRect rect 			= self.bounds;
+
+    if (column < 0 || column >= numberOfCols)
+		{
+        SDL_Log("_rectOfColumn: invalid index %d (valid {%d, %d})",
+				(int)column, 0, (int)numberOfCols);
+		return NSZeroRect;
+		}
+
+	rect.origin.y 			= 0.;
+    rect.size.width 		= _tableColumns[column].width + _spacing.width;
+	rect.origin.x 			= 0.;
+    for (NSInteger i = 0; i < column; i++)
+        rect.origin.x += _tableColumns[i].width + _spacing.width;
+
+	AZTableRowRecord *rec 	= _rowRecords[numberOfRows-1];
+	rect.size.height 		= rec.height + rec.start + _spacing.height;
+	rect.size.height 		= MAX(NSHeight(rect),
+								  self.superview.bounds.size.height);
+    return rect;
 	}
 
 @end

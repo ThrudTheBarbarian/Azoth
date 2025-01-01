@@ -7,6 +7,9 @@
 
 #import <SDL3/SDL.h>
 
+#import "AZApp.h"
+#import "AZFont.h"
+#import "AZOutlineView.h"
 #import "AZTableColumn.h"
 #import "AZTableHeaderView.h"
 #import "AZTableView.h"
@@ -70,6 +73,15 @@ NSMutableDictionary<NSNumber *,AZView *> *							cache;
 	_tableView.usesHeader 	= YES;
 	}
 
+/*****************************************************************************\
+|* The width of the header, using the current font
+\*****************************************************************************/
+- (NSInteger) headerWidth
+	{
+	AZFont *font = AZApp.sharedInstance.controlFont;
+	return [font textWidthFor:_title];
+	}
+
 // MARK: Pool management
 
 /*****************************************************************************\
@@ -94,8 +106,14 @@ NSMutableDictionary<NSNumber *,AZView *> *							cache;
 	\*************************************************************************/
 	if (view == nil)
 		{
+		SEL getView = nil;
+		id dlg 		= _tableView.delegate;
+		if ([dlg conformsToProtocol:@protocol(AZOutlineViewDelegate)])
+			getView = SELECTOR(@"outlineView:viewForTableColumn:row:");
+		else
+			getView = SELECTOR(@"tableView:viewForTableColumn:row:");
+
 		id<AZTableViewDelegate> delegate = _tableView.delegate;
-		SEL getView = SELECTOR(@"tableView:viewForTableColumn:row:");
 		if ([delegate respondsToSelector:getView])
 			{
 			view = [delegate tableView:_tableView
@@ -104,7 +122,8 @@ NSMutableDictionary<NSNumber *,AZView *> *							cache;
 			_cache[@(row)] = view;
 			}
 		else
-			SDL_Log("TableView delegate does not supply views!");
+			SDL_Log("Delegate does not supply views via %s!",
+					NSStringFromSelector(getView).UTF8String);
 		}
 
 	return view;

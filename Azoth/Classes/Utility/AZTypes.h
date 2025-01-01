@@ -389,6 +389,15 @@ typedef enum
 
 
 /*****************************************************************************\
+|* Helper structures for notification management
+\*****************************************************************************/
+typedef struct
+	{
+	NSString *name;
+	SEL selector;
+	} AZNotifyMap;
+
+/*****************************************************************************\
 |* Popup menu callback
 \*****************************************************************************/
 typedef void (^MenuDoneBlock)(BOOL menuClicked);

@@ -27,5 +27,15 @@ extern NSString * const AZTableViewColumnDidResizeNotification;
 
 extern NSString * const AZTextDidEndEditingNotification;
 
+extern NSString *const AZOutlineViewItemWillExpandNotification;
+extern NSString *const AZOutlineViewItemDidExpandNotification;
+extern NSString *const AZOutlineViewItemWillCollapseNotification;
+extern NSString *const AZOutlineViewItemDidCollapseNotification;
+
+extern NSString *const AZOutlineViewColumnDidMoveNotification;
+extern NSString *const AZOutlineViewColumnDidResizeNotification;
+
+extern NSString *const AZOutlineViewSelectionDidChangeNotification;
+extern NSString *const AZOutlineViewSelectionIsChangingNotification;
 
 NS_ASSUME_NONNULL_END

@@ -9,8 +9,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class AZView;
 @class AZColour;
+@class AZTableColumn;
+@class AZTableHeaderView;
+@class AZTableView;
+@class AZView;
 
 /*****************************************************************************\
 |* Table-view datasource protocol
@@ -32,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 				   row:(NSInteger)row;
 				   
 @optional
+
 // Determine whether the user can edit a given row/col
 - (BOOL)tableView:(AZTableView *)tableView
 		shouldEditTableColumn:(AZTableColumn *)tableColumn
@@ -160,6 +164,16 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 - (void) toggleRow:(NSInteger)row byExtendingSelection:(BOOL)extend;
 
+/*****************************************************************************\
+|* Handle number-of-rows changes. Calls into row-height changes to establish
+|* the row-cache for the new values
+\*****************************************************************************/
+- (void) noteNumberOfRowsChanged;
+
+/*****************************************************************************\
+|* Return the frame of the view at a given row,column intersection
+\*****************************************************************************/
+- (NSRect)frameOfViewAtColumn:(NSInteger)column row:(NSInteger)row;
 
 // MARK: View pool management
 
