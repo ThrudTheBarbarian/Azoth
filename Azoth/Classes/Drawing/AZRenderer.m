@@ -155,7 +155,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 \*****************************************************************************/
 - (nullable struct SDL_Surface *) surfaceFor:(NSInteger)refId
 	{
-	SDL_Texture *texture = [self textureFor:refId];
+	SDL_Texture *texture = [self _textureFor:refId];
 	if (texture)
 		{
 		NSInteger oldFocus = [self currentFocus];
@@ -177,7 +177,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 /*****************************************************************************\
 |* Return a texture for a given id
 \*****************************************************************************/
-- (nullable SDL_Texture *) textureFor:(NSInteger)refId
+- (nullable SDL_Texture *) _textureFor:(NSInteger)refId
 	{
 	AZObject *object = _textures[@(refId)];
 	if (object && [object.hint isEqualToString:kTextureType])
@@ -226,7 +226,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 - (BOOL) lockFocusOn:(NSInteger)refId
 	{
 	BOOL ok = NO;
-	SDL_Texture *texture = [self textureFor:refId];
+	SDL_Texture *texture = [self _textureFor:refId];
 	if (texture)
 		{
 		//SDL_Log("lock focus on %d", (int)refId);
@@ -260,7 +260,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 \*****************************************************************************/
 - (int) blitFrom:(NSInteger)textureId src:(NSRect)srcRect dst:(NSRect)dstRect
 	{
-	SDL_Texture *texture = [self textureFor:textureId];
+	SDL_Texture *texture = [self _textureFor:textureId];
 	if (texture)
 		{
 		SDL_FRect src = SDL_FRECT(srcRect);
@@ -285,7 +285,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 		  center:(NSPoint)p				// Point around which to rotate
 			flip:(AZFlipMode)flip		// Flip-action on texture
 	{
-	SDL_Texture *texture = [self textureFor:textureId];
+	SDL_Texture *texture = [self _textureFor:textureId];
 	if (texture)
 		{
 		SDL_FRect src 		= SDL_FRECT(srcRect);
@@ -308,7 +308,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 \*****************************************************************************/
 - (int) tileFrom:(NSInteger)textureId src:(NSRect)srcRect dst:(NSRect)dstRect
 	{
-	SDL_Texture *texture = [self textureFor:textureId];
+	SDL_Texture *texture = [self _textureFor:textureId];
 	if (texture)
 		{
 		SDL_FRect src = SDL_FRECT(srcRect);
@@ -326,7 +326,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 - (int) tileFrom:(NSInteger)textureId src:(NSRect)srcRect scale:(float)scale
 			 dst:(NSRect)dstRect
 	{
-	SDL_Texture *texture = [self textureFor:textureId];
+	SDL_Texture *texture = [self _textureFor:textureId];
 	if (texture)
 		{
 		SDL_FRect src = SDL_FRECT(srcRect);
@@ -348,7 +348,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 
 - (int) setTexture:(NSInteger)refId blendMode:(uint32_t)blendMode
 	{
-	SDL_Texture *texture = [self textureFor:refId];
+	SDL_Texture *texture = [self _textureFor:refId];
 	if (texture)
 		return SDL_SetTextureBlendMode(texture, blendMode);
 	SDL_Log("Cannot find texture %d to set blend mode on", (int)refId);
@@ -357,7 +357,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 
 - (int) texture:(NSInteger)refId blendMode:(uint32_t*)blendMode
 	{
-	SDL_Texture *texture = [self textureFor:refId];
+	SDL_Texture *texture = [self _textureFor:refId];
 	if (texture)
 		return SDL_GetTextureBlendMode(texture, blendMode);
 	SDL_Log("Cannot find texture %d to get blend mode on", (int)refId);
@@ -369,7 +369,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 \*****************************************************************************/
 - (int) setTexture:(NSInteger)texId modR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b
 	{
-	SDL_Texture *texture = [self textureFor:texId];
+	SDL_Texture *texture = [self _textureFor:texId];
 	if (texture)
 		return SDL_SetTextureColorMod(texture, r, g, b);
 	SDL_Log("Cannot find texture %d to set colour-mod on", (int)texId);
@@ -382,7 +382,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 \*****************************************************************************/
 - (float) widthOfTexture:(NSInteger)refId
 	{
-	SDL_Texture *texture = [self textureFor:refId];
+	SDL_Texture *texture = [self _textureFor:refId];
 	if (texture)
 		{
 		float w, h;
@@ -395,7 +395,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 
 - (float) heightOfTexture:(NSInteger)refId
 	{
-	SDL_Texture *texture = [self textureFor:refId];
+	SDL_Texture *texture = [self _textureFor:refId];
 	if (texture)
 		{
 		float w, h;

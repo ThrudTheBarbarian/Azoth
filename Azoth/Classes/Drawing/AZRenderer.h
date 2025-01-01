@@ -14,7 +14,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 struct SDL_Surface;
 struct SDL_Renderer;
-struct SDL_Texture;
 struct SDL_FPoint;
 
 @interface AZRenderer : NSObject
@@ -39,11 +38,6 @@ struct SDL_FPoint;
 |* Return a surface for a given id
 \*****************************************************************************/
 - (nullable struct SDL_Surface *) surfaceFor:(NSInteger)refId;
-
-/*****************************************************************************\
-|* Return a texture for a given id
-\*****************************************************************************/
-- (nullable struct SDL_Texture *) textureFor:(NSInteger)refId;
 
 /*****************************************************************************\
 |* Return a bounds-rect for a given id, or NSZeroRect if not found
