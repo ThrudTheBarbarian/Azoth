@@ -117,6 +117,11 @@ struct SDL_Surface;
 - (void) rectangleWithBezel:(NSRect)r withClip:(NSRect)clip;
 - (void) rectangleWithGroove:(NSRect)r withClip:(NSRect)clip;
 - (void) rectangleWithButton:(NSRect)r withClip:(NSRect)clip;
+- (void) rectangleInRect:(NSRect)r
+					 num:(int)num
+				  dashes:(int *)onOff
+				inColour:(AZColour *)colour
+				withClip:(NSRect)clip;
 
 /*****************************************************************************\
 |* Rounded rectangle routines (not filled)

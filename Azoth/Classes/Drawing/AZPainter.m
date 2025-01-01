@@ -488,6 +488,129 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	[self.renderer setClip:originalClip];
 	}
 
+/*****************************************************************************\
+|* Draw a rectangle using a series of dashes to make up a line
+\*****************************************************************************/
+- (void) rectangleInRect:(NSRect)rect
+					 num:(int)num
+				  dashes:(int *)onOff
+				inColour:(AZColour *)colour
+				withClip:(NSRect)clip
+	{
+	NSRect originalClip = self.renderer.clipRect;
+	NSRect intersection	= NSIntersectionRect(originalClip, clip);
+	[self.renderer setClip:intersection];
+
+	// Start at top-left and work our way around, plotting lines as we go
+	float x 	= rect.origin.x;
+	float ox	= x;
+	float y 	= rect.origin.y;
+	float oy	= y;
+	float x2	= x + rect.size.width  - 1;
+	float y2	= x + rect.size.height - 1;
+
+	uint8_t r	= colour.red;
+	uint8_t g	= colour.green;
+	uint8_t b	= colour.blue;
+	uint8_t a  	= colour.alpha;
+
+	int len		= onOff[0];
+	int dash  	= 0;
+	BOOL draw	= YES;
+
+	// Start at top-left and work our way around, plotting lines as we go
+	while (x < x2)
+		{
+		int nx = MIN(x2, x+len);
+		if (draw)
+			[self lineAtX:x y:y toX:nx y:y withR:r g:g b:b a:a];
+		int dx = x + len - x2;
+		x = nx;
+		if (dx > 0)
+			{
+			if (draw)
+				[self lineAtX:x y:y toX:x y:y+dx withR:r g:g b:b a:a];
+			y += dx;
+			}
+
+		dash ++;
+		if (dash >= num)
+			dash = 0;
+		len = onOff[dash];
+
+		draw = !draw;
+		}
+
+	// Do the RHS
+	while (y < y2)
+		{
+		int ny = MIN(y2, y+len);
+		if (draw)
+			[self lineAtX:x y:y toX:x y:ny withR:r g:g b:b a:a];
+		int dy = y + len - y2;
+		y = ny;
+		if (dy > 0)
+			{
+			if (draw)
+				[self lineAtX:x y:y toX:x-dy y:y withR:r g:g b:b a:a];
+			x -= dy;
+			}
+
+		dash ++;
+		if (dash >= num)
+			dash = 0;
+		len = onOff[dash];
+
+		draw = !draw;
+		}
+
+	// Do the bottom
+	while (x > ox)
+		{
+		int nx = MAX(ox, x-len);
+		if (draw)
+			[self lineAtX:x y:y toX:nx y:y withR:r g:g b:b a:a];
+		int dx = (x - len) - ox;
+		x = nx;
+		if (dx < 0)
+			{
+			if (draw)
+				[self lineAtX:x y:y toX:x y:y-dx withR:r g:g b:b a:a];
+			y -= dx;
+			}
+
+		dash ++;
+		if (dash >= num)
+			dash = 0;
+		len = onOff[dash];
+
+		draw = !draw;
+		}
+
+	// Do the LHS
+	while (y > oy)
+		{
+		int ny = MAX(oy, y-len);
+		if (draw)
+			[self lineAtX:x y:y toX:x y:ny withR:r g:g b:b a:a];
+		int dy = (y - len) - oy;
+		y = ny;
+		if (dy < 0)
+			break;
+
+		dash ++;
+		if (dash >= num)
+			dash = 0;
+		len = onOff[dash];
+
+		draw = !draw;
+		}
+
+
+	[self.renderer setClip:originalClip];
+	}
+
+
 // MARK: Rounded Rectangle drawing routines
 
 /*****************************************************************************\
