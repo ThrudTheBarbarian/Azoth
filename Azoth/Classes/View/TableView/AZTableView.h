@@ -196,12 +196,10 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 
 // The tableview delegate
-@property(strong, nonatomic)
-id<AZTableViewDelegate>									delegate;
+@property(strong, nonatomic) id							delegate;
 
 // The tableview datasource
-@property(strong, nonatomic)
-id<AZTableViewDataSource>								dataSource;
+@property(strong, nonatomic) id							dataSource;
 
 // The tableview header view
 @property(strong, nonatomic, nullable)

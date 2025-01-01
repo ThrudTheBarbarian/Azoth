@@ -12,6 +12,7 @@
 #import "AZNotifications.h"
 #import "AZPainter.h"
 #import "AZObject.h"
+#import "AZOutlineItemView.h"
 #import "AZOutlineView.h"
 #import "AZTableColumn.h"
 #import "AZTypes.h"
@@ -56,10 +57,6 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 // The number of rows we have cached
 @property(assign, nonatomic) NSInteger						numberOfCachedRows;
 
-// The marker view and size
-@property(strong, nonatomic) AZButton *						markerView;
-@property(assign, nonatomic) NSSize 						markerSize;
-
 // The item last clicked
 @property(strong, nonatomic) NSObject *						clickedItem;
 
@@ -86,10 +83,7 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 		_itemToState		= [NSMutableDictionary new];
 		_itemToNumChildren	= [NSMutableDictionary new];
 
-		frame 				= NSMakeRect(0, 0, ROWHEIGHT, ROWHEIGHT);
-		_markerView			= [AZButton buttonWithFrame:frame];
-
-		_indentPerLevel		= ROWHEIGHT;	// Make it square
+		_indentPerLevel		= 10;
 		_autoresizeOutline	= YES;
 
 		[self _invalidateRowCache];
@@ -161,6 +155,29 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 - (NSInteger) levelForRow:(NSInteger)row;
 	{
 	return [self levelForItem:[self itemAtRow:row]];
+	}
+
+/*****************************************************************************\
+|* Add/remove a table column
+\*****************************************************************************/
+-(void)addTableColumn:(AZTableColumn *)column
+	{
+	if (_outlineColumn == nil)
+		_outlineColumn = column;
+	[super addTableColumn:column];
+	}
+
+// MARK: View management
+
+/*****************************************************************************\
+|* Embed a view representing a row within an AZOutlineItemView so we can
+|* have disclosure triangles etc.
+\*****************************************************************************/
+- (AZView *) embedInItemView:(AZView *)view
+	{
+	NSRect frame = NSMakeRect(0,0,_outlineColumn.width, view.frame.size.height);
+	AZView *host = [AZOutlineItemView itemViewWithView:view andFrame:frame];
+	return host;
 	}
 
 
@@ -249,9 +266,10 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 \*****************************************************************************/
 - (void) reloadData
 	{
-   [self _resetMaps];
-   [self _invalidateRowCache];
-   [super reloadData];
+	[self _resetMaps];
+	[self _invalidateRowCache];
+	[super reloadData];
+	[self _configureItemViews];
 	}
 
 /*****************************************************************************\
@@ -308,10 +326,8 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 						NSStringFromSelector(requiredSelectors[i]).UTF8String);
 				}
 
-	// This rather strange cast is because the parent class is NSTableView and
-	// the dataSource is defined there as id<AZTableViewDataSource>.
 	if (ok)
-		self.dataSource = (id<AZTableViewDataSource>)dataSource;
+		super.dataSource = dataSource;
 	}
 
 /*****************************************************************************\
@@ -345,9 +361,7 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
         for (int i = 0; notes[i].name != nil; ++i)
             [nc removeObserver:dlg name:notes[i].name object:self];
 
-	// This rather strange cast is because the parent class is NSTableView and
-	// the delegate is defined there as id<AZTableViewDelegate>.
-    self.delegate = (id<AZTableViewDelegate>) delegate;
+    super.delegate = delegate;
 
     for (int i = 0; notes[i].name != nil; ++i)
         if ([dlg respondsToSelector:notes[i].selector])
@@ -369,6 +383,22 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 		return [self _adjustedFrameOfViewAtColumn:col row:row];
 
 	return [super frameOfViewAtColumn:col row:row];
+	}
+
+/*****************************************************************************\
+|* Override table-view because our method is different...
+|* Check if we should select a row
+\*****************************************************************************/
+- (BOOL) delegateShouldSelectRow:(NSInteger)row
+	{
+	NSObject *item = _rowToItem[@(row)];
+
+	SEL shouldSelect = SELECTOR(@"outlineView:shouldSelectItem:");
+    if ([self.delegate respondsToSelector:shouldSelect])
+        return [self.delegate outlineView:self shouldSelectItem:item];
+
+	// Default to YES
+    return YES;
 	}
 
 
@@ -407,14 +437,20 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
     for (NSInteger i = 0; i < numChildren; ++i)
 		{
         NSObject *child = [src outlineView:self child:i ofItem:item];
-		[toRemove removeObject:child];
+		[toRemove removeObject:TO_STRING(child)];
 
 		//NSLog(@"got child %@ for row %d, level %d",
-		//      child, _numberOfCachedRows, level);
+		//      child, (int)_numberOfCachedRows, (int)level);
 		_rowToItem[@(_numberOfCachedRows)] = child;
-		_itemToRow[TO_STRING(child)] = @(_numberOfCachedRows);
-		_itemToParent[TO_STRING(child)] = item;
-		_itemToLevel[TO_STRING(child)] = @(level);
+		NSString *key = TO_STRING(child);
+
+		_itemToRow[key] 	= @(_numberOfCachedRows);
+		_itemToParent[key] 	= item;
+		_itemToLevel[key] 	= @(level);
+
+		NSInteger kids = [self numberOfChildrenOfItem:child andReload:YES];
+		_itemToNumChildren[key] = @(kids);
+
         _numberOfCachedRows ++;
 
 		if ([self isItemExpanded:child])
@@ -447,19 +483,17 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 	NSInteger i 		= [self rowForItem:item]+1;
 	NSInteger rowCount	= [self numberOfRows];
 
-	float minWidth			= column.headerWidth;
+	float minWidth			= 0;
 	for(; i<rowCount; i++)
 		{
-		AZView *dataView 	= [column dataViewForRow:i];
-		NSObject *item	 	= [self itemAtRow:i];
-    	NSInteger level		= [self levelForItem:item];
+		AZOutlineItemView *view	= (AZOutlineItemView*)[column dataViewForRow:i];
+		NSObject *item	 		= [self itemAtRow:i];
+    	NSInteger level			= [self levelForItem:item];
 
 		if (level <= rootLevel)
 			break;
 
-		float width			= dataView.bounds.size.width
-							+ level * _indentPerLevel;
-
+		float width			= view.preferredWidth + level * _indentPerLevel;
 		if (width > minWidth)
 			minWidth = width;
 		}
@@ -580,7 +614,7 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
  		float adjIndent	   = indent + self.rowHeight;
         viewRect.origin.x += adjIndent + W;
 
-        // Give the delegate an opportunity to provide the cell width.
+        // Give the delegate an opportunity to provide the view width.
         SEL width = SELECTOR(@"outlineView:widthOfView:forTableColumn:byItem:");
         float viewWidth;
         if ([dlg respondsToSelector:width])
@@ -629,19 +663,59 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 	}
 
 /*****************************************************************************\
-|* Draw the view
+|* Update all the row indents for the current table column
 \*****************************************************************************/
-- (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
+- (void) _configureItemViews
 	{
-	// Really just here to prevent AZTableView from drawing stuff that works
-	// for a table, but not for an outline view...
+	AZOutlineItemView *iv;
+
+	for (NSInteger i=0; i<_numberOfCachedRows; i++)
+		{
+		iv = (AZOutlineItemView *)[_outlineColumn dataViewForRow:i];
+		NSObject *item  	= _rowToItem[@(i)];
+		NSString *key 		= TO_STRING(item);
+		NSInteger level 	= _itemToLevel[key].integerValue;
+		BOOL hasChildren	= _itemToNumChildren[key].integerValue > 0;
+		BOOL isOpen			= _itemToState[key].boolValue;
+
+		[iv indentBy:level * _indentPerLevel];
+		[iv setIsOpen:isOpen];
+		[iv setHasChildren:hasChildren];
+		[iv setItem:item];
+		[iv setTarget:self];
+		[iv setAction:@selector(_itemDisclosureClicked:)];
+		if (i == self.selectedRow)
+			[iv setSelected:YES];
+		}
 	}
 
-// MARK: Notifications
-
 /*****************************************************************************\
-|*
+|* One of our items has been clicked on
 \*****************************************************************************/
+- (void) _itemDisclosureClicked:(AZOutlineItemView *)view
+	{
+	AZOutlineItemViewReason reason = view.reason;
+	NSString *key = TO_STRING(view.item);
 
+	if (reason == AZOutlineViewItemDisclosed)
+		{
+		if (_itemToState[key].boolValue)
+			{
+			[self collapseItem:view.item];
+			[self reloadData];
+			}
+		else if (_itemToNumChildren[key].integerValue > 0)
+			{
+			[self expandItem:view.item];
+			[self reloadData];
+			}
+		}
+	else if (reason == AZOutlineViewItemSelected)
+		{
+		NSInteger row = _itemToRow[key].integerValue;
+		[self selectRow:row byExtendingSelection:NO];
+		[self reloadData];
+		}
+	}
 
 @end

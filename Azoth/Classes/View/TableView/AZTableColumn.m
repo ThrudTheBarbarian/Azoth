@@ -109,17 +109,29 @@ NSMutableDictionary<NSNumber *,AZView *> *							cache;
 		SEL getView = nil;
 		id dlg 		= _tableView.delegate;
 		if ([dlg conformsToProtocol:@protocol(AZOutlineViewDelegate)])
-			getView = SELECTOR(@"outlineView:viewForTableColumn:row:");
-		else
-			getView = SELECTOR(@"tableView:viewForTableColumn:row:");
-
-		id<AZTableViewDelegate> delegate = _tableView.delegate;
-		if ([delegate respondsToSelector:getView])
 			{
-			view = [delegate tableView:_tableView
-					viewForTableColumn:self
-								   row:row];
-			_cache[@(row)] = view;
+			getView = SELECTOR(@"outlineView:viewForTableColumn:row:");
+			if ([dlg respondsToSelector:getView])
+				{
+				AZOutlineView *ov = (AZOutlineView *)_tableView;
+				view = [(id<AZOutlineViewDelegate>)dlg
+								   outlineView:ov
+							viewForTableColumn:self
+										   row:row];
+				view = [ov embedInItemView:view];
+				_cache[@(row)] = view;
+				}
+			}
+		else if ([dlg conformsToProtocol:@protocol(AZTableViewDelegate)])
+			{
+			getView = SELECTOR(@"tableView:viewForTableColumn:row:");
+			if ([dlg respondsToSelector:getView])
+				{
+				view = [dlg tableView:_tableView
+				   viewForTableColumn:self
+								  row:row];
+				_cache[@(row)] = view;
+				}
 			}
 		else
 			SDL_Log("Delegate does not supply views via %s!",

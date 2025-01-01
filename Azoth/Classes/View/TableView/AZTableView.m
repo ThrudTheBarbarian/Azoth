@@ -24,6 +24,13 @@
 #define DEFAULT_ROWHEIGHT		(30.f)
 #define HEADER_ROWHEIGHT		(25.f)
 
+
+#define DATASOURCE(src) id<AZTableViewDataSource> src = 					\
+						(id<AZTableViewDataSource>)self.dataSource
+
+#define DELEGATE(dlg) 	id<AZTableViewDelegate> dlg = 						\
+						(id<AZTableViewDelegate>)self.delegate
+
 /*****************************************************************************\
 |* Define the UI
 \*****************************************************************************/
@@ -147,10 +154,12 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 				_numberOfRows = [_dataSource numberOfRowsInTableView:self];
 			else
 				{
+				DATASOURCE(src);
+
 				// Apple AppKit only logs here, so we do the same.
 				SDL_Log("data source %s does not respond to "
 						"numberOfRowsInTableView:",
-						_dataSource.description.UTF8String);
+						src.description.UTF8String);
 				_numberOfRows=0;
 				}
 			}
@@ -622,6 +631,11 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	{
 	BOOL changed = NO;
 
+	// Make sure the delegate is allowing us to make changes at all...
+	if (![self delegateSelectionShouldChange])
+		return;
+
+
 	// Find the changed rows and mark them for redraw.
 	NSInteger i = _selectedRowIndexes.firstIndex;
 	if (i == NSNotFound)
@@ -661,7 +675,19 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 			}
 
 	if (changed)
-		[self _setSelectedRowIndexes:newIndexes];
+		{
+		// Verify that each of the selections is ok to change
+		NSMutableIndexSet *verified = [NSMutableIndexSet new];
+
+		NSInteger index = newIndexes.firstIndex;
+		while (index != NSNotFound)
+			{
+			if ([self delegateShouldSelectRow:index])
+				[verified addIndex:index];
+			index = [newIndexes indexGreaterThanIndex:index];
+			}
+		[self _setSelectedRowIndexes:verified];
+		}
 	}
 
 /*****************************************************************************\
@@ -684,7 +710,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 /*****************************************************************************\
 |* Properly replace the delegate, invalidating any old notifications etc.
 \*****************************************************************************/
-- (void) setDelegate:(id<AZTableViewDelegate>)delegate
+- (void) setDelegate:(id)delegate
 	{
 	NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
 
@@ -849,6 +875,32 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		set = [NSIndexSet indexSetWithIndex:row];
 		[self selectRowIndexes:set byExtendingSelection:NO];
 		}
+	}
+
+/*****************************************************************************\
+|* Ask the delegate if we can change the selection
+\*****************************************************************************/
+- (BOOL) delegateSelectionShouldChange
+	{
+	SEL shouldChange = SELECTOR(@"selectionShouldChangeInTableView:");
+    if ([_delegate respondsToSelector:shouldChange])
+        return [_delegate selectionShouldChangeInTableView:self];
+    
+	// Default to YES
+    return YES;
+	}
+	
+/*****************************************************************************\
+|* Check if we should select a row
+\*****************************************************************************/
+- (BOOL) delegateShouldSelectRow:(NSInteger)row
+	{
+	SEL shouldSelect = SELECTOR(@"tableView:shouldSelectRow:");
+    if ([_delegate respondsToSelector:shouldSelect])
+        return [_delegate tableView:self shouldSelectRow:row];
+
+	// Default to YES
+    return YES;
 	}
 
 

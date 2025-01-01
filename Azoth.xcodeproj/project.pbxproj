@@ -9,6 +9,20 @@
 /* Begin PBXBuildFile section */
 		F41BC6AD2D0A720700E61EDD /* Azoth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; };
 		F41BC6AE2D0A720700E61EDD /* Azoth.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F454E2102D24DFA1002D2DAB /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
+		F454E2112D24DFA1002D2DAB /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
+		F454E2122D24DFA1002D2DAB /* SDL3_image.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; };
+		F454E2132D24DFA1002D2DAB /* avif.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; };
+		F454E2142D24DFA1002D2DAB /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
+		F454E2152D24DFA1002D2DAB /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
+		F454E2162D24DFA6002D2DAB /* Azoth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; };
+		F454E2182D24DFBD002D2DAB /* SDL3_ttf.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F454E2192D24DFBD002D2DAB /* SDL3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F454E21A2D24DFBD002D2DAB /* SDL3_image.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F454E21B2D24DFBD002D2DAB /* avif.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F454E21C2D24DFBD002D2DAB /* jxl.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F454E21D2D24DFBD002D2DAB /* webp.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F454E21E2D24DFCE002D2DAB /* Azoth.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F45ED92A2D1145BA00CE8B28 /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
 		F45ED92B2D1145BA00CE8B28 /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
 		F45ED92C2D1145BA00CE8B28 /* avif.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; };
@@ -96,6 +110,23 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F454E2172D24DFAC002D2DAB /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F454E21E2D24DFCE002D2DAB /* Azoth.framework in Embed Frameworks */,
+				F454E2182D24DFBD002D2DAB /* SDL3_ttf.xcframework in Embed Frameworks */,
+				F454E2192D24DFBD002D2DAB /* SDL3.xcframework in Embed Frameworks */,
+				F454E21A2D24DFBD002D2DAB /* SDL3_image.xcframework in Embed Frameworks */,
+				F454E21B2D24DFBD002D2DAB /* avif.xcframework in Embed Frameworks */,
+				F454E21C2D24DFBD002D2DAB /* jxl.xcframework in Embed Frameworks */,
+				F454E21D2D24DFBD002D2DAB /* webp.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F49528462D1F4C6300D6B8A6 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -150,6 +181,7 @@
 /* Begin PBXFileReference section */
 		F41BC6522D0A61BA00E61EDD /* Azoth.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Azoth.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F41BC69C2D0A71FD00E61EDD /* AZDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F454E1FD2D24D1DA002D2DAB /* AZOutline.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZOutline.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F45ED9232D1145B900CE8B28 /* webp.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = webp.xcframework; path = ../../../../opt/SDL3/webp.xcframework; sourceTree = "<group>"; };
 		F45ED9242D1145B900CE8B28 /* jxl.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = jxl.xcframework; path = ../../../../opt/SDL3/jxl.xcframework; sourceTree = "<group>"; };
 		F45ED9252D1145B900CE8B28 /* avif.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = avif.xcframework; path = ../../../../opt/SDL3/avif.xcframework; sourceTree = "<group>"; };
@@ -792,6 +824,7 @@
 				Classes/View/AZImageView.h,
 				Classes/View/AZSplitView.h,
 				Classes/View/AZView.h,
+				Classes/View/OutlineView/AZOutlineView.h,
 				Classes/View/Scrollview/AZClipView.h,
 				Classes/View/Scrollview/AZRulerView.h,
 				Classes/View/Scrollview/AZScrollView.h,
@@ -822,6 +855,11 @@
 		F41BC69D2D0A71FD00E61EDD /* AZDemo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = AZDemo;
+			sourceTree = "<group>";
+		};
+		F454E1FE2D24D1DA002D2DAB /* AZOutline */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AZOutline;
 			sourceTree = "<group>";
 		};
 		F495282C2D1F496200D6B8A6 /* AZTable */ = {
@@ -875,6 +913,20 @@
 				F45ED92C2D1145BA00CE8B28 /* avif.xcframework in Frameworks */,
 				F45ED9392D1147EB00CE8B28 /* SDL3_image.xcframework in Frameworks */,
 				F41BC6AD2D0A720700E61EDD /* Azoth.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F454E1FA2D24D1DA002D2DAB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F454E2162D24DFA6002D2DAB /* Azoth.framework in Frameworks */,
+				F454E2102D24DFA1002D2DAB /* SDL3_ttf.xcframework in Frameworks */,
+				F454E2112D24DFA1002D2DAB /* SDL3.xcframework in Frameworks */,
+				F454E2122D24DFA1002D2DAB /* SDL3_image.xcframework in Frameworks */,
+				F454E2132D24DFA1002D2DAB /* avif.xcframework in Frameworks */,
+				F454E2142D24DFA1002D2DAB /* jxl.xcframework in Frameworks */,
+				F454E2152D24DFA1002D2DAB /* webp.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -933,6 +985,7 @@
 				F4B6A3B72D0F84C00033580D /* genRsrc */,
 				F495282C2D1F496200D6B8A6 /* AZTable */,
 				F49557092D231A2A00D6B8A6 /* AZImageView */,
+				F454E1FE2D24D1DA002D2DAB /* AZOutline */,
 				F4B6A11B2D0A977D0033580D /* Frameworks */,
 				F41BC6532D0A61BA00E61EDD /* Products */,
 			);
@@ -946,6 +999,7 @@
 				F4B6A3B62D0F84C00033580D /* genRsrc.app */,
 				F495282B2D1F496200D6B8A6 /* AZTable.app */,
 				F49557082D231A2A00D6B8A6 /* AZImageView.app */,
+				F454E1FD2D24D1DA002D2DAB /* AZOutline.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1642,6 +1696,29 @@
 			productReference = F41BC69C2D0A71FD00E61EDD /* AZDemo.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F454E1FC2D24D1DA002D2DAB /* AZOutline */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F454E20A2D24D1DB002D2DAB /* Build configuration list for PBXNativeTarget "AZOutline" */;
+			buildPhases = (
+				F454E1F92D24D1DA002D2DAB /* Sources */,
+				F454E1FA2D24D1DA002D2DAB /* Frameworks */,
+				F454E1FB2D24D1DA002D2DAB /* Resources */,
+				F454E2172D24DFAC002D2DAB /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F454E1FE2D24D1DA002D2DAB /* AZOutline */,
+			);
+			name = AZOutline;
+			packageProductDependencies = (
+			);
+			productName = AZOutline;
+			productReference = F454E1FD2D24D1DA002D2DAB /* AZOutline.app */;
+			productType = "com.apple.product-type.application";
+		};
 		F495282A2D1F496200D6B8A6 /* AZTable */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F49528382D1F496300D6B8A6 /* Build configuration list for PBXNativeTarget "AZTable" */;
@@ -1727,6 +1804,9 @@
 						CreatedOnToolsVersion = 16.1;
 						LastSwiftMigration = 1610;
 					};
+					F454E1FC2D24D1DA002D2DAB = {
+						CreatedOnToolsVersion = 16.1;
+					};
 					F495282A2D1F496200D6B8A6 = {
 						CreatedOnToolsVersion = 16.1;
 					};
@@ -1757,6 +1837,7 @@
 				F4B6A3B52D0F84C00033580D /* genRsrc */,
 				F495282A2D1F496200D6B8A6 /* AZTable */,
 				F49557072D231A2A00D6B8A6 /* AZImageView */,
+				F454E1FC2D24D1DA002D2DAB /* AZOutline */,
 			);
 		};
 /* End PBXProject section */
@@ -1771,6 +1852,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F41BC69A2D0A71FD00E61EDD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F454E1FB2D24D1DA002D2DAB /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1809,6 +1897,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F41BC6982D0A71FD00E61EDD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F454E1F92D24D1DA002D2DAB /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2103,6 +2198,54 @@
 			};
 			name = Release;
 		};
+		F454E20B2D24D1DB002D2DAB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AZOutline/AZOutline.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainNibFile = MainMenu;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.moebius-tech.AZOutline";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Debug;
+		};
+		F454E20C2D24D1DB002D2DAB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AZOutline/AZOutline.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainNibFile = MainMenu;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.moebius-tech.AZOutline";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Release;
+		};
 		F49528392D1F496300D6B8A6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2289,6 +2432,15 @@
 			buildConfigurations = (
 				F41BC6A92D0A71FE00E61EDD /* Debug */,
 				F41BC6AA2D0A71FE00E61EDD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F454E20A2D24D1DB002D2DAB /* Build configuration list for PBXNativeTarget "AZOutline" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F454E20B2D24D1DB002D2DAB /* Debug */,
+				F454E20C2D24D1DB002D2DAB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

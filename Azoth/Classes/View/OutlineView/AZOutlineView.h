@@ -18,13 +18,16 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol AZOutlineViewDataSource <NSObject>
 
 // Return the number of children for a given item
-- (int)outlineView:(AZOutlineView *)ov numberOfChildrenOfItem:(NSObject *)item;
+- (NSInteger)outlineView:(AZOutlineView *)ov
+  numberOfChildrenOfItem:(NSObject *)item;
 
 // Tell the outline view whether an item is expandable
 - (BOOL)outlineView:(AZOutlineView *)ov isItemExpandable:(NSObject *)item;
 
 // Get the specified child item of a given item
-- (id) outlineView:(AZOutlineView *)ov child:(NSInteger)index ofItem:(id)item;
+- (NSObject *) outlineView:(AZOutlineView *)ov
+					 child:(NSInteger)index
+					ofItem:(id)item;
 @end
 
 /*****************************************************************************\
@@ -129,6 +132,15 @@ NS_ASSUME_NONNULL_BEGIN
 |* reload an item, optionally expanding children as well
 \*****************************************************************************/
 - (void) reloadItem:(NSObject *)item reloadChildren:(BOOL)reloadChildren;
+
+
+// MARK: Embedded view management
+
+/*****************************************************************************\
+|* Embed a view representing a row within an AZOutlineItemView so we can
+|* have disclosure triangles etc.
+\*****************************************************************************/
+- (AZView *) embedInItemView:(AZView *)view;
 
 
 
