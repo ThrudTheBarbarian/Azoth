@@ -123,7 +123,7 @@
 
 
 /*****************************************************************************\
-|* Rendering: Install a SDL_Texture as backing for the view. We choose between
+|* Rendering: Install a texture as backing for the view. We choose between
 |*
 |*  - If the view is a contentView for a window, and that window is of fixed
 |*    size, then we choose a texture of that fixed size. Do not call

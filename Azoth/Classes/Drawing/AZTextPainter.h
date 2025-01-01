@@ -17,8 +17,6 @@ NS_ASSUME_NONNULL_BEGIN
 @class AZFont;
 @class AZRenderer;
 
-struct SDL_Texture;
-
 @interface AZTextPainter : NSObject
 /*****************************************************************************\
 |* Initialisation

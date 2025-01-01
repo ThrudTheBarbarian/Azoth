@@ -33,7 +33,6 @@
 |* Declare the types we're using from SDL3, because we can't import the
 |* header file and keep framework modularity
 \*****************************************************************************/
-struct SDL_Texture;
 struct SDL_Window;
 struct SDL_Mutex;
 

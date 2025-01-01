@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL) processMouseEvent:(AZEvent *)event;
 
 /*****************************************************************************\
-|* Rendering: Install a SDL_Texture as backing for the view.
+|* Rendering: Install a texture as backing for the view.
 \*****************************************************************************/
 - (BOOL) _installBackingTexture;
 
