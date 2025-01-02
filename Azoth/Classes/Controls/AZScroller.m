@@ -7,7 +7,7 @@
 
 #import <SDL3/SDL.h>
 
-#import "AZApp.h"
+#import "AZApplication.h"
 #import "AZButton.h"
 #import "AZColour.h"
 #import "AZEvent.h"
@@ -114,7 +114,7 @@ static NSRect	_sR[STATE_NUM];
 - (void) _drawHorizontalScrollerInRect:(NSRect)dirty with:(AZPainter *)P
 	{
 	NSRect b 			= self.bounds;
-	NSInteger ui		= [AZApp.sharedInstance textureFor:kUiMap];
+	NSInteger ui		= [AZApp textureFor:kUiMap];
 	AZRenderer *azr		= AZRenderer.renderer;
 
 	// Map the track source rectangles
@@ -204,7 +204,7 @@ static NSRect	_sR[STATE_NUM];
 - (void) _drawVerticalScrollerInRect:(NSRect)dirty with:(AZPainter *)P
 	{
 	NSRect b 			= self.bounds;
-	NSInteger ui		= [AZApp.sharedInstance textureFor:kUiMap];
+	NSInteger ui		= [AZApp textureFor:kUiMap];
 	AZRenderer *azr		= AZRenderer.renderer;
 
 	// Map the track source rectangles
@@ -420,35 +420,34 @@ static NSRect	_sR[STATE_NUM];
 
 + (void) _fetchRects
 	{
-	AZApp *app 		  = AZApp.sharedInstance;
-	_sL[STATE_HN]   = [app srcRectFor:@"scroller-horizontal-knob-left" in:kUiMap];
-	_sC[STATE_HN]   = [app srcRectFor:@"scroller-horizontal-knob-center" in:kUiMap];
-	_sR[STATE_HN]   = [app srcRectFor:@"scroller-horizontal-knob-right" in:kUiMap];
+	_sL[STATE_HN]   = [AZApp srcRectFor:@"scroller-horizontal-knob-left" in:kUiMap];
+	_sC[STATE_HN]   = [AZApp srcRectFor:@"scroller-horizontal-knob-center" in:kUiMap];
+	_sR[STATE_HN]   = [AZApp srcRectFor:@"scroller-horizontal-knob-right" in:kUiMap];
 
-	_sL[STATE_HT]   = [app srcRectFor:@"scroller-horizontal-track-left" in:kUiMap];
-	_sC[STATE_HT]   = [app srcRectFor:@"scroller-horizontal-track-center" in:kUiMap];
-	_sR[STATE_HT]   = [app srcRectFor:@"scroller-horizontal-track-right" in:kUiMap];
+	_sL[STATE_HT]   = [AZApp srcRectFor:@"scroller-horizontal-track-left" in:kUiMap];
+	_sC[STATE_HT]   = [AZApp srcRectFor:@"scroller-horizontal-track-center" in:kUiMap];
+	_sR[STATE_HT]   = [AZApp srcRectFor:@"scroller-horizontal-track-right" in:kUiMap];
 
-	_sL[STATE_HD]   = [app srcRectFor:@"scroller-horizontal-knob-disabled-left" in:kUiMap];
-	_sC[STATE_HD]   = [app srcRectFor:@"scroller-horizontal-knob-disabled-center" in:kUiMap];
-	_sR[STATE_HD]   = [app srcRectFor:@"scroller-horizontal-knob-disabled-right" in:kUiMap];
+	_sL[STATE_HD]   = [AZApp srcRectFor:@"scroller-horizontal-knob-disabled-left" in:kUiMap];
+	_sC[STATE_HD]   = [AZApp srcRectFor:@"scroller-horizontal-knob-disabled-center" in:kUiMap];
+	_sR[STATE_HD]   = [AZApp srcRectFor:@"scroller-horizontal-knob-disabled-right" in:kUiMap];
 
-	_sC[STATE_HTD]   = [app srcRectFor:@"scroller-horizontal-track-disabled" in:kUiMap];
+	_sC[STATE_HTD]  = [AZApp srcRectFor:@"scroller-horizontal-track-disabled" in:kUiMap];
 
 
-	_sL[STATE_VN]   = [app srcRectFor:@"scroller-vertical-knob-top" in:kUiMap];
-	_sC[STATE_VN]   = [app srcRectFor:@"scroller-vertical-knob-center" in:kUiMap];
-	_sR[STATE_VN]   = [app srcRectFor:@"scroller-vertical-knob-bottom" in:kUiMap];
+	_sL[STATE_VN]   = [AZApp srcRectFor:@"scroller-vertical-knob-top" in:kUiMap];
+	_sC[STATE_VN]   = [AZApp srcRectFor:@"scroller-vertical-knob-center" in:kUiMap];
+	_sR[STATE_VN]   = [AZApp srcRectFor:@"scroller-vertical-knob-bottom" in:kUiMap];
 
-	_sL[STATE_VT]   = [app srcRectFor:@"scroller-vertical-track-top" in:kUiMap];
-	_sC[STATE_VT]   = [app srcRectFor:@"scroller-vertical-track-center" in:kUiMap];
-	_sR[STATE_VT]   = [app srcRectFor:@"scroller-vertical-track-bottom" in:kUiMap];
+	_sL[STATE_VT]   = [AZApp srcRectFor:@"scroller-vertical-track-top" in:kUiMap];
+	_sC[STATE_VT]   = [AZApp srcRectFor:@"scroller-vertical-track-center" in:kUiMap];
+	_sR[STATE_VT]   = [AZApp srcRectFor:@"scroller-vertical-track-bottom" in:kUiMap];
 
-	_sL[STATE_VD]   = [app srcRectFor:@"scroller-vertical-knob-disabled-top" in:kUiMap];
-	_sC[STATE_VD]   = [app srcRectFor:@"scroller-vertical-knob-disabled-center" in:kUiMap];
-	_sR[STATE_VD]   = [app srcRectFor:@"scroller-vertical-knob-disabled-bottom" in:kUiMap];
+	_sL[STATE_VD]   = [AZApp srcRectFor:@"scroller-vertical-knob-disabled-top" in:kUiMap];
+	_sC[STATE_VD]   = [AZApp srcRectFor:@"scroller-vertical-knob-disabled-center" in:kUiMap];
+	_sR[STATE_VD]   = [AZApp srcRectFor:@"scroller-vertical-knob-disabled-bottom" in:kUiMap];
 
-	_sC[STATE_VTD]  = [app srcRectFor:@"scroller-vertical-track-disabled" in:kUiMap];
+	_sC[STATE_VTD]  = [AZApp srcRectFor:@"scroller-vertical-track-disabled" in:kUiMap];
 	}
 
 @end

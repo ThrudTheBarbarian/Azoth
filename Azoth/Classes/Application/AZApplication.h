@@ -1,5 +1,5 @@
 //
-//  AZApp.h
+//  AZApplication.h
 //  Azoth
 //
 //  Created by Simon Gornall on 12/11/24.
@@ -23,16 +23,17 @@ struct TTF_TextEngine;
 
 @class AZEventSink;
 @class AZFont;
+@class AZMenu;
 @class AZWindow;
 
 @protocol AZAppDelegate;
 
-@interface AZApp : NSObject
+@interface AZApplication : NSObject
 	
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/
-+ (AZApp *) sharedInstance;
++ (AZApplication *) sharedApplication;
 
 /*****************************************************************************\
 |* Startup code
@@ -113,6 +114,9 @@ struct TTF_TextEngine;
 
 // The TTF render-engine used for text editing
 @property(assign, nonatomic) struct TTF_TextEngine * 	textEngine;
+
+// The main menu, pulled from a NIB
+@property(assign, nonatomic) AZMenu * 					mainMenu;
 @end
 
 NS_ASSUME_NONNULL_END

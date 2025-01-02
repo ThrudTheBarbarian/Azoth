@@ -6,7 +6,7 @@
 //
 #import <SDL3/SDL.h>
 
-#import "AZApp.h"
+#import "AZApplication.h"
 #import "AZEventSink.h"
 #import "AZFont.h"
 #import "AZMenu.h"
@@ -81,8 +81,7 @@
 \*****************************************************************************/
 - (int) widthForString:(NSString *)text
 	{
-	AZApp *app 			= AZApp.sharedInstance;
-	int width  			= [app.controlFont textWidthFor:text]
+	int width  			= [AZApp.controlFont textWidthFor:text]
 						+ MENU_LEADING + MENU_TRAILING;
 	return width;
 	}

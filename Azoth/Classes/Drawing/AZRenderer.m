@@ -7,7 +7,7 @@
 
 #import <SDL3/SDL.h>
 
-#import "AZApp.h"
+#import "AZApplication.h"
 #import "AZColour.h"
 #import "AZObject.h"
 #import "AZRenderer.h"
@@ -34,7 +34,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	{
 	if (self = [super init])
 		{
-		_renderer 	= AZApp.sharedInstance.window.renderer;
+		_renderer 	= AZApp.window.renderer;
 
 		/*********************************************************************\
 		|* Prepare to store the textures

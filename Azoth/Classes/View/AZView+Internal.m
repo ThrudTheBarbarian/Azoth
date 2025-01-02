@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <SDL3/SDL.h>
 
-#import "AZApp.h"
+#import "AZApplication.h"
 #import "AZColour.h"
 #import "AZEvent.h"
 #import "AZGeometry.h"

@@ -18,12 +18,10 @@
 
 - (void) applicationDidFinishLaunching:(NSNotification *)notification
 	{
-	AZApp *app = AZApp.sharedInstance;
-
 	/*************************************************************************\
 	|* Set up the UI for this application
 	\*************************************************************************/
-	AZView *cv		= [AZWindow contentViewForWindow:app.window];
+	AZView *cv		= [AZWindow contentViewForWindow:AZApp.window];
 	[cv setIdentifier:@"content-view"];
 	[cv setBackgroundColour:[AZColour grey37Colour]];
 

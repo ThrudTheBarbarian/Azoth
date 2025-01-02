@@ -6,7 +6,7 @@
 //
 #import <SDL3/SDL.h>
 
-#import "AZApp.h"
+#import "AZApplication.h"
 #import "AZColour.h"
 #import "AZEvent.h"
 #import "AZPainter.h"
@@ -264,7 +264,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 				  sR.size.height};
 
 	AZRenderer *azr = AZRenderer.renderer;
-	NSInteger ui	= [AZApp.sharedInstance textureFor:kUiMap];
+	NSInteger ui	= [AZApp textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 
@@ -317,7 +317,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 				  sB.size.height};
 
 	AZRenderer *azr = AZRenderer.renderer;
-	NSInteger ui	= [AZApp.sharedInstance textureFor:kUiMap];
+	NSInteger ui	= [AZApp textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 
@@ -358,7 +358,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 							sC.size.height};
 
 	AZRenderer *azr = AZRenderer.renderer;
-	NSInteger ui	= [AZApp.sharedInstance textureFor:kUiMap];
+	NSInteger ui	= [AZApp textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 
@@ -390,31 +390,30 @@ static NSRect	_knob[STATE_NUM];	// knobs
 \*****************************************************************************/
 - (void) _fetchRects
 	{
-	AZApp *app			= AZApp.sharedInstance;
-	_trackL[STATE_N]	= [app srcRectFor:@"horizontal-track-left" in:kUiMap];
-	_trackM[STATE_N]	= [app srcRectFor:@"horizontal-track-center" in:kUiMap];
-	_trackR[STATE_N]	= [app srcRectFor:@"horizontal-track-right" in:kUiMap];
+	_trackL[STATE_N]	= [AZApp srcRectFor:@"horizontal-track-left" in:kUiMap];
+	_trackM[STATE_N]	= [AZApp srcRectFor:@"horizontal-track-center" in:kUiMap];
+	_trackR[STATE_N]	= [AZApp srcRectFor:@"horizontal-track-right" in:kUiMap];
 
-	_trackL[STATE_D]	= [app srcRectFor:@"horizontal-track-disabled-left" in:kUiMap];
-	_trackM[STATE_D]	= [app srcRectFor:@"horizontal-track-disabled-center" in:kUiMap];
-	_trackR[STATE_D]	= [app srcRectFor:@"horizontal-track-disabled-right" in:kUiMap];
+	_trackL[STATE_D]	= [AZApp srcRectFor:@"horizontal-track-disabled-left" in:kUiMap];
+	_trackM[STATE_D]	= [AZApp srcRectFor:@"horizontal-track-disabled-center" in:kUiMap];
+	_trackR[STATE_D]	= [AZApp srcRectFor:@"horizontal-track-disabled-right" in:kUiMap];
 
-	_trackB[STATE_N]	= [app srcRectFor:@"vertical-track-bottom" in:kUiMap];
-	_trackC[STATE_N]	= [app srcRectFor:@"vertical-track-center" in:kUiMap];
-	_trackT[STATE_N]	= [app srcRectFor:@"vertical-track-top" in:kUiMap];
+	_trackB[STATE_N]	= [AZApp srcRectFor:@"vertical-track-bottom" in:kUiMap];
+	_trackC[STATE_N]	= [AZApp srcRectFor:@"vertical-track-center" in:kUiMap];
+	_trackT[STATE_N]	= [AZApp srcRectFor:@"vertical-track-top" in:kUiMap];
 
-	_trackB[STATE_D]	= [app srcRectFor:@"vertical-track-disabled-bottom" in:kUiMap];
-	_trackC[STATE_D]	= [app srcRectFor:@"vertical-track-disabled-center" in:kUiMap];
-	_trackT[STATE_D]	= [app srcRectFor:@"vertical-track-disabled-top" in:kUiMap];
+	_trackB[STATE_D]	= [AZApp srcRectFor:@"vertical-track-disabled-bottom" in:kUiMap];
+	_trackC[STATE_D]	= [AZApp srcRectFor:@"vertical-track-disabled-center" in:kUiMap];
+	_trackT[STATE_D]	= [AZApp srcRectFor:@"vertical-track-disabled-top" in:kUiMap];
 
-	_knob[STATE_N]		= [app srcRectFor:@"knob" in:kUiMap];
-	_knob[STATE_H]		= [app srcRectFor:@"knob-highlighted" in:kUiMap];
-	_knob[STATE_D]		= [app srcRectFor:@"knob-disabled" in:kUiMap];
+	_knob[STATE_N]		= [AZApp srcRectFor:@"knob" in:kUiMap];
+	_knob[STATE_H]		= [AZApp srcRectFor:@"knob-highlighted" in:kUiMap];
+	_knob[STATE_D]		= [AZApp srcRectFor:@"knob-disabled" in:kUiMap];
 
-	_circ[STATE_N]		= [app srcRectFor:@"slider-circular-bezel" in:kUiMap];
-	_cKnob[STATE_N]		= [app srcRectFor:@"slider-circular-knob" in:kUiMap];
-	_circ[STATE_D]		= [app srcRectFor:@"slider-circular-disabled-bezel" in:kUiMap];
-	_cKnob[STATE_D]		= [app srcRectFor:@"slider-circular-disabled-knob" in:kUiMap];
+	_circ[STATE_N]		= [AZApp srcRectFor:@"slider-circular-bezel" in:kUiMap];
+	_cKnob[STATE_N]		= [AZApp srcRectFor:@"slider-circular-knob" in:kUiMap];
+	_circ[STATE_D]		= [AZApp srcRectFor:@"slider-circular-disabled-bezel" in:kUiMap];
+	_cKnob[STATE_D]		= [AZApp srcRectFor:@"slider-circular-disabled-knob" in:kUiMap];
 	}
 
 @end

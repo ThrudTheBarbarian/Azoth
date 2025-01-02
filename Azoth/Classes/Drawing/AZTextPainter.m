@@ -8,7 +8,7 @@
 #import <SDL3/SDL.h>
 #import <SDL3_ttf/SDL_ttf.h>
 
-#import "AZApp.h"
+#import "AZApplication.h"
 #import "AZColour.h"
 #import "AZFont.h"
 #import "AZGlyphData.h"

@@ -34,6 +34,20 @@ static NSMutableDictionary<NSNumber *, AZWindow *> * _windows = nil;
 \*****************************************************************************/
 - (instancetype) initWithContentRect:(NSRect)contentRect
 						   styleMask:(NSInteger)style
+						     backing:(NSInteger)ignored
+						       defer:(BOOL)alsoIgnored;
+	{
+	if (self = [super init])
+		{
+		if ([self _initWithRect:contentRect style:style] != SDL_APP_CONTINUE)
+			self = nil;
+		}
+
+	return self;
+	}
+
+- (instancetype) initWithContentRect:(NSRect)contentRect
+						   styleMask:(NSInteger)style
 	{
 	if (self = [super init])
 		{
@@ -196,6 +210,16 @@ static NSMutableDictionary<NSNumber *, AZWindow *> * _windows = nil;
 - (void) endEditingFor:(id)sender
 	{
 	// FIXME: Not implemented yet
+	}
+
+/*****************************************************************************\
+|* For NIB loading, determine if a window (with a specific style-mask) means
+|* there is a MainMenu to be added to it.
+\*****************************************************************************/
++ (BOOL) hasMainMenuForStyleMask:(NSUInteger)styleMask
+	{
+	// FIXME: Not implemented yet
+	return NO;
 	}
 
 @end

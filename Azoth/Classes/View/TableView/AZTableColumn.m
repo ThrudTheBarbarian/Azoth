@@ -7,7 +7,7 @@
 
 #import <SDL3/SDL.h>
 
-#import "AZApp.h"
+#import "AZApplication.h"
 #import "AZFont.h"
 #import "AZOutlineView.h"
 #import "AZTableColumn.h"
@@ -78,7 +78,7 @@ NSMutableDictionary<NSNumber *,AZView *> *							cache;
 \*****************************************************************************/
 - (NSInteger) headerWidth
 	{
-	AZFont *font = AZApp.sharedInstance.controlFont;
+	AZFont *font = AZApp.controlFont;
 	return [font textWidthFor:_title];
 	}
 

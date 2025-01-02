@@ -15,7 +15,8 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 
 // In this header, you should import all the public headers of your framework
 // using statements like #import <Azoth/PublicHeader.h>
-#import <Azoth/AZApp.h>
+
+#import <Azoth/AZApplication.h>
 #import <Azoth/AZAppDelegate.h>
 #import <Azoth/AZButton.h>
 #import <Azoth/AZClipView.h>
@@ -30,6 +31,8 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZImageView.h>
 #import <Azoth/AZMenu.h>
 #import <Azoth/AZMenuItem.h>
+#import <Azoth/AZNibConnector.h>
+#import <Azoth/AZNibHelpConnector.h>
 #import <Azoth/AZNotifications.h>
 #import <Azoth/AZObject.h>
 #import <Azoth/AZOutlineView.h>

@@ -7,7 +7,7 @@
 
 #import <SDL3/SDL.h>
 
-#import "AZApp.h"
+#import "AZApplication.h"
 #import "AZColour.h"
 #import "AZEvent.h"
 #import "AZPainter.h"
@@ -119,7 +119,7 @@ static NSRect	_sortDn;
     NSSize spacing 					= _tableView.spacing;
 
 	AZRenderer *azr					= AZRenderer.renderer;
-	NSInteger ui					= [AZApp.sharedInstance textureFor:kUiMap];
+	NSInteger ui					= [AZApp textureFor:kUiMap];
 
 	[painter setTextColour:AZColour.blackColour];
     for (NSInteger i = 0; i < count; ++i)
@@ -293,15 +293,13 @@ static NSRect	_sortDn;
 \*****************************************************************************/
 - (void) _fetchRects
 	{
-	AZApp *app		= AZApp.sharedInstance;
+	_hdr[STATE_N]   = [AZApp srcRectFor:@"tableview-headerview" in:kUiMap];
+	_hdr[STATE_H]   = [AZApp srcRectFor:@"tableview-headerview-highlighted" in:kUiMap];
+	_hdr[STATE_P]   = [AZApp srcRectFor:@"tableview-headerview-pressed" in:kUiMap];
+	_hdr[STATE_HP]  = [AZApp srcRectFor:@"tableview-headerview-highlighted-pressed" in:kUiMap];
 
-	_hdr[STATE_N]   = [app srcRectFor:@"tableview-headerview" in:kUiMap];
-	_hdr[STATE_H]   = [app srcRectFor:@"tableview-headerview-highlighted" in:kUiMap];
-	_hdr[STATE_P]   = [app srcRectFor:@"tableview-headerview-pressed" in:kUiMap];
-	_hdr[STATE_HP]  = [app srcRectFor:@"tableview-headerview-highlighted-pressed" in:kUiMap];
-
-	_sortUp		   	= [app srcRectFor:@"tableview-headerview-ascending" in:kUiMap];
-	_sortDn  		= [app srcRectFor:@"tableview-headerview-descending" in:kUiMap];
+	_sortUp		   	= [AZApp srcRectFor:@"tableview-headerview-ascending" in:kUiMap];
+	_sortDn  		= [AZApp srcRectFor:@"tableview-headerview-descending" in:kUiMap];
 	}
 
 /*****************************************************************************\

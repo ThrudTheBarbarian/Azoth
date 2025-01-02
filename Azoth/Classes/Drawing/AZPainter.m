@@ -7,7 +7,7 @@
 
 #import <SDL3/SDL.h>
 
-#import "AZApp.h"
+#import "AZApplication.h"
 #import "AZColour.h"
 #import "AZImage.h"
 #import "AZGeometry.h"
@@ -115,7 +115,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	_usingAntiAliasing	= NO;
 	_drawAAEndpoint		= NO;
 	_textPainter		= [AZTextPainter painterWithRenderer:_renderer];
-	_textPainter.font	= AZApp.sharedInstance.systemFont;
+	_textPainter.font	= AZApp.systemFont;
 	return YES;
 	}
 
@@ -2160,8 +2160,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 			}
 		}
 
-	AZApp *app = [AZApp sharedInstance];
-	[app registerTextureForDisposal:@(texture)];
+	[AZApp registerTextureForDisposal:@(texture)];
 
 	return (result);
 	}

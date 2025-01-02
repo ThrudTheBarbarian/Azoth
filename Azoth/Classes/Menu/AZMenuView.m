@@ -7,7 +7,7 @@
 
 #import <SDL3/SDL.h>
 
-#import "AZApp.h"
+#import "AZApplication.h"
 #import "AZColour.h"
 #import "AZEventSink.h"
 #import "AZFont.h"
@@ -67,7 +67,7 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 	NSInteger mid	= count * NSHeight(_barSel);
 	NSInteger bot	= (flags & AZMENU_RENDER_BOTTOM) ? NSHeight(_menuBM) : 0;
 
-	AZFont *font 	= AZApp.sharedInstance.controlFont;
+	AZFont *font 	= AZApp.controlFont;
 	int width		= 0;
 	for (AZMenuItem *item in menu.itemArray)
 		{
@@ -146,7 +146,7 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 	|* Clean up the event-filtering logic, and return to the caller using the
 	|* provided block
 	\*************************************************************************/
-	[AZApp.sharedInstance removeEventSink:_sink];
+	[AZApp removeEventSink:_sink];
 	_sink = nil;
 	_call(inside);
 	}
@@ -194,7 +194,7 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 	[_sink addEventType:SDL_EVENT_MOUSE_BUTTON_UP];
 	[_sink addEventType:SDL_EVENT_MOUSE_BUTTON_DOWN];
 	[_sink addEventType:SDL_EVENT_MOUSE_MOTION];
-	[AZApp.sharedInstance addEventSink:_sink];
+	[AZApp addEventSink:_sink];
 	}
 
 // MARK: Private methods
@@ -205,20 +205,19 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 \*****************************************************************************/
 + (void) _fetchRects
 	{
-	AZApp *app	= AZApp.sharedInstance;
-	_barSel		= [app srcRectFor:@"menu-bar-window-background-selected" in:kUiMap];
+	_barSel		= [AZApp srcRectFor:@"menu-bar-window-background-selected" in:kUiMap];
 
-	_menuTL		= [app srcRectFor:@"menu-window-rounded-0" in:kUiMap];
-	_menuTM		= [app srcRectFor:@"menu-window-1" in:kUiMap];
-	_menuTR		= [app srcRectFor:@"menu-window-rounded-2" in:kUiMap];
+	_menuTL		= [AZApp srcRectFor:@"menu-window-rounded-0" in:kUiMap];
+	_menuTM		= [AZApp srcRectFor:@"menu-window-1" in:kUiMap];
+	_menuTR		= [AZApp srcRectFor:@"menu-window-rounded-2" in:kUiMap];
 
-	_menuCL		= [app srcRectFor:@"menu-window-3" in:kUiMap];
-	_menuCM		= [app srcRectFor:@"menu-window-4" in:kUiMap];
-	_menuCR		= [app srcRectFor:@"menu-window-5" in:kUiMap];
+	_menuCL		= [AZApp srcRectFor:@"menu-window-3" in:kUiMap];
+	_menuCM		= [AZApp srcRectFor:@"menu-window-4" in:kUiMap];
+	_menuCR		= [AZApp srcRectFor:@"menu-window-5" in:kUiMap];
 
-	_menuBL		= [app srcRectFor:@"menu-window-rounded-6" in:kUiMap];
-	_menuBM		= [app srcRectFor:@"menu-window-7" in:kUiMap];
-	_menuBR		= [app srcRectFor:@"menu-window-rounded-8" in:kUiMap];
+	_menuBL		= [AZApp srcRectFor:@"menu-window-rounded-6" in:kUiMap];
+	_menuBM		= [AZApp srcRectFor:@"menu-window-7" in:kUiMap];
+	_menuBR		= [AZApp srcRectFor:@"menu-window-rounded-8" in:kUiMap];
 	}
 
 
@@ -233,7 +232,7 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 	AZRenderer *azr		= AZRenderer.renderer;
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 
-	NSInteger ui		= [AZApp.sharedInstance textureFor:kUiMap];
+	NSInteger ui		= [AZApp textureFor:kUiMap];
 	int y 				= 0;
 	int H				= _measure.fontHeight;
 

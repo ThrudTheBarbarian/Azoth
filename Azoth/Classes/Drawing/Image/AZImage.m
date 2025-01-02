@@ -8,7 +8,7 @@
 #import <SDL3/SDL.h>
 #import <SDL3_image/SDL_image.h>
 
-#import "AZApp.h"
+#import "AZApplication.h"
 #import "AZImage.h"
 #import "AZImageCache.h"
 #import "AZPainter.h"
@@ -91,13 +91,12 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 \*****************************************************************************/
 + (AZImage *) imageWithSystemSymbolName:(NSString *)name
 	{
-	AZApp *app 	= AZApp.sharedInstance;
-	NSRect r 	= [app srcRectFor:name in:kIconsMap];
+	NSRect r 	= [AZApp srcRectFor:name in:kIconsMap];
 	if (IS_ZERORECT(r))
 		return nil;
 
 	AZImage *img 	= [AZImage new];
-	img.texture		= [app textureFor:kIconsMap];
+	img.texture		= [AZApp textureFor:kIconsMap];
 	img.srcRect		= r;
 	return img;
 	}

@@ -6,7 +6,7 @@
 //
 #import <SDL3/SDL.h>
 
-#import "AZApp.h"
+#import <Azoth/AZApplication.h>
 #import "AZClipView.h"
 #import "AZColour.h"
 #import "AZEvent.h"
@@ -425,7 +425,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		float w		= self.bounds.size.width;
 
 		AZRenderer *azr = AZRenderer.renderer;
-		NSInteger ui	= [AZApp.sharedInstance textureFor:kUiMap];
+		NSInteger ui	= [AZApp textureFor:kUiMap];
 
 		int idx = 0;
 		while ((y < yMax) && (idx < _numberOfRows))
@@ -889,7 +889,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	// Default to YES
     return YES;
 	}
-	
+
 /*****************************************************************************\
 |* Check if we should select a row
 \*****************************************************************************/
@@ -1201,10 +1201,10 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 \*****************************************************************************/
 - (void) _fetchRects
 	{
-	AZApp *app		= AZApp.sharedInstance;
-
-	_rM[STATE_N]   = [app srcRectFor:@"tableview-rowview" in:kUiMap];
-	_rM[STATE_H]   = [app srcRectFor:@"menu-bar-window-background-selected" in:kUiMap];
+	_rM[STATE_N]   = [AZApp srcRectFor:@"tableview-rowview"
+									in:kUiMap];
+	_rM[STATE_H]   = [AZApp srcRectFor:@"menu-bar-window-background-selected"
+									in:kUiMap];
 
 	// Split by height so we can tile any row-height
 	for (int i=0; i<STATE_NUM; i++)

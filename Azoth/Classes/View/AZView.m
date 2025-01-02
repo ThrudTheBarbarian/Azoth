@@ -7,7 +7,7 @@
 
 #import <SDL3/SDL.h>
 
-#import "AZApp.h"
+#import "AZApplication.h"
 #import "AZClipView.h"
 #import "AZColour.h"
 #import "AZGeometry.h"

@@ -5,7 +5,7 @@
 //  Created by Simon Gornall on 12/31/24.
 //
 
-#import "AZApp.h"
+#import "AZApplication.h"
 #import "AZColour.h"
 #import "AZEvent.h"
 #import "AZPainter.h"
@@ -90,12 +90,12 @@ static NSRect	_rB;
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
 	AZRenderer *azr 	= AZRenderer.renderer;
-	NSInteger ui		= [AZApp.sharedInstance textureFor:kUiMap];
+	NSInteger ui		= [AZApp textureFor:kUiMap];
 
 	if (_selected)
 		{
 		AZRenderer *azr = AZRenderer.renderer;
-		NSInteger ui	= [AZApp.sharedInstance textureFor:kUiMap];
+		NSInteger ui	= [AZApp textureFor:kUiMap];
 
 		float bx		= _indent;
 		float bw 		= self.bounds.size.width - _indent;
@@ -142,10 +142,9 @@ static NSRect	_rB;
 \*****************************************************************************/
 - (void) _fetchRects
 	{
-	AZApp *app 		  = AZApp.sharedInstance;
-	_img[STATE_O]   = [app srcRectFor:@"tableview-headerview-descending" in:kUiMap];
-	_img[STATE_C]   = [app srcRectFor:@"tableview-headerview-right" in:kUiMap];
-	_img[STATE_S]   = [app srcRectFor:@"menu-bar-window-background-selected" in:kUiMap];
+	_img[STATE_O]   = [AZApp srcRectFor:@"tableview-headerview-descending" in:kUiMap];
+	_img[STATE_C]   = [AZApp srcRectFor:@"tableview-headerview-right" in:kUiMap];
+	_img[STATE_S]   = [AZApp srcRectFor:@"menu-bar-window-background-selected" in:kUiMap];
 
 
 	// Split by height so we can tile any row-height

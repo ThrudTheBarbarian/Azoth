@@ -18,8 +18,6 @@
 
 - (void) applicationDidFinishLaunching:(NSNotification *)notification
 	{
-	AZApp *app = AZApp.sharedInstance;
-
 	_root = [Node nodeWithName:@"root"];
 	for (int i=0; i<40; i++)
 		{
@@ -40,7 +38,7 @@
 	/*************************************************************************\
 	|* Set up the UI for this application
 	\*************************************************************************/
-	AZView *cv		= [AZWindow contentViewForWindow:app.window];
+	AZView *cv		= [AZWindow contentViewForWindow:AZApp.window];
 	[cv setIdentifier:@"content-view"];
 
 	// Create the outline-view we're debugging...

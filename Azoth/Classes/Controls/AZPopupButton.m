@@ -7,7 +7,7 @@
 
 #import <SDL3/SDL.h>
 
-#import "AZApp.h"
+#import "AZApplication.h"
 #import "AZColour.h"
 #import "AZFont.h"
 #import "AZMenu.h"
@@ -62,8 +62,7 @@ static NSRect	_bR[STATE_NUM];			// Right-hand-side image
 	{
 	[AZPopupButton _fetchRects];
 
-	AZApp *app 			= AZApp.sharedInstance;
-	int width  			= [app.controlFont textWidthFor:text]
+	int width  			= [AZApp.controlFont textWidthFor:text]
 						+ _bC[0].size.width
 						+ _bR[0].size.width;
 	NSRect frame		= NSMakeRect(0, 0, width, _bC[0].size.height);
@@ -86,8 +85,7 @@ static NSRect	_bR[STATE_NUM];			// Right-hand-side image
 	{
 	[AZPopupButton _fetchRects];
 
-	AZApp *app 			= AZApp.sharedInstance;
-	int width  			= [app.controlFont textWidthFor:text]
+	int width  			= [AZApp.controlFont textWidthFor:text]
 						+ _bC[0].size.width
 						+ _bR[0].size.width;
 	NSRect frame		= NSMakeRect(0, 0, width, _bC[0].size.height);
@@ -114,21 +112,20 @@ static NSRect	_bR[STATE_NUM];			// Right-hand-side image
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken,
 		^{
-		AZApp *app		= AZApp.sharedInstance;
-		_bL[STATE_N]   	= [app srcRectFor:@"button-bezel-left" in:kUiMap];
-		_bL[STATE_P]   	= [app srcRectFor:@"button-bezel-left" in:kUiMap];
-		_bL[STATE_DN]  	= [app srcRectFor:@"popup-bezel-disabled-left" in:kUiMap];
-		_bL[STATE_DP]   = [app srcRectFor:@"popup-bezel-disabled-left" in:kUiMap];
+		_bL[STATE_N]   	= [AZApp srcRectFor:@"button-bezel-left" in:kUiMap];
+		_bL[STATE_P]   	= [AZApp srcRectFor:@"button-bezel-left" in:kUiMap];
+		_bL[STATE_DN]  	= [AZApp srcRectFor:@"popup-bezel-disabled-left" in:kUiMap];
+		_bL[STATE_DP]   = [AZApp srcRectFor:@"popup-bezel-disabled-left" in:kUiMap];
 
-		_bC[STATE_N]   	= [app srcRectFor:@"popup-bezel-center" in:kUiMap];
-		_bC[STATE_P]   	= [app srcRectFor:@"popup-bezel-center" in:kUiMap];
-		_bC[STATE_DN]  	= [app srcRectFor:@"popup-bezel-disabled-center" in:kUiMap];
-		_bC[STATE_DP]   = [app srcRectFor:@"popup-bezel-disabled-center" in:kUiMap];
+		_bC[STATE_N]   	= [AZApp srcRectFor:@"popup-bezel-center" in:kUiMap];
+		_bC[STATE_P]   	= [AZApp srcRectFor:@"popup-bezel-center" in:kUiMap];
+		_bC[STATE_DN]  	= [AZApp srcRectFor:@"popup-bezel-disabled-center" in:kUiMap];
+		_bC[STATE_DP]   = [AZApp srcRectFor:@"popup-bezel-disabled-center" in:kUiMap];
 
-		_bR[STATE_N]   	= [app srcRectFor:@"popup-bezel-right" in:kUiMap];
-		_bR[STATE_P]   	= [app srcRectFor:@"popup-bezel-right-pullsdown" in:kUiMap];
-		_bR[STATE_DN]   = [app srcRectFor:@"popup-bezel-disabled-right" in:kUiMap];
-		_bR[STATE_DP]   = [app srcRectFor:@"popup-bezel-disabled-right-pullsdown" in:kUiMap];
+		_bR[STATE_N]   	= [AZApp srcRectFor:@"popup-bezel-right" in:kUiMap];
+		_bR[STATE_P]   	= [AZApp srcRectFor:@"popup-bezel-right-pullsdown" in:kUiMap];
+		_bR[STATE_DN]   = [AZApp srcRectFor:@"popup-bezel-disabled-right" in:kUiMap];
+		_bR[STATE_DP]   = [AZApp srcRectFor:@"popup-bezel-disabled-right-pullsdown" in:kUiMap];
 		});
 	}
 
@@ -154,7 +151,7 @@ static NSRect	_bR[STATE_NUM];			// Right-hand-side image
 								 srcR.size.width, srcR.size.height);
 
 	AZRenderer *azr		= AZRenderer.renderer;
-	NSInteger ui		= [AZApp.sharedInstance textureFor:kUiMap];
+	NSInteger ui		= [AZApp textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 	[azr blitFrom:ui src:srcL dst:dstL];

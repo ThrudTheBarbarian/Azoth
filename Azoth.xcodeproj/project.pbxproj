@@ -794,9 +794,13 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			publicHeaders = (
 				Azoth.h,
-				Classes/Application/AZApp.h,
 				Classes/Application/AZAppDelegate.h,
+				Classes/Application/AZApplication.h,
+				Classes/Application/AZEvent.h,
+				Classes/Application/AZEventSink.h,
 				Classes/Application/AZWindow.h,
+				Classes/Application/Nib/AZNibConnector.h,
+				Classes/Application/Nib/AZNibHelpConnector.h,
 				Classes/Base/AZControl.h,
 				Classes/Base/AZResponder.h,
 				Classes/Controls/AZButton.h,
@@ -805,22 +809,20 @@
 				Classes/Controls/AZSegmentedControl.h,
 				Classes/Controls/AZSlider.h,
 				Classes/Controls/AZTextField.h,
+				Classes/Drawing/AZColour.h,
 				Classes/Drawing/AZFont.h,
 				Classes/Drawing/AZGlyphData.h,
 				Classes/Drawing/AZPainter.h,
 				Classes/Drawing/AZRenderer.h,
 				Classes/Drawing/AZTextPainter.h,
+				Classes/Drawing/Image/AZImage.h,
 				Classes/Menu/AZMenu.h,
 				Classes/Menu/AZMenuItem.h,
-				Classes/Utility/AZColour.h,
-				Classes/Utility/AZEvent.h,
-				Classes/Utility/AZEventSink.h,
 				Classes/Utility/AZGeometry.h,
 				Classes/Utility/AZNotifications.h,
 				Classes/Utility/AZObject.h,
 				Classes/Utility/AZTransform.h,
 				Classes/Utility/AZTypes.h,
-				Classes/Utility/Image/AZImage.h,
 				Classes/View/AZImageView.h,
 				Classes/View/AZSplitView.h,
 				Classes/View/AZView.h,
@@ -870,6 +872,11 @@
 		F49557092D231A2A00D6B8A6 /* AZImageView */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = AZImageView;
+			sourceTree = "<group>";
+		};
+		F4B3BD662D25CD73000C343A /* Documentation */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Documentation;
 			sourceTree = "<group>";
 		};
 		F4B6A3B72D0F84C00033580D /* genRsrc */ = {
@@ -976,6 +983,7 @@
 		F41BC6482D0A61BA00E61EDD = {
 			isa = PBXGroup;
 			children = (
+				F4B3BD662D25CD73000C343A /* Documentation */,
 				F49543992D20F13C00D6B8A6 /* cursors */,
 				F495441C2D20F13C00D6B8A6 /* hud */,
 				F49545E22D20F13D00D6B8A6 /* ui */,
@@ -1664,6 +1672,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				F41BC6542D0A61BA00E61EDD /* Azoth */,
+				F4B3BD662D25CD73000C343A /* Documentation */,
 			);
 			name = Azoth;
 			packageProductDependencies = (
@@ -1799,6 +1808,7 @@
 				TargetAttributes = {
 					F41BC6512D0A61BA00E61EDD = {
 						CreatedOnToolsVersion = 16.1;
+						LastSwiftMigration = 1610;
 					};
 					F41BC69B2D0A71FD00E61EDD = {
 						CreatedOnToolsVersion = 16.1;
@@ -1946,6 +1956,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -1973,6 +1984,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
@@ -1980,6 +1993,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -2007,6 +2021,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
 		};

@@ -7,7 +7,7 @@
 
 #import <SDL3/SDL.h>
 
-#import "AZApp.h"
+#import "AZApplication.h"
 #import "AZButton.h"
 #import "AZColour.h"
 #import "AZFont.h"
@@ -82,8 +82,7 @@ static NSRect	_bRight[STATE_NUM];
 
 + (AZButton *) buttonWithText:(NSString *)text at:(NSPoint)p
 	{
-	AZApp *app 			= AZApp.sharedInstance;
-	int width  			= [app.controlFont textWidthFor:text]
+	int width  			= [AZApp.controlFont textWidthFor:text]
 						+ BUTTON_LEADING + BUTTON_TRAILING;
 	NSRect frame		= NSMakeRect(p.x, p.y, width, BUTTON_HEIGHT);
 	AZButton *button	= [[AZButton alloc] initWithFrame:frame];
@@ -149,7 +148,7 @@ static NSRect	_bRight[STATE_NUM];
 								 srcR.size.width, srcR.size.height);
 
 	AZRenderer *azr		= AZRenderer.renderer;
-	NSInteger ui		= [AZApp.sharedInstance textureFor:kUiMap];
+	NSInteger ui		= [AZApp textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 	[azr blitFrom:ui src:srcL dst:dstL];
@@ -192,7 +191,7 @@ static NSRect	_bRight[STATE_NUM];
 	dst.origin  	= rhs ? NSMakePoint(W-NSWidth(src), by) : NSMakePoint(0, by);
 
 	AZRenderer *azr	= AZRenderer.renderer;
-	NSInteger ui	= [AZApp.sharedInstance textureFor:kUiMap];
+	NSInteger ui	= [AZApp textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 	[azr blitFrom:ui src:src dst:dst];
@@ -202,7 +201,7 @@ static NSRect	_bRight[STATE_NUM];
 	else
 		[painter setTextColour:[AZColour blackColour]];
 
-	AZFont *font	= AZApp.sharedInstance.controlFont;
+	AZFont *font	= AZApp.controlFont;
 	int y			= H/2-font.baseline/2;
 	int textW		= [font textWidthFor:self.stringValue];
 	int x			= rhs ? NSMaxX(dst) - textW - 5 : NSMaxX(dst) + 5;
@@ -305,62 +304,61 @@ static NSRect	_bRight[STATE_NUM];
 \*****************************************************************************/
 - (void) _fetchRects
 	{
-	AZApp *app 		  = AZApp.sharedInstance;
-	_bLeft[STATE_N]   = [app srcRectFor:@"button-bezel-left" in:kUiMap];
-	_bLeft[STATE_H]   = [app srcRectFor:@"button-bezel-highlighted-left" in:kUiMap];
-	_bLeft[STATE_D]   = [app srcRectFor:@"button-bezel-disabled-left" in:kUiMap];
+	_bLeft[STATE_N]   = [AZApp srcRectFor:@"button-bezel-left" in:kUiMap];
+	_bLeft[STATE_H]   = [AZApp srcRectFor:@"button-bezel-highlighted-left" in:kUiMap];
+	_bLeft[STATE_D]   = [AZApp srcRectFor:@"button-bezel-disabled-left" in:kUiMap];
 
-	_bLeft[STATE_RN]  = [app srcRectFor:@"button-bezel-rounded-left" in:kUiMap];
-	_bLeft[STATE_RH]  = [app srcRectFor:@"button-bezel-rounded-highlighted-left" in:kUiMap];
-	_bLeft[STATE_RD]  = [app srcRectFor:@"button-bezel-rounded-disabled-left" in:kUiMap];
+	_bLeft[STATE_RN]  = [AZApp srcRectFor:@"button-bezel-rounded-left" in:kUiMap];
+	_bLeft[STATE_RH]  = [AZApp srcRectFor:@"button-bezel-rounded-highlighted-left" in:kUiMap];
+	_bLeft[STATE_RD]  = [AZApp srcRectFor:@"button-bezel-rounded-disabled-left" in:kUiMap];
 
-	_bLeft[STATE_DN]  = [app srcRectFor:@"default-button-bezel-left" in:kUiMap];
-	_bLeft[STATE_DH]  = [app srcRectFor:@"default-button-bezel-highlighted-left" in:kUiMap];
-	_bLeft[STATE_DD]  = [app srcRectFor:@"default-button-bezel-disabled-left" in:kUiMap];
+	_bLeft[STATE_DN]  = [AZApp srcRectFor:@"default-button-bezel-left" in:kUiMap];
+	_bLeft[STATE_DH]  = [AZApp srcRectFor:@"default-button-bezel-highlighted-left" in:kUiMap];
+	_bLeft[STATE_DD]  = [AZApp srcRectFor:@"default-button-bezel-disabled-left" in:kUiMap];
 
-	_bLeft[STATE_RDN] = [app srcRectFor:@"default-button-bezel-rounded-left" in:kUiMap];
-	_bLeft[STATE_RDH] = [app srcRectFor:@"default-button-bezel-rounded-highlighted-left" in:kUiMap];
-	_bLeft[STATE_RDD] = [app srcRectFor:@"default-button-bezel-rounded-disabled-left" in:kUiMap];
+	_bLeft[STATE_RDN] = [AZApp srcRectFor:@"default-button-bezel-rounded-left" in:kUiMap];
+	_bLeft[STATE_RDH] = [AZApp srcRectFor:@"default-button-bezel-rounded-highlighted-left" in:kUiMap];
+	_bLeft[STATE_RDD] = [AZApp srcRectFor:@"default-button-bezel-rounded-disabled-left" in:kUiMap];
 
 
-	_bCenter[STATE_N]   = [app srcRectFor:@"button-bezel-center" in:kUiMap];
-	_bCenter[STATE_H]   = [app srcRectFor:@"button-bezel-highlighted-center" in:kUiMap];
-	_bCenter[STATE_D]   = [app srcRectFor:@"button-bezel-disabled-center" in:kUiMap];
+	_bCenter[STATE_N]   = [AZApp srcRectFor:@"button-bezel-center" in:kUiMap];
+	_bCenter[STATE_H]   = [AZApp srcRectFor:@"button-bezel-highlighted-center" in:kUiMap];
+	_bCenter[STATE_D]   = [AZApp srcRectFor:@"button-bezel-disabled-center" in:kUiMap];
 
-	_bCenter[STATE_RN]  = [app srcRectFor:@"button-bezel-rounded-center" in:kUiMap];
-	_bCenter[STATE_RH]  = [app srcRectFor:@"button-bezel-rounded-highlighted-center" in:kUiMap];
-	_bCenter[STATE_RD]  = [app srcRectFor:@"button-bezel-rounded-disabled-center" in:kUiMap];
+	_bCenter[STATE_RN]  = [AZApp srcRectFor:@"button-bezel-rounded-center" in:kUiMap];
+	_bCenter[STATE_RH]  = [AZApp srcRectFor:@"button-bezel-rounded-highlighted-center" in:kUiMap];
+	_bCenter[STATE_RD]  = [AZApp srcRectFor:@"button-bezel-rounded-disabled-center" in:kUiMap];
 
-	_bCenter[STATE_DN]  = [app srcRectFor:@"default-button-bezel-center" in:kUiMap];
-	_bCenter[STATE_DH]  = [app srcRectFor:@"default-button-bezel-highlighted-center" in:kUiMap];
-	_bCenter[STATE_DD]  = [app srcRectFor:@"default-button-bezel-disabled-center" in:kUiMap];
+	_bCenter[STATE_DN]  = [AZApp srcRectFor:@"default-button-bezel-center" in:kUiMap];
+	_bCenter[STATE_DH]  = [AZApp srcRectFor:@"default-button-bezel-highlighted-center" in:kUiMap];
+	_bCenter[STATE_DD]  = [AZApp srcRectFor:@"default-button-bezel-disabled-center" in:kUiMap];
 
-	_bCenter[STATE_RDN] = [app srcRectFor:@"default-button-bezel-rounded-center" in:kUiMap];
-	_bCenter[STATE_RDH] = [app srcRectFor:@"default-button-bezel-rounded-highlighted-center" in:kUiMap];
-	_bCenter[STATE_RDD] = [app srcRectFor:@"default-button-bezel-rounded-disabled-center" in:kUiMap];
+	_bCenter[STATE_RDN] = [AZApp srcRectFor:@"default-button-bezel-rounded-center" in:kUiMap];
+	_bCenter[STATE_RDH] = [AZApp srcRectFor:@"default-button-bezel-rounded-highlighted-center" in:kUiMap];
+	_bCenter[STATE_RDD] = [AZApp srcRectFor:@"default-button-bezel-rounded-disabled-center" in:kUiMap];
 
-	_bCenter[STATE_CN]	= [app srcRectFor:@"check-box-image" in:kUiMap];
-	_bCenter[STATE_CK]	= [app srcRectFor:@"check-box-image-selected" in:kUiMap];
-	_bCenter[STATE_CD]	= [app srcRectFor:@"check-box-image" in:kUiMap];
+	_bCenter[STATE_CN]	= [AZApp srcRectFor:@"check-box-image" in:kUiMap];
+	_bCenter[STATE_CK]	= [AZApp srcRectFor:@"check-box-image-selected" in:kUiMap];
+	_bCenter[STATE_CD]	= [AZApp srcRectFor:@"check-box-image" in:kUiMap];
 
-	_bCenter[STATE_NR]	= [app srcRectFor:@"radio-image" in:kUiMap];
-	_bCenter[STATE_SR]	= [app srcRectFor:@"radio-image-selected" in:kUiMap];
-	_bCenter[STATE_DR]	= [app srcRectFor:@"radio-image" in:kUiMap];
+	_bCenter[STATE_NR]	= [AZApp srcRectFor:@"radio-image" in:kUiMap];
+	_bCenter[STATE_SR]	= [AZApp srcRectFor:@"radio-image-selected" in:kUiMap];
+	_bCenter[STATE_DR]	= [AZApp srcRectFor:@"radio-image" in:kUiMap];
 
-	_bRight[STATE_N]   = [app srcRectFor:@"button-bezel-right" in:kUiMap];
-	_bRight[STATE_H]   = [app srcRectFor:@"button-bezel-highlighted-right" in:kUiMap];
-	_bRight[STATE_D]   = [app srcRectFor:@"button-bezel-disabled-right" in:kUiMap];
+	_bRight[STATE_N]   = [AZApp srcRectFor:@"button-bezel-right" in:kUiMap];
+	_bRight[STATE_H]   = [AZApp srcRectFor:@"button-bezel-highlighted-right" in:kUiMap];
+	_bRight[STATE_D]   = [AZApp srcRectFor:@"button-bezel-disabled-right" in:kUiMap];
 
-	_bRight[STATE_RN]  = [app srcRectFor:@"button-bezel-rounded-right" in:kUiMap];
-	_bRight[STATE_RH]  = [app srcRectFor:@"button-bezel-rounded-highlighted-right" in:kUiMap];
-	_bRight[STATE_RD]  = [app srcRectFor:@"button-bezel-rounded-disabled-right" in:kUiMap];
+	_bRight[STATE_RN]  = [AZApp srcRectFor:@"button-bezel-rounded-right" in:kUiMap];
+	_bRight[STATE_RH]  = [AZApp srcRectFor:@"button-bezel-rounded-highlighted-right" in:kUiMap];
+	_bRight[STATE_RD]  = [AZApp srcRectFor:@"button-bezel-rounded-disabled-right" in:kUiMap];
 
-	_bRight[STATE_DN]  = [app srcRectFor:@"default-button-bezel-right" in:kUiMap];
-	_bRight[STATE_DH]  = [app srcRectFor:@"default-button-bezel-highlighted-right" in:kUiMap];
-	_bRight[STATE_DD]  = [app srcRectFor:@"default-button-bezel-disabled-right" in:kUiMap];
+	_bRight[STATE_DN]  = [AZApp srcRectFor:@"default-button-bezel-right" in:kUiMap];
+	_bRight[STATE_DH]  = [AZApp srcRectFor:@"default-button-bezel-highlighted-right" in:kUiMap];
+	_bRight[STATE_DD]  = [AZApp srcRectFor:@"default-button-bezel-disabled-right" in:kUiMap];
 
-	_bRight[STATE_RDN] = [app srcRectFor:@"default-button-bezel-rounded-right" in:kUiMap];
-	_bRight[STATE_RDH] = [app srcRectFor:@"default-button-bezel-rounded-highlighted-right" in:kUiMap];
-	_bRight[STATE_RDD] = [app srcRectFor:@"default-button-bezel-rounded-disabled-right" in:kUiMap];
+	_bRight[STATE_RDN] = [AZApp srcRectFor:@"default-button-bezel-rounded-right" in:kUiMap];
+	_bRight[STATE_RDH] = [AZApp srcRectFor:@"default-button-bezel-rounded-highlighted-right" in:kUiMap];
+	_bRight[STATE_RDD] = [AZApp srcRectFor:@"default-button-bezel-rounded-disabled-right" in:kUiMap];
 	}
 @end

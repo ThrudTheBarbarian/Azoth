@@ -1940,7 +1940,7 @@ static float _rowHeightAtIndex(AZTableView *self, NSInteger index)
     NSInteger numberOfRows = self.numberOfRows;
     float minWidth = 0.f;
     float width;
-	AZFont *font = AZApp.sharedInstance.controlFont;
+	AZFont *font = AZApp.controlFont;
 
 	NSString *text = column.headerView.stringValue;
 	if (text.length > 0)

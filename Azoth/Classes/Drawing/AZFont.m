@@ -8,7 +8,7 @@
 #import <SDL3_ttf/SDL_ttf.h>
 #import <SDL3_image/SDL_image.h>
 
-#import "AZApp.h"
+#import "AZApplication.h"
 #import "AZColour.h"
 #import "AZFont.h"
 #import "AZGlyphData.h"
@@ -105,12 +105,11 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 
 + (nullable AZFont *) systemFontWithsize:(int)points
 	{
-	AZApp *app 	 = [AZApp sharedInstance];
 	AZFont *font = [[AZFont alloc] init];
 	AZFontStyle style =
 		{
 		.size 	= points,
-		.name 	= app.systemFontInfo.name,
+		.name 	= AZApp.systemFontInfo.name,
 		.style 	= AZFONT_STYLE_NORMAL
 		};
 	if ([font load:style])
@@ -746,10 +745,9 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 	/*************************************************************************\
 	|* If it's a user-app-provided font, use it
 	\*************************************************************************/
-	AZApp *app = AZApp.sharedInstance;
-	if (app.delegate)
+	if (AZApp.delegate)
 		{
-		NSObject *delegate = (NSObject *)app.delegate;
+		NSObject *delegate = (NSObject *)AZApp.delegate;
 		rsrc = [[NSBundle bundleForClass:[delegate class]] resourcePath];
 		NSString *path = [NSString stringWithFormat:@"%@/%@.ttf", rsrc, name];
 		if ([fm fileExistsAtPath:path])

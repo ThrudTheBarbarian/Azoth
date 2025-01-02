@@ -1,5 +1,5 @@
 //
-//  AZApp.m
+//  AZApplication.m
 //  Azoth
 //
 //  Created by Simon Gornall on 12/11/24.
@@ -9,7 +9,7 @@
 #import <SDL3_image/SDL_image.h>
 #import <SDL3_ttf/SDL_ttf.h>
 
-#import "AZApp.h"
+#import "AZApplication.h"
 #import "AZAppDelegate.h"
 #import "AZEvent.h"
 #import "AZEventSink.h"
@@ -31,7 +31,7 @@ NSString * const kIconsMap		= @"icons";
 NSString * const kHudMap		= @"hud";
 NSString * const kCursorsMap	= @"cursors";
 
-@interface AZApp()
+@interface AZApplication()
 // This is a place to temporarily store things that the renderer (for example)
 // still needs to be alive up until [renderer present] is called, at which
 // time they will be deleted
@@ -48,7 +48,7 @@ NSString * const kCursorsMap	= @"cursors";
 NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 @end
 
-@implementation AZApp
+@implementation AZApplication
 
 /*****************************************************************************\
 |* Constructor
@@ -67,14 +67,14 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 /*****************************************************************************\
 |* Constructor
 \*****************************************************************************/
-+ (AZApp *) sharedInstance
++ (AZApplication *) sharedApplication
 	{
-	static AZApp *instance;
+	static AZApplication *instance;
 	static dispatch_once_t onceToken;
 
 	dispatch_once(&onceToken,
 		^{
-		instance = [AZApp new];
+		instance = [AZApplication new];
 		});
 
 	return instance;
@@ -380,7 +380,8 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 \*****************************************************************************/
 SDL_AppResult SDL_AppEvent(void *appState, SDL_Event *event)
 	{
-	return [AZApp.sharedInstance handleEvent:event withAppState:appState];
+	return [AZApplication.sharedApplication handleEvent:event
+										   withAppState:appState];
 	}
 
 /*****************************************************************************\
@@ -388,8 +389,7 @@ SDL_AppResult SDL_AppEvent(void *appState, SDL_Event *event)
 \*****************************************************************************/
 SDL_AppResult SDL_AppIterate(void *appState)
 	{
-	AZApp *app = AZApp.sharedInstance;
-	return [app nextFrameWithAppState:appState];
+	return [AZApp nextFrameWithAppState:appState];
 	}
 
 /*****************************************************************************\
@@ -397,8 +397,7 @@ SDL_AppResult SDL_AppIterate(void *appState)
 \*****************************************************************************/
 void SDL_AppQuit(void *appState, SDL_AppResult result)
 	{
-	AZApp *app = AZApp.sharedInstance;
-	[app terminateBecause:result withAppState:appState];
+	[AZApp terminateBecause:result withAppState:appState];
 
     /* SDL will clean up the window/renderer for us. */
 	}
@@ -417,6 +416,41 @@ void SDL_AppQuit(void *appState, SDL_AppResult result)
 		[azr releaseTexture:obj.integerValue];
 
 	[_bin removeAllObjects];
+	}
+
+
+// MARK: Error cases
+
+/*****************************************************************************\
+|* These are the concrete implementations of the macros for any unimplemented
+|* code or abstractions
+\*****************************************************************************/
+void _AZInvalidAbstractInvocation(SEL selector,
+								  id object,
+								  const char *file,
+								  int line)
+	{
+    [NSException raise:NSInvalidArgumentException
+                format:@"-%s only defined for abstract class. "
+					    "Define -[%@ %s] in %s:%d!",
+                sel_getName(selector),
+                [object class],
+                sel_getName(selector),
+				file,
+				line];
+	}
+
+void _AZUnimplementedMethod(SEL selector,
+							id object,
+							const char *file,
+							int line)
+	{
+	NSString *klass = [NSString stringWithFormat:@"%@", [object class]];
+    SDL_Log("-[%s %s] unimplemented in %s at %d",
+			klass.UTF8String,
+			sel_getName(selector),
+			file,
+			line);
 	}
 
 @end

@@ -7,6 +7,8 @@
 #ifndef __AZTypes_header__
 #define __AZTypes_header__
 
+#include <Foundation/Foundation.h>
+
 struct SDL_Color;
 
 /*****************************************************************************\
@@ -427,6 +429,8 @@ typedef void (^MenuDoneBlock)(BOOL menuClicked);
 \*****************************************************************************/
 #define SELECTOR(x)		NSSelectorFromString(x)
 
+#define AZApp			AZApplication.sharedApplication
+
 /*****************************************************************************\
 |* Memory aids
 \*****************************************************************************/
@@ -436,5 +440,37 @@ typedef void (^MenuDoneBlock)(BOOL menuClicked);
 		x = NULL;     		                       							\
 		}                                                       			\
 	while (false)
+
+/*****************************************************************************\
+|* Markers for things that might need to be implemented
+\*****************************************************************************/
+extern void _AZInvalidAbstractInvocation(SEL selector,
+										 id object,
+										 const char *file,
+										 int line);
+
+extern void _AZUnimplementedMethod(SEL selector,
+								   id object,
+								   const char *file,
+								   int line);
+#define AZUnimplementedMethod() 											\
+    _AZUnimplementedMethod(_cmd, self, __FILE__, __LINE__)
+
+#define AZInvalidAbstractInvocation() \
+    _AZInvalidAbstractInvocation(_cmd, self, __FILE__, __LINE__)
+
+
+/*****************************************************************************\
+|* Platform names
+\*****************************************************************************/
+#ifdef __APPLE__
+#  define AZPlatformResourceNameSuffix ""
+#elif defined(WINDOWS)
+#  define AZPlatformResourceNameSuffix "windows"
+#elif defined __linux__
+#  define AZPlatformResourceNameSuffix "linux"
+#else
+#  warning "Unknown platform!"
+#endif
 
 #endif // ! __AZTypes_header__

@@ -238,6 +238,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Post notifications when the bounds are changed
 @property(assign, nonatomic) BOOL						postBoundsNotifications;
+
+// Property from IB, just a numeric identifier
+@property (assign, nonatomic) NSInteger 					tag;
+
+// Property from IB, justfor compatibility right now
+@property (copy, nonatomic) NSString * 						tooltip;
+
 @end
 
 NS_ASSUME_NONNULL_END

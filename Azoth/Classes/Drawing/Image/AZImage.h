@@ -115,6 +115,9 @@ typedef BOOL (^AZImageDrawingHandler)(NSRect dstRect, AZPainter *painter) ;
 
 // For dynamic images, whether to clear before draw
 @property(assign, nonatomic) BOOL								clearBeforeDraw;
+
+// Whether this is a template image
+@property(assign, nonatomic) BOOL								isTemplate;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -8,7 +8,7 @@
 #import <SDL3/SDL.h>
 #import <SDL3_ttf/SDL_ttf.h>
 
-#import "AZApp.h"
+#import "AZApplication.h"
 #import "AZColour.h"
 #import "AZEvent.h"
 #import "AZFont.h"
@@ -250,7 +250,7 @@ static int 			_lineHeight = 29;
 				   sCR.size.height};
 
 	AZRenderer *azr = AZRenderer.renderer;
-	NSInteger ui	= [AZApp.sharedInstance textureFor:kUiMap];
+	NSInteger ui	= [AZApp textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 
@@ -315,7 +315,7 @@ static int 			_lineHeight = 29;
 	NSRect dBR	= {W-sBR.size.width, 0, sBR.size.width, sBR.size.height};
 
 	AZRenderer *azr = AZRenderer.renderer;
-	NSInteger ui	= [AZApp.sharedInstance textureFor:kUiMap];
+	NSInteger ui	= [AZApp textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 
@@ -342,49 +342,48 @@ static int 			_lineHeight = 29;
 \*****************************************************************************/
 - (void) _fetchRects
 	{
-	AZApp *app 			 = AZApp.sharedInstance;
 
-	_bBL[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-0" in:kUiMap];
-	_bBM[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-1" in:kUiMap];
-	_bBR[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-2" in:kUiMap];
-	_bCL[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-3" in:kUiMap];
-	_bCM[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-4" in:kUiMap];
-	_bCR[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-5" in:kUiMap];
-	_bTL[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-6" in:kUiMap];
-	_bTM[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-7" in:kUiMap];
-	_bTR[STATE_SN] = [app srcRectFor:@"textfield-bezel-square-8" in:kUiMap];
+	_bBL[STATE_SN] = [AZApp srcRectFor:@"textfield-bezel-square-0" in:kUiMap];
+	_bBM[STATE_SN] = [AZApp srcRectFor:@"textfield-bezel-square-1" in:kUiMap];
+	_bBR[STATE_SN] = [AZApp srcRectFor:@"textfield-bezel-square-2" in:kUiMap];
+	_bCL[STATE_SN] = [AZApp srcRectFor:@"textfield-bezel-square-3" in:kUiMap];
+	_bCM[STATE_SN] = [AZApp srcRectFor:@"textfield-bezel-square-4" in:kUiMap];
+	_bCR[STATE_SN] = [AZApp srcRectFor:@"textfield-bezel-square-5" in:kUiMap];
+	_bTL[STATE_SN] = [AZApp srcRectFor:@"textfield-bezel-square-6" in:kUiMap];
+	_bTM[STATE_SN] = [AZApp srcRectFor:@"textfield-bezel-square-7" in:kUiMap];
+	_bTR[STATE_SN] = [AZApp srcRectFor:@"textfield-bezel-square-8" in:kUiMap];
 
-	_bBL[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-0" in:kUiMap];
-	_bBM[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-1" in:kUiMap];
-	_bBR[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-2" in:kUiMap];
-	_bCL[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-3" in:kUiMap];
-	_bCM[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-4" in:kUiMap];
-	_bCR[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-5" in:kUiMap];
-	_bTL[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-6" in:kUiMap];
-	_bTM[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-7" in:kUiMap];
-	_bTR[STATE_SF] = [app srcRectFor:@"textfield-bezel-square-focused-8" in:kUiMap];
+	_bBL[STATE_SF] = [AZApp srcRectFor:@"textfield-bezel-square-focused-0" in:kUiMap];
+	_bBM[STATE_SF] = [AZApp srcRectFor:@"textfield-bezel-square-focused-1" in:kUiMap];
+	_bBR[STATE_SF] = [AZApp srcRectFor:@"textfield-bezel-square-focused-2" in:kUiMap];
+	_bCL[STATE_SF] = [AZApp srcRectFor:@"textfield-bezel-square-focused-3" in:kUiMap];
+	_bCM[STATE_SF] = [AZApp srcRectFor:@"textfield-bezel-square-focused-4" in:kUiMap];
+	_bCR[STATE_SF] = [AZApp srcRectFor:@"textfield-bezel-square-focused-5" in:kUiMap];
+	_bTL[STATE_SF] = [AZApp srcRectFor:@"textfield-bezel-square-focused-6" in:kUiMap];
+	_bTM[STATE_SF] = [AZApp srcRectFor:@"textfield-bezel-square-focused-7" in:kUiMap];
+	_bTR[STATE_SF] = [AZApp srcRectFor:@"textfield-bezel-square-focused-8" in:kUiMap];
 
-	_bBL[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-0" in:kUiMap];
-	_bBM[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-1" in:kUiMap];
-	_bBR[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-2" in:kUiMap];
-	_bCL[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-3" in:kUiMap];
-	_bCM[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-4" in:kUiMap];
-	_bCR[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-5" in:kUiMap];
-	_bTL[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-6" in:kUiMap];
-	_bTM[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-7" in:kUiMap];
-	_bTR[STATE_SD] = [app srcRectFor:@"textfield-bezel-square-disabled-8" in:kUiMap];
+	_bBL[STATE_SD] = [AZApp srcRectFor:@"textfield-bezel-square-disabled-0" in:kUiMap];
+	_bBM[STATE_SD] = [AZApp srcRectFor:@"textfield-bezel-square-disabled-1" in:kUiMap];
+	_bBR[STATE_SD] = [AZApp srcRectFor:@"textfield-bezel-square-disabled-2" in:kUiMap];
+	_bCL[STATE_SD] = [AZApp srcRectFor:@"textfield-bezel-square-disabled-3" in:kUiMap];
+	_bCM[STATE_SD] = [AZApp srcRectFor:@"textfield-bezel-square-disabled-4" in:kUiMap];
+	_bCR[STATE_SD] = [AZApp srcRectFor:@"textfield-bezel-square-disabled-5" in:kUiMap];
+	_bTL[STATE_SD] = [AZApp srcRectFor:@"textfield-bezel-square-disabled-6" in:kUiMap];
+	_bTM[STATE_SD] = [AZApp srcRectFor:@"textfield-bezel-square-disabled-7" in:kUiMap];
+	_bTR[STATE_SD] = [AZApp srcRectFor:@"textfield-bezel-square-disabled-8" in:kUiMap];
 
-	_bCL[STATE_RN] = [app srcRectFor:@"textfield-bezel-rounded-left" in:kUiMap];
-	_bCM[STATE_RN] = [app srcRectFor:@"textfield-bezel-rounded-center" in:kUiMap];
-	_bCR[STATE_RN] = [app srcRectFor:@"textfield-bezel-rounded-right" in:kUiMap];
+	_bCL[STATE_RN] = [AZApp srcRectFor:@"textfield-bezel-rounded-left" in:kUiMap];
+	_bCM[STATE_RN] = [AZApp srcRectFor:@"textfield-bezel-rounded-center" in:kUiMap];
+	_bCR[STATE_RN] = [AZApp srcRectFor:@"textfield-bezel-rounded-right" in:kUiMap];
 
-	_bCL[STATE_RF] = [app srcRectFor:@"textfield-bezel-rounded-focused-left" in:kUiMap];
-	_bCM[STATE_RF] = [app srcRectFor:@"textfield-bezel-rounded-focused-center" in:kUiMap];
-	_bCR[STATE_RF] = [app srcRectFor:@"textfield-bezel-rounded-focused-right" in:kUiMap];
+	_bCL[STATE_RF] = [AZApp srcRectFor:@"textfield-bezel-rounded-focused-left" in:kUiMap];
+	_bCM[STATE_RF] = [AZApp srcRectFor:@"textfield-bezel-rounded-focused-center" in:kUiMap];
+	_bCR[STATE_RF] = [AZApp srcRectFor:@"textfield-bezel-rounded-focused-right" in:kUiMap];
 
-	_bCL[STATE_RD] = [app srcRectFor:@"textfield-bezel-rounded-disabled-left" in:kUiMap];
-	_bCM[STATE_RD] = [app srcRectFor:@"textfield-bezel-rounded-disabled-center" in:kUiMap];
-	_bCR[STATE_RD] = [app srcRectFor:@"textfield-bezel-rounded-disabled-right" in:kUiMap];
+	_bCL[STATE_RD] = [AZApp srcRectFor:@"textfield-bezel-rounded-disabled-left" in:kUiMap];
+	_bCM[STATE_RD] = [AZApp srcRectFor:@"textfield-bezel-rounded-disabled-center" in:kUiMap];
+	_bCR[STATE_RD] = [AZApp srcRectFor:@"textfield-bezel-rounded-disabled-right" in:kUiMap];
 
 	for (int i=STATE_RN; i<=STATE_RD; i++)
 		{
@@ -416,7 +415,7 @@ static int 			_lineHeight = 29;
         return false;
 		}
 
- 	TTF_Font *font = AZApp.sharedInstance.controlFont.ttfFont;
+ 	TTF_Font *font = AZApp.controlFont.ttfFont;
 	int index = [self _editGetCursorTextIndexFor:font at:textX in:&substring];
 	[self _editSetCursorPosition:index];
 
@@ -447,7 +446,7 @@ static int 			_lineHeight = 29;
         return false;
 		}
 
- 	TTF_Font *font = AZApp.sharedInstance.controlFont.ttfFont;
+ 	TTF_Font *font = AZApp.controlFont.ttfFont;
 	int index = [self _editGetCursorTextIndexFor:font at:textX in:&substring];
 	[self _editSetCursorPosition:index];
 	[self _editEnsureCursorVisible];
@@ -654,7 +653,7 @@ static int 			_lineHeight = 29;
 	[azr setBlendMode:SDL_BLENDMODE_BLEND];
 	[azr setDrawColour:[AZColour blackColour]];
 
-	TTF_Font *font	= AZApp.sharedInstance.controlFont.ttfFont;
+	TTF_Font *font	= AZApp.controlFont.ttfFont;
     float x 		= _editArea.origin.x;
     float y 		= _editArea.origin.y;
 
@@ -769,9 +768,7 @@ static int 			_lineHeight = 29;
 \*****************************************************************************/
 - (BOOL) _editCreate
 	{
-	AZApp *app = AZApp.sharedInstance;
-
-	_text	= TTF_CreateText(app.textEngine, app.controlFont.ttfFont, NULL, 0);
+	_text	= TTF_CreateText(AZApp.textEngine, AZApp.controlFont.ttfFont, NULL, 0);
 	if (_text == nil)
 		{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -1111,7 +1108,7 @@ static int 			_lineHeight = 29;
 \*****************************************************************************/
 - (void) _moveCursorLeft
 	{
-	TTF_Font *font = AZApp.sharedInstance.controlFont.ttfFont;
+	TTF_Font *font = AZApp.controlFont.ttfFont;
     if (TTF_GetFontDirection(font) == TTF_DIRECTION_RTL)
 		[self _moveCursorIndex:1];
     else
@@ -1123,7 +1120,7 @@ static int 			_lineHeight = 29;
 \*****************************************************************************/
 - (void) _moveCursorRight
 	{
-	TTF_Font *font = AZApp.sharedInstance.controlFont.ttfFont;
+	TTF_Font *font = AZApp.controlFont.ttfFont;
     if (TTF_GetFontDirection(font) == TTF_DIRECTION_RTL)
 		[self _moveCursorIndex:-1];
     else
@@ -1318,7 +1315,7 @@ static int UTF8ByteLength(const char *text, int num_codepoints)
 		}
     *dst = '\0';
 
-	TTF_Font *font = AZApp.sharedInstance.controlFont.ttfFont;
+	TTF_Font *font = AZApp.controlFont.ttfFont;
     _candidates = TTF_CreateText(TTF_GetTextEngine(_text), font, candidateText, 0);
     SDL_free(candidateText);
 
@@ -1339,7 +1336,7 @@ static int UTF8ByteLength(const char *text, int num_codepoints)
 	{
     // Draw an underline under the composed text
 	AZRenderer *azr				= AZRenderer.renderer;
-	TTF_Font *font 				= AZApp.sharedInstance.controlFont.ttfFont;
+	TTF_Font *font 				= AZApp.controlFont.ttfFont;
 	TTF_SubString **substrings	= NULL;
 
     int fontHeight = TTF_GetFontHeight(font);
@@ -1389,7 +1386,7 @@ static int UTF8ByteLength(const char *text, int num_codepoints)
 - (void) _editDrawCandidatesWithPainter:(AZPainter *)P
 	{
 	AZRenderer *azr	= AZRenderer.renderer;
- 	TTF_Font *font 	= AZApp.sharedInstance.controlFont.ttfFont;
+ 	TTF_Font *font 	= AZApp.controlFont.ttfFont;
 
    SDL_Rect safe_rect;
     SDL_FRect candidates_rect;
