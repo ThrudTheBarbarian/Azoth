@@ -13,11 +13,6 @@
 #import "AppDelegate.h"
 
 /*****************************************************************************\
-|* File-private variables
-\*****************************************************************************/
-static AZApp *			_app		= NULL;
-
-/*****************************************************************************\
 |* Callback: This function is called at startup
 \*****************************************************************************/
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
@@ -29,20 +24,19 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 	/*************************************************************************\
     |* Create the application.
     \*************************************************************************/
-	_app 				= [AZApp sharedInstance];
-	_app.delegate		= [AppDelegate new];
-	_app.initialFrame	= NSMakeRect(0, 0, 512, 512);
-	_app.windowFlags	= SDL_WINDOW_RESIZABLE;
-	*appstate			= (__bridge void *)(_app);
+	AZApp.delegate		= [AppDelegate new];
+	AZApp.initialFrame	= NSMakeRect(0, 0, 512, 512);
+	AZApp.windowFlags	= SDL_WINDOW_RESIZABLE;
+	*appstate			= (__bridge void *)(AZApp);
 
-	[_app startWithArgc:argc argv:argv];
+	[AZApp startWithArgc:argc argv:argv];
 
-	if (_app.viability == SDL_APP_CONTINUE)
+	if (AZApp.viability == SDL_APP_CONTINUE)
 		{
 		/*********************************************************************\
 		|* .. carry on with any initialisation
 		\*********************************************************************/
 		}
-    return _app.viability;
+    return AZApp.viability;
 	}
 

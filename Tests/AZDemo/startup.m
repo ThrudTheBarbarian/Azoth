@@ -16,10 +16,6 @@
 #import "IdentifiedView.h"
 #import "ColouredView.h"
 
-/*****************************************************************************\
-|* File-private variables
-\*****************************************************************************/
-static AZApp *			_app		= NULL;
 
 /*****************************************************************************\
 |* Function declarations
@@ -38,15 +34,14 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 	/*************************************************************************\
     |* Create the application.
     \*************************************************************************/
-	_app 				= [AZApp sharedInstance];
-	_app.delegate		= [AppDelegate new];
-	_app.initialFrame	= NSMakeRect(50, 50, 1280, 960);
-	_app.windowFlags	= SDL_WINDOW_RESIZABLE;
-	*appstate			= (__bridge void *)(_app);
+	AZApp.delegate		= [AppDelegate new];
+	AZApp.initialFrame	= NSMakeRect(50, 50, 1280, 960);
+	AZApp.windowFlags	= SDL_WINDOW_RESIZABLE;
+	*appstate			= (__bridge void *)(AZApp);
 
-	[_app startWithArgc:argc argv:argv];
+	[AZApp startWithArgc:argc argv:argv];
 
-	if (_app.viability == SDL_APP_CONTINUE)
+	if (AZApp.viability == SDL_APP_CONTINUE)
 		{
 		_testMouseEvents();
 
@@ -54,7 +49,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 		|* .. and carry on with the program
 		\*********************************************************************/
 		}
-    return _app.viability;
+    return AZApp.viability;
 	}
 
 /*****************************************************************************\
@@ -62,7 +57,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 \*****************************************************************************/
 void _testMouseEvents(void)
 	{
-	AZView *cv		= [AZWindow contentViewForWindow:_app.window];
+	AZView *cv		= [AZWindow contentViewForWindow:AZApp.window];
 	[cv setIdentifier:@"content-view"];
 
 	IdentifiedView *v1 = [[IdentifiedView alloc]
