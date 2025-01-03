@@ -1,5 +1,5 @@
 //
-//  AZNibOutletConnector.h
+//  NibView.h
 //  Azoth
 //
 //  Created by Simon Gornall on 1/1/25.
@@ -9,7 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AZNibOutletConnector : AZNibConnector
+@interface NibView : AZView
 
 @end
 

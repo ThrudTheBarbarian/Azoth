@@ -79,6 +79,20 @@
 		F495572C2D231CEA00D6B8A6 /* jxl.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F495572D2D231CEA00D6B8A6 /* webp.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F495572E2D231CF700D6B8A6 /* Azoth.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F4BD7EF52D2654CB0041034B /* SDL3_ttf.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F4BD7EF62D2654CB0041034B /* SDL3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F4BD7EF72D2654CB0041034B /* SDL3_image.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F4BD7EF82D2654CB0041034B /* avif.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F4BD7EF92D2654CB0041034B /* jxl.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F4BD7EFA2D2654CB0041034B /* webp.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F4BD7EFB2D2654CE0041034B /* Azoth.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F4BD7EFD2D2654F10041034B /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
+		F4BD7EFE2D2654F10041034B /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
+		F4BD7EFF2D2654F10041034B /* SDL3_image.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; };
+		F4BD7F002D2654F10041034B /* avif.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; };
+		F4BD7F012D2654F10041034B /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
+		F4BD7F022D2654F10041034B /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
+		F4BD7F032D2654F50041034B /* Azoth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -175,6 +189,23 @@
 			name = "Embed frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F4BD7EFC2D2654D50041034B /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F4BD7EFB2D2654CE0041034B /* Azoth.framework in Embed Frameworks */,
+				F4BD7EFA2D2654CB0041034B /* webp.xcframework in Embed Frameworks */,
+				F4BD7EF52D2654CB0041034B /* SDL3_ttf.xcframework in Embed Frameworks */,
+				F4BD7EF82D2654CB0041034B /* avif.xcframework in Embed Frameworks */,
+				F4BD7EF92D2654CB0041034B /* jxl.xcframework in Embed Frameworks */,
+				F4BD7EF62D2654CB0041034B /* SDL3.xcframework in Embed Frameworks */,
+				F4BD7EF72D2654CB0041034B /* SDL3_image.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -191,6 +222,7 @@
 		F49557082D231A2A00D6B8A6 /* AZImageView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZImageView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F4B6A1402D0BB0E80033580D /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		F4B6A3B62D0F84C00033580D /* genRsrc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = genRsrc.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F4BD7ED02D2651E80041034B /* NibTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NibTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -203,8 +235,7 @@
 				Classes/Application/AZEvent.h,
 				Classes/Application/AZEventSink.h,
 				Classes/Application/AZWindow.h,
-				Classes/Application/Nib/AZNibConnector.h,
-				Classes/Application/Nib/AZNibHelpConnector.h,
+				Classes/Application/Controllers/AZViewController.h,
 				Classes/Base/AZControl.h,
 				Classes/Base/AZResponder.h,
 				Classes/Controls/AZButton.h,
@@ -235,6 +266,7 @@
 				Classes/View/Scrollview/AZRulerView.h,
 				Classes/View/Scrollview/AZScrollView.h,
 				Classes/View/TableView/AZTableColumn.h,
+				Classes/View/TableView/AZTableCornerView.h,
 				Classes/View/TableView/AZTableHeaderView.h,
 				Classes/View/TableView/AZTableView.h,
 			);
@@ -268,6 +300,11 @@
 				AZTable/AppDelegate.m,
 				AZTable/Assets.xcassets,
 				AZTable/main.m,
+				NibTest/AppDelegate.h,
+				NibTest/AppDelegate.m,
+				NibTest/Assets.xcassets,
+				NibTest/main.m,
+				NibTest/view.xib,
 			);
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
 		};
@@ -349,6 +386,17 @@
 			);
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
 		};
+		F4BD7EEC2D2651EE0041034B /* Exceptions for "Tests" folder in "NibTest" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				NibTest/AppDelegate.m,
+				NibTest/Assets.xcassets,
+				NibTest/main.m,
+				NibTest/NibView.m,
+				NibTest/view.xib,
+			);
+			target = F4BD7ECF2D2651E80041034B /* NibTest */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -376,6 +424,7 @@
 				F4B3BF2F2D264D7C000C343A /* Exceptions for "Tests" folder in "AZTable" target */,
 				F4B3BF302D264D7C000C343A /* Exceptions for "Tests" folder in "AZImageView" target */,
 				F4B3BF312D264D7C000C343A /* Exceptions for "Tests" folder in "AZOutline" target */,
+				F4BD7EEC2D2651EE0041034B /* Exceptions for "Tests" folder in "NibTest" target */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -479,6 +528,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F4BD7ECD2D2651E80041034B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4BD7F032D2654F50041034B /* Azoth.framework in Frameworks */,
+				F4BD7EFD2D2654F10041034B /* SDL3_ttf.xcframework in Frameworks */,
+				F4BD7EFE2D2654F10041034B /* SDL3.xcframework in Frameworks */,
+				F4BD7EFF2D2654F10041034B /* SDL3_image.xcframework in Frameworks */,
+				F4BD7F002D2654F10041034B /* avif.xcframework in Frameworks */,
+				F4BD7F012D2654F10041034B /* jxl.xcframework in Frameworks */,
+				F4BD7F022D2654F10041034B /* webp.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -504,6 +567,7 @@
 				F495282B2D1F496200D6B8A6 /* AZTable.app */,
 				F49557082D231A2A00D6B8A6 /* AZImageView.app */,
 				F454E1FD2D24D1DA002D2DAB /* AZOutline.app */,
+				F4BD7ED02D2651E80041034B /* NibTest.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -661,6 +725,26 @@
 			productReference = F4B6A3B62D0F84C00033580D /* genRsrc.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F4BD7ECF2D2651E80041034B /* NibTest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F4BD7EDD2D2651E90041034B /* Build configuration list for PBXNativeTarget "NibTest" */;
+			buildPhases = (
+				F4BD7ECC2D2651E80041034B /* Sources */,
+				F4BD7ECD2D2651E80041034B /* Frameworks */,
+				F4BD7ECE2D2651E80041034B /* Resources */,
+				F4BD7EFC2D2654D50041034B /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NibTest;
+			packageProductDependencies = (
+			);
+			productName = NibTest;
+			productReference = F4BD7ED02D2651E80041034B /* NibTest.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -690,6 +774,9 @@
 					F4B6A3B52D0F84C00033580D = {
 						CreatedOnToolsVersion = 16.1;
 					};
+					F4BD7ECF2D2651E80041034B = {
+						CreatedOnToolsVersion = 16.1;
+					};
 				};
 			};
 			buildConfigurationList = F41BC64C2D0A61BA00E61EDD /* Build configuration list for PBXProject "Azoth" */;
@@ -712,6 +799,7 @@
 				F495282A2D1F496200D6B8A6 /* AZTable */,
 				F49557072D231A2A00D6B8A6 /* AZImageView */,
 				F454E1FC2D24D1DA002D2DAB /* AZOutline */,
+				F4BD7ECF2D2651E80041034B /* NibTest */,
 			);
 		};
 /* End PBXProject section */
@@ -759,6 +847,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F4BD7ECE2D2651E80041034B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -798,6 +893,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F4B6A3B22D0F84C00033580D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4BD7ECC2D2651E80041034B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1284,6 +1386,54 @@
 			};
 			name = Release;
 		};
+		F4BD7EDE2D2651E90041034B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Tests/NibTest/NibTest.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainNibFile = MainMenu;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.moebius-tech.NibTest";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Debug;
+		};
+		F4BD7EDF2D2651E90041034B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Tests/NibTest/NibTest.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainNibFile = MainMenu;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.moebius-tech.NibTest";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1346,6 +1496,15 @@
 			buildConfigurations = (
 				F4B6A3C42D0F84C10033580D /* Debug */,
 				F4B6A3C52D0F84C10033580D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F4BD7EDD2D2651E90041034B /* Build configuration list for PBXNativeTarget "NibTest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F4BD7EDE2D2651E90041034B /* Debug */,
+				F4BD7EDF2D2651E90041034B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
