@@ -53,6 +53,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype) initWithFrame:(NSRect)frame;
 + (AZView *) viewWithFrame:(NSRect)frame;
 
+/*****************************************************************************\
+|* Configuration via dictionary. This is called by the NIB loader, but is a
+|* valid way to create the view
+\*****************************************************************************/
+- (instancetype) initWithDictionary:(NSDictionary *)info;
 
 // MARK: scrolling
 

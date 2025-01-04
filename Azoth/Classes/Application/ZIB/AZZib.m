@@ -14,37 +14,26 @@
 #import "AZWindow.h"
 #import "AZView.h"
 #import "AZZib.h"
+#import "NSDictionary+ZIB.h"
 
 /*****************************************************************************\
 |* Constant strings, only really used here, but...
 \*****************************************************************************/
-static NSString * const kObjects		= @"objects";
-static NSString * const kClassname		= @"class";
-static NSString * const kConnect		= @"connect";
-static NSString * const kIdentifier		= @"id";
-static NSString * const kOwner			= @"owner";
-static NSString * const kWindow			= @"window";
-static NSString * const kContentRect	= @"contentRect";
-static NSString * const kRect			= @"rect";
-static NSString * const kKey			= @"key";
-static NSString * const kX				= @"x";
-static NSString * const kY				= @"y";
-static NSString * const kW				= @"width";
-static NSString * const kH				= @"height";
-static NSString * const kStyle			= @"style";
-static NSString * const kClosable		= @"closable";
-static NSString * const kTitle			= @"title";
-static NSString * const kView			= @"view";
-static NSString * const kFrame			= @"frame";
-static NSString * const kResizeMask		= @"resizeMask";
-static NSString * const kFlexibleMaxX	= @"flexibleMaxX";
-static NSString * const kFlexibleMaxY	= @"flexibleMaxY";
-static NSString * const kFlexibleMinX	= @"flexibleMinX";
-static NSString * const kFlexibleMinY	= @"flexibleMinY";
-static NSString * const kHeightSizable  = @"heightSizable";
-static NSString * const kWidthSizable  	= @"widthSizable";
-static NSString * const kSubviews  		= @"subviews";
-static NSString * const kType	  		= @"type";
+NSString * const kZibObjects		= @"objects";
+NSString * const kZibClassname		= @"class";
+NSString * const kZibConnect		= @"connect";
+NSString * const kZibIdentifier		= @"id";
+NSString * const kZibOwner			= @"owner";
+NSString * const kZibWindow			= @"window";
+NSString * const kZibContentRect	= @"contentRect";
+NSString * const kZibStyle			= @"style";
+NSString * const kZibClosable		= @"closable";
+NSString * const kZibTitle			= @"title";
+NSString * const kZibView			= @"view";
+NSString * const kZibFrame			= @"frame";
+NSString * const kZibResizeMask		= @"resizeMask";
+NSString * const kZibSubviews  		= @"subviews";
+NSString * const kZibType	  		= @"type";
 
 
 /*****************************************************************************\
@@ -142,7 +131,7 @@ static NSString * const kType	  		= @"type";
 - (BOOL) _inflateWindow
 	{
 	BOOL ok					= YES;
-	NSDictionary *info	 	= _zib[kWindow];
+	NSDictionary *info	 	= _zib[kZibWindow];
 	AZWindow *window		= nil;
 	NSRect frame			= NSZeroRect;
 	NSUInteger styleMask 	= 0;
@@ -161,7 +150,7 @@ static NSString * const kType	  		= @"type";
 	\*************************************************************************/
 	if (ok)
 		{
-		frame = [self _fetchRectFrom:info matching:kContentRect];
+		frame = [info AZRectWithKey:kZibContentRect];
 		if (NSIsEmptyRect(frame))
 			ok = NO;
 		}
@@ -169,10 +158,10 @@ static NSString * const kType	  		= @"type";
 	/*************************************************************************\
 	|* Determine the style mask
 	\*************************************************************************/
-	if (ok && info[kStyle])
+	if (ok && info[kZibStyle])
 		{
-		NSDictionary *style = info[kStyle];
-		if ([style[kClosable] isEqualToString:@"YES"])
+		NSDictionary *style = info[kZibStyle];
+		if ([style[kZibClosable] isEqualToString:@"YES"])
 			styleMask |= SDL_WINDOW_RESIZABLE;
 		}
 
@@ -190,8 +179,8 @@ static NSString * const kType	  		= @"type";
 		ok = [self _setIdentifierOn:window from:info in:@"window"];
 
 		// Set the window title
-		if (info[kTitle])
-			window.title = info[kTitle];
+		if (info[kZibTitle])
+			window.title = info[kZibTitle];
 
 		// And link us through to the shared application. This is a little
 		// different to Cocoa, where the Application has a delegate which is
@@ -213,7 +202,7 @@ static NSString * const kType	  		= @"type";
 	\*************************************************************************/
 	if (window)
 		{
-		NSDictionary *viewInfo = info[kView];
+		NSDictionary *viewInfo = info[kZibView];
 		if (viewInfo)
 			{
 			[self _createViewFrom:viewInfo forWindow:window inView:nil];
@@ -230,35 +219,8 @@ static NSString * const kType	  		= @"type";
 							forWindow:(AZWindow *)window
 							   inView:(nullable AZView *)parentView
 	{
-	static NSDictionary *map = nil;
-	static dispatch_once_t onceToken;
-	dispatch_once(&onceToken,
-		^{
-		map = 	@{
-				@"AZButton"	: @"_handleButton:withInfo:"
-				};
-		});
-
-
-
 	AZView *view 		= nil;
-	NSString *className = info[kClassname];
-
-	/*************************************************************************\
-	|* Find the content-rect
-	\*************************************************************************/
-	NSRect frame = [self _fetchRectFrom:info matching:kFrame];
-	if (NSIsEmptyRect(frame))
-		{
-		SDL_Log("Cannot find frame rect for '%s'", className.UTF8String);
-		return nil;
-		}
-
-	/*************************************************************************\
-	|* Cocoa measures Y upwards, and SDL measures it downwards, so
-	\*************************************************************************/
-	if (parentView)
-		frame.origin.y = NSHeight(parentView.frame) - NSMaxY(frame);
+	NSString *className = info[kZibClassname];
 
 	/*************************************************************************\
 	|* Find the class. Default to a standard view if we can't find the class
@@ -266,63 +228,35 @@ static NSString * const kType	  		= @"type";
 	Class class = NSClassFromString(className);
 	if (class == Nil)
 		{
-		SDL_Log("Warning: Cannot create view of class '%s'", className.UTF8String);
+		SDL_Log("Warning: Cannot find view of class '%s'", className.UTF8String);
 		class = NSClassFromString(@"AZView");
 		}
-
-	/*************************************************************************\
-	|* Initialise the autoresize mask
-	\*************************************************************************/
-	int resizeMask = AZViewNotSizable;
 
 	/*************************************************************************\
 	|* Create an instance of the class and get the ball rolling with view
 	|* instantiation if this is the contentView of the window
 	\*************************************************************************/
-	view = [[class alloc] initWithFrame:frame];
+	view = [[class alloc] initWithDictionary:info];
 	if (view)
 		{
 		if (parentView == nil)
 			{
-			resizeMask = AZViewWidthSizable | AZViewHeightSizable;
+			view.autoresizingMask = AZViewWidthSizable | AZViewHeightSizable;
 			[window installContentView:view];
 			}
 		else
 			{
-			NSDictionary *resize = info[kResizeMask];
-			if ([resize[kFlexibleMinX] isEqualToString:@"YES"])
-				resizeMask |= AZViewMinXMargin;
-			if ([resize[kWidthSizable] isEqualToString:@"YES"])
-				resizeMask |= AZViewWidthSizable;
-			if ([resize[kFlexibleMaxX] isEqualToString:@"YES"])
-				resizeMask |= AZViewMaxXMargin;
-			if ([resize[kFlexibleMinY] isEqualToString:@"YES"])
-				resizeMask |= AZViewMinYMargin;
-			if ([resize[kHeightSizable] isEqualToString:@"YES"])
-				resizeMask |= AZViewHeightSizable;
-			if ([resize[kFlexibleMaxY] isEqualToString:@"YES"])
-				resizeMask |= AZViewMaxYMargin;
+			/*****************************************************************\
+			|* Cocoa measures Y upwards, and SDL measures it downwards, so
+			\*****************************************************************/
+			NSRect f = view.frame;
+			f.origin.y = NSHeight(parentView.frame) - NSMaxY(f);
+			view.frame = f;
 
 			/*****************************************************************\
 			|* Add the view to its parent, if it's not the root view
 			\*****************************************************************/
 			[parentView addSubview:view];
-			}
-
-		/*********************************************************************\
-		|* Install the autoresize mask
-		\*********************************************************************/
-		view.autoresizingMask = resizeMask;
-
-		/*********************************************************************\
-		|* view-class-specific method calls
-		\*********************************************************************/
-		if (map[className] != nil)
-			{
-			SEL action = SELECTOR(map[className]);
-			IMP imp = [self methodForSelector:action];
-			void (*func)(id, SEL, AZView *, NSDictionary*) = (void *)imp;
-			func(self, action, view, info);
 			}
 
 		/*********************************************************************\
@@ -338,7 +272,7 @@ static NSString * const kType	  		= @"type";
 		/*********************************************************************\
 		|* And for each subview, do the same thing
 		\*********************************************************************/
-		NSArray *subviews = info[kSubviews];
+		NSArray *subviews = info[kZibSubviews];
 		for (NSDictionary *subview in subviews)
 			[self _createViewFrom:subview forWindow:window inView:view];
 		}
@@ -347,54 +281,13 @@ static NSString * const kType	  		= @"type";
 	}
 
 /*****************************************************************************\
-|* Button-specific view-handling
-\*****************************************************************************/
-- (void) _handleButton:(AZButton *)button withInfo:(NSDictionary *)info
-	{
-	NSString *title = info[kTitle];
-	if (title)
-		button.stringValue = title;
-
-	if ([info[kType] isEqualToString:@"roundRect"])
-		button.type = ButtonTypeRounded;
-	}
-
-/*****************************************************************************\
-|* Fetch a matching rectangle from the info dictionary
-\*****************************************************************************/
-- (NSRect) _fetchRectFrom:(NSDictionary *)info matching:(NSString *)key
-	{
-	NSArray *rectList = nil;
-
-	if (![info[kRect] isKindOfClass:NSArray.class])
-		rectList = @[info[kRect]];
-	else
-		rectList = info[kRect];
-
-	for (NSDictionary *rect in rectList)
-		{
-		if ([rect[kKey] isEqualToString:key])
-			{
-			float x = ((NSNumber *)rect[kX]).floatValue;
-			float y = ((NSNumber *)rect[kY]).floatValue;
-			float w = ((NSNumber *)rect[kW]).floatValue;
-			float h = ((NSNumber *)rect[kH]).floatValue;
-
-			return NSMakeRect(x,y,w,h);
-			}
-		}
-
-	return NSZeroRect;
-	}
-
-/*****************************************************************************\
 |* Inflate the Owner, checking the class
 \*****************************************************************************/
 - (BOOL) _inflateOwner:(NSObject *)owner
 	{
 	BOOL ok 				= YES;
-	NSDictionary *info	 	= _zib[kOwner];
-	NSString *ownerClass 	= info[kClassname];
+	NSDictionary *info	 	= _zib[kZibOwner];
+	NSString *ownerClass 	= info[kZibClassname];
 
 	/*************************************************************************\
 	|* Make sure we actually have an owner table!
@@ -440,7 +333,7 @@ static NSString * const kType	  		= @"type";
 	\*************************************************************************/
 	if (ok)
 		{
-		NSDictionary *connections = info[kConnect];
+		NSDictionary *connections = info[kZibConnect];
 		if (connections)
 			_connect[TO_KEY(owner)] = connections;
 		}
@@ -458,7 +351,7 @@ static NSString * const kType	  		= @"type";
 	/*************************************************************************\
 	|* Make sure we actually have an objects table!
 	\*************************************************************************/
-	if (_zib[kObjects] == nil)
+	if (_zib[kZibObjects] == nil)
 		{
 		SDL_Log("Cannot find objects table within ZIB %s", _path.UTF8String);
 		ok = NO;
@@ -471,10 +364,10 @@ static NSString * const kType	  		= @"type";
 	NSArray *objectList = nil;
 	if (ok)
 		{
-		if (![_zib[kObjects] isKindOfClass:NSArray.class])
-			objectList = @[_zib[kObjects]];
+		if (![_zib[kZibObjects] isKindOfClass:NSArray.class])
+			objectList = @[_zib[kZibObjects]];
 		else
-			objectList = _zib[kObjects];
+			objectList = _zib[kZibObjects];
 		}
 
 	/*************************************************************************\
@@ -482,13 +375,13 @@ static NSString * const kType	  		= @"type";
 	\*************************************************************************/
 	for (NSDictionary * object in objectList)
 		{
-		NSString *objectClass = object[kClassname];
+		NSString *objectClass = object[kZibClassname];
 		Class class			  = NSClassFromString(objectClass);
 		if (class != Nil)
 			{
 			NSObject *obj = class.new;
 
-			NSDictionary *connections = object[kConnect];
+			NSDictionary *connections = object[kZibConnect];
 			if (connections)
 				_connect[TO_KEY(obj)] = connections;
 
@@ -531,8 +424,8 @@ static NSString * const kType	  		= @"type";
 
 	// Set the identifier for this object, crucial for any
 	// connection-making later
-	if (info[kIdentifier])
-		_byId[info[kIdentifier]] = obj;
+	if (info[kZibIdentifier])
+		_byId[info[kZibIdentifier]] = obj;
 	else
 		{
 		// Complain

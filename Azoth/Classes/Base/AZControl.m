@@ -24,6 +24,22 @@
 	return self;
 	}
 
+/*****************************************************************************\
+|* Configuration via dictionary. This is called by the NIB loader, but is a
+|* valid way to create the view
+\*****************************************************************************/
+- (instancetype) initWithDictionary:(NSDictionary *)info;
+	{
+	if (self = [super initWithDictionary:info])
+		{
+		self.stringValue 	= @"";
+		self.state		 	= AZControlStateNormal;
+		_enabled			= YES;
+		_continuous			= NO;
+		}
+	return self;
+	}
+
 
 /*****************************************************************************\
 |* Manage the state

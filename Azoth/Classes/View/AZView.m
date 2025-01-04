@@ -19,6 +19,8 @@
 #import "AZView.h"
 #import "AZView+Internal.h"
 #import "AZWindow.h"
+#import "AZZib.h"
+#import "NSDictionary+ZIB.h"
 
 /*****************************************************************************\
 |* "Private" properties
@@ -44,27 +46,26 @@
 	{
 	if (self = [super init])
 		{
-		self.frame 						= frame;
-		frame.origin					= (NSPoint){0,0};
-		self.bounds						= frame;
-		self.subviews					= [NSMutableArray new];
-		self.superview					= nil;
-		self.bg 						= -1;
-		self.backgroundColour			= [AZColour grey95Colour];
-		self.isOpaque					= NO;
-		self.autoresizesSubviews		= YES;
-		self.postFrameNotifications		= YES;
-		self.postBoundsNotifications	= YES;
-		self.autoresizingMask		 	= AZViewNotSizable;
-		self.transformToWindow			= [AZTransform new];
-		self.transformFromWindow		= [AZTransform new];
-		self.transformsAreValid			= NO;
-		self.textureMutex				= SDL_CreateMutex();
-		self.hidden						= NO;
-
-		[self setNeedsDisplay:YES];
+		[self _commonViewInitWithFrame:frame];
 		}
 
+	return self;
+	}
+
+/*****************************************************************************\
+|* Configuration via dictionary. This is called by the NIB loader, but is a
+|* valid way to create the view
+\*****************************************************************************/
+- (instancetype) initWithDictionary:(NSDictionary *)info;
+	{
+	if (self = [super init])
+		{
+		NSRect frame = [info AZRectWithKey:kZibFrame];
+		[self _commonViewInitWithFrame:frame];
+
+		NSDictionary *resize 	= info[kZibResizeMask];
+		_autoresizingMask 		= resize.AZResizeMask;
+		}
 	return self;
 	}
 
@@ -73,6 +74,31 @@
 	return [[AZView alloc] initWithFrame:frame];
 	}
 
+/*****************************************************************************\
+|* Common initialisation
+\*****************************************************************************/
+- (void) _commonViewInitWithFrame:(NSRect)frame
+	{
+	self.frame 						= frame;
+	frame.origin					= (NSPoint){0,0};
+	self.bounds						= frame;
+	self.subviews					= [NSMutableArray new];
+	self.superview					= nil;
+	self.bg 						= -1;
+	self.backgroundColour			= [AZColour grey95Colour];
+	self.isOpaque					= NO;
+	self.autoresizesSubviews		= YES;
+	self.postFrameNotifications		= YES;
+	self.postBoundsNotifications	= YES;
+	self.autoresizingMask		 	= AZViewNotSizable;
+	self.transformToWindow			= [AZTransform new];
+	self.transformFromWindow		= [AZTransform new];
+	self.transformsAreValid			= NO;
+	self.textureMutex				= SDL_CreateMutex();
+	self.hidden						= NO;
+
+	[self setNeedsDisplay:YES];
+	}
 
 /*****************************************************************************\
 |* Clean up on deallocation

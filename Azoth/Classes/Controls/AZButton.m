@@ -15,6 +15,8 @@
 #import "AZPainter.h"
 #import "AZRenderer.h"
 #import "AZWindow.h"
+#import "AZZib.h"
+#import "NSDictionary+ZIB.h"
 
 #define BUTTON_HEIGHT 		25
 #define BUTTON_LEADING   	12
@@ -52,6 +54,8 @@ static NSRect	_bLeft[STATE_NUM];
 static NSRect	_bCenter[STATE_NUM];
 static NSRect	_bRight[STATE_NUM];
 
+static dispatch_once_t _rectToken;
+
 @implementation AZButton
 
 /*****************************************************************************\
@@ -61,8 +65,7 @@ static NSRect	_bRight[STATE_NUM];
 	{
 	if (self = [super initWithFrame:frame])
 		{
-		static dispatch_once_t onceToken;
-		dispatch_once(&onceToken,
+		dispatch_once(&_rectToken,
 			^{
 			[self _fetchRects];
 			});
@@ -88,6 +91,31 @@ static NSRect	_bRight[STATE_NUM];
 	AZButton *button	= [[AZButton alloc] initWithFrame:frame];
 	button.stringValue	= text;
 	return button;
+	}
+
+/*****************************************************************************\
+|* Configuration via dictionary. This is called by the NIB loader, but is a
+|* valid way to create the view
+\*****************************************************************************/
+- (instancetype) initWithDictionary:(NSDictionary *)info;
+	{
+	if (self = [super initWithDictionary:info])
+		{
+		dispatch_once(&_rectToken,
+			^{
+			[self _fetchRects];
+			});
+
+		self.backgroundColour 	= [AZColour clearColour];
+		self.imagePosition		= AZImageLeft;		// Only used in checkbox
+		self.type	 			= ButtonTypePlain;
+		self.stringValue 		= [info AZStringWithKey:kZibTitle
+											  orDefault:@"Button"];
+
+		if ([info[kZibType] isEqualToString:@"roundRect"])
+			self.type = ButtonTypeRounded;
+		}
+	return self;
 	}
 
 /*****************************************************************************\
