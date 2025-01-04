@@ -59,7 +59,7 @@ int main(int argc, const char * argv[])
 				NSLog(@"Error: %@", error);
 
 			if (dump)
-				NSLog(@"results:\n%@", parsed);
+				printf("source:\n%s", parsed.description.UTF8String);
 
 			AZZibber *zibber = [AZZibber zibberWithDictionary:parsed];
 			[zibber process];
