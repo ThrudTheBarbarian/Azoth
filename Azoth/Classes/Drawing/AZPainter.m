@@ -16,6 +16,7 @@
 #import "AZRenderer.h"
 #import "AZTextPainter.h"
 #import "AZView.h"
+#import "AZView+Internal.h"
 #import "AZWindow.h"
 
 #define AAlevels 256
@@ -78,6 +79,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	{
 	if (self = [super init])
 		{
+		[view _installBackingTextureIfNecessary];
 		_view 		= view;
 		_texture	= view.bg;
 		if (![self _painterCommonInit])

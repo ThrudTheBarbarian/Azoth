@@ -46,6 +46,7 @@
 	[self _createFilesOwner];
 	[self _createOtherCustomObjects];
 	[self _createWindow];
+	[self _createCustomViews];
 	}
 
 /*****************************************************************************\
@@ -96,7 +97,7 @@
 	[self _xfer:@"title" in:win as: @"title" in:window];
 	[self _xfer:@"connections" in:win as:@"connect" in:window];
 	[self _xfer:@"windowStyleMask" in:win as:@"style" in:window];
-	
+
 	// Find the content rect
 	NSArray *rects = win[@"rect"];
 	if (rects)
@@ -141,12 +142,18 @@
 			};
 		});
 
-	NSString *result = map[key];
-	if (result == nil)
+	NSString *result = nil;
+	if (key)
 		{
-		NSLog(@"Warning: cannot find class for key '%@'", key);
-		result = @"AZView";
+		result = map[key];
+		if (result == nil)
+			{
+			NSLog(@"Warning: cannot find class for key '%@'", key);
+			result = @"AZView";
+			}
 		}
+	else
+		result = @"AZView";
 	return result;
 	}
 
@@ -171,6 +178,28 @@
 	}
 
 /*****************************************************************************\
+|* Handle any other custom objects
+\*****************************************************************************/
+- (void) _createCustomViews
+	{
+	NSMutableArray *views = [NSMutableArray new];
+
+	NSArray *list = nil;
+	id element	  = [_info valueForKeyPath:@"document.objects.customView"];
+	if (![element isKindOfClass:NSArray.class])
+		list = @[element];
+	else
+		list = element;
+
+	for (NSDictionary *obj in list)
+		[views addObject:[self _createView:obj withKey:nil]];
+
+	if (views.count > 0)
+		_zib[@"view"] = views;
+	}
+
+
+/*****************************************************************************\
 |* Recursively create a view hierarchy
 \*****************************************************************************/
 - (NSMutableDictionary *) _createView:(NSDictionary *)vi withKey:(NSString *)key
@@ -193,7 +222,7 @@
 	[self _xfer:@"userLabel" in:vi as:@"label" in:view];
 
 	// view-specific method calls
-	if (map[key] != nil)
+	if (key && (map[key] != nil))
 		{
 		SEL action = SELECTOR(map[key]);
 		IMP imp = [self methodForSelector:action];
@@ -309,6 +338,7 @@
 	if (objects.count > 0)
 		_zib[@"objects"] = objects;
 	}
+
 
 /*****************************************************************************\
 |* Handle any global preferences

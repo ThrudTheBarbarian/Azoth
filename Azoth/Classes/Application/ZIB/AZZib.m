@@ -116,14 +116,54 @@ NSString * const kZibType	  		= @"type";
 - (BOOL) inflateWithOwner:(NSObject *)owner
 			   andOptions:(NSDictionary<AZZibOptionsKey, id> *)options
 	{
-	BOOL ok = [self _inflateObjects];
-	ok &= [self _inflateOwner:owner];
-	ok &= [self _inflateWindow];
+	BOOL  ok = [self _inflateObjects];
+	ok 		&= [self _inflateOwner:owner];
+	ok 		&= [self _inflateWindow];
+	ok 		&= [self _inflateViews];
 	return ok;
 	}
 
 
 // MARK: Private methods
+
+/*****************************************************************************\
+|* Inflate the Window, checking the class
+\*****************************************************************************/
+- (BOOL) _inflateViews
+	{
+	BOOL ok			= YES;
+	id info	 		= _zib[kZibView];
+	NSRect frame	= NSZeroRect;
+
+	/*************************************************************************\
+	|* Make sure we actually have a view table. This is not an error.
+	\*************************************************************************/
+	if (info == nil)
+		return YES;
+
+	/*************************************************************************\
+	|* Cope with there being multiple views defined, not just one
+	\*************************************************************************/
+	NSArray *list = ([info isKindOfClass:NSArray.class])
+				  ? (NSArray *)info
+				  : @[(NSDictionary *)info];
+
+	/*************************************************************************\
+	|* Now create each view and any child views
+	\*************************************************************************/
+	for (NSDictionary *viewInfo in list)
+		{
+		AZView *view = [self _createViewFrom:viewInfo forWindow:nil inView:nil];
+
+		/********************************************************************\
+		|* Set the identifier
+		\********************************************************************/
+		if (view)
+			ok &= [self _setIdentifierOn:view from:viewInfo in:@"top-view"];
+		}
+
+	return ok;
+	}
 
 /*****************************************************************************\
 |* Inflate the Window, checking the class
@@ -198,15 +238,13 @@ NSString * const kZibType	  		= @"type";
 		}
 
 	/*************************************************************************\
-	|* Now create the content-view
+	|* Now create the content-view and any child views
 	\*************************************************************************/
 	if (window)
 		{
 		NSDictionary *viewInfo = info[kZibView];
 		if (viewInfo)
-			{
 			[self _createViewFrom:viewInfo forWindow:window inView:nil];
-			}
 		}
 
 	return ok;
@@ -216,7 +254,7 @@ NSString * const kZibType	  		= @"type";
 |* Create a view
 \*****************************************************************************/
 - (nullable AZView *) _createViewFrom:(NSDictionary *)info
-							forWindow:(AZWindow *)window
+							forWindow:(nullable AZWindow *)window
 							   inView:(nullable AZView *)parentView
 	{
 	AZView *view 		= nil;
@@ -239,7 +277,7 @@ NSString * const kZibType	  		= @"type";
 	view = [[class alloc] initWithDictionary:info];
 	if (view)
 		{
-		if (parentView == nil)
+		if ((window != nil) && (parentView == nil))
 			{
 			view.autoresizingMask = AZViewWidthSizable | AZViewHeightSizable;
 			[window installContentView:view];

@@ -159,12 +159,12 @@ static dispatch_once_t _rectToken;
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
+	[super drawInRect:dirtyRect withPainter:painter];
+
 	if (self.type >= ButtonTypeCheckbox)
 		return [self _drawCheckboxInRect:dirtyRect withPainter:painter];
 
 	NSRect bounds	= self.bounds;
-	[super drawInRect:dirtyRect withPainter:painter];
-
 	NSRect srcL		= _bLeft[self.state + _type];
 	NSRect srcC		= _bCenter[self.state + _type];
 	NSRect srcR		= _bRight[self.state + _type];
@@ -205,8 +205,6 @@ static dispatch_once_t _rectToken;
 \*****************************************************************************/
 - (void) _drawCheckboxInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
-	[super drawInRect:dirtyRect withPainter:painter];
-
 	NSRect b		= self.bounds;
 	int W			= b.size.width;
 	int H			= b.size.height;

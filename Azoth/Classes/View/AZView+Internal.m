@@ -228,6 +228,21 @@
 
 
 /*****************************************************************************\
+|* Called by the painter before it draws the view, to ensure there's a
+|* backing texture in place
+\*****************************************************************************/
+- (void) _installBackingTextureIfNecessary
+	{
+	if (self.bg < 0)
+		{
+		if (![self _installBackingTexture])
+			SDL_Log("Cannot install backing texture into %s [frame:%s]",
+					self.description.UTF8String,
+					NSStringFromRect(self.frame).UTF8String);
+		}
+	}
+
+/*****************************************************************************\
 |* Rendering: Render the texture to the screen.
 \*****************************************************************************/
 - (void) _renderToScreen

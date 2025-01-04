@@ -284,10 +284,6 @@
 	[_subviews addObject:view];
 	view.superview 	= self;
 	view.window		= _window;
-	if (![view _installBackingTexture])
-		SDL_Log("Cannot install backing texture into %s [frame:%s]",
-				view.description.UTF8String,
-				NSStringFromRect(view.frame).UTF8String);
 
 	[view _invalidateTransforms];
 	return YES;
@@ -319,7 +315,7 @@
 
 	view.superview 	= self;
 	view.window		= _window;
-	[view _installBackingTexture];
+	//[view _installBackingTexture];
 	return ok;
 	}
 
@@ -346,7 +342,7 @@
 
 	view.superview 	= self;
 	view.window		= _window;
-	[view _installBackingTexture];
+	//[view _installBackingTexture];
 	return ok;
 	}
 
@@ -469,7 +465,6 @@
 							filled:YES
 							colour:self.backgroundColour];
 	}
-
 
 /*****************************************************************************\
 |* Called by a top-level contentView, check if any of the subviews needs

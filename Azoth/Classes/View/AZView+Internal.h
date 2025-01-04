@@ -33,6 +33,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL) _installBackingTexture;
 
 /*****************************************************************************\
+|* Called by the painter before it draws the view, to ensure there's a
+|* backing texture in place
+\*****************************************************************************/
+- (void) _installBackingTextureIfNecessary;
+
+/*****************************************************************************\
 |* Rendering: Render the texture to the screen.
 \*****************************************************************************/
 - (void) _renderToScreen;
