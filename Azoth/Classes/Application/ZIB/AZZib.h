@@ -25,6 +25,13 @@ extern NSString * const kZibFrame;
 extern NSString * const kZibResizeMask;
 extern NSString * const kZibSubviews;
 extern NSString * const kZibType;
+extern NSString * const kZibAction;
+extern NSString * const kZibOutlet;
+extern NSString * const kZibDestination;
+extern NSString * const kZibId;
+extern NSString * const kZibProperty;
+extern NSString * const kZibSelector;
+extern NSString * const kZibTarget;
 
 @interface AZZib : NSObject
 

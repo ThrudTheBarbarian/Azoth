@@ -5,6 +5,8 @@
 //  Created by Simon Gornall on 12/15/24.
 //
 
+#import <SDL3/SDL.h>
+
 #import "AZControl.h"
 
 @implementation AZControl
@@ -59,9 +61,16 @@
 	{
 	if ((target != nil) && (action != nil))
 		{
-		IMP imp = [target methodForSelector:action];
-		void (*func)(id, SEL, id) = (void *)imp;
-		func(target, action, self);
+		if ([target respondsToSelector:action])
+			{
+			IMP imp = [target methodForSelector:action];
+			void (*func)(id, SEL, id) = (void *)imp;
+			func(target, action, self);
+			}
+		else
+			SDL_Log("Target %s does not respond to selector %s",
+					target.description.UTF8String,
+					NSStringFromSelector(action).UTF8String);
 		}
 	}
 

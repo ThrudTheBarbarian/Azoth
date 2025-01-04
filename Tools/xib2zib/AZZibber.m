@@ -236,6 +236,10 @@
 		class = [self _classFromKey:key];
 	view[@"class"] = class;
 
+	// Add connections if we have them
+	[self _xfer:@"connections" in:vi as:@"connect" in:view];
+
+
 	// Recursively handle subviews
 	NSMutableArray *subviews = NSMutableArray.new;
 	NSDictionary *sv = vi[@"subviews"];

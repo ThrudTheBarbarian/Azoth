@@ -9,6 +9,7 @@
 
 #import "AZApplication.h"
 #import "AZButton.h"
+#import "AZControl.h"
 #import "AZRenderer.h"
 #import "AZTypes.h"
 #import "AZWindow.h"
@@ -34,6 +35,13 @@ NSString * const kZibFrame			= @"frame";
 NSString * const kZibResizeMask		= @"resizeMask";
 NSString * const kZibSubviews  		= @"subviews";
 NSString * const kZibType	  		= @"type";
+NSString * const kZibOutlet	  		= @"outlet";
+NSString * const kZibAction	  		= @"action";
+NSString * const kZibDestination	= @"destination";
+NSString * const kZibId				= @"id";
+NSString * const kZibProperty		= @"property";
+NSString * const kZibSelector		= @"selector";
+NSString * const kZibTarget			= @"target";
 
 
 /*****************************************************************************\
@@ -116,15 +124,123 @@ NSString * const kZibType	  		= @"type";
 - (BOOL) inflateWithOwner:(NSObject *)owner
 			   andOptions:(NSDictionary<AZZibOptionsKey, id> *)options
 	{
-	BOOL  ok = [self _inflateObjects];
-	ok 		&= [self _inflateOwner:owner];
-	ok 		&= [self _inflateWindow];
-	ok 		&= [self _inflateViews];
+	BOOL ok = NO;
+	if (owner)
+		{
+		ok  = [self _inflateObjects];
+		ok &= [self _inflateOwner:owner];
+		ok &= [self _inflateWindow];
+		ok &= [self _inflateViews];
+		ok &= [self _connect];
+
+		ok &= [self _connect:owner];
+		}
+
 	return ok;
 	}
 
 
 // MARK: Private methods
+
+/*****************************************************************************\
+|* Make any connections between the items in the lists we hold
+\*****************************************************************************/
+- (BOOL) _connect
+	{
+	BOOL ok = YES;
+
+	for (NSObject *item in _inflated)
+		ok &= [self _connect:item];
+
+	return ok;
+	}
+
+/*****************************************************************************\
+|* Make any connections between the items in the lists we hold
+\*****************************************************************************/
+- (BOOL) _connect:(NSObject *)item
+	{
+	BOOL ok = YES;
+
+	NSDictionary *conns = _connect[TO_KEY(item)];
+	if (conns)
+		{
+		/*********************************************************************\
+		|* Cope with there being one or multiple outlet connections to make
+		\*********************************************************************/
+		NSArray *list = nil;
+		id element    = conns[kZibOutlet];
+		if (element)
+			{
+			if (![element isKindOfClass:NSArray.class])
+				list = @[element];
+			else
+				list = element;
+
+			/*****************************************************************\
+			|* Connect each outlet
+			\*****************************************************************/
+			for (NSDictionary *cInfo in list)
+				{
+				NSString *value 	= cInfo[kZibDestination];
+				NSString *property	= cInfo[kZibProperty];
+				if (value && property)
+					{
+					NSObject *obj 	= _byId[value];
+					[item setValue:obj forKey:property];
+					}
+				else
+					SDL_Log("property %s (value %s) could not be set on %s",
+							property.UTF8String,
+							value.UTF8String,
+							item.description.UTF8String);
+				}
+			}
+
+		/*********************************************************************\
+		|* Cope with there being one or multiple action connections to make
+		\*********************************************************************/
+		list = nil;
+		element    = conns[kZibAction];
+		if (element && [item isKindOfClass:AZResponder.class])
+			{
+			AZControl *control = (AZControl *)item;
+
+			if (![element isKindOfClass:NSArray.class])
+				list = @[element];
+			else
+				list = element;
+
+			/*****************************************************************\
+			|* Connect each action
+			\*****************************************************************/
+			for (NSDictionary *cInfo in list)
+				{
+				NSString *selectorId	= cInfo[kZibSelector];
+				NSString *targetId 		= cInfo[kZibTarget];
+
+				if (selectorId && targetId)
+					{
+					NSObject *target = _byId[targetId];
+					if (target)
+						{
+						SEL action = NSSelectorFromString(selectorId);
+						[control setAction:action];
+						[control setTarget:target];
+						}
+					else
+						SDL_Log("Selector %s on target %s could not link to %s",
+								selectorId.UTF8String,
+								targetId.UTF8String,
+								item.class.description.UTF8String);
+					}
+				}
+			}
+		}
+
+	return ok;
+	}
+
 
 /*****************************************************************************\
 |* Inflate the Window, checking the class
@@ -133,7 +249,6 @@ NSString * const kZibType	  		= @"type";
 	{
 	BOOL ok			= YES;
 	id info	 		= _zib[kZibView];
-	NSRect frame	= NSZeroRect;
 
 	/*************************************************************************\
 	|* Make sure we actually have a view table. This is not an error.
@@ -160,6 +275,12 @@ NSString * const kZibType	  		= @"type";
 		\********************************************************************/
 		if (view)
 			ok &= [self _setIdentifierOn:view from:viewInfo in:@"top-view"];
+
+		/********************************************************************\
+		|* If we have any connections, store them for later
+		\********************************************************************/
+		if (view && viewInfo[kZibConnect])
+			_connect[TO_KEY(view)] = info[kZibConnect];
 		}
 
 	return ok;
@@ -247,6 +368,15 @@ NSString * const kZibType	  		= @"type";
 			[self _createViewFrom:viewInfo forWindow:window inView:nil];
 		}
 
+	/*************************************************************************\
+	|* If we have any connections, store them for later
+	\*************************************************************************/
+	if (window)
+		{
+		NSDictionary *connections = info[kZibConnect];
+		if (connections)
+			_connect[TO_KEY(window)] = connections;
+		}
 	return ok;
 	}
 
@@ -306,6 +436,13 @@ NSString * const kZibType	  		= @"type";
 		|* Add it to the list of inflated objects
 		\*********************************************************************/
 		[_inflated addObject:view];
+
+		/*********************************************************************\
+		|* If we have any connections, add them to the connect table
+		\*********************************************************************/
+		NSDictionary *connections = info[kZibConnect];
+		if (connections)
+			_connect[TO_KEY(view)] = connections;
 
 		/*********************************************************************\
 		|* And for each subview, do the same thing
@@ -419,17 +556,20 @@ NSString * const kZibType	  		= @"type";
 			{
 			NSObject *obj = class.new;
 
-			NSDictionary *connections = object[kZibConnect];
-			if (connections)
-				_connect[TO_KEY(obj)] = connections;
-
 			// Set the identifier for this object, crucial for any
 			// connection-making later
 			ok = [self _setIdentifierOn:obj from:object in:@"objects"];
 
 			// Add the object to the list of inflated instances
 			if (ok)
+				{
 				[_inflated addObject:obj];
+
+				// Store any connection info we need to
+				NSDictionary *connections = object[kZibConnect];
+				if (connections)
+					_connect[TO_KEY(obj)] = connections;
+				}
 			}
 		else
 			{
