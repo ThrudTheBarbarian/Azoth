@@ -16,10 +16,8 @@
 	/*************************************************************************\
 	|* Try to load a view-xib in this bundle
 	\*************************************************************************/
-
-	[NSBundle loadNibNamed:@"view" owner:self];
-	NSLog(@"self.view=%@", self.view);
 	}
+
 
 
 @end

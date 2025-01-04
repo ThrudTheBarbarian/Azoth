@@ -31,9 +31,11 @@ struct SDL_Window;
 						   styleMask:(NSInteger)styleMask;
 
 /*****************************************************************************\
-|* Add a content view to the window
+|* Add a content view to the window, either make a default one, or install one
+|* we already have ready to go
 \*****************************************************************************/
 - (void) installContentView;
+- (void) installContentView:(AZView *)contentView;
 
 /*****************************************************************************\
 |* Return the window for any given SDL_Window.
@@ -94,7 +96,6 @@ struct SDL_Window;
 
 // The content-view for the window
 @property(strong, nonatomic) AZView *						contentView;
-
 @end
 
 

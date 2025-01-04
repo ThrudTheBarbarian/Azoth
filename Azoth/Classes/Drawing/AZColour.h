@@ -34,6 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (AZColour *) grey37Colour;
 + (AZColour *) grey50Colour;
 + (AZColour *) grey75Colour;
++ (AZColour *) grey95Colour;
 + (AZColour *) magentaColour;
 + (AZColour *) yellowColour;
 + (AZColour *) brownColour;

@@ -50,7 +50,7 @@
 		self.subviews					= [NSMutableArray new];
 		self.superview					= nil;
 		self.bg 						= -1;
-		self.backgroundColour			= [AZColour blackColour];
+		self.backgroundColour			= [AZColour grey95Colour];
 		self.isOpaque					= NO;
 		self.autoresizesSubviews		= YES;
 		self.postFrameNotifications		= YES;

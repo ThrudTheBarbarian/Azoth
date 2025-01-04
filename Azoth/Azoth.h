@@ -31,10 +31,6 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZImageView.h>
 #import <Azoth/AZMenu.h>
 #import <Azoth/AZMenuItem.h>
-#import <Azoth/AZNib.h>
-#import <Azoth/AZNibConnector.h>
-#import <Azoth/AZNibHelpConnector.h>
-#import <Azoth/AZNibLoading.h>
 #import <Azoth/AZNotifications.h>
 #import <Azoth/AZObject.h>
 #import <Azoth/AZOutlineView.h>
@@ -59,4 +55,7 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZView.h>
 #import <Azoth/AZViewController.h>
 #import <Azoth/AZWindow.h>
+#import <Azoth/AZZib.h>
+#import <Azoth/NSBundle+ZIB.h>
+
 

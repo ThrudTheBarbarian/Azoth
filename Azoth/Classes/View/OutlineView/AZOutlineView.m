@@ -25,8 +25,6 @@
 #define DELEGATE(dlg) 	id<AZOutlineViewDelegate> dlg = 					\
 						(id<AZOutlineViewDelegate>)self.delegate
 
-#define TO_STRING(o) 	[NSString stringWithFormat:@"%p", o]
-
 /*****************************************************************************\
 |* "Private" Properties
 \*****************************************************************************/
@@ -113,7 +111,7 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 \*****************************************************************************/
 - (NSInteger) rowForItem:(NSObject *)item
 	{
-	return _itemToRow[TO_STRING(item)].integerValue;
+	return _itemToRow[TO_KEY(item)].integerValue;
 	}
 
 /*****************************************************************************\
@@ -121,7 +119,7 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 \*****************************************************************************/
 - (NSObject *) parentForItem:(NSObject *)item
 	{
-	return _itemToParent[TO_STRING(item)];
+	return _itemToParent[TO_KEY(item)];
 	}
 
 /*****************************************************************************\
@@ -138,7 +136,7 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 \*****************************************************************************/
 - (BOOL) isItemExpanded:(NSObject *)item
 	{
-	return _itemToState[TO_STRING(item)].boolValue;
+	return _itemToState[TO_KEY(item)].boolValue;
 	}
 
 /*****************************************************************************\
@@ -146,7 +144,7 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 \*****************************************************************************/
 - (NSInteger) levelForItem:(NSObject *)item
 	{
-	return _itemToLevel[TO_STRING(item)].integerValue;
+	return _itemToLevel[TO_KEY(item)].integerValue;
 	}
 
 /*****************************************************************************\
@@ -228,7 +226,7 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 						  object:self
 						userInfo:info];
 
-		_itemToState[TO_STRING(item)] = @(NO);
+		_itemToState[TO_KEY(item)] = @(NO);
         [self _invalidateRowCache];
         [self noteNumberOfRowsChanged];
 
@@ -437,12 +435,12 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
     for (NSInteger i = 0; i < numChildren; ++i)
 		{
         NSObject *child = [src outlineView:self child:i ofItem:item];
-		[toRemove removeObject:TO_STRING(child)];
+		[toRemove removeObject:TO_KEY(child)];
 
 		//NSLog(@"got child %@ for row %d, level %d",
 		//      child, (int)_numberOfCachedRows, (int)level);
 		_rowToItem[@(_numberOfCachedRows)] = child;
-		NSString *key = TO_STRING(child);
+		NSString *key = TO_KEY(child);
 
 		_itemToRow[key] 	= @(_numberOfCachedRows);
 		_itemToParent[key] 	= item;
@@ -515,12 +513,12 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 	NSInteger result;
    
 	if (!reload)
-		result = _itemToNumChildren[TO_STRING(item)].integerValue;
+		result = _itemToNumChildren[TO_KEY(item)].integerValue;
 	else
 		{
 		DATASOURCE(src);
 		result = [src outlineView:self numberOfChildrenOfItem:item];
-		_itemToNumChildren[TO_STRING(item)] = @(result);
+		_itemToNumChildren[TO_KEY(item)] = @(result);
 		}
 	return result;
 	}
@@ -558,7 +556,7 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 						userInfo:info];
 
         noteNumberOfRowsChanged			= YES;
-		_itemToState[TO_STRING(item)] 	= @(YES);
+		_itemToState[TO_KEY(item)] 	= @(YES);
         [self _invalidateRowCache];
 
         [nc postNotificationName:AZOutlineViewItemDidExpandNotification
@@ -673,7 +671,7 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 		{
 		iv = (AZOutlineItemView *)[_outlineColumn dataViewForRow:i];
 		NSObject *item  	= _rowToItem[@(i)];
-		NSString *key 		= TO_STRING(item);
+		NSString *key 		= TO_KEY(item);
 		NSInteger level 	= _itemToLevel[key].integerValue;
 		BOOL hasChildren	= _itemToNumChildren[key].integerValue > 0;
 		BOOL isOpen			= _itemToState[key].boolValue;
@@ -695,7 +693,7 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 - (void) _itemDisclosureClicked:(AZOutlineItemView *)view
 	{
 	AZOutlineItemViewReason reason = view.reason;
-	NSString *key = TO_STRING(view.item);
+	NSString *key = TO_KEY(view.item);
 
 	if (reason == AZOutlineViewItemDisclosed)
 		{

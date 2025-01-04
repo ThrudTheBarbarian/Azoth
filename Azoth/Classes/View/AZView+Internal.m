@@ -193,7 +193,7 @@
 		AZRenderer *azr = AZRenderer.renderer;
 
 		SDL_LockMutex(self.textureMutex);
-		if (self.bg)
+		if (self.bg >= 0)
 			[azr releaseTexture:self.bg];
 
 		self.bg = [azr createTextureOfSize:NSMakeSize(w,h)];

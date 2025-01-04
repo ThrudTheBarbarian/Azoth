@@ -122,7 +122,7 @@
 	}
 
 /*****************************************************************************\
-|* Predefined colours : very light grey
+|* Predefined colours : very dark grey
 \*****************************************************************************/
 + (AZColour *) grey12Colour
 	{
@@ -137,7 +137,7 @@
 	}
 
 /*****************************************************************************\
-|* Predefined colours : light grey
+|* Predefined colours : dark grey
 \*****************************************************************************/
 + (AZColour *) grey25Colour
 	{
@@ -152,7 +152,7 @@
 	}
 
 /*****************************************************************************\
-|* Predefined colours : sort of light grey
+|* Predefined colours : darkish grey
 \*****************************************************************************/
 + (AZColour *) grey37Colour
 	{
@@ -182,7 +182,7 @@
 	}
 
 /*****************************************************************************\
-|* Predefined colours : dark grey
+|* Predefined colours : light grey
 \*****************************************************************************/
 + (AZColour *) grey75Colour
 	{
@@ -192,6 +192,21 @@
 	dispatch_once(&onceToken,
 		^{
 		colour = [[AZColour alloc] initWithR:0.75f g:0.75f b:0.75f a:1.f];
+		});
+	return colour;
+	}
+
+/*****************************************************************************\
+|* Predefined colours : really light grey
+\*****************************************************************************/
++ (AZColour *) grey95Colour
+	{
+	static AZColour *colour = nil;
+	static dispatch_once_t onceToken;
+
+	dispatch_once(&onceToken,
+		^{
+		colour = [[AZColour alloc] initWithR:0.95f g:0.95f b:0.95f a:1.f];
 		});
 	return colour;
 	}

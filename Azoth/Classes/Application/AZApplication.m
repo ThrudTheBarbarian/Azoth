@@ -23,6 +23,7 @@
 #import "AZView.h"
 #import "AZView+Internal.h"
 #import "AZWindow.h"
+#import "NSBundle+ZIB.h"
 
 NSString * const kTextureType	= @"texture";
 
@@ -81,27 +82,12 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 	}
 
 /*****************************************************************************\
-|* Application startup code
+|* Bootstrap the fonts and user-interface maps
 \*****************************************************************************/
-- (void) startWithArgc:(int)argc argv:(char **)argv
+- (void) _bootstrap
 	{
-	AZRenderer *azr = nil;
+	AZRenderer *azr = AZRenderer.renderer;
 
-	/*************************************************************************\
-    |* Create the window
-    \*************************************************************************/
-	_window = [AZWindow windowWithContentRect:_initialFrame
-									styleMask:_windowFlags];
-    if (self.window == nil)
-		{
-        SDL_Log("Couldn't create main window: %s", SDL_GetError());
-		self.viability = SDL_APP_FAILURE;
-		}
-	else
-		{
-		azr = [AZRenderer renderer];
-		[self.window installContentView];
-		}
 	/*************************************************************************\
     |* Create the text renderer for any textboxes
     \*************************************************************************/
@@ -115,6 +101,47 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 		AZIconAtlas *atlas = [AZIconAtlas atlasWithName:name];
 		if (atlas)
 			_atlantes[name] = atlas;
+		}
+	}
+
+/*****************************************************************************\
+|* Application startup code
+\*****************************************************************************/
+- (void) startWithArgc:(int)argc argv:(char **)argv
+	{
+	AZRenderer *azr = nil;
+
+	/*************************************************************************\
+    |* Look for main.zib and load it if we can
+    \*************************************************************************/
+	NSString *rsrc 		= NSBundle.mainBundle.resourcePath;
+	NSString *zibPath	= [rsrc stringByAppendingPathComponent:@"main.zib"];
+	NSFileManager *fm	= NSFileManager.defaultManager;
+	if ([fm fileExistsAtPath:zibPath])
+		{
+		[NSBundle.mainBundle loadNibNamed:zibPath
+									owner:self
+								  options:NSDictionary.new];
+		}
+
+	/*************************************************************************\
+    |* Create the window if we didn't load one from a ZIB
+    \*************************************************************************/
+    if (_window == nil)
+		{
+		_window = [AZWindow windowWithContentRect:_initialFrame
+										styleMask:_windowFlags];
+		if (self.window == nil)
+			{
+			SDL_Log("Couldn't create main window: %s", SDL_GetError());
+			self.viability = SDL_APP_FAILURE;
+			}
+		else
+			{
+			azr = [AZRenderer renderer];
+			[self.window installContentView];
+			[self _bootstrap];
+			}
 		}
 
 	/*************************************************************************\

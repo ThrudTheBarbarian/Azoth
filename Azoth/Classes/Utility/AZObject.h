@@ -37,6 +37,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (AZObject *) objectWithRect:(NSRect)rect;
 + (AZObject *) objectWithRect:(NSRect)rect andHint:(nullable NSString *)hint;
 
+
+/*****************************************************************************\
+|* Properties
+\*****************************************************************************/
 @property(copy, nonatomic, nullable) NSString *					hint;
 @property(assign, nonatomic) void *								ptr;
 @property(assign, nonatomic) NSRect								rect;

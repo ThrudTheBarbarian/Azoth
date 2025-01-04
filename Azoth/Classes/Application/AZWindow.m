@@ -132,8 +132,15 @@ static NSMutableDictionary<NSNumber *, AZWindow *> * _windows = nil;
 	{
 	int w,h;
 	SDL_GetWindowSizeInPixels(_window, &w, &h);
-
 	AZView *contentView 	= [AZView viewWithFrame:NSMakeRect(0,0,w,h)];
+	[self installContentView:contentView];
+	}
+
+/*****************************************************************************\
+|* Add a content view to the window
+\*****************************************************************************/
+- (void) installContentView:(AZView *)contentView
+	{
 	contentView.window		= self;
 	NSNumber *windowId 		= @(SDL_GetWindowID(_window));
 
@@ -202,6 +209,15 @@ static NSMutableDictionary<NSNumber *, AZWindow *> * _windows = nil;
 		[responder becomeFirstResponder];
 		}
 	return changed;
+	}
+
+/*****************************************************************************\
+|* Allow setting of the title
+\*****************************************************************************/
+- (void) setTitle:(NSString *)title
+	{
+	_title = title;
+	SDL_SetWindowTitle(_window, title.UTF8String);
 	}
 
 /*****************************************************************************\

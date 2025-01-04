@@ -93,6 +93,7 @@
 		F4BD7F012D2654F10041034B /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
 		F4BD7F022D2654F10041034B /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
 		F4BD7F032D2654F50041034B /* Azoth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; };
+		F4BD7F792D27B02B0041034B /* xib2zib in CopyFiles */ = {isa = PBXBuildFile; fileRef = F4BD7F5B2D279E3C0041034B /* xib2zib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -206,6 +207,16 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F4BD7F592D279E3C0041034B /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = "$(HOME)/bin";
+			dstSubfolderSpec = 0;
+			files = (
+				F4BD7F792D27B02B0041034B /* xib2zib in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -223,6 +234,7 @@
 		F4B6A1402D0BB0E80033580D /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		F4B6A3B62D0F84C00033580D /* genRsrc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = genRsrc.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F4BD7ED02D2651E80041034B /* NibTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NibTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F4BD7F5B2D279E3C0041034B /* xib2zib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = xib2zib; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -236,6 +248,8 @@
 				Classes/Application/AZEventSink.h,
 				Classes/Application/AZWindow.h,
 				Classes/Application/Controllers/AZViewController.h,
+				Classes/Application/ZIB/AZZib.h,
+				"Classes/Application/ZIB/NSBundle+ZIB.h",
 				Classes/Base/AZControl.h,
 				Classes/Base/AZResponder.h,
 				Classes/Controls/AZButton.h,
@@ -304,6 +318,7 @@
 				NibTest/AppDelegate.m,
 				NibTest/Assets.xcassets,
 				NibTest/main.m,
+				NibTest/NibView.m,
 				NibTest/view.xib,
 			);
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
@@ -361,6 +376,10 @@
 				genRsrc/Resources/ui,
 				genRsrc/RsrcMaker.h,
 				genRsrc/RsrcMaker.m,
+				xib2zib/ArgParser.h,
+				xib2zib/ArgParser.m,
+				xib2zib/AZDictionary.m,
+				xib2zib/main.m,
 			);
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
 		};
@@ -393,9 +412,19 @@
 				NibTest/Assets.xcassets,
 				NibTest/main.m,
 				NibTest/NibView.m,
-				NibTest/view.xib,
+				NibTest/Resources/main.zib,
 			);
 			target = F4BD7ECF2D2651E80041034B /* NibTest */;
+		};
+		F4BD7F652D279E970041034B /* Exceptions for "Tools" folder in "xib2zib" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				xib2zib/ArgParser.m,
+				xib2zib/AZDictionary.m,
+				xib2zib/AZZibber.m,
+				xib2zib/main.m,
+			);
+			target = F4BD7F5A2D279E3C0041034B /* xib2zib */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -434,6 +463,7 @@
 			exceptions = (
 				F4B3BF442D264D91000C343A /* Exceptions for "Tools" folder in "Azoth" target */,
 				F4B3BF452D264D91000C343A /* Exceptions for "Tools" folder in "genRsrc" target */,
+				F4BD7F652D279E970041034B /* Exceptions for "Tools" folder in "xib2zib" target */,
 			);
 			explicitFolders = (
 				genRsrc/Resources/cursors,
@@ -542,6 +572,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F4BD7F582D279E3C0041034B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -568,6 +605,7 @@
 				F49557082D231A2A00D6B8A6 /* AZImageView.app */,
 				F454E1FD2D24D1DA002D2DAB /* AZOutline.app */,
 				F4BD7ED02D2651E80041034B /* NibTest.app */,
+				F4BD7F5B2D279E3C0041034B /* xib2zib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -745,6 +783,25 @@
 			productReference = F4BD7ED02D2651E80041034B /* NibTest.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F4BD7F5A2D279E3C0041034B /* xib2zib */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F4BD7F5F2D279E3C0041034B /* Build configuration list for PBXNativeTarget "xib2zib" */;
+			buildPhases = (
+				F4BD7F572D279E3C0041034B /* Sources */,
+				F4BD7F582D279E3C0041034B /* Frameworks */,
+				F4BD7F592D279E3C0041034B /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = xib2zib;
+			packageProductDependencies = (
+			);
+			productName = xib2zib;
+			productReference = F4BD7F5B2D279E3C0041034B /* xib2zib */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -777,6 +834,9 @@
 					F4BD7ECF2D2651E80041034B = {
 						CreatedOnToolsVersion = 16.1;
 					};
+					F4BD7F5A2D279E3C0041034B = {
+						CreatedOnToolsVersion = 16.1;
+					};
 				};
 			};
 			buildConfigurationList = F41BC64C2D0A61BA00E61EDD /* Build configuration list for PBXProject "Azoth" */;
@@ -800,6 +860,7 @@
 				F49557072D231A2A00D6B8A6 /* AZImageView */,
 				F454E1FC2D24D1DA002D2DAB /* AZOutline */,
 				F4BD7ECF2D2651E80041034B /* NibTest */,
+				F4BD7F5A2D279E3C0041034B /* xib2zib */,
 			);
 		};
 /* End PBXProject section */
@@ -900,6 +961,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F4BD7ECC2D2651E80041034B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4BD7F572D279E3C0041034B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1434,6 +1502,22 @@
 			};
 			name = Release;
 		};
+		F4BD7F602D279E3C0041034B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F4BD7F612D279E3C0041034B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1505,6 +1589,15 @@
 			buildConfigurations = (
 				F4BD7EDE2D2651E90041034B /* Debug */,
 				F4BD7EDF2D2651E90041034B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F4BD7F5F2D279E3C0041034B /* Build configuration list for PBXNativeTarget "xib2zib" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F4BD7F602D279E3C0041034B /* Debug */,
+				F4BD7F612D279E3C0041034B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

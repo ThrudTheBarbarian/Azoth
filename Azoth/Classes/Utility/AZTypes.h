@@ -400,6 +400,11 @@ typedef struct
 	} AZNotifyMap;
 
 /*****************************************************************************\
+|* ZIB constants
+\*****************************************************************************/
+typedef NSString * AZZibOptionsKey;
+
+/*****************************************************************************\
 |* Popup menu callback
 \*****************************************************************************/
 typedef void (^MenuDoneBlock)(BOOL menuClicked);
@@ -423,6 +428,13 @@ typedef void (^MenuDoneBlock)(BOOL menuClicked);
 	NSMakeRect(sdlrect.x, sdlrect.y, sdlrect.w, sdlrect.h)
 
 #define IS_ZERORECT(x)	NSEqualRects((x),NSZeroRect)
+
+
+/*****************************************************************************\
+|* Used for putting an object reference into a dictionary as a key. Then it's
+|* easy to look up the object's value because it's just %p...
+\*****************************************************************************/
+#define TO_KEY(o) 		[NSString stringWithFormat:@"%p", o]
 
 /*****************************************************************************\
 |* Less typing :)

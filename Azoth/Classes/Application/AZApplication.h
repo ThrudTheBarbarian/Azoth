@@ -85,38 +85,38 @@ struct TTF_TextEngine;
 \*****************************************************************************/
 
 // The main application window
-@property(strong, nonatomic) AZWindow *					window;
+@property(strong, nonatomic) AZWindow *						window;
 
 // The delegate for the application
-@property(strong, nonatomic) id<AZAppDelegate>			delegate;
+@property(strong, nonatomic) id<AZAppDelegate>				delegate;
 
 // The application viability - whether it can continue
-@property(assign, nonatomic) int						viability;
+@property(assign, nonatomic) int							viability;
 
 // The system font info, the app provides default values
 // before notifying the delegate that it has been started
 // so the delegate can override these at that point
-@property(assign, nonatomic) AZFontStyle				systemFontInfo;
+@property(assign, nonatomic) AZFontStyle					systemFontInfo;
 
 // The system font itself
-@property(strong, nonatomic) AZFont *					systemFont;
+@property(strong, nonatomic) AZFont *						systemFont;
 
 // And an appropriately sized control font
-@property(strong, nonatomic) AZFont *					controlFont;
+@property(strong, nonatomic) AZFont *						controlFont;
 
 // The Initial frame at startup. If not set, a default
 // 640x480 size will be used
-@property(assign, nonatomic) NSRect						initialFrame;
+@property(assign, nonatomic) NSRect							initialFrame;
 
 // Any window flags to be passed to the call
 // SDL_CreateWindowAndRenderer
-@property(assign, nonatomic) NSInteger					windowFlags;
+@property(assign, nonatomic) NSInteger						windowFlags;
 
 // The TTF render-engine used for text editing
-@property(assign, nonatomic) struct TTF_TextEngine * 	textEngine;
+@property(assign, nonatomic) struct TTF_TextEngine * 		textEngine;
 
 // The main menu, pulled from a NIB
-@property(assign, nonatomic) AZMenu * 					mainMenu;
+@property(assign, nonatomic) AZMenu * 						mainMenu;
 @end
 
 NS_ASSUME_NONNULL_END

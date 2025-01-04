@@ -39,7 +39,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 	NSMutableArray<NSString *> *args = [NSMutableArray new];
 	for (int i=1; i<argc; i++)
 		[args addObject:[NSString stringWithUTF8String:argv[i]]];
-	RsrcMaker *rsrc = [[RsrcMaker alloc] initWithArgs:args];
+	[[RsrcMaker alloc] initWithArgs:args];
 
     return SDL_APP_SUCCESS;
 	}
