@@ -19,5 +19,9 @@
 	}
 
 
+- (void) clicked:(id)sender
+	{
+	NSLog(@"Button '%@' was clicked", [sender stringValue]);
+	}
 
 @end

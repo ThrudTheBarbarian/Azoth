@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AppDelegate : NSObject <AZAppDelegate>
+@interface AppDelegate : AZAppDelegate <AZAppDelegate>
 
 @end
 

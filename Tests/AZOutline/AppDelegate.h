@@ -7,9 +7,9 @@
 
 #import <Azoth/Azoth.h>
 
-@interface AppDelegate : NSObject <AZAppDelegate,
-								   AZOutlineViewDelegate,
-								   AZOutlineViewDataSource>
+@interface AppDelegate : AZAppDelegate <AZAppDelegate,
+										AZOutlineViewDelegate,
+										AZOutlineViewDataSource>
 
 
 @end

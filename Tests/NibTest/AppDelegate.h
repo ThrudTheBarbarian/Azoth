@@ -10,9 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AppDelegate : NSObject <AZAppDelegate>
-
-@property(strong) IBOutlet AZView *   view;
+@interface AppDelegate : AZAppDelegate <AZAppDelegate>
 
 @end
 
