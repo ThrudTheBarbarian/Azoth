@@ -20,6 +20,7 @@
 #import "AZTableView.h"
 #import "AZTypes.h"
 #import "AZView+Internal.h"
+#import "AZZib.h"
 
 #define DEFAULT_ROWHEIGHT		(30.f)
 #define HEADER_ROWHEIGHT		(25.f)
@@ -89,37 +90,99 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	{
     if (self = [super initWithFrame:frame])
 		{
-		static dispatch_once_t onceToken;
-		dispatch_once(&onceToken,
-			^{
-			[self _fetchRects];
-			});
-
-		_rowHeight 					= DEFAULT_ROWHEIGHT;
-		_spacing 					= NSMakeSize(3.0,1.0);
-		_offset				 		= NSMakePoint(0,0);
-
-		// the default isn't actually given in the spec, but this seems
-		// more like default behavior
-		_autoresizeColumns 			= YES;
-
-		_tableColumns 				= [NSMutableArray  new];
-		self.backgroundColour 		= AZColour.controlBackgroundColour;
-		_gridColour 				= AZColour.gridColour;
-		_gridStyleMask 				= AZTableViewSolidGridLineMask;
-		_alternateRowColours 		= NO;
-		_usesHeader					= NO;
-		_headerView				 	= nil;
-		_pool 						= [NSMutableDictionary new];
-		_visibleRows			 	= [NSMutableIndexSet new];
-		_selectedRowIndexes 		= [NSIndexSet new];
-		_editedRow 					= -1;
-		_allowsMultipleSelection 	= YES;
-		_allowsEmptySelection 		= YES;
+		[self _commonTableInit];
 		}
     return self;
 	}
 
+/*****************************************************************************\
+|* Configuration via dictionary. This is called by the NIB loader, but is a
+|* valid way to create the view
+\*****************************************************************************/
+- (instancetype) initWithDictionary:(NSDictionary *)info;
+	{
+	if (self = [super initWithDictionary:info])
+		{
+		[self _commonTableInit];
+
+		_usesHeader 	= [info[kZibHasHeaderView] isEqualToString:@"YES"];
+
+		BOOL multi		= [info[kZibSelectMultiple] isEqualToString:@"YES"];
+		_allowsMultipleSelection = multi;
+
+		NSNumber *rh	= (NSNumber *) info[kZibRowHeight];
+		if (rh)
+			_rowHeight	= rh.intValue;
+
+		NSArray *cols 	= nil;
+		id element 		= info[kZibColumns];
+		if ([element isKindOfClass:NSArray.class])
+			cols = element;
+		else
+			cols = @[element];
+
+		int idx = 0;
+		for (NSDictionary *colInfo in cols)
+			{
+			NSString *ident = colInfo[kZibIdentififer];
+			if (ident == nil)
+				ident = [NSString stringWithFormat:@"column%d", idx];
+
+			AZTableColumn *col = [[AZTableColumn alloc] initWithIdentifier:ident];
+
+			NSNumber *v = (NSNumber *) colInfo[kZibMaxWidth];
+			if (v)
+				[col setMaxWidth:v.floatValue];
+
+			v = (NSNumber *) colInfo[kZibMinWidth];
+			if (v)
+				[col setMinWidth:v.floatValue];
+
+			v = (NSNumber *) colInfo[kZibWidth];
+			if (v)
+				[col setWidth:v.floatValue];
+			idx ++;
+
+			[self addTableColumn:col];
+			}
+
+		}
+	return self;
+	}
+	
+/*****************************************************************************\
+|* Common initialisation between -withFrame and -withDictionary
+\*****************************************************************************/
+- (void) _commonTableInit
+	{
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken,
+		^{
+		[self _fetchRects];
+		});
+
+	_rowHeight 					= DEFAULT_ROWHEIGHT;
+	_spacing 					= NSMakeSize(3.0,1.0);
+	_offset				 		= NSMakePoint(0,0);
+
+	// the default isn't actually given in the spec, but this seems
+	// more like default behavior
+	_autoresizeColumns 			= YES;
+
+	_tableColumns 				= [NSMutableArray  new];
+	self.backgroundColour 		= AZColour.controlBackgroundColour;
+	_gridColour 				= AZColour.gridColour;
+	_gridStyleMask 				= AZTableViewSolidGridLineMask;
+	_alternateRowColours 		= NO;
+	_usesHeader					= NO;
+	_headerView				 	= nil;
+	_pool 						= [NSMutableDictionary new];
+	_visibleRows			 	= [NSMutableIndexSet new];
+	_selectedRowIndexes 		= [NSIndexSet new];
+	_editedRow 					= -1;
+	_allowsMultipleSelection 	= YES;
+	_allowsEmptySelection 		= YES;
+	}
 
 /*****************************************************************************\
 |* Clean up on dealloc
@@ -705,7 +768,16 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 
 
 
-// MARK: Send notifications
+// MARK: Send/Receive notifications
+
+/*****************************************************************************\
+|* We've just been loaded from the NIB and all the connections are set up
+\*****************************************************************************/
+- (void) awakeFromNib
+	{
+	[self tile];
+	[self reloadData];
+	}
 
 /*****************************************************************************\
 |* Properly replace the delegate, invalidating any old notifications etc.

@@ -144,7 +144,8 @@
 			@"slider"				: @"AZSlider",
 			@"textField"			: @"AZTextField",
 			@"scrollView"			: @"AZScrollView",
-			@"clipView"				: @"AZClipView"
+			@"clipView"				: @"AZClipView",
+			@"tableView"			: @"AZTableView"
 			};
 		});
 
@@ -222,7 +223,8 @@
 				@"segmentedControl"	: @"_handleSegmentedControlWithInfo:for:",
 				@"slider"			: @"_handleSliderWithInfo:for:",
 				@"textField"		: @"_handleTextFieldWithInfo:for:",
-				@"scrollView"		: @"_handleScrollViewWithInfo:for:"
+				@"scrollView"		: @"_handleScrollViewWithInfo:for:",
+				@"tableView"		: @"_handleTableViewWithInfo:for:"
 				};
 		});
 
@@ -287,7 +289,7 @@
 	}
 
 /*****************************************************************************\
-|* Called when this is a slider-class. God dynamic dispatch is awesome.
+|* Called when this is a textfield-class. $deity, dynamic-dispatch is awesome.
 \*****************************************************************************/
 - (void) _handleTextFieldWithInfo:(NSDictionary *)vi
 							  for:(NSMutableDictionary *)view
@@ -296,6 +298,7 @@
 	[self _xfer:@"editable" in:cellInfo as:@"editable" in:view];
 	[self _xfer:@"selectable" in:cellInfo as:@"selectable" in:view];
 	[self _xfer:@"drawsBackground" in:cellInfo as:@"drawsBackground" in:view];
+	[self _xfer:@"title" in:cellInfo as:@"title" in:view];
 	[self _xfer:@"sendsActionOnEndEditing" in:cellInfo
 			 as:@"sendsActionOnEndEditing" in:view];
 
@@ -323,6 +326,63 @@
 	else
 		view[@"type"] = @"square";
 	}
+
+/*****************************************************************************\
+|* Called when this is a table-class.
+\*****************************************************************************/
+- (void) _handleTableViewWithInfo:(NSDictionary *)vi
+							  for:(NSMutableDictionary *)view
+	{
+	[self _xfer:@"rowHeight" in:vi as:@"rowHeight" in:view];
+	[self _xfer:@"multipleSelection" in:vi as:@"multipleSelection" in:view];
+
+	NSArray *colours = nil;
+		id element = vi[@"color"];
+	if (element != nil)
+		{
+		if ([element isKindOfClass:NSArray.class])
+			colours = element;
+		else
+			colours = @[element];
+
+		for (NSDictionary *colour in colours)
+			{
+			NSString *key = colour[@"key"];
+			if ([key isEqualToString:@"gridColor"])
+				view[@"gridColor"] = colour[@"name"];
+			else if ([key isEqualToString:@"backgroundColor"])
+				view[@"background"] = colour[@"name"];
+			}
+		}
+
+	element = vi[@"headerView"];
+	view[@"hasHeaderView"] = (element != nil) ? @"YES" : @"NO";
+
+	NSArray *list = nil;
+	element = [vi valueForKeyPath:@"tableColumns.tableColumn"];
+	if ([element isKindOfClass:NSArray.class])
+		list = element;
+	else
+		list = @[element];
+
+	NSMutableArray *columns = [NSMutableArray new];
+	for (NSDictionary *column in list)
+		{
+		NSDictionary *col = [NSMutableDictionary new];
+
+		[self _xfer:@"id" in:column as:@"id" in:col];
+		[self _xfer:@"identifier" in:column as:@"identifier" in:col];
+		[self _xfer:@"maxWidth" in:column as:@"maxWidth" in:col];
+		[self _xfer:@"minWidth" in:column as:@"minWidth" in:col];
+		[self _xfer:@"width" in:column as:@"width" in:col];
+
+		[columns addObject:col];
+		}
+
+	if (columns.count)
+		view[@"columns"] = columns;
+	}
+
 /*****************************************************************************\
 |* Called when this is a scrollview.
 \*****************************************************************************/

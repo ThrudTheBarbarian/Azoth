@@ -50,6 +50,18 @@ extern NSString * const kZibVLineScroll;
 extern NSString * const kZibVPageScroll;
 extern NSString * const kZibHScroller;
 extern NSString * const kZibVScroller;
+extern NSString * const kZibHasHeaderView;
+extern NSString * const kZibSelectMultiple;
+extern NSString * const kZibRowHeight;
+extern NSString * const kZibColumns;
+extern NSString * const kZibIdentififer;
+extern NSString * const kZibMaxWidth;
+extern NSString * const kZibMinWidth;
+
+@interface NSObject (AZZib)
+- (void) awakeFromNib;
+@end
+
 
 @interface AZZib : NSObject
 

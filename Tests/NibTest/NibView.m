@@ -16,7 +16,7 @@
 	{
 	if (self = [super initWithFrame:frame])
 		{
-		self.backgroundColour = AZColour.purpleColour;
+		self.backgroundColour = AZColour.grey75Colour;
 		}
 	return self;
 	}
@@ -29,7 +29,7 @@
 	{
 	if (self = [super initWithDictionary:info])
 		{
-		self.backgroundColour = AZColour.purpleColour;
+		self.backgroundColour = AZColour.grey75Colour;
 		}
 	return self;
 	}

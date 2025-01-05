@@ -10,7 +10,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AppDelegate : AZAppDelegate <AZAppDelegate>
+@interface AppDelegate : AZAppDelegate <AZAppDelegate,
+										AZTableViewDelegate,
+										AZTableViewDataSource>
 
 @end
 

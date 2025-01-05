@@ -175,6 +175,9 @@ static float _dh[STATE_NUM];
 		else
 			self.type = TextFieldSquare;
 
+		NSString *titleText = info[kZibTitle];
+		if (titleText)
+			self.stringValue = titleText;
 		}
 	return self;
 	}

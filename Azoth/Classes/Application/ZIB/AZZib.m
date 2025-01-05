@@ -13,6 +13,7 @@
 #import "AZControl.h"
 #import "AZRenderer.h"
 #import "AZScrollView.h"
+#import "AZTableView.h"
 #import "AZTypes.h"
 #import "AZWindow.h"
 #import "AZView.h"
@@ -62,6 +63,13 @@ NSString * const kZibVLineScroll	= @"dvLine";
 NSString * const kZibVPageScroll	= @"dvPage";
 NSString * const kZibHScroller		= @"hscroller";
 NSString * const kZibVScroller		= @"vscroller";
+NSString * const kZibHasHeaderView	= @"hasHeaderView";
+NSString * const kZibSelectMultiple	= @"multipleSelection";
+NSString * const kZibRowHeight		= @"rowHeight";
+NSString * const kZibColumns		= @"columns";
+NSString * const kZibIdentififer	= @"identifier";
+NSString * const kZibMaxWidth		= @"maxWidth";
+NSString * const kZibMinWidth		= @"minWidth";
 
 
 /*****************************************************************************\
@@ -147,13 +155,22 @@ NSString * const kZibVScroller		= @"vscroller";
 	BOOL ok = NO;
 	if (owner)
 		{
+		/*********************************************************************\
+		|* Do all the object inflation / connection
+		\*********************************************************************/
 		ok  = [self _inflateObjects];
 		ok &= [self _inflateOwner:owner];
 		ok &= [self _inflateWindow];
 		ok &= [self _inflateViews];
 		ok &= [self _connect];
-
 		ok &= [self _connect:owner];
+
+		/*********************************************************************\
+		|* And then tell any object we inflated that it's almost showtime
+		\*********************************************************************/
+		for (NSObject * object in _inflated)
+			if ([object respondsToSelector:@selector(awakeFromNib)])
+				[object awakeFromNib];
 		}
 
 	return ok;
@@ -493,9 +510,11 @@ NSString * const kZibVScroller		= @"vscroller";
 		NSArray *subviews = info[kZibSubviews];
 		for (NSDictionary *subview in subviews)
 			[self _createViewFrom:subview forWindow:window inView:view];
+
 		}
 	else
 		SDL_Log("ZIB: Cannot create view of type %s", className.UTF8String);
+
 
 	return view;
 	}
