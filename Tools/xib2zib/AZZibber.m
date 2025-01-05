@@ -136,10 +136,11 @@
 	dispatch_once(&onceToken,
 		^{
 		map = @{
-			@"customView" 	: @"AZView",
-			@"view" 		: @"AZView",
-			@"button"		: @"AZButton",
-			@"popUpButton"	: @"AZPopupButton"
+			@"customView" 			: @"AZView",
+			@"view" 				: @"AZView",
+			@"button"				: @"AZButton",
+			@"popUpButton"			: @"AZPopupButton",
+			@"segmentedControl"		: @"AZSegmentedControl"
 			};
 		});
 
@@ -212,8 +213,9 @@
 	dispatch_once(&onceToken,
 		^{
 		map = 	@{
-				@"button"		: @"_handleButtonWithInfo:for:",
-				@"popUpButton"	: @"_handlePopUpButtonWithInfo:for:"
+				@"button"			: @"_handleButtonWithInfo:for:",
+				@"popUpButton"		: @"_handlePopUpButtonWithInfo:for:",
+				@"segmentedControl"	: @"_handleSegmentedControlWithInfo:for:"
 				};
 		});
 
@@ -297,6 +299,18 @@
 	[self _xfer:@"menu" in:cellInfo as:@"menu" in:view];
 	[self _xfer:@"selectedItem" in:cellInfo as:@"select" in:view];
 	[self _xfer:@"pullsDown" in:cellInfo as:@"pullsDown" in:view];
+	}
+
+/*****************************************************************************\
+|* Called when this is a pop-up-button-class.
+\*****************************************************************************/
+- (void) _handleSegmentedControlWithInfo:(NSDictionary *)vi
+									 for:(NSMutableDictionary *)view
+	{
+	NSDictionary *cellInfo = vi[@"segmentedCell"];
+	[self _xfer:@"alignment" in:cellInfo as:@"align" in:view];
+	[self _xfer:@"menu" in:cellInfo as:@"menu" in:view];
+	[self _xfer:@"segments.segment" in:cellInfo as:@"segments" in:view];
 	}
 
 /*****************************************************************************\

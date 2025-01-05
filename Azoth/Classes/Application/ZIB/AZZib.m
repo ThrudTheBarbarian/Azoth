@@ -44,7 +44,9 @@ NSString * const kZibSelector		= @"selector";
 NSString * const kZibTarget			= @"target";
 NSString * const kZibPullsDown		= @"pullsDown";
 NSString * const kZibSelect			= @"select";
-
+NSString * const kZibSegments		= @"segments";
+NSString * const kZibLabel			= @"label";
+NSString * const kZibWidth			= @"width";
 
 /*****************************************************************************\
 |* Access to the application's private methods

@@ -65,14 +65,8 @@ static dispatch_once_t _rectToken;
 	{
 	if (self = [super initWithFrame:frame])
 		{
-		dispatch_once(&_rectToken,
-			^{
-			[self _fetchRects];
-			});
-
-		self.backgroundColour 	= [AZColour clearColour];
+		[self _commonButtonInit];
 		self.stringValue 		= @"Button";
-		self.imagePosition		= AZImageLeft;		// Only used in checkbox
 		self.type	 			= ButtonTypePlain;
 		}
 	return self;
@@ -101,21 +95,30 @@ static dispatch_once_t _rectToken;
 	{
 	if (self = [super initWithDictionary:info])
 		{
-		dispatch_once(&_rectToken,
-			^{
-			[self _fetchRects];
-			});
-
-		self.backgroundColour 	= [AZColour clearColour];
-		self.imagePosition		= AZImageLeft;		// Only used in checkbox
-		self.type	 			= ButtonTypePlain;
+		[self _commonButtonInit];
 		self.stringValue 		= [info AZStringWithKey:kZibTitle
 											  orDefault:@"Button"];
 
 		if ([info[kZibType] isEqualToString:@"roundRect"])
 			self.type = ButtonTypeRounded;
+		else
+			self.type = ButtonTypePlain;
 		}
 	return self;
+	}
+
+/*****************************************************************************\
+|* Common initialisation between -withFrame and -withDictionary
+\*****************************************************************************/
+- (void) _commonButtonInit
+	{
+	dispatch_once(&_rectToken,
+		^{
+		[self _fetchRects];
+		});
+
+	self.backgroundColour 	= [AZColour clearColour];
+	self.imagePosition		= AZImageLeft;		// Only used in checkbox
 	}
 
 /*****************************************************************************\

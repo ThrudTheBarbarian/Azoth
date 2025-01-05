@@ -15,6 +15,7 @@
 #import "AZRenderer.h"
 #import "AZSegmentedControl.h"
 #import "AZWindow.h"
+#import "AZZib.h"
 
 #define SEGMENT_LEADING   		6
 #define SEGMENT_TRAILING		6
@@ -63,20 +64,65 @@ typedef struct
 
 	if (self = [super initWithFrame:frame])
 		{
-		_info 				= NULL;
-		_numLabels 			= 0;
-
-		// Insert a dummy segment (which will certainly be overwritten)
-		// just so we can set up the selected state coherently
-		[self setLabel:@"[x]" forSegment:0];
-		_trackingMode			= AZSegmentSwitchTrackingSelectOne;
-		_info[0].selected		= YES;
-
-		self.backgroundColour	= AZColour.clearColour;
+		[self _commonSegmentedControlInit];
 		}
 
 	return self;
 	}
+
+/*****************************************************************************\
+|* Configuration via dictionary. This is called by the NIB loader, but is a
+|* valid way to create the view
+\*****************************************************************************/
+- (instancetype) initWithDictionary:(NSDictionary *)info;
+	{
+	[AZSegmentedControl _fetchRects];
+
+	if (self = [super initWithDictionary:info])
+		{
+		[self _commonSegmentedControlInit];
+
+		// If we have any segments defined, add them in
+		NSArray *segments = info[kZibSegments];
+		if (segments)
+			{
+			[self _ensureSufficientSegments:segments.count];
+			_numLabels 	= segments.count;
+			int idx 			= 0;
+			for (NSDictionary *segment in segments)
+				{
+				NSString *label = segment[kZibLabel];
+				[self setLabel:label forSegment:idx];
+
+				// Layout sizes don't match internally, so leave
+				// these as the defaults, which is to split equally
+				//NSInteger width = ((NSNumber *)segment[kZibWidth]).integerValue;
+				//[self setWidth:width forSegment:idx];
+				idx ++;
+				}
+			}
+		}
+
+	return self;
+	}
+
+/*****************************************************************************\
+|* Common initialisation between -withFrame and -withDictionary
+\*****************************************************************************/
+- (void) _commonSegmentedControlInit
+	{
+	_info 				= NULL;
+	_numLabels 			= 0;
+
+	// Insert a dummy segment (which will certainly be overwritten)
+	// just so we can set up the selected state coherently
+	[self setLabel:@"[x]" forSegment:0];
+	_trackingMode			= AZSegmentSwitchTrackingSelectOne;
+	_info[0].selected		= YES;
+
+	self.backgroundColour	= AZColour.clearColour;
+	}
+
 
 /*****************************************************************************\
 |* Convenience initialiser. Note the frame origin is set to 0,0

@@ -43,9 +43,8 @@ static NSRect	_bR[STATE_NUM];			// Right-hand-side image
 	{
 	if (self = [super initWithFrame:frame])
 		{
-		[AZPopupButton _fetchRects];
+		[self _commonPopUpButtonInit];
 
-		self.backgroundColour	= [AZColour clearColour];
 		_menu 					= [AZMenu menuWithTitle:@"Popup"];
 		_menu.pullsDown			= yn;
 		}
@@ -65,9 +64,7 @@ static NSRect	_bR[STATE_NUM];			// Right-hand-side image
 	{
 	if (self = [super initWithDictionary:info])
 		{
-		[AZPopupButton _fetchRects];
-
-		self.backgroundColour 	= [AZColour clearColour];
+		[self _commonPopUpButtonInit];
 
 		// Fetch the title
 		NSString *title 		= [info AZStringWithKey:kZibTitle
@@ -90,6 +87,8 @@ static NSRect	_bR[STATE_NUM];			// Right-hand-side image
 				selected = idx;
 			idx ++;
 			}
+
+		// If we have a selection, select it.
 		if (selected >= 0)
 			{
 			[_menu selectItemWithTag:selected];
@@ -101,9 +100,17 @@ static NSRect	_bR[STATE_NUM];			// Right-hand-side image
 		// Set the menu to pullsdown if needed
 		if ([info[kZibPullsDown] isEqualToString:@"YES"])
 			_menu.pullsDown = YES;
-
 		}
 	return self;
+	}
+
+/*****************************************************************************\
+|* Common initialisation between -withFrame and -withDictionary
+\*****************************************************************************/
+- (void) _commonPopUpButtonInit
+	{
+	[AZPopupButton _fetchRects];
+		self.backgroundColour	= [AZColour clearColour];
 	}
 
 /*****************************************************************************\
