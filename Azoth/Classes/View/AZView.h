@@ -42,6 +42,7 @@ struct SDL_Mutex;
 @class AZScrollView;
 @class AZTransform;
 @class AZWindow;
+@class AZZib;
 
 NS_ASSUME_NONNULL_BEGIN
 

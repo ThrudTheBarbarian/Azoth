@@ -44,6 +44,12 @@ extern NSString * const kZibCircular;
 extern NSString * const kZibTextColour;
 extern NSString * const kZibEditable;
 extern NSString * const kZibRound;
+extern NSString * const kZibHLineScroll;
+extern NSString * const kZibHPageScroll;
+extern NSString * const kZibVLineScroll;
+extern NSString * const kZibVPageScroll;
+extern NSString * const kZibHScroller;
+extern NSString * const kZibVScroller;
 
 @interface AZZib : NSObject
 

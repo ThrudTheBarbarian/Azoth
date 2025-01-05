@@ -9,8 +9,10 @@
 
 #import "AZApplication.h"
 #import "AZButton.h"
+#import "AZClipView.h"
 #import "AZControl.h"
 #import "AZRenderer.h"
+#import "AZScrollView.h"
 #import "AZTypes.h"
 #import "AZWindow.h"
 #import "AZView.h"
@@ -54,6 +56,12 @@ NSString * const kZibCircular		= @"circular";
 NSString * const kZibTextColour		= @"textColour";
 NSString * const kZibEditable		= @"editable";
 NSString * const kZibRound			= @"round";
+NSString * const kZibHLineScroll	= @"dhLine";
+NSString * const kZibHPageScroll	= @"dhPage";
+NSString * const kZibVLineScroll	= @"dvLine";
+NSString * const kZibVPageScroll	= @"dvPage";
+NSString * const kZibHScroller		= @"hscroller";
+NSString * const kZibVScroller		= @"vscroller";
 
 
 /*****************************************************************************\
@@ -438,9 +446,28 @@ NSString * const kZibRound			= @"round";
 			view.frame = f;
 
 			/*****************************************************************\
-			|* Add the view to its parent, if it's not the root view
+			|* Add the view to its parent if it's not the root view, but take
+			|* account of some special cases...
+			|*
+			|*  o If the parent view is an AZClipView, we want to call into
+			|*    -setDocumentView: instead, so the listeners are set correctly
+			|*    (Note: -setDocumentView will internally call -addSubview)
+			|*
+			|*  o If the parent view is an AZScrollView, we want to call
+			|*    -setContentView: instead, so tiling etc. is all set up
 			\*****************************************************************/
-			[parentView addSubview:view];
+			BOOL parentIsSV = [parentView isKindOfClass:AZScrollView.class];
+			BOOL parentIsCV = [parentView isKindOfClass:AZClipView.class];
+			BOOL viewIsCV   = [view isKindOfClass:AZClipView.class];
+
+			if (parentIsSV & viewIsCV)
+				[(AZScrollView *)parentView setContentView:(AZClipView *)view];
+			else if (parentIsSV)
+				SDL_Log("Must set contentView as AZClipView in AZScrollView");
+			else if (parentIsCV)
+				[(AZClipView *)parentView setDocumentView:view];
+			else
+				[parentView addSubview:view];
 			}
 
 		/*********************************************************************\

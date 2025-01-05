@@ -12,6 +12,7 @@
 #import "AZScroller.h"
 #import "AZScrollView.h"
 #import "AZTypes.h"
+#import "AZZib.h"
 
 static Class _rulerViewClass = nil;
 
@@ -30,24 +31,63 @@ static Class _rulerViewClass = nil;
 
 	if (self = [super initWithFrame:frame])
 		{
-		_contentView= [[AZClipView alloc] initWithFrame:[self _clipViewFrame]];
-		[_contentView setAutoresizingMask:AZViewWidthSizable|AZViewHeightSizable];
+		[self _commonScrollviewInit];
 
-		_hasVerticalScroller	= NO;
-		_hasHorizontalScroller	= NO;
-		self.drawsBackground	= YES;
-		_borderType				= AZNoBorder;
-		self.backgroundColour	= [[AZColour controlBackgroundColour] copy];
+		AZClipView *clip = [[AZClipView alloc] initWithFrame:[self _clipViewFrame]];
+		[clip setAutoresizingMask:AZViewWidthSizable|AZViewHeightSizable];
 
-		self.lineScroll			= 1.f;
-		self.pageScroll			= 50.f;		//entirely arbitrary
-		self.autoresizesSubviews= YES;
-
-		[self addSubview:_contentView];
+		[self addSubview:clip];
 		}
 	return self;
 	}
 
+/*****************************************************************************\
+|* Configuration via dictionary. This is called by the NIB loader, but is a
+|* valid way to create the view
+\*****************************************************************************/
+- (instancetype) initWithDictionary:(NSDictionary *)info;
+	{
+	if (self = [super initWithDictionary:info])
+		{
+		[self _commonScrollviewInit];
+
+		// Set horizontal and vertical line and page scrolls
+		NSNumber *v = ((NSNumber *)info[kZibHLineScroll]);
+		self.horizontalLineScroll = (v) ? v.floatValue 	: 10;
+		v = ((NSNumber *)info[kZibHPageScroll]);
+		self.horizontalPageScroll = (v) ? v.floatValue 	: 50;
+		v = ((NSNumber *)info[kZibVLineScroll]);
+		self.verticalLineScroll = (v) ? v.floatValue 	: 10;
+		v = ((NSNumber *)info[kZibVPageScroll]);
+		self.verticalPageScroll = (v) ? v.floatValue 	: 50;
+
+		BOOL hScroll = ([info[kZibHScroller] isEqualToString:@"YES"]);
+		[self setHasVerticalScroller:hScroll];
+
+		BOOL vScroll = ([info[kZibVScroller] isEqualToString:@"YES"]);
+		[self setHasHorizontalScroller:vScroll];
+		}
+
+	return self;
+	}
+
+/*****************************************************************************\
+|* Common initialisation
+\*****************************************************************************/
+- (void) _commonScrollviewInit
+	{
+
+	_hasVerticalScroller	= NO;
+	_hasHorizontalScroller	= NO;
+	self.drawsBackground	= YES;
+	_borderType				= AZNoBorder;
+	self.backgroundColour	= [[AZColour grey95Colour] copy];
+
+	self.lineScroll			= 1.f;
+	self.pageScroll			= 50.f;		//entirely arbitrary
+	self.autoresizesSubviews= YES;
+
+	}
 
 // MARK: Class methods
 
@@ -139,6 +179,20 @@ static Class _rulerViewClass = nil;
 	return _rulerViewClass;
 	}
 
+
+/*****************************************************************************\
+|* Override subview to also set contentView
+\*****************************************************************************/
+- (BOOL) addSubview:(AZView *)subview
+	{
+	BOOL ok = [super addSubview:subview];
+	if (ok && [subview isKindOfClass:AZClipView.class])
+		{
+		[subview setFrame:[self _clipViewFrame]];
+		_contentView = (AZClipView *)subview;
+		}
+	return ok;
+	}
 
 /*****************************************************************************\
 |* Return opacity based on whether we draw the background

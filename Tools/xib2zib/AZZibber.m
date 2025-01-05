@@ -142,7 +142,9 @@
 			@"popUpButton"			: @"AZPopupButton",
 			@"segmentedControl"		: @"AZSegmentedControl",
 			@"slider"				: @"AZSlider",
-			@"textField"			: @"AZTextField"
+			@"textField"			: @"AZTextField",
+			@"scrollView"			: @"AZScrollView",
+			@"clipView"				: @"AZClipView"
 			};
 		});
 
@@ -219,7 +221,8 @@
 				@"popUpButton"		: @"_handlePopUpButtonWithInfo:for:",
 				@"segmentedControl"	: @"_handleSegmentedControlWithInfo:for:",
 				@"slider"			: @"_handleSliderWithInfo:for:",
-				@"textField"		: @"_handleTextFieldWithInfo:for:"
+				@"textField"		: @"_handleTextFieldWithInfo:for:",
+				@"scrollView"		: @"_handleScrollViewWithInfo:for:"
 				};
 		});
 
@@ -249,6 +252,14 @@
 	// Add connections if we have them
 	[self _xfer:@"connections" in:vi as:@"connect" in:view];
 
+
+	// Recursively handle clipView
+	NSDictionary *clip = vi[@"clipView"];
+	if (clip)
+		{
+		clip = [self _createView:clip withKey:@"clipView"];
+		view[@"subviews"] = @[clip];
+		}
 
 	// Recursively handle subviews
 	NSMutableArray *subviews = NSMutableArray.new;
@@ -312,9 +323,28 @@
 	else
 		view[@"type"] = @"square";
 	}
+/*****************************************************************************\
+|* Called when this is a scrollview.
+\*****************************************************************************/
+- (void) _handleScrollViewWithInfo:(NSDictionary *)vi
+							  for:(NSMutableDictionary *)view
+	{
+	// Only show up if set to NO
+	BOOL noHScroll = ([vi[@"hasHorizontalScroller"] isEqualToString:@"NO"]);
+	view[@"hscroller"] = noHScroll ? @"NO" : @"YES";
+
+	BOOL noVScroll = ([vi[@"hasVerticalScroller"] isEqualToString:@"NO"]);
+	view[@"vscroller"] = noVScroll ? @"NO" : @"YES";
+
+
+	[self _xfer:@"horizontalLineScroll" in:vi as:@"dhLine" in:view];
+	[self _xfer:@"horizontalPageScroll" in:vi as:@"dhPage" in:view];
+	[self _xfer:@"verticalLineScroll" in:vi   as:@"dvLine" in:view];
+	[self _xfer:@"verticalPageScroll" in:vi   as:@"dvPage" in:view];
+	}
 
 /*****************************************************************************\
-|* Called when this is a slider-class. God dynamic dispatch is awesome.
+|* Called when this is a slider-class.
 \*****************************************************************************/
 - (void) _handleSliderWithInfo:(NSDictionary *)vi
 						   for:(NSMutableDictionary *)view

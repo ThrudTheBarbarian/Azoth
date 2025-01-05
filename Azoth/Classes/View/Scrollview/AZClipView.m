@@ -34,10 +34,31 @@
 	{
 	if (self = [super initWithFrame:frame])
 		{
-		self.backgroundColour 	= [AZColour controlColour];
-		self.drawsBackground 	= YES;
+		[self _commonClipViewInit];
 		}
 	return self;
+	}
+
+/*****************************************************************************\
+|* Configuration via dictionary. This is called by the NIB loader, but is a
+|* valid way to create the view
+\*****************************************************************************/
+- (instancetype) initWithDictionary:(NSDictionary *)info;
+	{
+	if (self = [super initWithDictionary:info])
+		{
+		[self _commonClipViewInit];
+		}
+	return self;
+	}
+
+/*****************************************************************************\
+|* Common initialisation between -withFrame and -withDictionary
+\*****************************************************************************/
+- (void) _commonClipViewInit
+	{
+	self.backgroundColour 	= [AZColour controlColour];
+	self.drawsBackground 	= YES;
 	}
 
 /*****************************************************************************\
@@ -57,6 +78,7 @@
 	_drawsBackground = value;
 	[self setNeedsDisplay:YES];
 	}
+
 
 /*****************************************************************************\
 |* Set the document view for this clipview
@@ -79,7 +101,9 @@
 		}
 
 	_documentView = view;
+	[view setFrame:self.bounds];
 	[self addSubview:view];
+	[view setNeedsDisplay:YES];
 
 	if(self.documentView != nil)
 		{
