@@ -13,6 +13,8 @@
 #import "AZRenderer.h"
 #import "AZSlider.h"
 #import "AZWindow.h"
+#import "AZZib.h"
+#import "NSDictionary+ZIB.h"
 
 enum
 	{
@@ -50,6 +52,45 @@ static NSRect	_knob[STATE_NUM];	// knobs
 	{
 	if (self = [super initWithFrame:frame])
 		{
+		[self _commonSliderInit];
+		}
+	return self;
+	}
+
+/*****************************************************************************\
+|* Initialisation
+\*****************************************************************************/
+- (instancetype) initWithDictionary:(NSDictionary *)info;
+	{
+	if (self = [super initWithDictionary:info])
+		{
+		[self _commonSliderInit];
+
+		self.doubleValue 	= [info AZStringWithKey:kZibValue
+										  orDefault:@"0.5"].doubleValue;
+		self.minValue 		= [info AZStringWithKey:kZibMinValue
+									     orDefault:@"0.0"].doubleValue;
+		self.maxValue 		= [info AZStringWithKey:kZibMaxValue
+									     orDefault:@"1.0"].doubleValue;
+
+		if (self.doubleValue < self.minValue)
+			self.doubleValue = self.minValue;
+		if (self.doubleValue > self.maxValue)
+			self.doubleValue = self.maxValue;
+
+		if ([info[kZibType] isEqualToString:kZibCircular])
+			self.type = SliderTypeCircular;
+
+		self.enabled = YES;
+		}
+	return self;
+	}
+
+/*****************************************************************************\
+|* Common initialisation
+\*****************************************************************************/
+- (void) _commonSliderInit
+	{
 		static dispatch_once_t onceToken;
 		dispatch_once(&onceToken,
 			^{
@@ -60,14 +101,15 @@ static NSRect	_knob[STATE_NUM];	// knobs
 		self.doubleValue 		= 0.5;
 		self.minValue			= 0.0;
 		self.maxValue			= 1.0;
+
+		NSRect frame			= self.frame;
 		_type		 			= frame.size.width > frame.size.height
 								? SliderTypeHorizontal
 								: frame.size.width == frame.size.height
 								? SliderTypeCircular
 								: SliderTypeVertical;
-		}
-	return self;
 	}
+
 
 + (AZSlider *) sliderWithFrame:(NSRect)frame
 	{
@@ -273,7 +315,10 @@ static NSRect	_knob[STATE_NUM];	// knobs
 	[azr blitFrom:ui src:sR dst:dR];
 
 	// Draw the knob
-	double where	= _track.origin.x + self.doubleValue * _track.size.width;
+	float range		= self.maxValue - self.minValue;
+	float value		= (self.doubleValue - self.minValue) / range;
+
+	double where	= _track.origin.x + value * _track.size.width;
 	_active			= (NSRect){where - sK.size.width/2,
 					  (H - sK.size.height)/2,
 					  sK.size.width,
@@ -326,7 +371,9 @@ static NSRect	_knob[STATE_NUM];	// knobs
 	[azr blitFrom:ui src:sT dst:dT];
 
 	// Draw the knob
-	double where	= _track.origin.y + self.doubleValue * _track.size.height;
+	float range		= self.maxValue - self.minValue;
+	float value		= (self.doubleValue - self.minValue) / range;
+	double where	= _track.origin.y + value * _track.size.height;
 	_active			= (NSRect){W2 - sK.size.width/2,
 					  H - where - sK.size.width/2,
 					  sK.size.width,

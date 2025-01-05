@@ -16,6 +16,8 @@
 	/*************************************************************************\
 	|* Try to load a view-xib in this bundle
 	\*************************************************************************/
+	AZRenderer *azr = AZRenderer.renderer;
+	[azr syncToVsync:YES];
 	}
 
 

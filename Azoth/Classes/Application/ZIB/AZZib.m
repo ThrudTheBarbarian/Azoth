@@ -47,6 +47,14 @@ NSString * const kZibSelect			= @"select";
 NSString * const kZibSegments		= @"segments";
 NSString * const kZibLabel			= @"label";
 NSString * const kZibWidth			= @"width";
+NSString * const kZibValue			= @"value";
+NSString * const kZibMinValue		= @"minValue";
+NSString * const kZibMaxValue		= @"maxValue";
+NSString * const kZibCircular		= @"circular";
+NSString * const kZibTextColour		= @"textColour";
+NSString * const kZibEditable		= @"editable";
+NSString * const kZibRound			= @"round";
+
 
 /*****************************************************************************\
 |* Access to the application's private methods

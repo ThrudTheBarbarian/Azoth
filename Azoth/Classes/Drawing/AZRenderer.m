@@ -533,6 +533,15 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	SDL_RenderClear(_renderer);
 	}
 
+
+/*****************************************************************************\
+|* Sync to VSync
+\*****************************************************************************/
+- (void) syncToVsync:(BOOL)yn
+	{
+	SDL_SetRenderVSync(_renderer, yn ? 1 : AZRendererVsyncDisabled);
+	}
+
 /*****************************************************************************\
 |* Present the rendering
 \*****************************************************************************/

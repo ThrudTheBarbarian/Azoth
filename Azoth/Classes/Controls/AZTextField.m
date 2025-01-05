@@ -19,6 +19,7 @@
 #import "AZTextPainter.h"
 #import "AZTypes.h"
 #import "AZWindow.h"
+#import "AZZib.h"
 
 enum
 	{
@@ -43,7 +44,14 @@ static NSRect	_bBL[STATE_NUM];
 static NSRect	_bBM[STATE_NUM];
 static NSRect	_bBR[STATE_NUM];
 
-static int 			_lineHeight = 29;
+static int 				_lineHeight = 29;
+static dispatch_once_t _onceToken;
+
+// Offsets for different states
+static float _dx[STATE_NUM];
+static float _dy[STATE_NUM];
+static float _dw[STATE_NUM];
+static float _dh[STATE_NUM];
 
 @interface AZTextField()
 @property(assign, nonatomic)	TTF_Text *				text;
@@ -75,8 +83,8 @@ static int 			_lineHeight = 29;
 @property(assign, nonatomic) 	NSRect					editArea;
 @property(assign, nonatomic) 	NSRect					origArea;
 
+// Timer for blinking cursor
 @property(strong, nonatomic) 	NSTimer *				blinkTimer;
-
 @end
 
 @implementation AZTextField
@@ -86,27 +94,113 @@ static int 			_lineHeight = 29;
 \*****************************************************************************/
 - (instancetype) initWithFrame:(NSRect)frame
 	{
+	dispatch_once(&_onceToken,
+		^{
+		[self _fetchRects];
+
+		// Cope with the highlighted and normal tiles having different
+		// dimensions
+		for (int i=0; i<STATE_NUM; i++)
+			{
+			_dx[i] = _bBL[STATE_SF].size.width  - _bBL[STATE_SN].size.width;
+			_dy[i] = _bBL[STATE_SF].size.height - _bBL[STATE_SN].size.height;
+			_dw[i] = 2 * _dx[i];
+			_dh[i] = 2 * _dy[i];
+			}
+
+		_dx[STATE_SF] = 0;
+		_dy[STATE_SF] = 0;
+		_dw[STATE_SF] = 0;
+		_dh[STATE_SF] = 0;
+		});
+
+	frame.origin.x 		-= _dx[STATE_SN];
+	frame.origin.y 		-= _dy[STATE_SN];
+	frame.size.width 	+= _dx[STATE_SN] * 2;
+	frame.size.height 	+= _dy[STATE_SN] * 2;
+
 	if (self = [super initWithFrame:frame])
 		{
-		static dispatch_once_t onceToken;
-		dispatch_once(&onceToken,
-			^{
-			[self _fetchRects];
-			});
-
-		if (![self _editCreate])
+		if (![self _commonTextFieldInit])
 			self = nil;
-		else
-			{
-			self.backgroundColour		= [AZColour clearColour];
-			self.stringValue 			= @"";
-			self.textColour				= [AZColour blackColour];
-			NSRect r 					= NSInsetRect(self.bounds, 6, 2);
-			r.origin.y	  			   += 1;
-			self.editArea 				= r;
-			}
 		}
 	return self;
+	}
+
+/*****************************************************************************\
+|* Configuration via dictionary. This is called by the NIB loader, but is a
+|* valid way to create the view
+\*****************************************************************************/
+- (instancetype) initWithDictionary:(NSDictionary *)info;
+	{
+	dispatch_once(&_onceToken,
+		^{
+		[self _fetchRects];
+
+		// Cope with the highlighted and normal tiles having different
+		// dimensions
+		for (int i=0; i<STATE_NUM; i++)
+			{
+			_dx[i] 	= _bBL[STATE_SF].size.width  - _bBL[STATE_SN].size.width;
+			_dy[i] 	= _bBL[STATE_SF].size.height - _bBL[STATE_SN].size.height;
+			_dw[i]	= 2 * _dx[i];
+			_dh[i]	= 2 * _dy[i];
+			}
+
+		_dx[STATE_SF] = 0;
+		_dy[STATE_SF] = 0;
+		_dw[STATE_SF] = 0;
+		_dh[STATE_SF] = 0;
+	});
+
+	if (self = [super initWithDictionary:info])
+		{
+		NSRect frame 		 = self.frame;
+		frame.origin.x 		-= _dx[STATE_SN];
+		frame.origin.y 		-= _dy[STATE_SN];
+		frame.size.width 	+= _dw[STATE_SN];
+		frame.size.height 	+= _dh[STATE_SN];
+		self.frame 			 = frame;
+
+		if (![self _commonTextFieldInit])
+			self = nil;
+
+		if ([info[kZibEditable] isEqualToString:@"YES"])
+			self.enabled = YES;
+		else
+			self.enabled = NO;
+
+		if ([info[kZibType] isEqualToString:kZibRound])
+			self.type = TextFieldRounded;
+		else
+			self.type = TextFieldSquare;
+
+		}
+	return self;
+	}
+
+/*****************************************************************************\
+|* Common initialisation between -withFrame and -withDictionary
+\*****************************************************************************/
+- (BOOL) _commonTextFieldInit
+	{	;
+	dispatch_once(&_onceToken,
+		^{
+		[self _fetchRects];
+		});
+
+	if (![self _editCreate])
+		return NO;
+	else
+		{
+		self.backgroundColour		= [AZColour clearColour];
+		self.stringValue 			= @"";
+		self.textColour				= [AZColour blackColour];
+		NSRect r 					= NSInsetRect(self.bounds, 6, 0);
+		r.origin.y	  			   += 1;
+		self.editArea 				= r;
+		}
+	return YES;
 	}
 
 + (AZTextField *) textfieldWithFrame:(NSRect)frame
@@ -172,6 +266,7 @@ static int 			_lineHeight = 29;
 		SDL_StopTextInput(self.window.window);
 		[_blinkTimer invalidate];
 		_blinkTimer = nil;
+		self.showCursor = NO;
 		[self setNeedsDisplay:YES];
 		}
 	return YES;
@@ -258,7 +353,7 @@ static int 			_lineHeight = 29;
 	[azr tileFrom:ui src:sCM dst:dCM];
 	[azr blitFrom:ui src:sCR dst:dCR];
 
-	_editArea.origin.y = _origArea.origin.y + 1;
+	_editArea.origin.y = _origArea.origin.y;
 	[self _drawTextInRect:_editArea withPainter:p];
 	}
 
@@ -277,42 +372,53 @@ static int 			_lineHeight = 29;
 	NSRect sBR	= _bBR[self.state + _type];
 
 	float W		= self.bounds.size.width  - 1;
-	float H		= self.bounds.size.height - 4;
+	float H		= self.bounds.size.height;
+	float dx	= _dx[self.state + _type];
+	float dy	= _dy[self.state + _type];
+	float dw	= _dw[self.state + _type];
+	float dh	= _dh[self.state + _type];
 
-	NSRect dTL	= {0,
-				   H-sTL.size.height,
+	NSRect dTL	= {dx,
+				   H-sTL.size.height-dy,
 				   sTL.size.width,
 				   sTL.size.height};
 
-	NSRect dTM	= {sTL.size.width,
-				   H-sTM.size.height,
-				   W-sTL.size.width-sTR.size.width,
+	NSRect dTM	= {dx + sTL.size.width,
+				   H-sTM.size.height - dy,
+				   W-sTL.size.width-sTR.size.width - dw,
 				   sTM.size.height};
 
-	NSRect dTR	= {W-sTR.size.width,
-				   H-sTR.size.height,
+	NSRect dTR	= {dx + W-sTR.size.width - dw,
+				   H-sTR.size.height - dy,
 				   sTR.size.width,
 				   sTR.size.height};
 
-	NSRect dCL	= {0,
-				   sBL.size.height,
+
+
+	NSRect dCL	= {dx,
+				   sBL.size.height+dy,
 				   sCL.size.width,
-				   H-sTL.size.height-sBL.size.height};
+				   H-sTL.size.height-sBL.size.height - dh};
 
-	NSRect dCM	= {sCL.size.width,
-				   sTM.size.height,
-				   W-sCL.size.width-sCR.size.width,
-				   H-sTM.size.height-sBM.size.height};
+	NSRect dCM	= {dx + dCL.size.width,
+				   sTL.size.height+dy,
+				   W-sCL.size.width-sCR.size.width - dw,
+				   H-sTM.size.height-sBM.size.height - dh};
 
-	NSRect dCR	= {W-sCR.size.width,
-				   sBR.size.height,
+	NSRect dCR	= {dx + W-sCR.size.width - dw,
+				   sTR.size.height+dy,
 				   sCR.size.width,
-				   H-sTR.size.height-sBR.size.height};
+				   H-sTR.size.height-sBR.size.height - dh};
 
-	NSRect dBL	= {0, 0, sBL.size.width, sBL.size.height};
-	NSRect dBM	= {sBL.size.width, 0,
-				   W-sBL.size.width-sBR.size.width, sBM.size.height};
-	NSRect dBR	= {W-sBR.size.width, 0, sBR.size.width, sBR.size.height};
+	NSRect dBL	= {dx, dy, sBL.size.width, sBL.size.height};
+	NSRect dBM	= {dx + sBL.size.width,
+				   dy,
+				   W-sBL.size.width-sBR.size.width - dw,
+				   sBM.size.height};
+	NSRect dBR	= {dx + W-sBR.size.width -dw,
+				   dy,
+				   sBR.size.width,
+				   sBR.size.height};
 
 	AZRenderer *azr = AZRenderer.renderer;
 	NSInteger ui	= [AZApp textureFor:kUiMap];
@@ -640,8 +746,7 @@ static int 			_lineHeight = 29;
 - (void) _editDrawText:(TTF_Text *)text atX:(int)x y:(int)y
 		   withPainter:(AZPainter *)P
 	{
-    TTF_DrawRendererText(text, x, y);
-	//[P drawAtX:x y:y+2 text:[NSString stringWithUTF8String:text->text]];
+    TTF_DrawRendererText(text, x, y+1);
 	}
 
 /*****************************************************************************\
@@ -709,7 +814,7 @@ static int 			_lineHeight = 29;
 			cursor_rect.x += cursor.rect.w;
 
             cursor_rect.x += _editArea.origin.x;
-            cursor_rect.y += _editArea.origin.y + 2;
+            cursor_rect.y += _editArea.origin.y + 4;
             cursor_rect.w = 1.f;
             cursor_rect.h -= 2.f;
 
@@ -768,7 +873,9 @@ static int 			_lineHeight = 29;
 \*****************************************************************************/
 - (BOOL) _editCreate
 	{
-	_text	= TTF_CreateText(AZApp.textEngine, AZApp.controlFont.ttfFont, NULL, 0);
+	AZApplication *app = AZApp;
+
+	_text	= TTF_CreateText(app.textEngine, app.controlFont.ttfFont, NULL, 0);
 	if (_text == nil)
 		{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -1052,9 +1159,6 @@ static int 			_lineHeight = 29;
 \*****************************************************************************/
 - (void) _editPaste
 	{
-    if (_text->text == NULL)
-        return;
-
     const char *text = SDL_GetClipboardText();
 	[self _editInsert:text];
 	}

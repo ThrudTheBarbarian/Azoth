@@ -37,6 +37,13 @@ extern NSString * const kZibSelect;
 extern NSString * const kZibSegments;
 extern NSString * const kZibLabel;
 extern NSString * const kZibWidth;
+extern NSString * const kZibValue;
+extern NSString * const kZibMinValue;
+extern NSString * const kZibMaxValue;
+extern NSString * const kZibCircular;
+extern NSString * const kZibTextColour;
+extern NSString * const kZibEditable;
+extern NSString * const kZibRound;
 
 @interface AZZib : NSObject
 

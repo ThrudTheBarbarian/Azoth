@@ -6,6 +6,29 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		F4BD80102D2A29260041034B /* All */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = F4BD80112D2A29260041034B /* Build configuration list for PBXAggregateTarget "All" */;
+			buildPhases = (
+			);
+			dependencies = (
+				F4BD801B2D2A29420041034B /* PBXTargetDependency */,
+				F4BD80152D2A293C0041034B /* PBXTargetDependency */,
+				F4BD80172D2A293D0041034B /* PBXTargetDependency */,
+				F4BD801D2D2A29440041034B /* PBXTargetDependency */,
+				F4BD801F2D2A29460041034B /* PBXTargetDependency */,
+				F4BD80212D2A29480041034B /* PBXTargetDependency */,
+				F4BD80192D2A29400041034B /* PBXTargetDependency */,
+				F4BD80232D2A294A0041034B /* PBXTargetDependency */,
+			);
+			name = All;
+			packageProductDependencies = (
+			);
+			productName = All;
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		F41BC6AD2D0A720700E61EDD /* Azoth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; };
 		F41BC6AE2D0A720700E61EDD /* Azoth.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -103,6 +126,62 @@
 			proxyType = 1;
 			remoteGlobalIDString = F41BC6512D0A61BA00E61EDD;
 			remoteInfo = Azoth;
+		};
+		F4BD80142D2A293C0041034B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F41BC6492D0A61BA00E61EDD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F41BC6512D0A61BA00E61EDD;
+			remoteInfo = Azoth;
+		};
+		F4BD80162D2A293D0041034B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F41BC6492D0A61BA00E61EDD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F41BC69B2D0A71FD00E61EDD;
+			remoteInfo = AZDemo;
+		};
+		F4BD80182D2A29400041034B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F41BC6492D0A61BA00E61EDD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F4B6A3B52D0F84C00033580D;
+			remoteInfo = genRsrc;
+		};
+		F4BD801A2D2A29420041034B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F41BC6492D0A61BA00E61EDD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F495282A2D1F496200D6B8A6;
+			remoteInfo = AZTable;
+		};
+		F4BD801C2D2A29440041034B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F41BC6492D0A61BA00E61EDD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F49557072D231A2A00D6B8A6;
+			remoteInfo = AZImageView;
+		};
+		F4BD801E2D2A29460041034B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F41BC6492D0A61BA00E61EDD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F454E1FC2D24D1DA002D2DAB;
+			remoteInfo = AZOutline;
+		};
+		F4BD80202D2A29480041034B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F41BC6492D0A61BA00E61EDD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F4BD7ECF2D2651E80041034B;
+			remoteInfo = NibTest;
+		};
+		F4BD80222D2A294A0041034B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F41BC6492D0A61BA00E61EDD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F4BD7F5A2D279E3C0041034B;
+			remoteInfo = xib2zib;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -838,6 +917,9 @@
 					F4BD7F5A2D279E3C0041034B = {
 						CreatedOnToolsVersion = 16.1;
 					};
+					F4BD80102D2A29260041034B = {
+						CreatedOnToolsVersion = 16.1;
+					};
 				};
 			};
 			buildConfigurationList = F41BC64C2D0A61BA00E61EDD /* Build configuration list for PBXProject "Azoth" */;
@@ -854,6 +936,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				F4BD80102D2A29260041034B /* All */,
 				F41BC6512D0A61BA00E61EDD /* Azoth */,
 				F41BC69B2D0A71FD00E61EDD /* AZDemo */,
 				F4B6A3B52D0F84C00033580D /* genRsrc */,
@@ -982,6 +1065,46 @@
 			isa = PBXTargetDependency;
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
 			targetProxy = F41BC6AF2D0A720700E61EDD /* PBXContainerItemProxy */;
+		};
+		F4BD80152D2A293C0041034B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
+			targetProxy = F4BD80142D2A293C0041034B /* PBXContainerItemProxy */;
+		};
+		F4BD80172D2A293D0041034B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F41BC69B2D0A71FD00E61EDD /* AZDemo */;
+			targetProxy = F4BD80162D2A293D0041034B /* PBXContainerItemProxy */;
+		};
+		F4BD80192D2A29400041034B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F4B6A3B52D0F84C00033580D /* genRsrc */;
+			targetProxy = F4BD80182D2A29400041034B /* PBXContainerItemProxy */;
+		};
+		F4BD801B2D2A29420041034B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F495282A2D1F496200D6B8A6 /* AZTable */;
+			targetProxy = F4BD801A2D2A29420041034B /* PBXContainerItemProxy */;
+		};
+		F4BD801D2D2A29440041034B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F49557072D231A2A00D6B8A6 /* AZImageView */;
+			targetProxy = F4BD801C2D2A29440041034B /* PBXContainerItemProxy */;
+		};
+		F4BD801F2D2A29460041034B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F454E1FC2D24D1DA002D2DAB /* AZOutline */;
+			targetProxy = F4BD801E2D2A29460041034B /* PBXContainerItemProxy */;
+		};
+		F4BD80212D2A29480041034B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F4BD7ECF2D2651E80041034B /* NibTest */;
+			targetProxy = F4BD80202D2A29480041034B /* PBXContainerItemProxy */;
+		};
+		F4BD80232D2A294A0041034B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F4BD7F5A2D279E3C0041034B /* xib2zib */;
+			targetProxy = F4BD80222D2A294A0041034B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1519,6 +1642,22 @@
 			};
 			name = Release;
 		};
+		F4BD80122D2A29260041034B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F4BD80132D2A29260041034B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1599,6 +1738,15 @@
 			buildConfigurations = (
 				F4BD7F602D279E3C0041034B /* Debug */,
 				F4BD7F612D279E3C0041034B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F4BD80112D2A29260041034B /* Build configuration list for PBXAggregateTarget "All" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F4BD80122D2A29260041034B /* Debug */,
+				F4BD80132D2A29260041034B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

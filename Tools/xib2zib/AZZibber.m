@@ -140,7 +140,9 @@
 			@"view" 				: @"AZView",
 			@"button"				: @"AZButton",
 			@"popUpButton"			: @"AZPopupButton",
-			@"segmentedControl"		: @"AZSegmentedControl"
+			@"segmentedControl"		: @"AZSegmentedControl",
+			@"slider"				: @"AZSlider",
+			@"textField"			: @"AZTextField"
 			};
 		});
 
@@ -215,7 +217,9 @@
 		map = 	@{
 				@"button"			: @"_handleButtonWithInfo:for:",
 				@"popUpButton"		: @"_handlePopUpButtonWithInfo:for:",
-				@"segmentedControl"	: @"_handleSegmentedControlWithInfo:for:"
+				@"segmentedControl"	: @"_handleSegmentedControlWithInfo:for:",
+				@"slider"			: @"_handleSliderWithInfo:for:",
+				@"textField"		: @"_handleTextFieldWithInfo:for:"
 				};
 		});
 
@@ -272,7 +276,59 @@
 	}
 
 /*****************************************************************************\
-|* Called when this is a button-class. God dynamic dispatch is awesome.
+|* Called when this is a slider-class. God dynamic dispatch is awesome.
+\*****************************************************************************/
+- (void) _handleTextFieldWithInfo:(NSDictionary *)vi
+							  for:(NSMutableDictionary *)view
+	{
+	NSDictionary *cellInfo = vi[@"textFieldCell"];
+	[self _xfer:@"editable" in:cellInfo as:@"editable" in:view];
+	[self _xfer:@"selectable" in:cellInfo as:@"selectable" in:view];
+	[self _xfer:@"drawsBackground" in:cellInfo as:@"drawsBackground" in:view];
+	[self _xfer:@"sendsActionOnEndEditing" in:cellInfo
+			 as:@"sendsActionOnEndEditing" in:view];
+
+	NSArray *colours = nil;
+	id element = cellInfo[@"color"];
+	if (element != nil)
+		{
+		if ([element isKindOfClass:NSArray.class])
+			colours = element;
+		else
+			colours = @[element];
+
+		for (NSDictionary *colour in colours)
+			{
+			NSString *key = colour[@"key"];
+			if ([key isEqualToString:@"textColor"])
+				view[@"textColour"] = colour[@"name"];
+			else if ([key isEqualToString:@"backgroundColor"])
+				view[@"background"] = colour[@"name"];
+			}
+		}
+
+	if ([cellInfo[@"bezelStyle"] isEqualToString:@"round"])
+		view[@"type"] = @"round";
+	else
+		view[@"type"] = @"square";
+	}
+
+/*****************************************************************************\
+|* Called when this is a slider-class. God dynamic dispatch is awesome.
+\*****************************************************************************/
+- (void) _handleSliderWithInfo:(NSDictionary *)vi
+						   for:(NSMutableDictionary *)view
+	{
+	NSDictionary *cellInfo = vi[@"sliderCell"];
+	[self _xfer:@"alignment" in:cellInfo as:@"align" in:view];
+	[self _xfer:@"doubleValue" in:cellInfo as:@"value" in:view];
+	[self _xfer:@"maxValue" in:cellInfo as:@"maxValue" in:view];
+	[self _xfer:@"minValue" in:cellInfo as:@"minValue" in:view];
+	[self _xfer:@"sliderType" in:cellInfo as:@"type" in:view];
+	}
+
+/*****************************************************************************\
+|* Called when this is a button-class.
 \*****************************************************************************/
 - (void) _handleButtonWithInfo:(NSDictionary *)vi for:(NSMutableDictionary *)view
 	{

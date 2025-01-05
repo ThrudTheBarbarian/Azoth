@@ -211,6 +211,7 @@ typedef struct
 	[super drawInRect:dirtyRect withPainter:painter];
 
 	NSRect b 			= self.bounds;
+	float H				= b.size.height;
 	AZRenderer *azr		= AZRenderer.renderer;
 	NSInteger ui		= [AZApp textureFor:kUiMap];
 	BOOL allDisabled 	= (self.state == AZControlStateDisabled);
@@ -225,17 +226,17 @@ typedef struct
 		NSRect srcR = _cR[allDisabled ? STATE_D : STATE_N];
 
 		// Draw the left bezel
-		NSRect dstL = NSMakeRect(0, 0, NSWidth(srcL), NSHeight(srcL));
+		NSRect dstL = NSMakeRect(0, 0, NSWidth(srcL), H);
 		[azr blitFrom:ui src:srcL dst:dstL];
 
 		// Draw the center bezel
 		int stretch = NSWidth(b) - NSWidth(srcL) - NSWidth(srcR);
-		NSRect dstC = NSMakeRect(NSWidth(srcL), 0, stretch, NSHeight(srcL));
+		NSRect dstC = NSMakeRect(NSWidth(srcL), 0, stretch, H);
 		[azr blitFrom:ui src:srcC dst:dstC];
 
 		// Draw the right bezel
 		int x		= NSWidth(b) - NSWidth(dstL) - NSWidth(dstC);
-		NSRect dstR = NSMakeRect(x, 0, NSWidth(srcR), NSHeight(srcR));
+		NSRect dstR = NSMakeRect(x, 0, NSWidth(srcR), H);
 		[azr blitFrom:ui src:srcR dst:dstR];
 		}
 	else
@@ -250,7 +251,7 @@ typedef struct
 					: STATE_N;
 
 		NSRect srcL = _cL[idx];
-		NSRect dstL = NSMakeRect(0, 0, NSWidth(srcL), NSHeight(srcL));
+		NSRect dstL = NSMakeRect(0, 0, NSWidth(srcL), H);
 		[azr blitFrom:ui src:srcL dst:dstL];
 
 		// Draw each segment...
@@ -266,7 +267,7 @@ typedef struct
 					: STATE_N;
 
 			NSRect srcC = _cC[idx];
-			NSRect dstC = NSMakeRect(x, 0, _info[i].width, NSHeight(srcL));
+			NSRect dstC = NSMakeRect(x, 0, _info[i].width, H);
 			[azr tileFrom:ui src:srcC dst:dstC];
 			x += _info[i].width;
 
@@ -283,7 +284,7 @@ typedef struct
 			if (i < _numLabels-1)
 				{
 				srcC = _cD[idx];
-				dstC = NSMakeRect(x, 0, NSWidth(srcC), NSHeight(srcC));
+				dstC = NSMakeRect(x, 0, NSWidth(srcC), H);
 				[azr blitFrom:ui src:srcC dst:dstC];
 				x += NSWidth(srcC);
 				}
@@ -291,7 +292,7 @@ typedef struct
 
 		// Draw the right bezel
 		NSRect srcR = _cR[idx];
-		NSRect dstR = NSMakeRect(x, 0, NSWidth(srcR), NSHeight(srcR));
+		NSRect dstR = NSMakeRect(x, 0, NSWidth(srcR), H);
 		[azr blitFrom:ui src:srcR dst:dstR];
 		}
 	}

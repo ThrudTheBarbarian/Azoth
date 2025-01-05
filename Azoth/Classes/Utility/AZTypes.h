@@ -410,6 +410,15 @@ typedef NSString * AZZibOptionsKey;
 typedef void (^MenuDoneBlock)(BOOL menuClicked);
 
 /*****************************************************************************\
+|* Vsync options
+\*****************************************************************************/
+enum
+	{
+	AZRendererVsyncDisabled		= 0,
+	AZRendererVsyncAdaptive		= -1
+	};
+
+/*****************************************************************************\
 |* Conversion macros
 \*****************************************************************************/
 #define SDL_RECT(nsrect)													\
