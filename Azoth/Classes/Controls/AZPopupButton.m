@@ -15,6 +15,8 @@
 #import "AZPainter.h"
 #import "AZRenderer.h"
 #import "AZPopupButton.h"
+#import "AZZib.h"
+#import "NSDictionary+ZIB.h"
 
 @interface AZPopupButton()
 @end
@@ -53,6 +55,55 @@ static NSRect	_bR[STATE_NUM];			// Right-hand-side image
 + (AZPopupButton *) buttonWithFrame:(NSRect)frame pullsDown:(BOOL)yn
 	{
 	return [[AZPopupButton alloc] initWithFrame:frame pullsDown:yn];
+	}
+
+/*****************************************************************************\
+|* Configuration via dictionary. This is called by the NIB loader, but is a
+|* valid way to create the view
+\*****************************************************************************/
+- (instancetype) initWithDictionary:(NSDictionary *)info;
+	{
+	if (self = [super initWithDictionary:info])
+		{
+		[AZPopupButton _fetchRects];
+
+		self.backgroundColour 	= [AZColour clearColour];
+
+		// Fetch the title
+		NSString *title 		= [info AZStringWithKey:kZibTitle
+											  orDefault:@"Button"];
+
+		// Build the menu
+		_menu 					= [AZMenu menuWithTitle:title];
+		NSArray *items			= [info valueForKeyPath:@"menu.items.menuItem"];
+
+		int idx = 0;
+		int selected = -1;
+		NSString *selectedId	= info[kZibSelect];
+		for (NSDictionary *item in items)
+			{
+			[_menu addItemWithTitle:item[kZibTitle]
+							 action:nil
+					  keyEquivalent:@""];
+			[[_menu lastItem] setTag:idx];
+			if ([item[kZibId] isEqualToString:selectedId])
+				selected = idx;
+			idx ++;
+			}
+		if (selected >= 0)
+			{
+			[_menu selectItemWithTag:selected];
+			// Only popups change their title when a selection is made
+			if (_menu.pullsDown == NO)
+				_menu.title = [_menu itemWithTag:selected].title;
+			}
+
+		// Set the menu to pullsdown if needed
+		if ([info[kZibPullsDown] isEqualToString:@"YES"])
+			_menu.pullsDown = YES;
+
+		}
+	return self;
 	}
 
 /*****************************************************************************\
@@ -161,7 +212,10 @@ static NSRect	_bR[STATE_NUM];			// Right-hand-side image
 	[painter setTextColour:[AZColour blackColour]];
 	NSRect box = NSInsetRect(bounds, 3, 2);
 	bounds.size.width -= dstR.size.width;
-	[painter drawInBox:box text:_menu.itemArray[0].title];
+	NSInteger selected = _menu.selectedIndex;
+	if ((selected < 0) || (selected >= _menu.itemArray.count))
+		selected = 0;
+	[painter drawInBox:box text:_menu.itemArray[selected].title];
 	}
 
 // Event handling

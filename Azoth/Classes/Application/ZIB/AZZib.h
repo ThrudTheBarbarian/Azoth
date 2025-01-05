@@ -32,6 +32,8 @@ extern NSString * const kZibId;
 extern NSString * const kZibProperty;
 extern NSString * const kZibSelector;
 extern NSString * const kZibTarget;
+extern NSString * const kZibPullsDown;
+extern NSString * const kZibSelect;
 
 @interface AZZib : NSObject
 

@@ -408,6 +408,7 @@
 			}
 		else
 			candidate.state = AZControlStateValueOff;
+	[self setNeedsDisplay:YES];
 	return ok;
 	}
 
@@ -430,6 +431,7 @@
 			candidate.state = AZControlStateValueOff;
 		count ++;
 		}
+	[self setNeedsDisplay:YES];
 	return ok;
 	}
 
@@ -448,6 +450,7 @@
 		else
 			candidate.state = AZControlStateValueOff;
 
+	[self setNeedsDisplay:YES];
 	return ok;
 	}
 
@@ -466,6 +469,7 @@
 		else
 			candidate.state = AZControlStateValueOff;
 
+	[self setNeedsDisplay:YES];
 	return ok;
 	}
 

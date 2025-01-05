@@ -138,7 +138,8 @@
 		map = @{
 			@"customView" 	: @"AZView",
 			@"view" 		: @"AZView",
-			@"button"		: @"AZButton"
+			@"button"		: @"AZButton",
+			@"popUpButton"	: @"AZPopupButton"
 			};
 		});
 
@@ -186,14 +187,16 @@
 
 	NSArray *list = nil;
 	id element	  = [_info valueForKeyPath:@"document.objects.customView"];
-	if (![element isKindOfClass:NSArray.class])
-		list = @[element];
-	else
-		list = element;
+	if (element)
+		{
+		if (![element isKindOfClass:NSArray.class])
+			list = @[element];
+		else
+			list = element;
 
-	for (NSDictionary *obj in list)
-		[views addObject:[self _createView:obj withKey:nil]];
-
+		for (NSDictionary *obj in list)
+			[views addObject:[self _createView:obj withKey:nil]];
+		}
 	if (views.count > 0)
 		_zib[@"view"] = views;
 	}
@@ -209,7 +212,8 @@
 	dispatch_once(&onceToken,
 		^{
 		map = 	@{
-				@"button"	: @"_handleButtonWithInfo:for:"
+				@"button"		: @"_handleButtonWithInfo:for:",
+				@"popUpButton"	: @"_handlePopUpButtonWithInfo:for:"
 				};
 		});
 
@@ -276,6 +280,23 @@
 	[self _xfer:@"imageScaling" in:cellInfo as:@"scaling" in:view];
 	[self _xfer:@"title" in:cellInfo as:@"title" in:view];
 	[self _xfer:@"type" in:cellInfo as:@"type" in:view];
+	}
+
+/*****************************************************************************\
+|* Called when this is a pop-up-button-class.
+\*****************************************************************************/
+- (void) _handlePopUpButtonWithInfo:(NSDictionary *)vi
+								for:(NSMutableDictionary *)view
+	{
+	NSDictionary *cellInfo = vi[@"popUpButtonCell"];
+	[self _xfer:@"alignment" in:cellInfo as:@"align" in:view];
+	[self _xfer:@"bezelStyle" in:cellInfo as:@"bezel" in:view];
+	[self _xfer:@"imageScaling" in:cellInfo as:@"scaling" in:view];
+	[self _xfer:@"title" in:cellInfo as:@"title" in:view];
+	[self _xfer:@"type" in:cellInfo as:@"type" in:view];
+	[self _xfer:@"menu" in:cellInfo as:@"menu" in:view];
+	[self _xfer:@"selectedItem" in:cellInfo as:@"select" in:view];
+	[self _xfer:@"pullsDown" in:cellInfo as:@"pullsDown" in:view];
 	}
 
 /*****************************************************************************\

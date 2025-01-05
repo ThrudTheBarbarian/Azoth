@@ -42,6 +42,8 @@ NSString * const kZibId				= @"id";
 NSString * const kZibProperty		= @"property";
 NSString * const kZibSelector		= @"selector";
 NSString * const kZibTarget			= @"target";
+NSString * const kZibPullsDown		= @"pullsDown";
+NSString * const kZibSelect			= @"select";
 
 
 /*****************************************************************************\
@@ -94,7 +96,7 @@ NSString * const kZibTarget			= @"target";
 															  error:&error];
 			if (error != nil)
 				{
-				SDL_Log("Failed to decode ZIB. %s",
+				SDL_Log("ZIB: Failed to decode ZIB. %s",
 						error.localizedDescription.UTF8String);
 				self = nil;
 				}
@@ -106,7 +108,7 @@ NSString * const kZibTarget			= @"target";
 			}
 		else
 			{
-			SDL_Log("Failed to open ZIB file '%s'", path.UTF8String);
+			SDL_Log("ZIB: Failed to open ZIB file '%s'", path.UTF8String);
 			self = nil;
 			}
 		}
@@ -190,7 +192,7 @@ NSString * const kZibTarget			= @"target";
 					[item setValue:obj forKey:property];
 					}
 				else
-					SDL_Log("property %s (value %s) could not be set on %s",
+					SDL_Log("ZIB: property %s (value %s) could not be set on %s",
 							property.UTF8String,
 							value.UTF8String,
 							item.description.UTF8String);
@@ -229,7 +231,7 @@ NSString * const kZibTarget			= @"target";
 						[control setTarget:target];
 						}
 					else
-						SDL_Log("Selector %s on target %s could not link to %s",
+						SDL_Log("ZIB: Selector %s, target %s cannot link to %s",
 								selectorId.UTF8String,
 								targetId.UTF8String,
 								item.class.description.UTF8String);
@@ -302,7 +304,7 @@ NSString * const kZibTarget			= @"target";
 	\*************************************************************************/
 	if (info == nil)
 		{
-		SDL_Log("Cannot find window table within ZIB %s", _path.UTF8String);
+		SDL_Log("ZIB: Cannot find window table within ZIB %s", _path.UTF8String);
 		ok = NO;
 		}
 
@@ -396,7 +398,7 @@ NSString * const kZibTarget			= @"target";
 	Class class = NSClassFromString(className);
 	if (class == Nil)
 		{
-		SDL_Log("Warning: Cannot find view of class '%s'", className.UTF8String);
+		SDL_Log("ZIB:  Cannot find view of class '%s'", className.UTF8String);
 		class = NSClassFromString(@"AZView");
 		}
 
@@ -404,7 +406,11 @@ NSString * const kZibTarget			= @"target";
 	|* Create an instance of the class and get the ball rolling with view
 	|* instantiation if this is the contentView of the window
 	\*************************************************************************/
-	view = [[class alloc] initWithDictionary:info];
+	if ([class instancesRespondToSelector:@selector(initWithDictionary:)])
+		view = [[class alloc] initWithDictionary:info];
+	else
+		SDL_Log("ZIB: class %s does not implement -initWithDictionary!",
+				className.UTF8String);
 	if (view)
 		{
 		if ((window != nil) && (parentView == nil))
@@ -451,6 +457,8 @@ NSString * const kZibTarget			= @"target";
 		for (NSDictionary *subview in subviews)
 			[self _createViewFrom:subview forWindow:window inView:view];
 		}
+	else
+		SDL_Log("ZIB: Cannot create view of type %s", className.UTF8String);
 
 	return view;
 	}
@@ -469,7 +477,7 @@ NSString * const kZibTarget			= @"target";
 	\*************************************************************************/
 	if (info == nil)
 		{
-		SDL_Log("Cannot find owner table within ZIB %s", _path.UTF8String);
+		SDL_Log("ZIB: Cannot find owner table within ZIB %s", _path.UTF8String);
 		ok = NO;
 		}
 
@@ -478,7 +486,7 @@ NSString * const kZibTarget			= @"target";
 	\*************************************************************************/
 	else if (ownerClass == nil)
 		{
-		SDL_Log("Cannot find owner-class within ZIB %s", _path.UTF8String);
+		SDL_Log("ZIB: Cannot find owner-class within ZIB %s", _path.UTF8String);
 		ok = NO;
 		}
 
@@ -490,7 +498,7 @@ NSString * const kZibTarget			= @"target";
 		Class zibOwnerClass = NSClassFromString(ownerClass);
 		if (![owner isKindOfClass:zibOwnerClass])
 			{
-			SDL_Log("Owner class (%s) mismatch with ZIB's owner class (%s)",
+			SDL_Log("ZIB: Owner class (%s) mismatch with ZIB's owner class (%s)",
 					owner.class.description.UTF8String,
 					ownerClass.UTF8String);
 			ok = NO;
@@ -528,7 +536,7 @@ NSString * const kZibTarget			= @"target";
 	\*************************************************************************/
 	if (_zib[kZibObjects] == nil)
 		{
-		SDL_Log("Cannot find objects table within ZIB %s", _path.UTF8String);
+		SDL_Log("ZIB: Cannot find objects table within ZIB %s", _path.UTF8String);
 		ok = NO;
 		}
 
@@ -573,7 +581,7 @@ NSString * const kZibTarget			= @"target";
 			}
 		else
 			{
-			SDL_Log("Cannot create concrete instance of class %s",
+			SDL_Log("ZIB: Cannot create concrete instance of class %s",
 					objectClass.UTF8String);
 			}
 		}
@@ -607,7 +615,7 @@ NSString * const kZibTarget			= @"target";
 	else
 		{
 		// Complain
-		SDL_Log("No identifier set in the ZIB block for %s:",
+		SDL_Log("ZIB: No identifier set in the ZIB block for %s:",
 				section.UTF8String);
 		ok = NO;
 		}
