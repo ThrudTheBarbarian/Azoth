@@ -7,6 +7,9 @@
 
 #import "AZNotifications.h"
 
+NSString *const AZApplicationWillLaunch 					= @"AZ:WillLaunch";
+NSString *const AZApplicationDidFinishLaunching 			= @"AZ:DidLaunch";
+
 NSString *const AZRootViewWillResizeNotification 			= @"AZ:ResizeRootView";
 NSString *const AZViewFrameDidChangeNotification 			= @"AZ:FrameResized";
 NSString *const AZViewBoundsDidChangeNotification 			= @"AZ:BoundsResized";

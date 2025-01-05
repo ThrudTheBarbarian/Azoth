@@ -102,6 +102,28 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 		if (atlas)
 			_atlantes[name] = atlas;
 		}
+
+	/*************************************************************************\
+	|* Load the system font after notifying the delegate, so it has a
+	|* chance to change the system font path
+	\*************************************************************************/
+	self.systemFont = [AZFont systemFontWithsize:_systemFontInfo.size];
+	if (!_systemFont)
+		{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+					  "Failed to load system font at %s!",
+					  _systemFontInfo.name.fileSystemRepresentation);
+		}
+	/*************************************************************************\
+	|* Similarly the control font
+	\*************************************************************************/
+	_controlFont = [AZFont systemFontWithsize:16];
+	if (!_controlFont)
+		{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+					  "Failed to load control font at %s!",
+					  _systemFontInfo.name.fileSystemRepresentation);
+		}
 	}
 
 /*****************************************************************************\
@@ -109,7 +131,34 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 \*****************************************************************************/
 - (void) startWithArgc:(int)argc argv:(char **)argv
 	{
-	AZRenderer *azr = nil;
+	AZRenderer *azr 	= nil;
+	NSNotification *n 	= nil;
+
+	/*************************************************************************\
+    |* Set up the system-font info with reasonable defaults
+    \*************************************************************************/
+	_systemFontInfo.name = @"NotoSans-Medium";
+	_systemFontInfo.size = 14;
+	_systemFontInfo.style = AZFONT_STYLE_NORMAL;
+
+	/*************************************************************************\
+    |* Let the delegate know we're about to start launching
+    \*************************************************************************/
+	NSMutableDictionary *args = [NSMutableDictionary new];
+	for (int i=0; i<argc; i++)
+		args[@(i)] = [NSString stringWithUTF8String:argv[i]];
+	NSDictionary *info =
+		@{
+		@"args" : args
+		};
+
+	n = [NSNotification notificationWithName:AZApplicationWillLaunch
+									  object:self
+									userInfo:info];
+
+	SEL willLaunch = SELECTOR(@"applicationWillLaunch:");
+	if ([_delegate respondsToSelector:willLaunch])
+		[_delegate applicationWillLaunch:n];
 
 	/*************************************************************************\
     |* Look for main.zib and load it if we can
@@ -145,68 +194,11 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 		}
 
 	/*************************************************************************\
-    |* Let the delegate say what the system font is going to be
+    |* Let the delegate know that we've now launched
     \*************************************************************************/
-	NSString *name 	= @"applicationDidFinishLaunching:";
-	SEL launch 		= NSSelectorFromString(name);
-	if (self.delegate && [self.delegate respondsToSelector:launch])
-		{
-		/*********************************************************************\
-		|* Set up the system-font info with reasonable defaults
-		\*********************************************************************/
-		_systemFontInfo.name = @"NotoSans-Medium";
-		_systemFontInfo.size = 14;
-		_systemFontInfo.style = AZFONT_STYLE_NORMAL;
-
-		/*********************************************************************\
-		|* Tell the delegate we're about to launch
-		\*********************************************************************/
-		NSMutableDictionary *args = [NSMutableDictionary new];
-		for (int i=0; i<argc; i++)
-			args[@(i)] = [NSString stringWithUTF8String:argv[i]];
-		NSDictionary *info =
-			@{
-			@"args" : args
-			};
-
-		NSNotification *n = [NSNotification notificationWithName:name
-														  object:self
-														userInfo:info];
-
-		SEL willLaunch = SELECTOR(@"applicationWillLaunch:");
-		if ([_delegate respondsToSelector:willLaunch])
-			[_delegate applicationWillLaunch:n];
-
-		/*********************************************************************\
-		|* Load the system font after notifying the delegate, so it has a
-		|* chance to change the system font path
-		\*********************************************************************/
-		self.systemFont = [AZFont systemFontWithsize:_systemFontInfo.size];
-		if (!_systemFont)
-			{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-						  "Failed to load system font at %s!",
-						  _systemFontInfo.name.fileSystemRepresentation);
-			}
-
-		/*********************************************************************\
-		|* Similarly the control font
-		\*********************************************************************/
-		_controlFont = [AZFont systemFontWithsize:16];
-		if (!_controlFont)
-			{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-						  "Failed to load control font at %s!",
-						  _systemFontInfo.name.fileSystemRepresentation);
-			}
-
-		/*********************************************************************\
-		|* And tell the app we're ready to go
-		\*********************************************************************/
-		SEL didLaunch = SELECTOR(@"applicationDidFinishLaunching:");
-		if ([_delegate respondsToSelector:didLaunch])
-			[_delegate applicationDidFinishLaunching:n];
-		}
+	SEL didLaunch = NSSelectorFromString(AZApplicationDidFinishLaunching);
+	if ([self.delegate respondsToSelector:didLaunch])
+		[_delegate applicationDidFinishLaunching:n];
 	}
 
 /*****************************************************************************\

@@ -9,6 +9,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+extern NSString * const AZApplicationWillLaunch;
+extern NSString * const AZApplicationDidFinishLaunching;
+
 extern NSString * const AZRootViewWillResizeNotification;
 extern NSString * const AZViewFrameDidChangeNotification;
 extern NSString * const AZViewBoundsDidChangeNotification;
