@@ -131,7 +131,7 @@ static NSRect	_rB;
 		NSRect src 			= _img[STATE_C];
 		_disclose 			= src;
 		_disclose.origin.x 	= _indent + 4;
-		_disclose.origin.y 	= (self.bounds.size.height - src.size.height)/2 + 1;
+		_disclose.origin.y 	= (self.bounds.size.height - src.size.height)/2 - 3;
 		[azr blitFrom:ui src:src dst:_disclose];
 		}
 

@@ -196,7 +196,7 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 	/*************************************************************************\
     |* Let the delegate know that we've now launched
     \*************************************************************************/
-	SEL didLaunch = NSSelectorFromString(AZApplicationDidFinishLaunching);
+	SEL didLaunch = NSSelectorFromString(@"applicationDidFinishLaunching:");
 	if ([self.delegate respondsToSelector:didLaunch])
 		[_delegate applicationDidFinishLaunching:n];
 	}

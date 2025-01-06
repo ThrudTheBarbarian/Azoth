@@ -74,19 +74,40 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 	{
 	if (self = [super initWithFrame:frame])
 		{
-		_rowToItem			= [NSMutableDictionary new];
-		_itemToRow			= [NSMutableDictionary new];
-		_itemToParent		= [NSMutableDictionary new];
-		_itemToLevel		= [NSMutableDictionary new];
-		_itemToState		= [NSMutableDictionary new];
-		_itemToNumChildren	= [NSMutableDictionary new];
-
-		_indentPerLevel		= 10;
-		_autoresizeOutline	= YES;
-
-		[self _invalidateRowCache];
+		[self _commonOutlineInit];
 		}
 	return self;
+	}
+
+/*****************************************************************************\
+|* Configuration via dictionary. This is called by the NIB loader, but is a
+|* valid way to create the view
+\*****************************************************************************/
+- (instancetype) initWithDictionary:(NSDictionary *)info;
+	{
+	if (self = [super initWithDictionary:info])
+		{
+		[self _commonOutlineInit];
+		}
+	return self;
+	}
+
+/*****************************************************************************\
+|* Common initialisation between -withFrame and -withDictionary
+\*****************************************************************************/
+- (void) _commonOutlineInit
+	{
+	_rowToItem			= [NSMutableDictionary new];
+	_itemToRow			= [NSMutableDictionary new];
+	_itemToParent		= [NSMutableDictionary new];
+	_itemToLevel		= [NSMutableDictionary new];
+	_itemToState		= [NSMutableDictionary new];
+	_itemToNumChildren	= [NSMutableDictionary new];
+
+	_indentPerLevel		= 10;
+	_autoresizeOutline	= YES;
+
+	[self _invalidateRowCache];
 	}
 
 /*****************************************************************************\

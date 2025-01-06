@@ -78,7 +78,8 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 // IndexSet of selection on mousedown
 @property(strong, nonatomic) NSIndexSet *							draggedSet;
 
-
+// Whether we've ever been tiled
+@property(assign, nonatomic) BOOL									tiled;
 @end
 
 @implementation AZTableView
@@ -182,6 +183,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	_editedRow 					= -1;
 	_allowsMultipleSelection 	= YES;
 	_allowsEmptySelection 		= YES;
+	_tiled						= NO;
 	}
 
 /*****************************************************************************\
@@ -379,6 +381,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 \*****************************************************************************/
 - (void) tile
 	{
+	_tiled = YES;
 	if (self.autoresizeColumns)
 		{
 		int num = (int) _tableColumns.count;
@@ -424,6 +427,8 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 \*****************************************************************************/
 - (void) reloadData
 	{
+	if (!self.tiled)
+		[self tile];
     [self _returnNonVisibleRowsToThePool: nil];
     [self _generateHeightAndOffsetData];
     [self _layoutTableRows];
@@ -769,15 +774,6 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 
 
 // MARK: Send/Receive notifications
-
-/*****************************************************************************\
-|* We've just been loaded from the NIB and all the connections are set up
-\*****************************************************************************/
-- (void) awakeFromNib
-	{
-	[self tile];
-	[self reloadData];
-	}
 
 /*****************************************************************************\
 |* Properly replace the delegate, invalidating any old notifications etc.
@@ -1174,6 +1170,11 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	SEL perRow = SELECTOR(@"tableView:heightOfRow:");
 	BOOL checkHeightForEachRow = [_delegate respondsToSelector:perRow];
 
+	// Sanity check, because we'll probably crash later...
+	if (_delegate == nil)
+		SDL_Log("No delegate set on %s",
+				self.class.description.UTF8String);
+				
     NSMutableArray* newRecords 	= [NSMutableArray new];
 	NSInteger numberOfRows 		= [self numberOfRows:YES];
 
@@ -1242,6 +1243,13 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 
     NSMutableIndexSet* visible	= [NSMutableIndexSet new];
 
+	// Sanity check
+	if (rowToDisplay >= _rowRecords.count)
+		{
+		SDL_Log("No data to display in %s", self.class.description.UTF8String);
+		return;
+		}
+		
     int x, y, rowHeight, viewHeight;
     do
 		{

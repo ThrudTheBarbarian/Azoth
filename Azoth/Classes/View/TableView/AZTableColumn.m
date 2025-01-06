@@ -108,7 +108,11 @@ NSMutableDictionary<NSNumber *,AZView *> *							cache;
 		{
 		SEL getView = nil;
 		id dlg 		= _tableView.delegate;
-		if ([dlg conformsToProtocol:@protocol(AZOutlineViewDelegate)])
+
+		// Not sure why -isKindOfClass:AZOutlineView.class doesn't work here...
+		BOOL outline = [self.tableView.class.description isEqualToString:@"AZOutlineView"];
+
+		if (outline && [dlg conformsToProtocol:@protocol(AZOutlineViewDelegate)])
 			{
 			getView = SELECTOR(@"outlineView:viewForTableColumn:row:");
 			if ([dlg respondsToSelector:getView])
@@ -122,7 +126,7 @@ NSMutableDictionary<NSNumber *,AZView *> *							cache;
 				_cache[@(row)] = view;
 				}
 			}
-		else if ([dlg conformsToProtocol:@protocol(AZTableViewDelegate)])
+		else if ((!outline) && [dlg conformsToProtocol:@protocol(AZTableViewDelegate)])
 			{
 			getView = SELECTOR(@"tableView:viewForTableColumn:row:");
 			if ([dlg respondsToSelector:getView])

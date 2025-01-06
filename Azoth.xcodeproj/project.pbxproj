@@ -488,6 +488,7 @@
 		F4BD7EEC2D2651EE0041034B /* Exceptions for "Tests" folder in "NibTest" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				AZOutline/Node.m,
 				NibTest/AppDelegate.m,
 				NibTest/Assets.xcassets,
 				NibTest/main.m,

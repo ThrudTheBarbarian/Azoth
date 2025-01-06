@@ -145,7 +145,8 @@
 			@"textField"			: @"AZTextField",
 			@"scrollView"			: @"AZScrollView",
 			@"clipView"				: @"AZClipView",
-			@"tableView"			: @"AZTableView"
+			@"tableView"			: @"AZTableView",
+			@"outlineView"			: @"AZOutlineView"
 			};
 		});
 
@@ -224,7 +225,8 @@
 				@"slider"			: @"_handleSliderWithInfo:for:",
 				@"textField"		: @"_handleTextFieldWithInfo:for:",
 				@"scrollView"		: @"_handleScrollViewWithInfo:for:",
-				@"tableView"		: @"_handleTableViewWithInfo:for:"
+				@"tableView"		: @"_handleTableViewWithInfo:for:",
+				@"outlineView"		: @"_handleOutlineViewWithInfo:for:"
 				};
 		});
 
@@ -325,6 +327,16 @@
 		view[@"type"] = @"round";
 	else
 		view[@"type"] = @"square";
+	}
+
+/*****************************************************************************\
+|* Called when this is a outlineview-class.
+\*****************************************************************************/
+- (void) _handleOutlineViewWithInfo:(NSDictionary *)vi
+							  for:(NSMutableDictionary *)view
+	{
+	[self _handleTableViewWithInfo:vi for:view];
+	[self _xfer:@"indentationPerLevel" in:vi as:@"indent" in:view];
 	}
 
 /*****************************************************************************\

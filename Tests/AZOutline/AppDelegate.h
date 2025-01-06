@@ -12,5 +12,7 @@
 										AZOutlineViewDataSource>
 
 
+@property(strong) IBOutlet AZOutlineView *ov;
+@property(strong) IBOutlet AZTableView *tv;
 @end
 
