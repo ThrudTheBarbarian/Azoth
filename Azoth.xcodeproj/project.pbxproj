@@ -288,7 +288,7 @@
 		};
 		F4BD7F592D279E3C0041034B /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 12;
+			buildActionMask = 2147483647;
 			dstPath = "$(HOME)/bin";
 			dstSubfolderSpec = 0;
 			files = (
@@ -374,6 +374,7 @@
 				AZDemo/Assets.xcassets,
 				AZDemo/ColouredView.h,
 				AZDemo/ColouredView.m,
+				AZDemo/Frameworks,
 				AZDemo/IdentifiedView.h,
 				AZDemo/IdentifiedView.m,
 				AZDemo/Resources/texture.png,
@@ -1316,8 +1317,6 @@
 				CURRENT_PROJECT_VERSION = 1;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/Azoth/Frameworks",
-					"$(PROJECT_DIR)/AZDemo/Frameworks",
 					"/opt/SDL3/**",
 					"/opt/SDL3/SDL3_image.xcframework/macos-arm64_x86_64",
 				);
@@ -1350,8 +1349,6 @@
 				CURRENT_PROJECT_VERSION = 1;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/Azoth/Frameworks",
-					"$(PROJECT_DIR)/AZDemo/Frameworks",
 					"/opt/SDL3/**",
 					"/opt/SDL3/SDL3_image.xcframework/macos-arm64_x86_64",
 				);
@@ -1532,10 +1529,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Azoth/Frameworks",
-				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainNibFile = MainMenu;
@@ -1560,10 +1553,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Azoth/Frameworks",
-				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainNibFile = MainMenu;
