@@ -146,7 +146,8 @@
 			@"scrollView"			: @"AZScrollView",
 			@"clipView"				: @"AZClipView",
 			@"tableView"			: @"AZTableView",
-			@"outlineView"			: @"AZOutlineView"
+			@"outlineView"			: @"AZOutlineView",
+			@"splitView"			: @"AZSplitView"
 			};
 		});
 
@@ -226,7 +227,8 @@
 				@"textField"		: @"_handleTextFieldWithInfo:for:",
 				@"scrollView"		: @"_handleScrollViewWithInfo:for:",
 				@"tableView"		: @"_handleTableViewWithInfo:for:",
-				@"outlineView"		: @"_handleOutlineViewWithInfo:for:"
+				@"outlineView"		: @"_handleOutlineViewWithInfo:for:",
+				@"splitView"		: @"_handleSplitViewWithInfo:for:"
 				};
 		});
 
@@ -333,10 +335,21 @@
 |* Called when this is a outlineview-class.
 \*****************************************************************************/
 - (void) _handleOutlineViewWithInfo:(NSDictionary *)vi
-							  for:(NSMutableDictionary *)view
+								for:(NSMutableDictionary *)view
 	{
 	[self _handleTableViewWithInfo:vi for:view];
 	[self _xfer:@"indentationPerLevel" in:vi as:@"indent" in:view];
+	}
+
+/*****************************************************************************\
+|* Called when this is a splitview-class.
+\*****************************************************************************/
+- (void) _handleSplitViewWithInfo:(NSDictionary *)vi
+							  for:(NSMutableDictionary *)view
+	{
+	[self _xfer:@"dividerStyle" in:vi as:@"style" in:view];
+	if (vi[@"vertical"])
+		view[@"vertical"] = @"YES";
 	}
 
 /*****************************************************************************\

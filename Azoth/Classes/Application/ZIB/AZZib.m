@@ -23,53 +23,53 @@
 /*****************************************************************************\
 |* Constant strings, only really used here, but...
 \*****************************************************************************/
-NSString * const kZibObjects		= @"objects";
-NSString * const kZibClassname		= @"class";
-NSString * const kZibConnect		= @"connect";
-NSString * const kZibIdentifier		= @"id";
-NSString * const kZibOwner			= @"owner";
-NSString * const kZibWindow			= @"window";
-NSString * const kZibContentRect	= @"contentRect";
-NSString * const kZibStyle			= @"style";
-NSString * const kZibClosable		= @"closable";
-NSString * const kZibTitle			= @"title";
-NSString * const kZibView			= @"view";
-NSString * const kZibFrame			= @"frame";
-NSString * const kZibResizeMask		= @"resizeMask";
-NSString * const kZibSubviews  		= @"subviews";
-NSString * const kZibType	  		= @"type";
-NSString * const kZibOutlet	  		= @"outlet";
 NSString * const kZibAction	  		= @"action";
-NSString * const kZibDestination	= @"destination";
-NSString * const kZibId				= @"id";
-NSString * const kZibProperty		= @"property";
-NSString * const kZibSelector		= @"selector";
-NSString * const kZibTarget			= @"target";
-NSString * const kZibPullsDown		= @"pullsDown";
-NSString * const kZibSelect			= @"select";
-NSString * const kZibSegments		= @"segments";
-NSString * const kZibLabel			= @"label";
-NSString * const kZibWidth			= @"width";
-NSString * const kZibValue			= @"value";
-NSString * const kZibMinValue		= @"minValue";
-NSString * const kZibMaxValue		= @"maxValue";
 NSString * const kZibCircular		= @"circular";
-NSString * const kZibTextColour		= @"textColour";
+NSString * const kZibClassname		= @"class";
+NSString * const kZibClosable		= @"closable";
+NSString * const kZibColumns		= @"columns";
+NSString * const kZibConnect		= @"connect";
+NSString * const kZibContentRect	= @"contentRect";
+NSString * const kZibDestination	= @"destination";
 NSString * const kZibEditable		= @"editable";
-NSString * const kZibRound			= @"round";
+NSString * const kZibFrame			= @"frame";
 NSString * const kZibHLineScroll	= @"dhLine";
 NSString * const kZibHPageScroll	= @"dhPage";
+NSString * const kZibHScroller		= @"hscroller";
+NSString * const kZibHasHeaderView	= @"hasHeaderView";
+NSString * const kZibId				= @"id";
+NSString * const kZibIdentifier		= @"identifier";
+NSString * const kZibLabel			= @"label";
+NSString * const kZibMaxValue		= @"maxValue";
+NSString * const kZibMaxWidth		= @"maxWidth";
+NSString * const kZibMinValue		= @"minValue";
+NSString * const kZibMinWidth		= @"minWidth";
+NSString * const kZibObjects		= @"objects";
+NSString * const kZibOutlet	  		= @"outlet";
+NSString * const kZibOwner			= @"owner";
+NSString * const kZibProperty		= @"property";
+NSString * const kZibPullsDown		= @"pullsDown";
+NSString * const kZibResizeMask		= @"resizeMask";
+NSString * const kZibRound			= @"round";
+NSString * const kZibRowHeight		= @"rowHeight";
+NSString * const kZibSegments		= @"segments";
+NSString * const kZibSelect			= @"select";
+NSString * const kZibSelectMultiple	= @"multipleSelection";
+NSString * const kZibSelector		= @"selector";
+NSString * const kZibStyle			= @"style";
+NSString * const kZibSubviews  		= @"subviews";
+NSString * const kZibTarget			= @"target";
+NSString * const kZibTextColour		= @"textColour";
+NSString * const kZibTitle			= @"title";
+NSString * const kZibType	  		= @"type";
+NSString * const kZibVertical	  	= @"vertical";
 NSString * const kZibVLineScroll	= @"dvLine";
 NSString * const kZibVPageScroll	= @"dvPage";
-NSString * const kZibHScroller		= @"hscroller";
 NSString * const kZibVScroller		= @"vscroller";
-NSString * const kZibHasHeaderView	= @"hasHeaderView";
-NSString * const kZibSelectMultiple	= @"multipleSelection";
-NSString * const kZibRowHeight		= @"rowHeight";
-NSString * const kZibColumns		= @"columns";
-NSString * const kZibIdentififer	= @"identifier";
-NSString * const kZibMaxWidth		= @"maxWidth";
-NSString * const kZibMinWidth		= @"minWidth";
+NSString * const kZibValue			= @"value";
+NSString * const kZibView			= @"view";
+NSString * const kZibWidth			= @"width";
+NSString * const kZibWindow			= @"window";
 
 
 /*****************************************************************************\
@@ -666,8 +666,8 @@ NSString * const kZibMinWidth		= @"minWidth";
 
 	// Set the identifier for this object, crucial for any
 	// connection-making later
-	if (info[kZibIdentifier])
-		_byId[info[kZibIdentifier]] = obj;
+	if (info[kZibId])
+		_byId[info[kZibId]] = obj;
 	else
 		{
 		// Complain

@@ -12,6 +12,7 @@
 #import "AZNotifications.h"
 #import "AZPainter.h"
 #import "AZSplitView.h"
+#import "AZZib.h"
 
 /*****************************************************************************\
 |* "Private" properties
@@ -33,12 +34,40 @@
 	{
 	if (self = [super initWithFrame:frame])
 		{
-		_dividerStyle 	= AZSplitViewDividerStyleThick;
-		_isVertical 	= NO;
+		[self _commonSliderInit];
 		}
 	return self;
 	}
+	
+/*****************************************************************************\
+|* Configuration via dictionary. This is called by the NIB loader, but is a
+|* valid way to create the view
+\*****************************************************************************/
+- (instancetype) initWithDictionary:(NSDictionary *)info;
+	{
+	if (self = [super initWithDictionary:info])
+		{
+		[self _commonSliderInit];
 
+		if ([info[kZibVertical] isEqualToString:@"YES"])
+			[self setIsVertical:YES];
+		if ([info[kZibStyle] isEqualToString:@"paneSplitter"])
+			_dividerStyle = AZSplitViewDividerStylePaneSplitter;
+		else if ([info[kZibStyle] isEqualToString:@"thin"])
+			_dividerStyle = AZSplitViewDividerStyleThin;
+		}
+	return self;
+	}
+	
+/*****************************************************************************\
+|* Common initialisation between -withFrame and -withDictionary
+\*****************************************************************************/
+- (void) _commonSliderInit
+	{
+	_dividerStyle 	= AZSplitViewDividerStyleThick;
+	_isVertical 	= NO;
+	}
+	
 /*****************************************************************************\
 |* Clean up on dealloc
 \*****************************************************************************/
@@ -358,7 +387,7 @@
     if ([self isVertical])
 		{
         float lastPosition 	= NSMaxX(resize0);
-        float delta 		= floor(position - lastPosition);
+        float delta 		= SDL_floorf(position - lastPosition);
         resize0.size.width += delta;
         resize1.size.width -= delta;
         
@@ -632,7 +661,7 @@ static float _constrainTo(float value, float min, float max)
 \*****************************************************************************/
 - (void) _drawDividerInRect:(NSRect)rect withPainter:(AZPainter *)painter
 	{
-	if (_dividerStyle != AZSplitViewDividerStylePaneSplitter)
+	//if (_dividerStyle != AZSplitViewDividerStylePaneSplitter)
 		{
 		[painter rectangleWithRect:rect
 							filled:YES
