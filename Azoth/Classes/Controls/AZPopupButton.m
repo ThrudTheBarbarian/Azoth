@@ -31,9 +31,12 @@ enum
 	STATE_NUM
 	};
 
-static NSRect	_bL[STATE_NUM];			// Left-hand-side image
-static NSRect	_bC[STATE_NUM];			// Center image
-static NSRect	_bR[STATE_NUM];			// Right-hand-side image
+static NSRect		_uiRect;				// drawing rect
+static NSInteger	_ui[STATE_NUM];			// 9-way texture-maps
+static float 		_uiW[STATE_NUM];		// left-border for 9-way
+static float		_uiN[STATE_NUM];		// top-border for 9-way
+static float		_uiE[STATE_NUM];		// right-border for 9-way
+static float 		_uiS[STATE_NUM];		// bottom-border for 9-way
 
 @implementation AZPopupButton
 /*****************************************************************************\
@@ -121,9 +124,9 @@ static NSRect	_bR[STATE_NUM];			// Right-hand-side image
 	[AZPopupButton _fetchRects];
 
 	int width  			= [AZApp.controlFont textWidthFor:text]
-						+ _bC[0].size.width
-						+ _bR[0].size.width;
-	NSRect frame		= NSMakeRect(0, 0, width, _bC[0].size.height);
+						+ _uiE[0]
+						+ _uiW[0];
+	NSRect frame		= NSMakeRect(0, 0, width, _uiRect.size.height);
 	AZPopupButton *btn	= [AZPopupButton buttonWithFrame:frame pullsDown:YES];
 	if (menu.numberOfItems > 0)
 		[[menu itemAtIndex:0] setTitle:text];
@@ -144,9 +147,9 @@ static NSRect	_bR[STATE_NUM];			// Right-hand-side image
 	[AZPopupButton _fetchRects];
 
 	int width  			= [AZApp.controlFont textWidthFor:text]
-						+ _bC[0].size.width
-						+ _bR[0].size.width;
-	NSRect frame		= NSMakeRect(0, 0, width, _bC[0].size.height);
+						+ _uiE[0]
+						+ _uiW[0];
+	NSRect frame		= NSMakeRect(0, 0, width, _uiRect.size.height);
 	AZPopupButton *btn	= [AZPopupButton buttonWithFrame:frame pullsDown:NO];
 	if (menu.numberOfItems > 0)
 		[[menu itemAtIndex:0] setTitle:text];
@@ -170,20 +173,60 @@ static NSRect	_bR[STATE_NUM];			// Right-hand-side image
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken,
 		^{
-		_bL[STATE_N]   	= [AZApp srcRectFor:@"button-bezel-left" in:kUiMap];
-		_bL[STATE_P]   	= [AZApp srcRectFor:@"button-bezel-left" in:kUiMap];
-		_bL[STATE_DN]  	= [AZApp srcRectFor:@"popup-bezel-disabled-left" in:kUiMap];
-		_bL[STATE_DP]   = [AZApp srcRectFor:@"popup-bezel-disabled-left" in:kUiMap];
+		NSRect bL[STATE_NUM];
+		NSRect bC[STATE_NUM];
+		NSRect bR[STATE_NUM];
 
-		_bC[STATE_N]   	= [AZApp srcRectFor:@"popup-bezel-center" in:kUiMap];
-		_bC[STATE_P]   	= [AZApp srcRectFor:@"popup-bezel-center" in:kUiMap];
-		_bC[STATE_DN]  	= [AZApp srcRectFor:@"popup-bezel-disabled-center" in:kUiMap];
-		_bC[STATE_DP]   = [AZApp srcRectFor:@"popup-bezel-disabled-center" in:kUiMap];
+		bL[STATE_N]   	= [AZApp srcRectFor:@"button-bezel-left" in:kUiMap];
+		bL[STATE_P]   	= [AZApp srcRectFor:@"button-bezel-left" in:kUiMap];
+		bL[STATE_DN]  	= [AZApp srcRectFor:@"popup-bezel-disabled-left" in:kUiMap];
+		bL[STATE_DP]	= [AZApp srcRectFor:@"popup-bezel-disabled-left" in:kUiMap];
 
-		_bR[STATE_N]   	= [AZApp srcRectFor:@"popup-bezel-right" in:kUiMap];
-		_bR[STATE_P]   	= [AZApp srcRectFor:@"popup-bezel-right-pullsdown" in:kUiMap];
-		_bR[STATE_DN]   = [AZApp srcRectFor:@"popup-bezel-disabled-right" in:kUiMap];
-		_bR[STATE_DP]   = [AZApp srcRectFor:@"popup-bezel-disabled-right-pullsdown" in:kUiMap];
+		bC[STATE_N]   	= [AZApp srcRectFor:@"popup-bezel-center" in:kUiMap];
+		bC[STATE_P]   	= [AZApp srcRectFor:@"popup-bezel-center" in:kUiMap];
+		bC[STATE_DN]  	= [AZApp srcRectFor:@"popup-bezel-disabled-center" in:kUiMap];
+		bC[STATE_DP]	= [AZApp srcRectFor:@"popup-bezel-disabled-center" in:kUiMap];
+
+		bR[STATE_N]   	= [AZApp srcRectFor:@"popup-bezel-right" in:kUiMap];
+		bR[STATE_P]   	= [AZApp srcRectFor:@"popup-bezel-right-pullsdown" in:kUiMap];
+		bR[STATE_DN]	= [AZApp srcRectFor:@"popup-bezel-disabled-right" in:kUiMap];
+		bR[STATE_DP]	= [AZApp srcRectFor:@"popup-bezel-disabled-right-pullsdown" in:kUiMap];
+
+		AZRenderer *azr 	= AZRenderer.renderer;
+		NSInteger S			= [AZApp textureFor:kUiMap];
+
+		for (int i=0; i<STATE_NUM; i++)
+			{
+			int W,H;
+
+			float left 	= NSWidth(bL[i]);
+			float mid 	= NSWidth(bC[i]);
+			float right	= NSWidth(bR[i]);
+
+			/*****************************************************************\
+			|* Create 9-way tileable textures for the button, so we can fill
+			|* in the background of any-size button
+			\*****************************************************************/
+			W = left  + mid  + right;
+			H = NSHeight(bL[i]);
+
+			_ui[i] = [azr createTextureOfSize:NSMakeSize(W, H)];
+
+			/*****************************************************************\
+			|* Draw the pixmap rectangles to the new combined texture
+			\*****************************************************************/
+			[azr lockFocusOn:_ui[i]];
+			[azr blitFrom:S src:bL[i] dst:NSMakeRect(0 ,0, left, H)];
+			[azr blitFrom:S src:bC[i] dst:NSMakeRect(left, 0, mid, H)];
+			[azr blitFrom:S src:bR[i] dst:NSMakeRect(left+mid, 0, right, H)];
+			[azr unlockFocus];
+
+			_uiRect 	= NSMakeRect(0, 0, W, H);
+			_uiW[i]		= left;// left;
+			_uiN[i]		= 5;
+			_uiE[i]		= right+1;//left + mid+mid;
+			_uiS[i]		= 5;
+			}
 		});
 	}
 
@@ -197,28 +240,22 @@ static NSRect	_bR[STATE_NUM];			// Right-hand-side image
 	NSRect bounds	= self.bounds;
 	[super drawInRect:dirtyRect withPainter:painter];
 
-	int type		= _menu.pullsDown ? 1 : 0;
-	NSRect srcL		= _bL[self.state + type];
-	NSRect srcC		= _bC[self.state + type];
-	NSRect srcR		= _bR[self.state + type];
-
-	int stretch 	= bounds.size.width - srcL.size.width - srcR.size.width;
-	NSRect dstL		= NSMakeRect(0, 0, srcL.size.width, srcL.size.height);
-	NSRect dstC  	= NSMakeRect(srcL.size.width, 0, stretch, srcC.size.height);
-	NSRect dstR		= NSMakeRect(srcL.size.width + stretch, 0,
-								 srcR.size.width, srcR.size.height);
-
 	AZRenderer *azr		= AZRenderer.renderer;
-	NSInteger ui		= [AZApp textureFor:kUiMap];
+	int state 			= self.state + (_menu.pullsDown ? 1 : 0);
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
-	[azr blitFrom:ui src:srcL dst:dstL];
-	[azr tileFrom:ui src:srcC dst:dstC];
-	[azr blitFrom:ui src:srcR dst:dstR];
+	[azr blit9WayFrom:_ui[state]
+				  src:_uiRect
+				scale:1.f
+				 left:_uiW[state]
+				right:_uiE[state]
+				  top:_uiN[state]
+			   bottom:_uiS[state]
+				  dst:self.bounds];
 
 	[painter setTextColour:[AZColour blackColour]];
-	NSRect box = NSInsetRect(bounds, 5, 2);
-	box.size.width = box.size.width + 5 - dstR.size.width;
+	NSRect box 		= NSInsetRect(bounds, 5, 2);
+	box.size.width 	= box.size.width + 5 - _uiE[state];
 
 	NSInteger selected = _menu.selectedIndex;
 	if ((selected < 0) || (selected >= _menu.itemArray.count))

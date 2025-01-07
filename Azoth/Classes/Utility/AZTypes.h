@@ -462,7 +462,8 @@ enum
 \*****************************************************************************/
 #define SAFELY_FREE(x) do													\
 		{                                                       			\
-		free((void *)x);                      								\
+		if (x)																\
+			free((void *)x);                   								\
 		x = NULL;     		                       							\
 		}                                                       			\
 	while (false)

@@ -353,13 +353,17 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	SDL_Texture *texture = [self _textureFor:textureId];
 	if (texture)
 		{
+		BOOL srcNull = NSIsEmptyRect(srcRect);
+		BOOL dstNull = NSIsEmptyRect(dstRect);
+
 		SDL_FRect src = SDL_FRECT(srcRect);
 		SDL_FRect dst = SDL_FRECT(dstRect);
+
 		return SDL_RenderTexture9Grid(_renderer, texture,
-									  &src,
+									  srcNull ? NULL : &src,
 									  left, right, top, bottom,
 									  scale,
-									  &dst);
+									  dstNull ? NULL : &dst);
 		}
 
 	SDL_Log("Cannot find texture %d to tile from", (int)textureId);
