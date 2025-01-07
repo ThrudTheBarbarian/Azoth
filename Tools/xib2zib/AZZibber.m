@@ -240,6 +240,12 @@
 	[self _xfer:@"rect" in:vi as:@"rect" in:view];
 	[self _xfer:@"userLabel" in:vi as:@"label" in:view];
 
+	// Override the default class if we have a customClass set
+	NSString *class = vi[@"customClass"];
+	if (class == nil)
+		class = [self _classFromKey:key];
+	view[@"class"] = class;
+
 	// view-specific method calls
 	if (key && (map[key] != nil))
 		{
@@ -248,12 +254,6 @@
 		void (*func)(id, SEL, NSDictionary*, NSMutableDictionary*) = (void *)imp;
 		func(self, action, vi, view);
 		}
-
-	// Override the default class if we have a customClass set
-	NSString *class = vi[@"customClass"];
-	if (class == nil)
-		class = [self _classFromKey:key];
-	view[@"class"] = class;
 
 	// Add connections if we have them
 	[self _xfer:@"connections" in:vi as:@"connect" in:view];
@@ -325,10 +325,17 @@
 			}
 		}
 
-	if ([cellInfo[@"bezelStyle"] isEqualToString:@"round"])
-		view[@"type"] = @"round";
+	NSString *border = cellInfo[@"borderStyle"];
+	if (border == nil)
+		view[@"class"] = @"AZLabel"; // Override the existing class
 	else
-		view[@"type"] = @"square";
+		{
+		NSString *bezel = cellInfo[@"bezelStyle"];
+		if ([bezel isEqualToString:@"round"])
+			view[@"type"] = @"round";
+		else
+			view[@"type"] = @"square";
+		}
 	}
 
 /*****************************************************************************\
