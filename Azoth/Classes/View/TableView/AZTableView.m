@@ -491,7 +491,6 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		float w		= self.bounds.size.width;
 
 		AZRenderer *azr = AZRenderer.renderer;
-		NSInteger ui	= [AZApp textureFor:kUiMap];
 
 		int idx = 0;
 		while ((y < yMax) && (idx < _numberOfRows))
@@ -743,7 +742,14 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 				[verified addIndex:index];
 			index = [newIndexes indexGreaterThanIndex:index];
 			}
-		[self _setSelectedRowIndexes:verified];
+		if (verified.count)
+			{
+			// Let the delegate know that we're about to change
+			[self noteSelectionWillChange];
+
+			// Then do the selection
+			[self _setSelectedRowIndexes:verified];
+			}
 		}
 	}
 
@@ -781,6 +787,8 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 			  @selector(tableViewColumnDidResize:) },
 			{ AZTableViewSelectionIsChangingNotification,
 			  @selector(tableViewSelectionIsChanging:) },
+			{ AZTableViewSelectionWillChangeNotification,
+			  @selector(tableViewSelectionWillChange:) },
 			{ nil, NULL }
 		};
 
@@ -849,6 +857,16 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	// FIXME: investigate whether _setSelectedRowIndexes: should do this check.
 	if (![selection isEqualToIndexSet:_selectedRowIndexes])
 		[self _setSelectedRowIndexes:selection];
+	}
+
+/*****************************************************************************\
+|* Notify that the selection will change
+\*****************************************************************************/
+- (void) noteSelectionWillChange
+	{
+	NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
+    [nc postNotificationName:AZTableViewSelectionWillChangeNotification
+                      object:self];
 	}
 
 /*****************************************************************************\
@@ -1231,6 +1249,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 												  inRange:range];
 
     NSMutableIndexSet* visible	= [NSMutableIndexSet new];
+	SEL willDisplay = SELECTOR(@"tableView:willDisplayView:forTableColumn:row:");
 
 	// Sanity check
 	if (rowToDisplay >= _rowRecords.count)
@@ -1254,6 +1273,12 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 			NSRect frame = NSMakeRect(x, y, col.width, viewHeight);
 			[view setFrame:frame];
 			x += col.width + _spacing.width;
+
+			if ([_delegate respondsToSelector:willDisplay])
+				[_delegate tableView:self
+					 willDisplayView:view
+					  forTableColumn:col
+								 row:rowToDisplay];
 
 			[self addSubview:view];
 			}

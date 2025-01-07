@@ -64,10 +64,13 @@ NS_ASSUME_NONNULL_BEGIN
 		forTableColumn:(AZTableColumn *)tableColumn
 		row:(NSInteger)row;
 
-// Notification: selection is changing
+// Notification: selection will change, called before the selection changes
+- (void)tableViewSelectionWillChange:(NSNotification *)note;
+
+// Notification: selection is changing, called as the selection changes
 - (void)tableViewSelectionIsChanging:(NSNotification *)note;
 
-// Notification: selection did change
+// Notification: selection did change, called after the selection changed
 - (void)tableViewSelectionDidChange:(NSNotification *)note;
 
 // Notification: column did move

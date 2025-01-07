@@ -52,6 +52,7 @@ static NSRect	_rB;
 			[self _fetchRects];
 			});
 
+		self.hostedView			= view;
 		[self addSubview:view];
 		self.backgroundColour 	= AZColour.clearColour;
 		self.disclose 			= NSZeroRect;

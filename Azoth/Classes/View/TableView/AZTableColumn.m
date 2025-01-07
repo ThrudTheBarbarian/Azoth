@@ -10,6 +10,7 @@
 #import "AZApplication.h"
 #import "AZFont.h"
 #import "AZOutlineView.h"
+#import "AZOutlineItemView.h"
 #import "AZTableColumn.h"
 #import "AZTableHeaderView.h"
 #import "AZTableView.h"
@@ -142,6 +143,23 @@ NSMutableDictionary<NSNumber *,AZView *> *							cache;
 					NSStringFromSelector(getView).UTF8String);
 		}
 
+	return view;
+	}
+
+/*****************************************************************************\
+|* This is intended to be called by clients who are querying the column to
+|* edit/call methods on views they have provided. We expect the view for the
+|* row to exist (or the row is invalid) and we unwrap the hosted view if this
+|* is an OutlineView's column's row's view
+\*****************************************************************************/
+- (nullable AZView *) viewForRow:(NSInteger)row
+	{
+	AZView *view = [_cache objectForKey:@(row)];
+	if (view)
+		{
+		if ([view isKindOfClass:AZOutlineItemView.class])
+			view = ((AZOutlineItemView *)view).hostedView;
+		}
 	return view;
 	}
 

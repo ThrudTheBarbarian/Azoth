@@ -30,7 +30,7 @@
 	|* Create the nodes for the outline
 	\*************************************************************************/
 	_root = [Node nodeWithName:@"root"];
-	for (int i=0; i<40; i++)
+	for (int i=0; i<5; i++)
 		{
 		Node *kid = [Node nodeWithName:[NSString stringWithFormat:@"kid %d", i]];
 		[_root.kids addObject:kid];
@@ -114,9 +114,6 @@
 
 	if ([type isEqualToString:@"button"])
 		{
-//		AZButton *b = (AZButton *)view;
-//		b.stringValue = [NSString stringWithFormat:@"hola! %d", (int)row];
-//		b.autoresizingMask = AZViewWidthSizable;
 		AZTextField *tf = (AZTextField *)view;
 		tf.stringValue = [NSString stringWithFormat:@"hola! %d", (int)row];
 		tf.enabled = NO;
@@ -125,6 +122,47 @@
 	return view;
 	}
 
+/*****************************************************************************\
+|* This is called before the selection changes
+\*****************************************************************************/
+- (void)tableViewSelectionWillChange:(NSNotification *)note;
+	{
+	AZTableView *tv 	= note.object;
+	NSIndexSet *indices	= tv.selectedRowIndexes;
+	NSInteger index    	= indices.firstIndex;
+	NSArray *cols		= tv.tableColumns;
+
+	while (index != NSNotFound)
+		{
+		for (AZTableColumn *col in cols)
+			{
+			AZTextField *tf = (AZTextField *)[col viewForRow:index];
+			tf.textColour = AZColour.blackColour;
+			}
+		index = [indices indexGreaterThanIndex:index];
+		}
+	}
+
+/*****************************************************************************\
+|* This is called after the selection changes
+\*****************************************************************************/
+- (void)tableViewSelectionDidChange:(NSNotification *)note;
+	{
+	AZTableView *tv 	= note.object;
+	NSIndexSet *indices	= tv.selectedRowIndexes;
+	NSInteger index    	= indices.firstIndex;
+	NSArray *cols		= tv.tableColumns;
+
+	while (index != NSNotFound)
+		{
+		for (AZTableColumn *col in cols)
+			{
+			AZTextField *tf = (AZTextField *)[col viewForRow:index];
+			tf.textColour = AZColour.redColour;
+			}
+		index = [indices indexGreaterThanIndex:index];
+		}
+	}
 
 // MARK: outlineview datasource
 
@@ -174,6 +212,7 @@
 	{
 	AZView *view = [ov dequeueViewWithIdentifier:@"test"];
 
+
 	if (view == nil)
 		{
 		NSRect frame 	= NSMakeRect(0, 0, column.width, ROW_HEIGHT);
@@ -182,9 +221,18 @@
 		tf.identifier	= @"test";
 		view = tf;
 		}
+	AZTextField *tf = (AZTextField *)view;
+
+	// Manage selection here for outline view because the views will change
+	// when the selection changes, so looking for old/new notifications isn't
+	// going to work (though it does for TableView)
+	NSIndexSet *selected = [ov selectedRowIndexes];
+	if ([selected containsIndex:row])
+		[tf setTextColour:AZColour.redColour];
+	else
+		[tf setTextColour:AZColour.blackColour];
 
 	Node *item 		= (Node *)[ov itemAtRow:row];
-	AZTextField *tf = (AZTextField *)view;
 	tf.stringValue = [NSString stringWithFormat:@"row %d [%@]",
 					  (int)row, item.name];
 	tf.enabled = NO;

@@ -20,9 +20,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype) initWithIdentifier:(NSString *)identifier;
 
 /*****************************************************************************\
-|* Provide a view for a given row
+|* Provide a view for a given row. Note that this is generally intended for
+|* internal use between OutlineView/TableView and TableColumn, the one you
+|* want as a client is probably...
 \*****************************************************************************/
 - (nullable AZView *) dataViewForRow:(NSInteger)row;
+
+/*****************************************************************************\
+|* ... this one, which will return the view that the delegate provided, and
+|* not anything that wrapped it to provide UI
+\*****************************************************************************/
+- (nullable AZView *) viewForRow:(NSInteger)row;
+
 
 /*****************************************************************************\
 |* Return any cached rows to the pool

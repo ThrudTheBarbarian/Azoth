@@ -68,6 +68,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Whether we should render as selected
 @property(assign, nonatomic) BOOL								selected;
+
+// The view that was passed into us
+@property(strong, nonatomic) AZView *							hostedView;
 @end
 
 NS_ASSUME_NONNULL_END
