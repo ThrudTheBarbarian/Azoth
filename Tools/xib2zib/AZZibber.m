@@ -422,12 +422,11 @@
 							  for:(NSMutableDictionary *)view
 	{
 	// Only show up if set to NO
-	BOOL noHScroll = ([vi[@"hasHorizontalScroller"] isEqualToString:@"NO"]);
-	view[@"hscroller"] = noHScroll ? @"NO" : @"YES";
+	NSString *hscroll = vi[@"hasHorizontalScroller"];
+	view[@"hscroller"] = hscroll ? @"NO" : @"YES";
 
-	BOOL noVScroll = ([vi[@"hasVerticalScroller"] isEqualToString:@"NO"]);
-	view[@"vscroller"] = noVScroll ? @"NO" : @"YES";
-
+	NSString *vscroll = vi[@"hasVerticalScroller"];
+	view[@"vscroller"] = vscroll ? @"NO" : @"YES";
 
 	[self _xfer:@"horizontalLineScroll" in:vi as:@"dhLine" in:view];
 	[self _xfer:@"horizontalPageScroll" in:vi as:@"dhPage" in:view];

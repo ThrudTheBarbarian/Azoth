@@ -62,10 +62,10 @@ static Class _rulerViewClass = nil;
 		self.verticalPageScroll = (v) ? v.floatValue 	: 50;
 
 		BOOL hScroll = ([info[kZibHScroller] isEqualToString:@"YES"]);
-		[self setHasVerticalScroller:hScroll];
+		[self setHasHorizontalScroller:hScroll];
 
 		BOOL vScroll = ([info[kZibVScroller] isEqualToString:@"YES"]);
-		[self setHasHorizontalScroller:vScroll];
+		[self setHasVerticalScroller:vScroll];
 		}
 
 	return self;
