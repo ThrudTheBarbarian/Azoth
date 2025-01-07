@@ -21,6 +21,7 @@ NSString *const AZRadioButtonPressedNotification 			= @"AZ:RadioButtonPressed";
 NSString *const AZSplitViewDidResizeSubviewsNotification 	= @"AZ:SplitviewDidResize";
 NSString *const AZSplitViewWillResizeSubviewsNotification 	= @"AZ:SplitviewWillResize";
 
+NSString *const AZTableViewSelectionWillChangeNotification	= @"AZ:TvSelWillChange";
 NSString *const AZTableViewSelectionIsChangingNotification	= @"AZ:TvSelIsChanging";
 NSString *const AZTableViewSelectionDidChangeNotification 	= @"AZ:TvSelDidChange";
 NSString *const AZTableViewColumnDidMoveNotification 		= @"AZ:TvColDidMove";

@@ -23,6 +23,7 @@ extern NSString * const AZRadioButtonPressedNotification;
 extern NSString * const AZSplitViewWillResizeSubviewsNotification;
 extern NSString * const AZSplitViewDidResizeSubviewsNotification;
 
+extern NSString * const AZTableViewSelectionWillChangeNotification;
 extern NSString * const AZTableViewSelectionIsChangingNotification;
 extern NSString * const AZTableViewSelectionDidChangeNotification;
 extern NSString * const AZTableViewColumnDidMoveNotification;
