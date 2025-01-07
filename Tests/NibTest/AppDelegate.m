@@ -144,6 +144,25 @@
 	}
 
 /*****************************************************************************\
+|* This is called as views are being recycled (eg: on scroll)
+\*****************************************************************************/
+- (void)tableView:(AZTableView *)tv
+		willDisplayView:(AZView *)view
+		forTableColumn:(AZTableColumn *)col
+		row:(NSInteger)row
+	{
+	if ([tv.className isEqualToString:@"AZTableView"])
+		{
+		AZTextField *tf = (AZTextField *)[col viewForRow:row];
+		NSIndexSet *indices	= tv.selectedRowIndexes;
+		if ([indices containsIndex:row])
+			tf.textColour = AZColour.redColour;
+		else
+			tf.textColour = AZColour.blackColour;
+		}
+	}
+
+/*****************************************************************************\
 |* This is called after the selection changes
 \*****************************************************************************/
 - (void)tableViewSelectionDidChange:(NSNotification *)note;
