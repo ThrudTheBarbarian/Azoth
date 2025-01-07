@@ -109,7 +109,14 @@ static dispatch_once_t _rectToken;
 		if ([info[kZibType] isEqualToString:@"roundRect"])
 			self.type = ButtonTypeRounded;
 		else if ([info[kZibType] isEqualToString:@"radio"])
+			{
+			// We do radio groups a little differently than AppKit, so by
+			// default put all radio buttons into the 'default' radio group
+			// and let the user configure them in -awakeFromNib or in
+			// -applicationDidFinishLaunching
 			self.type = ButtonTypeRadio;
+			self.radioGroup = @"defaultRadioGroup";
+			}
 		else
 			self.type = ButtonTypePlain;
 		}
@@ -326,7 +333,7 @@ static dispatch_once_t _rectToken;
 				: AZControlStateNormal;
 	[self sendAction:self.action to:self.target];
 	[self setNeedsDisplay:YES];
-	if (self.type == ButtonTypeRadio)
+	if ((self.type == ButtonTypeRadio) && self.radioGroup)
 		{
 		NSDictionary *info =
 			@{
