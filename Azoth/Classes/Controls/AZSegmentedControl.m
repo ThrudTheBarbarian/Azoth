@@ -278,7 +278,7 @@ typedef struct
 			[painter setTextAlignment:_info[i].alignment];
 
 			NSRect box = NSInsetRect(dstC, 3, 2);
-			[painter drawInBox:box text:_info[i].label];
+			[painter textInBox:box text:_info[i].label];
 
 			// ... and if it's not the last segment, draw a divider too
 			if (i < _numLabels-1)

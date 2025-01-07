@@ -134,7 +134,7 @@ static NSRect	_sortDn;
 		[azr tileFrom:ui src:src dst:dst];
 
 		[painter setTextAlignment:AZTextAlignmentCenter];
-		[painter drawInBox:r text:column.title];
+		[painter textInBox:r text:column.title];
 
 		//NSInteger idx			= [cols indexOfObject:column];
 		//[column.headerView setHighlighted:[_tableView isColumnSelected:idx]];

@@ -99,8 +99,17 @@ static dispatch_once_t _rectToken;
 		self.stringValue 		= [info AZStringWithKey:kZibTitle
 											  orDefault:@"Button"];
 
+		// Xcode seems to lie about the frame height. It claims 32 when it's
+		// really closer to 22. Set to 25 to match the default construction
+		// above
+		NSRect f = self.frame;
+		f.size.height = BUTTON_HEIGHT;
+		self.frame = f;
+		
 		if ([info[kZibType] isEqualToString:@"roundRect"])
 			self.type = ButtonTypeRounded;
+		else if ([info[kZibType] isEqualToString:@"radio"])
+			self.type = ButtonTypeRadio;
 		else
 			self.type = ButtonTypePlain;
 		}
@@ -198,8 +207,10 @@ static dispatch_once_t _rectToken;
 			[painter setTextColour:[AZColour blackColour]];
 			break;
 		}
+
+	[azr setBlendMode:SDL_BLENDMODE_BLEND];
 	NSRect box = NSInsetRect(bounds, 0, 2);
-	[painter drawInBox:box text:self.stringValue];
+	[painter textInBox:box text:self.stringValue];
 	}
 
 
@@ -235,7 +246,7 @@ static dispatch_once_t _rectToken;
 	int textW		= [font textWidthFor:self.stringValue];
 	int x			= rhs ? NSMaxX(dst) - textW - 5 : NSMaxX(dst) + 5;
 
-	[painter drawAtX:x y:y text:self.stringValue];
+	[painter textAtX:x y:y text:self.stringValue];
 	}
 
 /*****************************************************************************\

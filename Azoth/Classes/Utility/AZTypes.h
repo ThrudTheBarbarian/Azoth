@@ -16,12 +16,17 @@ struct SDL_Color;
 \*****************************************************************************/
 enum
 	{
-	AZFONT_STYLE_NORMAL 			= 0x00,
-	AZFONT_STYLE_BOLD   			= 0x01,
-	AZFONT_STYLE_ITALIC				= 0x02,
-	AZFONT_STYLE_UNDERLINE			= 0x04,
-	AZFONT_STYLE_STRIKETHROUGH		= 0x08,
-	AZFONT_STYLE_OUTLINE			= 0x10
+	AZFONT_REGULAR 			= 0x0000,
+	AZFONT_BOLD   			= 0x0001,
+	AZFONT_ITALIC			= 0x0002,
+	AZFONT_UNDERLINE		= 0x0004,
+	AZFONT_STRIKETHROUGH	= 0x0008,
+	AZFONT_OUTLINE			= 0x0010,
+	AZFONT_BLACK			= 0x0020,
+	AZFONT_EXTRABOLD		= 0x0040,
+	AZFONT_LIGHT			= 0x0080,
+	AZFONT_MEDIUM			= 0x0100,
+	AZFONT_THIN				= 0x0200
 	};
 
 /*****************************************************************************\

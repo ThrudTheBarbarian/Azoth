@@ -217,12 +217,13 @@ static NSRect	_bR[STATE_NUM];			// Right-hand-side image
 	[azr blitFrom:ui src:srcR dst:dstR];
 
 	[painter setTextColour:[AZColour blackColour]];
-	NSRect box = NSInsetRect(bounds, 3, 2);
-	bounds.size.width -= dstR.size.width;
+	NSRect box = NSInsetRect(bounds, 5, 2);
+	box.size.width = box.size.width + 5 - dstR.size.width;
+
 	NSInteger selected = _menu.selectedIndex;
 	if ((selected < 0) || (selected >= _menu.itemArray.count))
 		selected = 0;
-	[painter drawInBox:box text:_menu.itemArray[selected].title];
+	[painter textInBox:box text:_menu.itemArray[selected].title];
 	}
 
 // Event handling

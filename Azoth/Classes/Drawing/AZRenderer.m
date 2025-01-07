@@ -339,6 +339,34 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	}
 
 /*****************************************************************************\
+|* Perform a 9-way tiled blit operation
+\*****************************************************************************/
+- (int) blit9WayFrom:(NSInteger)textureId
+				 src:(NSRect)srcRect
+			   scale:(float)scale
+				left:(float)left
+			   right:(float)right
+			     top:(float)top
+			  bottom:(float)bottom
+				 dst:(NSRect)dstRect
+	{
+	SDL_Texture *texture = [self _textureFor:textureId];
+	if (texture)
+		{
+		SDL_FRect src = SDL_FRECT(srcRect);
+		SDL_FRect dst = SDL_FRECT(dstRect);
+		return SDL_RenderTexture9Grid(_renderer, texture,
+									  &src,
+									  left, right, top, bottom,
+									  scale,
+									  &dst);
+		}
+
+	SDL_Log("Cannot find texture %d to tile from", (int)textureId);
+	return -1;
+	}
+
+/*****************************************************************************\
 |* Set the blend mode
 \*****************************************************************************/
 - (int ) setBlendMode:(uint32_t)blendMode

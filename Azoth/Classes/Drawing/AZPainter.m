@@ -2292,26 +2292,37 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 /*****************************************************************************\
 |* Text drawing
 \*****************************************************************************/
-- (NSRect) drawAtX:(float)x y:(float)y text:(NSString *)text
+- (NSRect) textAtX:(float)x y:(float)y text:(NSString *)text
 	{
 	return [_textPainter drawAtX:x y:y text:text];
 	}
 
-- (NSRect) drawAtX:(float)x y:(float)y format:(NSString *)fmt, ...
+- (NSRect) textAtX:(float)x y:(float)y format:(NSString *)fmt, ...
 	{
 	EXTRACT_VARARGS(text, fmt);
 	return [_textPainter drawAtX:x y:y text:text];
 	}
 
-- (NSRect) drawInBox:(NSRect)box text:(NSString *)text
+- (NSRect) textInBox:(NSRect)box text:(NSString *)text
 	{
 	return [_textPainter drawInBox:box text:text];
 	}
 
-- (NSRect) drawInBox:(NSRect)box format:(NSString *)fmt, ...
+- (NSRect) textInBox:(NSRect)box format:(NSString *)fmt, ...
 	{
 	EXTRACT_VARARGS(text, fmt);
 	return [_textPainter drawInBox:box text:text];
+	}
+
+- (NSRect) textColumnsInBox:(NSRect)box text:(NSString *)text
+	{
+	return [_textPainter drawColumnsInBox:box text:text];
+	}
+
+- (NSRect) textColumnsInBox:(NSRect)box format:(NSString *)fmt, ...
+	{
+	EXTRACT_VARARGS(text, fmt);
+	return [_textPainter drawColumnsInBox:box text:text];
 	}
 
 

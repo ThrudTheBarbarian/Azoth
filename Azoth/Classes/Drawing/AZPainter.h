@@ -253,11 +253,14 @@ struct SDL_Surface;
 /*****************************************************************************\
 |* Draw text
 \*****************************************************************************/
-- (NSRect) drawAtX:(float)x y:(float)y text:(NSString *)text;
-- (NSRect) drawAtX:(float)x y:(float)y format:(NSString *)fmt, ...;
+- (NSRect) textAtX:(float)x y:(float)y text:(NSString *)text;
+- (NSRect) textAtX:(float)x y:(float)y format:(NSString *)fmt, ...;
 
-- (NSRect) drawInBox:(NSRect)box text:(NSString *)text;
-- (NSRect) drawInBox:(NSRect)box format:(NSString *)fmt, ...;
+- (NSRect) textInBox:(NSRect)box text:(NSString *)text;
+- (NSRect) textInBox:(NSRect)box format:(NSString *)fmt, ...;
+
+- (NSRect) textColumnsInBox:(NSRect)box text:(NSString *)text;
+- (NSRect) textColumnsInBox:(NSRect)box format:(NSString *)fmt, ...;
 
 /*****************************************************************************\
 |* Set text colour, separate from drawing colour

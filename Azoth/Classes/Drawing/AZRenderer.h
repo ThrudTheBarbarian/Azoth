@@ -80,6 +80,18 @@ struct SDL_FPoint;
 			flip:(AZFlipMode)flip;		// Flip-action on texture
 
 /*****************************************************************************\
+|* Perform a 9-way tiled blit operation
+\*****************************************************************************/
+- (int) blit9WayFrom:(NSInteger)textureId
+				 src:(NSRect)srcRect
+			   scale:(float)scale
+				left:(float)left
+			   right:(float)right
+			     top:(float)top
+			  bottom:(float)bottom
+				 dst:(NSRect)dstRect;
+
+/*****************************************************************************\
 |* Set the blend mode
 \*****************************************************************************/
 - (int) setBlendMode:(uint32_t)blendMode;

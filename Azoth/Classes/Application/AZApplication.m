@@ -111,7 +111,7 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 	if (!_systemFont)
 		{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-					  "Failed to load system font at %s!",
+					  "Failed to load system font %s!",
 					  _systemFontInfo.name.fileSystemRepresentation);
 		}
 	/*************************************************************************\
@@ -121,7 +121,7 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 	if (!_controlFont)
 		{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-					  "Failed to load control font at %s!",
+					  "Failed to load control font %s!",
 					  _systemFontInfo.name.fileSystemRepresentation);
 		}
 	}
@@ -137,9 +137,9 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 	/*************************************************************************\
     |* Set up the system-font info with reasonable defaults
     \*************************************************************************/
-	_systemFontInfo.name = @"NotoSans-Medium";
-	_systemFontInfo.size = 14;
-	_systemFontInfo.style = AZFONT_STYLE_NORMAL;
+	_systemFontInfo.name = @"AlegreyaSans";
+	_systemFontInfo.size = 16;
+	_systemFontInfo.style = AZFONT_MEDIUM;
 
 	/*************************************************************************\
     |* Let the delegate know we're about to start launching

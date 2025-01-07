@@ -100,24 +100,13 @@ static float _dh[STATE_NUM];
 
 		// Cope with the highlighted and normal tiles having different
 		// dimensions
-		for (int i=0; i<STATE_NUM; i++)
-			{
-			_dx[i] = _bBL[STATE_SF].size.width  - _bBL[STATE_SN].size.width;
-			_dy[i] = _bBL[STATE_SF].size.height - _bBL[STATE_SN].size.height;
-			_dw[i] = 2 * _dx[i];
-			_dh[i] = 2 * _dy[i];
-			}
-
-		_dx[STATE_SF] = 0;
-		_dy[STATE_SF] = 0;
-		_dw[STATE_SF] = 0;
-		_dh[STATE_SF] = 0;
+		[self _initialiseRects];
 		});
 
 	frame.origin.x 		-= _dx[STATE_SN];
 	frame.origin.y 		-= _dy[STATE_SN];
-	frame.size.width 	+= _dx[STATE_SN] * 2;
-	frame.size.height 	+= _dy[STATE_SN] * 2;
+	frame.size.width 	+= _dx[STATE_SN];
+	frame.size.height 	+= _dy[STATE_SN];
 
 	if (self = [super initWithFrame:frame])
 		{
@@ -139,18 +128,7 @@ static float _dh[STATE_NUM];
 
 		// Cope with the highlighted and normal tiles having different
 		// dimensions
-		for (int i=0; i<STATE_NUM; i++)
-			{
-			_dx[i] 	= _bBL[STATE_SF].size.width  - _bBL[STATE_SN].size.width;
-			_dy[i] 	= _bBL[STATE_SF].size.height - _bBL[STATE_SN].size.height;
-			_dw[i]	= 2 * _dx[i];
-			_dh[i]	= 2 * _dy[i];
-			}
-
-		_dx[STATE_SF] = 0;
-		_dy[STATE_SF] = 0;
-		_dw[STATE_SF] = 0;
-		_dh[STATE_SF] = 0;
+		[self _initialiseRects];
 	});
 
 	if (self = [super initWithDictionary:info])
@@ -182,6 +160,33 @@ static float _dh[STATE_NUM];
 	return self;
 	}
 
+- (void) _initialiseRects
+	{
+
+	// Cope with the highlighted and normal tiles having different
+	// dimensions
+	for (int i=STATE_SN; i<=STATE_SD; i++)
+		{
+		_dx[i] 	= _bBL[STATE_SF].size.width  - _bBL[STATE_SN].size.width;
+		_dy[i] 	= _bBL[STATE_SF].size.height - _bBL[STATE_SN].size.height;
+		_dw[i]	= 2 * _dx[i];
+		_dh[i]	= 2 * _dy[i];
+		}
+
+	for (int i=STATE_RN; i<=STATE_RD; i++)
+		{
+		_dx[i] 	= _bCL[STATE_RF].size.width  - _bCL[STATE_RN].size.width;
+		_dh[i] 	= _bCL[STATE_RF].size.height - _bCL[STATE_RN].size.height;
+		_dw[i]	= 2 * _dx[i];
+		_dy[i]	= _dh[i]/2;
+		}
+
+	_dx[STATE_SF] = _dx[STATE_RF] = 0;
+	_dy[STATE_SF] = _dy[STATE_RF] = 0;
+	_dw[STATE_SF] = _dw[STATE_RF] = 0;
+	_dh[STATE_SF] = _dh[STATE_RF] = 0;
+	}
+
 /*****************************************************************************\
 |* Common initialisation between -withFrame and -withDictionary
 \*****************************************************************************/
@@ -199,9 +204,9 @@ static float _dh[STATE_NUM];
 		self.backgroundColour		= [AZColour clearColour];
 		self.stringValue 			= @"";
 		self.textColour				= [AZColour blackColour];
-		NSRect r 					= NSInsetRect(self.bounds, 6, 0);
-		r.origin.y	  			   += 1;
-		self.editArea 				= r;
+		//NSRect r 					= NSInsetRect(self.bounds, 6, 0);
+		//r.origin.y	  			   += 6;
+		//self.editArea 				= r;
 		}
 	return YES;
 	}
@@ -335,15 +340,22 @@ static float _dh[STATE_NUM];
 	NSRect sCR	= _bCR[self.state + _type];
 
 	float W		= self.bounds.size.width;
-	NSRect dCL	= {0, 1, sCL.size.width, sCL.size.height};
+	float dx	= _dx[self.state + _type];
+	float dy	= _dy[self.state + _type];
+	float dw	= _dw[self.state + _type];
 
-	NSRect dCM	= {sCL.size.width,
-				   1,
-				   W-sCL.size.width-sCR.size.width,
+	NSRect dCL	= {dx,
+				   dy,
+				   sCL.size.width,
+				   sCL.size.height};
+
+	NSRect dCM	= {dx+sCL.size.width,
+				   dy,
+				   W-sCL.size.width-sCR.size.width-dw,
 				   sCM.size.height};
 
-	NSRect dCR	= {W-sCR.size.width,
-				   1,
+	NSRect dCR	= {dx+W-sCR.size.width-dw,
+				   dy,
 				   sCR.size.width,
 				   sCR.size.height};
 
@@ -765,6 +777,8 @@ static float _dh[STATE_NUM];
     float x 		= _editArea.origin.x;
     float y 		= _editArea.origin.y;
 
+	//[P rectangleWithRect:_editArea colour:AZColour.redColour];
+
 	NSRect existing 	= azr.clipRect;
 	NSRect nsClip       = NSIntersectionRect(existing, _origArea);
 	[azr setClip:nsClip];
@@ -792,8 +806,9 @@ static float _dh[STATE_NUM];
                 SDL_FRect rect;
                 SDL_RectToFRect(&highlights[i]->rect, &rect);
                 rect.x += x;
-                rect.y += y+3;
-
+                rect.y += y;
+				rect.h += 2;
+				
                 int maxH  = self.bounds.size.height
 						  - _bTM[0].size.height
 						  - _bBM[0].size.height;
@@ -817,9 +832,8 @@ static float _dh[STATE_NUM];
 			cursor_rect.x += cursor.rect.w;
 
             cursor_rect.x += _editArea.origin.x;
-            cursor_rect.y += _editArea.origin.y + 4;
+            cursor_rect.y += _editArea.origin.y;
             cursor_rect.w = 1.f;
-            cursor_rect.h -= 2.f;
 
             SDL_copyp(&_cursorRect, &cursor_rect);
 
@@ -889,11 +903,11 @@ static float _dh[STATE_NUM];
 	_highlightTo = -1;
 
 	int X = _bCL[0].size.width + 3;
-	int Y = _bTM[0].size.height - 2;
+	int Y = _bTM[0].size.height + 2;
 	int W = self.bounds.size.width
 		  - _bCL[0].size.width
 		  - _bCR[0].size.width - 6;
-	int H = self.bounds.size.height
+	int H = self.bounds.size.height - 4
 		  - _bBM[0].size.height
 		  - _bTM[0].size.height;
 

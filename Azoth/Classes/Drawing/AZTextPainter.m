@@ -137,12 +137,33 @@
 	}
 
 /*****************************************************************************\
+|* Center vertically in a box, respecting alignment
+\*****************************************************************************/
+- (NSRect) drawInBox:(NSRect)box text:(NSString *)text
+	{
+	NSSize xy	= [_font boundsFor:text];
+		int Y		= NSMidY(box) - _font.height/2;
+
+	switch (_alignment)
+		{
+		case AZTextAlignmentLeft:
+			return [self drawAtX:NSMinX(box) y:Y text:text];
+		case AZTextAlignmentCenter:
+			return [self drawAtX:NSMidX(box) y:Y text:text];
+		case AZTextAlignmentRight:
+			return [self drawAtX:NSMaxX(box) y:Y text:text];
+		default:
+			return NSZeroRect;
+		}
+	}
+
+/*****************************************************************************\
 |* Draw text within a limiting box, making words wrap appropriately
 |* - with colour
 |* - with horizontal alignment
 |* - with scale
 \*****************************************************************************/
-- (NSRect) drawInBox:(NSRect)box text:(NSString *)text
+- (NSRect) drawColumnsInBox:(NSRect)box text:(NSString *)text
 	{
 	BOOL useClip = [_renderer clipEnabled];
 
@@ -309,7 +330,7 @@
 		int w 	 = x - _scale.x * [self textWidthFor:string]/2.f;
 		NSRect r = [self _renderLeftAtX:w y:y msg:string];
 		result 	 = NSUnionRect(result, r);
-		y       += _scale.y * _font.height;
+			y       += _scale.y * _font.baseline;
 		}
 
     return result;

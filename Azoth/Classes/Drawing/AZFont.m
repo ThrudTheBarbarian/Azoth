@@ -65,6 +65,11 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 
 // Location/size of the last glyph rendered
 @property(strong, nonatomic) AZGlyphData *						lastGlyph;
+
+// The style flags to pass to SDL_TTF, given that we may
+// have modified the flags passed to us if there was a
+// style-specific font available
+@property(assign, nonatomic) int								ttfStyle;
 @end
 
 @implementation AZFont
@@ -96,7 +101,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 		{
 		.size 	= points,
 		.name 	= name,
-		.style 	= AZFONT_STYLE_NORMAL
+		.style 	= AZFONT_REGULAR
 		};
 	if ([font load:style])
 		return font;
@@ -110,7 +115,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 		{
 		.size 	= points,
 		.name 	= AZApp.systemFontInfo.name,
-		.style 	= AZFONT_STYLE_NORMAL
+		.style 	= AZFONT_REGULAR
 		};
 	if ([font load:style])
 		return font;
@@ -142,6 +147,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 		}
 	else
 		{
+		_ttfStyle = style.style;
 		NSString *fullpath = [self _fetchPathFor:style.name];
 		if (fullpath == nil)
 			{
@@ -163,13 +169,13 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 			/*****************************************************************\
 			|* Check to see if we want it outlined, then set the style
 			\*****************************************************************/
-			BOOL outline = (style.style & AZFONT_STYLE_OUTLINE) != 0;
+			BOOL outline = (_ttfStyle & AZFONT_OUTLINE) != 0;
 			if (outline)
 				{
-				style.style &= ~AZFONT_STYLE_OUTLINE;
+				_ttfStyle &= ~AZFONT_OUTLINE;
 				TTF_SetFontOutline(ttf, 1);
 				}
-			TTF_SetFontStyle(ttf, style.style);
+			TTF_SetFontStyle(ttf, _ttfStyle);
 			
 			/*****************************************************************\
 			|* Instantiate the font, now it's been loaded
@@ -341,6 +347,23 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 	lineWidth = (lineWidth > width) ? lineWidth : width;
 	return lineWidth;
 	}
+
+/*****************************************************************************\
+|* Return the bounds of a text string in this font
+\*****************************************************************************/
+- (NSSize) boundsFor:(NSString *)text
+	{
+	if (text == nil)
+		{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+					"text=nil in -boundsFor...");
+		return NSZeroSize;
+		}
+	int w, h;
+	TTF_GetStringSize(_ttfFont, text.UTF8String, 0, &w, &h);
+	return NSMakeSize(w,h);
+	}
+
 
 /*****************************************************************************\
 |* Set the colour to use (for all the texture-caches) when drawing with this
@@ -726,8 +749,49 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 \*****************************************************************************/
 - (nullable NSString *) _fetchPathFor:(NSString *)name
 	{
-	NSFileManager *fm = NSFileManager.defaultManager;
+	static NSDictionary<NSNumber *,NSString *> * map = nil;
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken,
+		^{
+		map = @{ @(AZFONT_REGULAR) 					: @"Regular",
+				 @(AZFONT_ITALIC)					: @"Italic",
+				 @(AZFONT_BOLD)	 					: @"Bold",
+				 @(AZFONT_BLACK)					: @"Black",
+				 @(AZFONT_EXTRABOLD)				: @"ExtraBold",
+				 @(AZFONT_LIGHT)					: @"Light",
+				 @(AZFONT_MEDIUM)					: @"Medium",
+				 @(AZFONT_THIN)						: @"Thin",
+				 @(AZFONT_BOLD|AZFONT_ITALIC)	 	: @"BoldItalic",
+				 @(AZFONT_BLACK|AZFONT_ITALIC)		: @"BlackItalic",
+				 @(AZFONT_EXTRABOLD|AZFONT_ITALIC)	: @"ExtraBoldItalic",
+				 @(AZFONT_LIGHT|AZFONT_ITALIC)		: @"LightItalic",
+				 @(AZFONT_MEDIUM|AZFONT_ITALIC)		: @"MediumItalic",
+				 @(AZFONT_THIN|AZFONT_ITALIC)		: @"ThinItalic"
+				 };
+		});
 
+
+	/*************************************************************************\
+	|* See if we want to modify the filename based on the style
+	\*************************************************************************/
+	int nonFileBased	= AZFONT_UNDERLINE|AZFONT_STRIKETHROUGH;
+	int style 			= _ttfStyle & (~nonFileBased);
+	NSString *candidate = map[@(style)];
+	if (candidate != nil)
+		{
+		NSString *path  = [NSString stringWithFormat:@"%@-%@", name, candidate];
+		NSString *at   	= [self _searchForPath:path];
+		if (at)
+			{
+			_ttfStyle &= nonFileBased;
+			return at;
+			}
+		}
+	return [self _searchForPath:name];
+	}
+
+- (nullable NSString *) _searchForPath:(NSString *)name
+	{
 	/*************************************************************************\
 	|* If it's an absolute path, use it
 	\*************************************************************************/
@@ -738,7 +802,9 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 	|* If it's an Azoth-provided font, use it
 	\*************************************************************************/
 	NSString *rsrc = [[NSBundle bundleForClass:[self class]] resourcePath];
-	NSString *path = [NSString stringWithFormat:@"%@/%@.ttf", rsrc, name];
+	NSString *path = [NSString stringWithFormat:@"%@/Fonts/%@.ttf", rsrc, name];
+
+	NSFileManager *fm = NSFileManager.defaultManager;
 	if ([fm fileExistsAtPath:path])
 		return path;
 
@@ -749,7 +815,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 		{
 		NSObject *delegate = (NSObject *)AZApp.delegate;
 		rsrc = [[NSBundle bundleForClass:[delegate class]] resourcePath];
-		NSString *path = [NSString stringWithFormat:@"%@/%@.ttf", rsrc, name];
+		NSString *path = [NSString stringWithFormat:@"%@/Fonts/%@.ttf", rsrc, name];
 		if ([fm fileExistsAtPath:path])
 			return path;
 		}

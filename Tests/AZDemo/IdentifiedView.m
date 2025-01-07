@@ -261,7 +261,7 @@
 
 	NSRect r = NSMakeRect(35, 15, 250, 190);
 	[painter rectangleWithRect:r colour:[AZColour redColour]];
-	[painter drawInBox:r text:text];
+	[painter textInBox:r text:text];
 	}
 
 

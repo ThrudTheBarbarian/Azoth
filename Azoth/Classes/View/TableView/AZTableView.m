@@ -43,10 +43,8 @@ enum
 	STATE_NUM
 	};
 
-static NSRect	_rT[STATE_NUM];
-static NSRect	_rM[STATE_NUM];
-static NSRect	_rB[STATE_NUM];
-
+static NSRect		_rA[STATE_NUM];
+static NSInteger   	_ui[STATE_NUM];
 
 /*****************************************************************************\
 |* "private" methods / properties
@@ -503,28 +501,19 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 			float by = y;
 			float bw = w;
 			float bh = _rowRecords[idx].height;
+
 			if (by+bh >= 0)
 				{
 				int state	= [_selectedRowIndexes containsIndex:idx];
-				NSRect sT	= _rT[state];
-				NSRect sM	= _rM[state];
-				NSRect sB	= _rB[state];
-
-				NSRect dT	= {bx, by, bw, sT.size.height};
-
-				NSRect dM	= {bx,
-							   by+sT.size.height,
-							   bw,
-							   bh - sT.size.height - sB.size.height};
-
-				NSRect dB	= {bx,
-							   by+dM.size.height,
-							   bw,
-							   sB.size.height};
-
-				[azr tileFrom:ui src:sT dst:dT];
-				[azr tileFrom:ui src:sM dst:dM];
-				[azr tileFrom:ui src:sB dst:dB];
+				NSRect dst = NSMakeRect(bx, by, bw, bh);
+				[azr blit9WayFrom:_ui[state]
+							  src:NSMakeRect(0,0,6,_rA[state].size.height)
+							scale:1.f
+							 left:2.f
+							right:4.f
+							  top:5.f
+						   bottom:5.f
+						      dst:dst];
 				}
 			idx ++;
 			}
@@ -1249,7 +1238,6 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		SDL_Log("No data to display in %s", self.class.description.UTF8String);
 		return;
 		}
-		
     int x, y, rowHeight, viewHeight;
     do
 		{
@@ -1257,7 +1245,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		x 	= 0;
         y 	= _rowRecords[rowToDisplay].start;
         rowHeight 	= _rowRecords[rowToDisplay].height;
-		viewHeight 	= rowHeight - _spacing.height;
+		viewHeight 	= rowHeight- _spacing.height;
 
 		for (AZTableColumn *col in _tableColumns)
 			{
@@ -1277,29 +1265,36 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	}
 
 /*****************************************************************************\
-|* Populate the rectangles from the UI texture atlas
+|* Populate the rectangles from the UI texture atlas.
 \*****************************************************************************/
 - (void) _fetchRects
 	{
-	_rM[STATE_N]   = [AZApp srcRectFor:@"tableview-rowview"
-									in:kUiMap];
-	_rM[STATE_H]   = [AZApp srcRectFor:@"menu-bar-window-background-selected"
-									in:kUiMap];
+	_rA[STATE_N]   	= [AZApp srcRectFor:@"tableview-rowview" in:kUiMap];
+	_rA[STATE_H]   	= [AZApp srcRectFor:@"menu-bar-window-background-selected"
+									 in:kUiMap];
 
-	// Split by height so we can tile any row-height
-	for (int i=0; i<STATE_NUM; i++)
-		{
-		_rT[i] = _rM[i];
-		_rB[i] = _rM[i];
+	/*************************************************************************\
+	|* Use the single-pixel-wide strips above to make 9-way-tileable textures
+	|* to use to render any-size table-row backgrounds
+	\*************************************************************************/
+	NSSize nSz		= NSMakeSize(6, _rA[STATE_N].size.height);
+	NSSize hSz		= NSMakeSize(6, _rA[STATE_H].size.height);
 
-		_rT[i].size.height = 5;
+	AZRenderer *azr = AZRenderer.renderer;
+	_ui[STATE_N] = [azr createTextureOfSize:nSz];
+	_ui[STATE_H] = [azr createTextureOfSize:hSz];
 
-		_rB[i].size.height = 5;
-		_rB[i].origin.y += (_rM[i].size.height - 5);
+	/*************************************************************************\
+	|* Fill the texture data
+	\*************************************************************************/
+	NSInteger ui	= [AZApp textureFor:kUiMap];
+	[azr lockFocusOn:_ui[STATE_N]];
+	[azr tileFrom:ui src:_rA[STATE_N] dst:NSMakeRect(0,0,6,nSz.height)];
+	[azr unlockFocus];
 
-		_rM[i].size.height -= 10;
-		_rM[i].origin.y += 5;
-		}
+	[azr lockFocusOn:_ui[STATE_H]];
+	[azr tileFrom:ui src:_rA[STATE_H] dst:NSMakeRect(0,0,6,hSz.height)];
+	[azr unlockFocus];
 	}
 
 /*****************************************************************************\

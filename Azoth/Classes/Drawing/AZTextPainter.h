@@ -30,9 +30,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSRect) drawAtX:(float)x y:(float)y text:(NSString *)text;
 
 /*****************************************************************************\
-|* Draw inside a clipping rectangle, moving words to make everything fit
+|* Draw centered  in both X,Y inside a clipping rectangle, on a single line
 \*****************************************************************************/
 - (NSRect) drawInBox:(NSRect)box text:(NSString *)text;
+
+/*****************************************************************************\
+|* Draw inside a clipping rectangle, moving words to make everything fit
+\*****************************************************************************/
+- (NSRect) drawColumnsInBox:(NSRect)box text:(NSString *)text;
 
 /*****************************************************************************\
 |* Return the width, height of any text string in the current font

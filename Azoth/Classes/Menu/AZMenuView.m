@@ -84,7 +84,7 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 	size.bottomHeight	= bot;
 	size.topHeight		= top;
 	size.flagsUsed		= flags;
-	size.fontHeight		= font.height;
+	size.fontHeight		= font.height + 6;
 
 	if (menu.measure.frame.size.width == 0)
 		menu.measure = size;
@@ -291,7 +291,7 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 
 		[painter setTextAlignment:AZTextAlignmentLeft];
 		[painter setTextColour:textColour];
-		[painter drawInBox:inset text:item.title];
+		[painter textInBox:inset text:item.title];
 
 		y += H;
 		}

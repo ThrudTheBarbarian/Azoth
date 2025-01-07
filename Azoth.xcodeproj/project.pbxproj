@@ -374,7 +374,6 @@
 				AZDemo/Assets.xcassets,
 				AZDemo/ColouredView.h,
 				AZDemo/ColouredView.m,
-				AZDemo/Frameworks,
 				AZDemo/IdentifiedView.h,
 				AZDemo/IdentifiedView.m,
 				AZDemo/Resources/texture.png,
@@ -515,6 +514,9 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				F41BC6572D0A61BA00E61EDD /* Exceptions for "Azoth" folder in "Azoth" target */,
+			);
+			explicitFolders = (
+				Resources/Fonts,
 			);
 			path = Azoth;
 			sourceTree = "<group>";

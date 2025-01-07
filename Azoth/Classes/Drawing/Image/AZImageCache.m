@@ -112,7 +112,7 @@
 	[P setTextColour:AZColour.redColour];
 
 	NSString *text = [NSString stringWithFormat:@"[%d,%d]", x, y];
-	[P drawAtX:NSMidX(r) y:NSMidY(r) text:text];
+	[P textAtX:NSMidX(r) y:NSMidY(r) text:text];
 	}
 
 @end
