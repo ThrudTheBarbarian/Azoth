@@ -280,6 +280,15 @@ static float _dh[STATE_NUM];
 	return YES;
 	}
 
+/*****************************************************************************\
+|* If we change our text colour we want to redraw
+\*****************************************************************************/
+- (void) setTextColour:(AZColour *)textColour
+	{
+	_textColour = textColour;
+	[self setNeedsDisplay:YES];
+	}
+
 // MARK: AZControl
 
 /*****************************************************************************\
