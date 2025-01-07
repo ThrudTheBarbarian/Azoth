@@ -56,6 +56,7 @@ NSString * const kZibSegments		= @"segments";
 NSString * const kZibSelect			= @"select";
 NSString * const kZibSelectMultiple	= @"multipleSelection";
 NSString * const kZibSelector		= @"selector";
+NSString * const kZibState			= @"state";
 NSString * const kZibStyle			= @"style";
 NSString * const kZibSubviews  		= @"subviews";
 NSString * const kZibTarget			= @"target";

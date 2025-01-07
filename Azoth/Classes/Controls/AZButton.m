@@ -108,6 +108,12 @@ static dispatch_once_t _rectToken;
 		
 		if ([info[kZibType] isEqualToString:@"roundRect"])
 			self.type = ButtonTypeRounded;
+		else if ([info[kZibType] isEqualToString:@"check"])
+			{
+			self.type = ButtonTypeCheckbox;
+			if ([info[kZibState] isEqualToString:@"on"])
+				self.state = AZControlStateHighlighted;
+			}
 		else if ([info[kZibType] isEqualToString:@"radio"])
 			{
 			// We do radio groups a little differently than AppKit, so by

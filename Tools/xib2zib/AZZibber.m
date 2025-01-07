@@ -453,6 +453,7 @@
 	[self _xfer:@"imageScaling" in:cellInfo as:@"scaling" in:view];
 	[self _xfer:@"title" in:cellInfo as:@"title" in:view];
 	[self _xfer:@"type" in:cellInfo as:@"type" in:view];
+	[self _xfer:@"state" in:cellInfo as:@"state" in:view];
 	}
 
 /*****************************************************************************\

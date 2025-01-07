@@ -117,7 +117,7 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 	/*************************************************************************\
 	|* Similarly the control font
 	\*************************************************************************/
-	_controlFont = [AZFont systemFontWithsize:16];
+	_controlFont = [AZFont systemFontWithsize:18];
 	if (!_controlFont)
 		{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,

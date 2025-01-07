@@ -43,6 +43,7 @@ extern NSString * const kZibSegments;
 extern NSString * const kZibSelect;
 extern NSString * const kZibSelectMultiple;
 extern NSString * const kZibSelector;
+extern NSString * const kZibState;
 extern NSString * const kZibStyle;
 extern NSString * const kZibSubviews;
 extern NSString * const kZibTarget;
