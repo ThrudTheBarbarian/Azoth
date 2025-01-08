@@ -538,10 +538,10 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 \*****************************************************************************/
 - (int) setDrawColour:(AZColour *)colour
 	{
-	return SDL_SetRenderDrawColor(_renderer, colour.red,
-											 colour.green,
-											 colour.blue,
-											 colour.alpha);
+	return SDL_SetRenderDrawColor(_renderer, colour.R,
+											 colour.G,
+											 colour.B,
+											 colour.A);
 	}
 
 /*****************************************************************************\

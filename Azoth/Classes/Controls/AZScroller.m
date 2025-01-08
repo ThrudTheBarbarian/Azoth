@@ -75,7 +75,7 @@ static NSRect	_sR[STATE_NUM];
 		{
 		self.knobProportion		= 0.1;
 		self.doubleValue 		= 0.0;
-		self.backgroundColour 	= AZColour.clearColour;
+		self.backgroundColour 	= AZColour.clear;
 		self.dragging 			= NO;
 		self.enabled 			= YES;
 		self.continuous 		= YES;

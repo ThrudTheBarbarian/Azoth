@@ -137,7 +137,7 @@
 		for (AZTableColumn *col in cols)
 			{
 			AZTextField *tf = (AZTextField *)[col viewForRow:index];
-			tf.textColour = AZColour.blackColour;
+			tf.textColour = AZColour.black;
 			}
 		index = [indices indexGreaterThanIndex:index];
 		}
@@ -156,9 +156,9 @@
 		AZTextField *tf = (AZTextField *)[col viewForRow:row];
 		NSIndexSet *indices	= tv.selectedRowIndexes;
 		if ([indices containsIndex:row])
-			tf.textColour = AZColour.redColour;
+			tf.textColour = AZColour.red;
 		else
-			tf.textColour = AZColour.blackColour;
+			tf.textColour = AZColour.black;
 		}
 	}
 
@@ -177,7 +177,7 @@
 		for (AZTableColumn *col in cols)
 			{
 			AZTextField *tf = (AZTextField *)[col viewForRow:index];
-			tf.textColour = AZColour.redColour;
+			tf.textColour = AZColour.red;
 			}
 		index = [indices indexGreaterThanIndex:index];
 		}
@@ -247,9 +247,9 @@
 	// going to work (though it does for TableView)
 	NSIndexSet *selected = [ov selectedRowIndexes];
 	if ([selected containsIndex:row])
-		[tf setTextColour:AZColour.redColour];
+		[tf setTextColour:AZColour.red];
 	else
-		[tf setTextColour:AZColour.blackColour];
+		[tf setTextColour:AZColour.black];
 
 	Node *item 		= (Node *)[ov itemAtRow:row];
 	tf.stringValue = [NSString stringWithFormat:@"row %d [%@]",

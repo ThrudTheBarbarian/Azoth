@@ -375,8 +375,8 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 
 	for (NSNumber *textureId in _textures)
 		{
-		[azr setTexture:textureId.integerValue modR:c.red g:c.green b:c.blue];
-		//SDL_SetTextureAlphaMod(texture, c.alpha);
+		[azr setTexture:textureId.integerValue modR:c.R g:c.G b:c.B];
+		//SDL_SetTextureAlphaMod(texture, c.A);
 		}
 	}
 

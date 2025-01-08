@@ -676,7 +676,7 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 		[painter rectangleInRect:newRect
 							 num:2
 						  dashes:dashes
-						inColour:AZColour.blueColour
+						inColour:AZColour.blue
 						withClip:self.bounds];
 		}
 	}

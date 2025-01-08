@@ -81,7 +81,7 @@ static Class _rulerViewClass = nil;
 	_hasHorizontalScroller	= NO;
 	self.drawsBackground	= YES;
 	_borderType				= AZNoBorder;
-	self.backgroundColour	= [[AZColour grey95Colour] copy];
+	self.backgroundColour	= AZColour.grey95.copy;
 
 	self.lineScroll			= 1.f;
 	self.pageScroll			= 50.f;		//entirely arbitrary
@@ -609,7 +609,7 @@ static Class _rulerViewClass = nil;
 			break;
 
 		case AZLineBorder:
-			[painter rectangleWithRect:self.bounds colour:AZColour.blackColour];
+			[painter rectangleWithRect:self.bounds colour:AZColour.black];
 			break;
 
 		case AZBezelBorder:

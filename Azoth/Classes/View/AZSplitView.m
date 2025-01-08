@@ -665,7 +665,7 @@ static float _constrainTo(float value, float min, float max)
 		{
 		[painter rectangleWithRect:rect
 							filled:YES
-							colour:AZColour.controlColour];
+							colour:AZColour.control];
 		}
 
 	/*

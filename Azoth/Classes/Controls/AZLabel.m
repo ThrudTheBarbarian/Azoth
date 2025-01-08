@@ -68,8 +68,8 @@
 \*****************************************************************************/
 - (void) _commonLabelInit
 	{
-	self.backgroundColour 	= AZColour.clearColour;
-	self.textColour			= AZColour.blackColour;
+	self.backgroundColour 	= AZColour.clear;
+	self.textColour			= AZColour.black;
 	self.alignment			= AZTextAlignmentLeft;
 	}
 

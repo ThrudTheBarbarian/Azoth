@@ -67,7 +67,7 @@ static NSRect	_sortDn;
 			^{
 			[self _fetchRects];
 			});
-		self.backgroundColour 		= AZColour.controlBackgroundColour;
+		self.backgroundColour = AZColour.controlBackground;
 		}
 	return self;
 	}
@@ -121,7 +121,7 @@ static NSRect	_sortDn;
 	AZRenderer *azr					= AZRenderer.renderer;
 	NSInteger ui					= [AZApp textureFor:kUiMap];
 
-	[painter setTextColour:AZColour.blackColour];
+	[painter setTextColour:AZColour.black];
     for (NSInteger i = 0; i < count; ++i)
 		{
         AZTableColumn *column 	= _tableView.tableColumns[i];

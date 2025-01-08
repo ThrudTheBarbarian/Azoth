@@ -44,7 +44,7 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 		{
 		_measure 				= size;
 		_menu	 				= menu;
-		self.backgroundColour 	= [AZColour clearColour];
+		self.backgroundColour 	= AZColour.clear;
 		}
 	return self;
 	}
@@ -274,7 +274,7 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 			{
 			NSRect dstC = NSMakeRect(0, y, self.bounds.size.width, H);
 			[azr tileFrom:ui src:_barSel dst:dstC];
-				textColour = AZColour.whiteColour;
+				textColour = AZColour.white;
 			}
 		else
 			{
@@ -286,7 +286,7 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 			[azr tileFrom:ui src:_menuCL dst:dstL];
 			[azr tileFrom:ui src:_menuCM dst:dstC];
 			[azr tileFrom:ui src:_menuCR dst:dstR];
-			textColour = AZColour.blackColour;
+			textColour = AZColour.black;
 			}
 
 		[painter setTextAlignment:AZTextAlignmentLeft];

@@ -54,7 +54,7 @@ static NSRect	_rB;
 
 		self.hostedView			= view;
 		[self addSubview:view];
-		self.backgroundColour 	= AZColour.clearColour;
+		self.backgroundColour 	= AZColour.clear;
 		self.disclose 			= NSZeroRect;
 		self.preferredWidth		= frame.size.width - DISCLOSURE_WIDTH;
 		}

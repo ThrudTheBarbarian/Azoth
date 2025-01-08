@@ -201,9 +201,9 @@ static float _dh[STATE_NUM];
 		return NO;
 	else
 		{
-		self.backgroundColour		= [AZColour clearColour];
+		self.backgroundColour		= AZColour.clear;
 		self.stringValue 			= @"";
-		self.textColour				= [AZColour blackColour];
+		self.textColour				= AZColour.black;
 		//NSRect r 					= NSInsetRect(self.bounds, 6, 0);
 		//r.origin.y	  			   += 6;
 		//self.editArea 				= r;
@@ -236,10 +236,10 @@ static float _dh[STATE_NUM];
 		{
 		self.state = AZControlStateHighlighted;
 		SDL_StartTextInput(self.window.window);
-		TTF_SetTextColor(_text, _textColour.red,
-								_textColour.green,
-								_textColour.blue,
-								_textColour.alpha);
+		TTF_SetTextColor(_text, _textColour.R,
+								_textColour.G,
+								_textColour.B,
+								_textColour.A);
 
 		_blinkTimer = [NSTimer scheduledTimerWithTimeInterval:0.5
 													  repeats:YES
@@ -325,10 +325,10 @@ static float _dh[STATE_NUM];
 	{
 	[super drawInRect:dirtyRect withPainter:painter];
 
-	TTF_SetTextColor(_text, _textColour.red,
-							_textColour.green,
-							_textColour.blue,
-							_textColour.alpha);
+	TTF_SetTextColor(_text, _textColour.R,
+							_textColour.G,
+							_textColour.B,
+							_textColour.A);
 	if (!self.enabled)
 		[self _drawAsLabelWithRect:dirtyRect andPainter:painter];
 	else if (_type == TextFieldSquare)
@@ -780,7 +780,7 @@ static float _dh[STATE_NUM];
 	{
 	AZRenderer *azr	= AZRenderer.renderer;
 	[azr setBlendMode:SDL_BLENDMODE_BLEND];
-	[azr setDrawColour:[AZColour blackColour]];
+	[azr setDrawColour:AZColour.black];
 
 	TTF_Font *font	= AZApp.controlFont.ttfFont;
     float x 		= _editArea.origin.x;

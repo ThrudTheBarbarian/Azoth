@@ -23,7 +23,7 @@
 	\*************************************************************************/
 	AZView *cv		= [AZWindow contentViewForWindow:AZApp.window];
 	[cv setIdentifier:@"content-view"];
-	[cv setBackgroundColour:[AZColour grey37Colour]];
+	[cv setBackgroundColour:AZColour.grey37];
 
 	/*************************************************************************\
 	|* Load the images
@@ -37,7 +37,7 @@
 	\*************************************************************************/
 	NSRect frame	= NSMakeRect(16,16,256, 256);
 	_imageView 		= [AZImageView imageViewWithImage:_medium inFrame:frame];
-	_imageView.backgroundColour = AZColour.whiteColour;
+	_imageView.backgroundColour = AZColour.white;
 	_imageView.scaling			= AZImageScaleNone;
 	[cv addSubview:_imageView];
 

@@ -97,7 +97,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 			[self _fetchRects];
 			});
 
-		self.backgroundColour	= [AZColour clearColour];
+		self.backgroundColour	= AZColour.clear;
 		self.doubleValue 		= 0.5;
 		self.minValue			= 0.0;
 		self.maxValue			= 1.0;

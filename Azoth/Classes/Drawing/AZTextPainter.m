@@ -34,7 +34,7 @@
 	if (self = [super init])
 		{
 		_renderer 		= renderer;
-		_colour 		= [AZColour colourWithR:0.f g:0.f b:0.f a:1.f];
+		_colour 		= AZColour.black;
 		_alignment		= AZTextAlignmentLeft;
 		_scale			= (AZScale){1.f, 1.f};
 		_rotateAbout	= (NSPoint){0.f,0.f};
@@ -141,8 +141,7 @@
 \*****************************************************************************/
 - (NSRect) drawInBox:(NSRect)box text:(NSString *)text
 	{
-	NSSize xy	= [_font boundsFor:text];
-		int Y		= NSMidY(box) - _font.height/2;
+	int Y = NSMidY(box) - _font.height/2;
 
 	switch (_alignment)
 		{

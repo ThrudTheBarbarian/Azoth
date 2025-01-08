@@ -367,7 +367,7 @@
 		case AZImageFrameNone:
 			return orig;
 		case AZImageFramePhoto:
-			[painter rectangleWithRect:self.bounds colour:AZColour.blackColour];
+			[painter rectangleWithRect:self.bounds colour:AZColour.black];
 			return NSInsetRect(orig, 1,1);
 		case AZImageFrameButton:
 			[painter rectangleWithButton:self.bounds withClip:self.bounds];

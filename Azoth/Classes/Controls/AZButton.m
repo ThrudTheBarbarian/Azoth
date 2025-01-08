@@ -139,7 +139,7 @@ static dispatch_once_t _rectToken;
 		[self _fetchRects];
 		});
 
-	self.backgroundColour 	= [AZColour clearColour];
+	self.backgroundColour 	= AZColour.clear;
 	self.imagePosition		= AZImageLeft;		// Only used in checkbox
 	}
 
@@ -214,10 +214,10 @@ static dispatch_once_t _rectToken;
 		{
 		case ButtonTypeRoundedDefault:
 		case ButtonTypeDefault:
-			[painter setTextColour:[AZColour whiteColour]];
+			[painter setTextColour:AZColour.white];
 			break;
 		default:
-			[painter setTextColour:[AZColour blackColour]];
+			[painter setTextColour:AZColour.black];
 			break;
 		}
 
@@ -250,9 +250,9 @@ static dispatch_once_t _rectToken;
 	[azr blitFrom:ui src:src dst:dst];
 
 	if (!self.enabled)
-		[painter setTextColour:[AZColour grey75Colour]];
+		[painter setTextColour:AZColour.grey75];
 	else
-		[painter setTextColour:[AZColour blackColour]];
+		[painter setTextColour:AZColour.black];
 
 	AZFont *font	= AZApp.controlFont;
 	int y			= H/2-font.baseline/2;

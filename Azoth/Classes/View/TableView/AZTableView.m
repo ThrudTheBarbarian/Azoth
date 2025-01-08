@@ -169,8 +169,8 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	_autoresizeColumns 			= YES;
 
 	_tableColumns 				= [NSMutableArray  new];
-	self.backgroundColour 		= AZColour.controlBackgroundColour;
-	_gridColour 				= AZColour.gridColour;
+	self.backgroundColour 		= AZColour.controlBackground;
+	_gridColour 				= AZColour.grid;
 	_gridStyleMask 				= AZTableViewSolidGridLineMask;
 	_alternateRowColours 		= NO;
 	_usesHeader					= NO;

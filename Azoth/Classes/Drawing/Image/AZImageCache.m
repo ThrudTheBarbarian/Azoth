@@ -109,7 +109,7 @@
 	{
 	AZPainter *P = [AZPainter painterForTexture:_textureId];
 	[P lockFocus:NO];
-	[P setTextColour:AZColour.redColour];
+	[P setTextColour:AZColour.red];
 
 	NSString *text = [NSString stringWithFormat:@"[%d,%d]", x, y];
 	[P textAtX:NSMidX(r) y:NSMidY(r) text:text];

@@ -174,7 +174,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	else
 		{
 		[_renderer setClip:[_renderer boundsOfTexture:_texture]];
-		clearColour = AZColour.clearColour;
+		clearColour = AZColour.clear;
 		}
 
 	if (clearTexture)
@@ -213,10 +213,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	{
 	return [self pixelAtX:x
 						y:y
-				    withR:colour.red
-						g:colour.green
-						b:colour.blue
-						a:colour.alpha];
+				    withR:colour.R
+						g:colour.G
+						b:colour.B
+						a:colour.A];
 	}
 
 // Draw pixel with blending enabled if a<255, using r,g,b,a
@@ -237,10 +237,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	return [self pixelAtX:x
 						y:y
 			  alphaWeight:weight
-					withR:colour.red
-						g:colour.green
-						b:colour.blue
-						a:colour.alpha];
+					withR:colour.R
+						g:colour.G
+						b:colour.B
+						a:colour.A];
 	}
 
 // Draw pixel with blending enabled if a<255, and weight 'alpha' by 0..255
@@ -278,10 +278,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 					   y:y1
 					 toX:x2
 					   y:y2
-				   withR:colr.red
-					   g:colr.green
-					   b:colr.blue
-					   a:colr.alpha];
+				   withR:colr.R
+					   g:colr.G
+					   b:colr.B
+					   a:colr.A];
 	}
 
 // Draw a line with blending enabled if a<255, using r,g,b,a
@@ -313,10 +313,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 							y:(int)r.origin.y
 							w:(int)r.size.width
 							h:(int)r.size.height
-						withR:colour.red
-							g:colour.green
-							b:colour.blue
-							a:colour.alpha];
+						withR:colour.R
+							g:colour.G
+							b:colour.B
+							a:colour.A];
 	}
 
 - (int) rectangleAtX:(int)x y:(int)y w:(int)w h:(int)h colour:(AZColour *)colour;
@@ -325,10 +325,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 							y:(int)y
 							w:(int)w
 							h:(int)h
-						withR:colour.red
-							g:colour.green
-							b:colour.blue
-							a:colour.alpha];
+						withR:colour.R
+							g:colour.G
+							b:colour.B
+							a:colour.A];
 	}
 
 - (int) rectangleAtX:(int)x y:(int)y w:(int)w h:(int)h
@@ -380,26 +380,26 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	NSRect intersection	= NSIntersectionRect(originalClip, clip);
 	[self.renderer setClip:intersection];
 
-	[self rectangleWithRect:r colour:AZColour.whiteColour];
+	[self rectangleWithRect:r colour:AZColour.white];
 
 	NSRect r2 = r;
 	r2.size.width -= 1;
 	r2.size.height -= 1;
-	[self rectangleWithRect:r2 colour:AZColour.grey75Colour];
+	[self rectangleWithRect:r2 colour:AZColour.grey75];
 
 	r2 = r;
 	r2.origin.x += 1;
 	r2.origin.y += 1;
 	r2.size.width -= 3;
 	r2.size.height -= 3;
-	[self rectangleWithRect:r2 colour:AZColour.blackColour];
+	[self rectangleWithRect:r2 colour:AZColour.black];
 
 	r2 = r;
 	r2.origin.x += 2;
 	r2.origin.y += 2;
 	r2.size.width -= 3;
 	r2.size.height -= 3;
-	[self rectangleWithRect:r2 colour:AZColour.controlColour];
+	[self rectangleWithRect:r2 colour:AZColour.control];
 
 	[self.renderer setClip:originalClip];
 	}
@@ -413,26 +413,26 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	NSRect intersection	= NSIntersectionRect(originalClip, clip);
 	[self.renderer setClip:intersection];
 
-	[self rectangleWithRect:r colour:AZColour.grey75Colour];
+	[self rectangleWithRect:r colour:AZColour.grey75];
 
 	NSRect r2 = r;
 	r2.size.width += 1;
 	r2.size.height += 1;
-	[self rectangleWithRect:r2 colour:AZColour.whiteColour];
+	[self rectangleWithRect:r2 colour:AZColour.white];
 
 	r2 = r;
 	r2.origin.x += 2;
 	r2.origin.y += 2;
 	r2.size.width -= 3;
 	r2.size.height -= 3;
-	[self rectangleWithRect:r2 colour:AZColour.grey75Colour];
+	[self rectangleWithRect:r2 colour:AZColour.grey75];
 
 	r2 = r;
 	r2.origin.x += 2;
 	r2.origin.y += 2;
 	r2.size.width -= 4;
 	r2.size.height -= 4;
-	[self rectangleWithRect:r2 colour:AZColour.controlColour];
+	[self rectangleWithRect:r2 colour:AZColour.control];
 
 	[self.renderer setClip:originalClip];
 	}
@@ -449,43 +449,43 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	NSRect r2 = r;
 	r2.origin.y += r.size.height -1;
 	r2.size.height = 1;
-	[self rectangleWithRect:r2 colour:AZColour.blackColour];
+	[self rectangleWithRect:r2 colour:AZColour.black];
 
 	r2 = r;
 	r2.origin.x += r.size.width -1;
 	r2.size.width = 1;
-	[self rectangleWithRect:r2 colour:AZColour.blackColour];
+	[self rectangleWithRect:r2 colour:AZColour.black];
 
 	r2 = r;
 	r2.origin.x += 1;
 	r2.size.width -= 2;
 	r2.origin.y += r.size.height - 2;
 	r2.size.height = 1;
-	[self rectangleWithRect:r2 colour:AZColour.grey25Colour];
+	[self rectangleWithRect:r2 colour:AZColour.grey25];
 
 	r2 = r;
 	r2.origin.x += r.size.width -2;
 	r2.size.width = 1;
 	r2.origin.y += 1;
 	r2.size.height -= 2;
-	[self rectangleWithRect:r2 colour:AZColour.grey25Colour];
+	[self rectangleWithRect:r2 colour:AZColour.grey25];
 
 	r2 = r;
 	r2.size.width -= 1;
 	r2.size.height = 1;
-	[self rectangleWithRect:r2 colour:AZColour.whiteColour];
+	[self rectangleWithRect:r2 colour:AZColour.white];
 
 	r2 = r;
 	r2.size.width = 1;
 	r2.size.height -= 1;
-	[self rectangleWithRect:r2 colour:AZColour.whiteColour];
+	[self rectangleWithRect:r2 colour:AZColour.white];
 
 	r2 = r;
 	r2.origin.x += 1;
 	r2.size.width -= 3;
 	r2.origin.y += 1;
 	r2.size.height -= 3;
-	[self rectangleWithRect:r2 colour:AZColour.controlColour];
+	[self rectangleWithRect:r2 colour:AZColour.control];
 
 	[self.renderer setClip:originalClip];
 	}
@@ -511,10 +511,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	float x2	= x + rect.size.width  - 1;
 	float y2	= x + rect.size.height - 1;
 
-	uint8_t r	= colour.red;
-	uint8_t g	= colour.green;
-	uint8_t b	= colour.blue;
-	uint8_t a  	= colour.alpha;
+	uint8_t r	= colour.R;
+	uint8_t g	= colour.G;
+	uint8_t b	= colour.B;
+	uint8_t a  	= colour.A;
 
 	int len		= onOff[0];
 	int dash  	= 0;
@@ -627,10 +627,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 							w:(int)rect.size.width
 							h:(int)rect.size.height
 					   radius:r
-						withR:colour.red
-							g:colour.green
-							b:colour.blue
-							a:colour.alpha];
+						withR:colour.R
+							g:colour.G
+							b:colour.B
+							a:colour.A];
 	}
 
 - (int) rectangleAtX:(int)x y:(int)y w:(int)w h:(int)h radius:(int)r
@@ -641,10 +641,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 							w:w
 							h:h
 					   radius:r
-						withR:colour.red
-							g:colour.green
-							b:colour.blue
-							a:colour.alpha];
+						withR:colour.R
+							g:colour.G
+							b:colour.B
+							a:colour.A];
 	}
 
 
@@ -730,10 +730,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 							w:(int)r.size.width
 							h:(int)r.size.height
 					   filled:yn
-						withR:colour.red
-							g:colour.green
-							b:colour.blue
-							a:colour.alpha];
+						withR:colour.R
+							g:colour.G
+							b:colour.B
+							a:colour.A];
 	}
 
 - (int) rectangleAtX:(int)x y:(int)y w:(int)w h:(int)h filled:(BOOL)yn
@@ -744,10 +744,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 							w:w
 							h:h
 					   filled:yn
-						withR:colour.red
-							g:colour.green
-							b:colour.blue
-							a:colour.alpha];
+						withR:colour.R
+							g:colour.G
+							b:colour.B
+							a:colour.A];
 	}
 
 - (int) rectangleAtX:(int)x y:(int)y w:(int)w h:(int)h filled:(BOOL)yn
@@ -801,10 +801,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 							h:(int)r.size.height
 					   radius:cornerRadius
 					   filled:yn
-						withR:colour.red
-							g:colour.green
-							b:colour.blue
-							a:colour.alpha];
+						withR:colour.R
+							g:colour.G
+							b:colour.B
+							a:colour.A];
 	}
 
 - (int) rectangleAtX:(int)x y:(int)y w:(int)w h:(int)h
@@ -816,10 +816,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 							h:h
 					   radius:radius
 					   filled:yn
-						withR:colour.red
-							g:colour.green
-							b:colour.blue
-							a:colour.alpha];
+						withR:colour.R
+							g:colour.G
+							b:colour.B
+							a:colour.A];
 	}
 
 - (int) rectangleAtX:(int)x y:(int)y w:(int)w h:(int)h radius:(int)radius
@@ -973,10 +973,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 				 radius:r
 				  start:start
 					end:end
-				  withR:colour.red
-					  g:colour.green
-					  b:colour.blue
-					  a:colour.a];
+				  withR:colour.R
+					  g:colour.G
+					  b:colour.B
+					  a:colour.A];
 	}
 
 - (int) arcAtX:(int)x y:(int)y radius:(int)radius start:(int)start end:(int)end
@@ -1252,10 +1252,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 					  start:start
 					    end:end
 					 filled:yn
-					  withR:colour.red
-						  g:colour.green
-						  b:colour.blue
-						  a:colour.alpha];
+					  withR:colour.R
+						  g:colour.G
+						  b:colour.B
+						  a:colour.A];
 	}
 
 - (int) pieAtX:(int)x y:(int)y radius:(int)radius start:(int)start end:(int)end
@@ -1355,10 +1355,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 						  y:y
 						 rx:rx
 						 ry:rx
-					  withR:colour.red
-						  g:colour.green
-						  b:colour.blue
-						  a:colour.alpha];
+					  withR:colour.R
+						  g:colour.G
+						  b:colour.B
+						  a:colour.A];
 	}
 
 - (int) circleAtX:(int)x y:(int)y r:(int)rx
@@ -1378,10 +1378,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 						 rx:rx
 						 ry:rx
 					 filled:yn
-					  withR:colour.red
-						  g:colour.green
-						  b:colour.blue
-						  a:colour.alpha];
+					  withR:colour.R
+						  g:colour.G
+						  b:colour.B
+						  a:colour.A];
 	}
 
 - (int) circleAtX:(int)x y:(int)y r:(int)rx filled:(BOOL)yn
@@ -1406,10 +1406,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 						  y:yc
 						 rx:xr
 						 ry:yr
-					  withR:colour.red
-					      g:colour.green
-					      b:colour.blue
-					      a:colour.alpha];
+					  withR:colour.R
+					      g:colour.G
+					      b:colour.B
+					      a:colour.A];
 	}
 
 - (int) ellipseAtX:(int)x y:(int)y rx:(int)xr ry:(int)yr
@@ -1419,10 +1419,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 						  y:y
 						 rx:xr
 						 ry:yr
-					  withR:colour.red
-					      g:colour.green
-					      b:colour.blue
-					      a:colour.alpha];
+					  withR:colour.R
+					      g:colour.G
+					      b:colour.B
+					      a:colour.A];
 	}
 
 - (int) ellipseAtX:(int)x y:(int)y rx:(int)rx ry:(int)ry
@@ -1595,10 +1595,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 						 rx:xr
 						 ry:yr
 					 filled:yn
-					  withR:colour.red
-					      g:colour.green
-					      b:colour.blue
-					      a:colour.alpha];
+					  withR:colour.R
+					      g:colour.G
+					      b:colour.B
+					      a:colour.A];
 	}
 
 - (int) ellipseAtX:(int)x y:(int)y rx:(int)rx ry:(int)ry
@@ -1609,10 +1609,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 						 rx:rx
 						 ry:ry
 					 filled:yn
-					  withR:colour.red
-					      g:colour.green
-					      b:colour.blue
-					      a:colour.alpha];
+					  withR:colour.R
+					      g:colour.G
+					      b:colour.B
+					      a:colour.A];
 	}
 
 - (int) ellipseAtX:(int)x y:(int)y rx:(int)rx ry:(int)ry filled:(BOOL)yn
@@ -1767,10 +1767,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	return [self polygonWith:3
 						   x:xc
 						   y:yc
-					   withR:colour.red
-						   g:colour.green
-						   b:colour.blue
-						   a:colour.alpha];
+					   withR:colour.R
+						   g:colour.G
+						   b:colour.B
+						   a:colour.A];
 	}
 
 - (int) triangleWithX:(int)x1 y:(int)y1 x:(int)x2 y:(int)y2 x:(int)x3 y:(int)y3
@@ -1797,10 +1797,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 						   x:xc
 						   y:yc
 					  filled:yn
-					   withR:colour.red
-						   g:colour.green
-						   b:colour.blue
-						   a:colour.alpha];
+					   withR:colour.R
+						   g:colour.G
+						   b:colour.B
+						   a:colour.A];
 	}
 
 - (int) triangleWithX:(int)x1 y:(int)y1 x:(int)x2 y:(int)y2 x:(int)x3 y:(int)y3
@@ -2180,10 +2180,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 								x:xc
 								y:yc
 							steps:steps
-							withR:colour.red
-								g:colour.green
-								b:colour.blue
-								a:colour.alpha];
+							withR:colour.R
+								g:colour.G
+								b:colour.B
+								a:colour.A];
 	}
 
 - (int) bezierWithPoints:(int)num x:(int *)vx y:(int *)vy steps:(int)steps
@@ -2491,10 +2491,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	return [self _hLineFromX1:x1
 						 toX2:x2
 						  atY:y
-						withR:colour.red
-							g:colour.green
-							b:colour.blue
-							a:colour.alpha];
+						withR:colour.R
+							g:colour.G
+							b:colour.B
+							a:colour.A];
 	}
 
 - (int) _hLineFromX1:(int)x1
@@ -2531,10 +2531,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	return [self _vLineFromY1:y1
 						 toY2:y2
 						  atX:x
-						withR:colour.red
-							g:colour.green
-							b:colour.blue
-							a:colour.alpha];
+						withR:colour.R
+							g:colour.G
+							b:colour.B
+							a:colour.A];
 	}
 
 - (int) _vLineFromY1:(int)y1

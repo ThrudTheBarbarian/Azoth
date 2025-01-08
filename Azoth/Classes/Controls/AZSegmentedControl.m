@@ -139,7 +139,7 @@ typedef struct
 	_trackingMode			= AZSegmentSwitchTrackingSelectOne;
 	_info[0].selected		= YES;
 
-	self.backgroundColour	= AZColour.clearColour;
+	self.backgroundColour	= AZColour.clear;
 	}
 
 
@@ -290,8 +290,7 @@ typedef struct
 		// Add the label
 		int black = (idx == STATE_N) | (idx == STATE_D);
 		[painter setTextAlignment:_info[i].alignment];
-		[painter setTextColour:black ? AZColour.blackColour
-									 : AZColour.whiteColour];
+		[painter setTextColour:black ? AZColour.black : AZColour.white];
 
 		NSRect box = NSInsetRect(r, 3, 2);
 		[painter textInBox:box text:_info[i].label];

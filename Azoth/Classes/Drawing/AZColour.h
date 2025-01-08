@@ -15,58 +15,58 @@ NS_ASSUME_NONNULL_BEGIN
 |* Initialisation
 \*****************************************************************************/
 - (instancetype) initWithByteR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
-- (instancetype) initWithR:(float)r g:(float)g b:(float)b a:(float)a;
+- (instancetype) initWithFloatR:(float)r g:(float)g b:(float)b a:(float)a;
 
 + (AZColour *) colourWithByteR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
-+ (AZColour *) colourWithR:(float)r g:(float)g b:(float)b a:(float)a;
++ (AZColour *) colourWithFloatR:(float)r g:(float)g b:(float)b a:(float)a;
 
++ (nullable AZColour *) colourNamed:(NSString *)name;
 
 
 // MARK: predefined colours
 
-+ (AZColour *) redColour;
-+ (AZColour *) greenColour;
-+ (AZColour *) blueColour;
-+ (AZColour *) blackColour;
-+ (AZColour *) whiteColour;
-+ (AZColour *) grey12Colour;
-+ (AZColour *) grey25Colour;
-+ (AZColour *) grey37Colour;
-+ (AZColour *) grey50Colour;
-+ (AZColour *) grey75Colour;
-+ (AZColour *) grey95Colour;
-+ (AZColour *) magentaColour;
-+ (AZColour *) yellowColour;
-+ (AZColour *) brownColour;
-+ (AZColour *) cyanColour;
-+ (AZColour *) orangeColour;
-+ (AZColour *) purpleColour;
-+ (AZColour *) clearColour;
-+ (AZColour *) controlColour;
-+ (AZColour *) controlBackgroundColour;
-+ (AZColour *) gridColour;
-+ (AZColour *) selectedControlColour;
-+ (AZColour *) selectedTextColour;
-+ (AZColour *) textColour;
++ (AZColour *) red;
++ (AZColour *) green;
++ (AZColour *) blue;
++ (AZColour *) black;
++ (AZColour *) white;
++ (AZColour *) grey12;
++ (AZColour *) grey25;
++ (AZColour *) grey37;
++ (AZColour *) grey50;
++ (AZColour *) grey75;
++ (AZColour *) grey95;
++ (AZColour *) magenta;
++ (AZColour *) yellow;
++ (AZColour *) brown;
++ (AZColour *) cyan;
++ (AZColour *) orange;
++ (AZColour *) purple;
++ (AZColour *) clear;
++ (AZColour *) control;
++ (AZColour *) controlBackground;
++ (AZColour *) grid;
++ (AZColour *) selectedControl;
++ (AZColour *) selectedText;
++ (AZColour *) text;
 
 + (NSArray<AZColour *> *) controlAlternatingRowBackgroundColours;
 
 
-// MARK: uint8_t accessors
 
-- (uint8_t) red;
-- (uint8_t) green;
-- (uint8_t) blue;
-- (uint8_t) alpha;
+// MARK: property as float
 
+@property(assign, nonatomic) float 						redAsFloat;
+@property(assign, nonatomic) float 						greenAsFloat;
+@property(assign, nonatomic) float 						blueAsFloat;
+@property(assign, nonatomic) float 						alphaAsFloat;
 
+// MARK: property as bytes (native format)
 
-// MARK: property uint8_t
-
-@property(assign, nonatomic) float 						r;
-@property(assign, nonatomic) float 						g;
-@property(assign, nonatomic) float 						b;
-@property(assign, nonatomic) float 						a;
+@property(assign, nonatomic) uint8_t					R;
+@property(assign, nonatomic) uint8_t					G;
+@property(assign, nonatomic) uint8_t					B;
+@property(assign, nonatomic) uint8_t					A;
 @end
 
 NS_ASSUME_NONNULL_END

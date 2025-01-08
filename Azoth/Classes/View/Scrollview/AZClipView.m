@@ -57,7 +57,7 @@
 \*****************************************************************************/
 - (void) _commonClipViewInit
 	{
-	self.backgroundColour 	= [AZColour controlColour];
+	self.backgroundColour 	= AZColour.control;
 	self.drawsBackground 	= YES;
 	}
 
@@ -215,7 +215,7 @@
 \*****************************************************************************/
 - (BOOL) isOpaque
 	{
-    return self.drawsBackground && (self.backgroundColour.a >= 1.f);
+	return self.drawsBackground && (self.backgroundColour.alphaAsFloat >= 1.f);
 	}
 
 /*****************************************************************************\

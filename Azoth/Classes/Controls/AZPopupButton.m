@@ -113,7 +113,7 @@ static float 		_uiS[STATE_NUM];		// bottom-border for 9-way
 - (void) _commonPopUpButtonInit
 	{
 	[AZPopupButton _fetchRects];
-		self.backgroundColour	= [AZColour clearColour];
+		self.backgroundColour	= AZColour.clear;
 	}
 
 /*****************************************************************************\
@@ -253,7 +253,7 @@ static float 		_uiS[STATE_NUM];		// bottom-border for 9-way
 			   bottom:_uiS[state]
 				  dst:self.bounds];
 
-	[painter setTextColour:[AZColour blackColour]];
+	[painter setTextColour:AZColour.black];
 	NSRect box 		= NSInsetRect(bounds, 5, 2);
 	box.size.width 	= box.size.width + 5 - _uiE[state];
 

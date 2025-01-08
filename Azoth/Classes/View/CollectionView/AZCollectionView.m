@@ -194,12 +194,12 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 	{
 	AZColour *bg = self.backgroundColour
 				 ? self.backgroundColour
-				 : AZColour.whiteColour;
+				 : AZColour.white;
 
 	[painter rectangleWithRect:dirtyRect filled:YES colour:bg];
 
 	NSRect frame = NSRectFromTwoPoints(_atDown, _atDragged);
-	[painter rectangleWithRect:frame colour:AZColour.grey50Colour];
+	[painter rectangleWithRect:frame colour:AZColour.grey50];
 
 	if ((_selection.count > 0) && self.shouldDrawSelections)
 		{
@@ -227,7 +227,7 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 	[painter rectangleWithRect:inset
 						radius:10
 						filled:YES
-						colour:AZColour.grey75Colour];
+						colour:AZColour.grey75];
 	}
 
 
@@ -388,6 +388,13 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 	}
 
 
+/*****************************************************************************\
+|* Return what is selected atm
+\*****************************************************************************/
+- (NSIndexSet *)selectionIndexes
+	{
+	return _selection;
+	}
 
 // MARK: Querying ViewControllers
 
