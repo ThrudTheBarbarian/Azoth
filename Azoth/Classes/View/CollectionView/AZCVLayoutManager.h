@@ -101,7 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(strong, nonatomic) NSOperationQueue *					queue;
 
 // The layouts
-@property(strong, nonatomic) NSArray *							itemLayouts;
+@property(strong, nonatomic) NSArray<AZCVLayoutItem *> *		itemLayouts;
 @end
 
 NS_ASSUME_NONNULL_END
