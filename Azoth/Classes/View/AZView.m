@@ -88,8 +88,8 @@
 	self.backgroundColour			= [AZColour grey95Colour];
 	self.isOpaque					= NO;
 	self.autoresizesSubviews		= YES;
-	self.postFrameNotifications		= YES;
-	self.postBoundsNotifications	= YES;
+	self.postsFrameNotifications	= YES;
+	self.postsBoundsNotifications	= YES;
 	self.autoresizingMask		 	= AZViewNotSizable;
 	self.transformToWindow			= [AZTransform new];
 	self.transformFromWindow		= [AZTransform new];
@@ -494,7 +494,7 @@
 		// Yep, still not implemented
 		// [_window invalidateCursorRectsForView:self];
 		
-		if (_postBoundsNotifications)
+		if (_postsBoundsNotifications)
 			{
 			NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
 			[nc postNotificationName:AZViewBoundsDidChangeNotification
@@ -532,7 +532,7 @@
 		if (self.superview != nil)
 			[self _installBackingTexture];
 
-	if (self.postFrameNotifications)
+	if (self.postsFrameNotifications)
 		{
 		NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
 		[nc postNotificationName:AZViewFrameDidChangeNotification object:self];

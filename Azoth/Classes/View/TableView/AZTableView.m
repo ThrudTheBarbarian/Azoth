@@ -1269,7 +1269,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		for (AZTableColumn *col in _tableColumns)
 			{
 			AZView *view = [col dataViewForRow:rowToDisplay];
-			view.postFrameNotifications = NO;
+			view.postsFrameNotifications = NO;
 			NSRect frame = NSMakeRect(x, y, col.width, viewHeight);
 			[view setFrame:frame];
 			x += col.width + _spacing.width;

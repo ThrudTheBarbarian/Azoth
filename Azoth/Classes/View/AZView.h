@@ -240,10 +240,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property(assign, nonatomic) BOOL							hidden;
 
 // Post notifications when the frame is changed
-@property(assign, nonatomic) BOOL						postFrameNotifications;
+@property(assign, nonatomic) BOOL						postsFrameNotifications;
 
 // Post notifications when the bounds are changed
-@property(assign, nonatomic) BOOL						postBoundsNotifications;
+@property(assign, nonatomic) BOOL						postsBoundsNotifications;
 
 // Property from IB, just a numeric identifier
 @property (assign, nonatomic) NSInteger 					tag;

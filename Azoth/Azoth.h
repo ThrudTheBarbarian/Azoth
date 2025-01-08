@@ -22,6 +22,12 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZClipView.h>
 #import <Azoth/AZColour.h>
 #import <Azoth/AZControl.h>
+#import <Azoth/AZCollectionView.h>
+#import <Azoth/AZCollectionViewDelegate.h>
+#import <Azoth/AZCVGroup.h>
+#import <Azoth/AZCVLayoutItem.h>
+#import <Azoth/AZCVLayoutManager.h>
+#import <Azoth/AZCVLayoutOperation.h>
 #import <Azoth/AZEvent.h>
 #import <Azoth/AZEventSink.h>
 #import <Azoth/AZFont.h>
@@ -29,6 +35,7 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZGlyphData.h>
 #import <Azoth/AZImage.h>
 #import <Azoth/AZImageView.h>
+#import <Azoth/AZLabel.h>
 #import <Azoth/AZMenu.h>
 #import <Azoth/AZMenuItem.h>
 #import <Azoth/AZNotifications.h>
