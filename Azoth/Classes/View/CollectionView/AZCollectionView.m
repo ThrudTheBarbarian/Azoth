@@ -13,6 +13,7 @@
 #import "AZCVLayoutItem.h"
 #import "AZCVLayoutManager.h"
 #import "AZGeometry.h"
+#import "AZMenu.h"
 #import "AZNotifications.h"
 #import "AZPainter.h"
 #import "AZScrollView.h"
@@ -22,9 +23,6 @@
 |* "Private" Properties
 \*****************************************************************************/
 @interface AZCollectionView()
-
-// Current selection
-@property (readonly) NSMutableIndexSet *				selection;
 
 // What the user has been typing
 @property (nonatomic, copy) NSString *					accumulatedKeyStrokes;
@@ -156,6 +154,14 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 	}
 
 // MARK: Drawing
+
+/*****************************************************************************\
+|* We are opaque
+\*****************************************************************************/
+- (BOOL)isOpaque
+	{
+	return YES;
+	}
 
 /*****************************************************************************\
 |* Should we make an attempt to draw selections or leave them to the delegate
@@ -578,6 +584,418 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 		if (!NSEqualRects(r, NSZeroRect))
 			[_visibleVCs[number].view setFrame:r];
 		}
+	}
+
+
+
+// MARK Selecting and Deselecting Items
+
+
+/*****************************************************************************\
+|* Select a single item
+\*****************************************************************************/
+- (void)selectItemAtIndex:(NSUInteger)index
+	{
+	[self selectItemAtIndex:index inBulk:NO];
+	}
+
+
+/*****************************************************************************\
+|* Select a single item, and cope with doing this lots of times
+\*****************************************************************************/
+- (void)selectItemAtIndex:(NSUInteger)index inBulk:(BOOL)bulkSelecting
+	{
+	if (index >= _contentArray.count)
+		return;
+    
+	AZViewController *vc = [self viewControllerForItemAtIndex:index];
+	id item = [_contentArray objectAtIndex:index];
+
+	SEL sel = SELECTOR(@"collectionView:shouldSelectItem:withVC:");
+	BOOL maySelectItem = YES;
+	if ([_delegate respondsToSelector:sel])
+		maySelectItem = [_delegate collectionView:self
+								 shouldSelectItem:item
+										   withVC:vc];
+
+	if (maySelectItem)
+		{
+		[_selection addIndex:index];
+		[self delegateUpdateSelectionForItemAtIndex:index];
+		[self delegateDidSelectItemAtIndex:index];
+		if (!bulkSelecting)
+			[self delegateCollectionViewSelectionDidChange];
+		if (self.shouldDrawSelections)
+			{
+			NSRect dirty = [_layoutManager rectOfItemAtIndex:index];
+			[self setNeedsDisplayInRect:dirty];
+			}
+		}
+  
+	if (!bulkSelecting)
+		_lastSelectionIndex = index;
+	}
+
+/*****************************************************************************\
+|* Select an item using an index-set
+\*****************************************************************************/
+- (void)selectItemsAtIndexes:(NSIndexSet *)indexes;
+	{
+	[indexes enumerateIndexesUsingBlock:
+		^(NSUInteger idx, BOOL *stop)
+			{
+			[self selectItemAtIndex:idx inBulk:YES];
+			}];
+
+	_lastSelectionIndex = [indexes firstIndex];
+	[self delegateCollectionViewSelectionDidChange];
+	}
+
+/*****************************************************************************\
+|* Deselect an item at an index
+\*****************************************************************************/
+- (void)deselectItemAtIndex:(NSUInteger)index
+	{
+	[self deselectItemAtIndex:index inBulk:NO];
+	}
+
+/*****************************************************************************\
+|* Deselect an item at an index, with the expectation that this is one of many
+\*****************************************************************************/
+- (void)deselectItemAtIndex:(NSUInteger)index inBulk:(BOOL)bulk;
+	{
+	if (index < _contentArray.count)
+		{
+		[_selection removeIndex:index];
+		if (self.shouldDrawSelections)
+			{
+			NSRect dirty = [_layoutManager rectOfItemAtIndex:index];
+			[self setNeedsDisplayInRect:dirty];
+			}
+
+		if (!bulk)
+			[self delegateCollectionViewSelectionDidChange];
+		[self delegateDidDeselectItemAtIndex:index];
+		[self delegateUpdateDeselectionForItemAtIndex:index];
+		}
+	}
+
+/*****************************************************************************\
+|* Deselect an item using an index-set
+\*****************************************************************************/
+- (void)deselectItemsAtIndexes:(NSIndexSet *)indexes;
+	{
+	[indexes enumerateIndexesUsingBlock:
+		^(NSUInteger idx, BOOL *stop)
+			{
+			[self deselectItemAtIndex:idx inBulk:YES];
+			}];
+	[self delegateCollectionViewSelectionDidChange];
+	}
+
+/*****************************************************************************\
+|* Deselect everything
+\*****************************************************************************/
+- (void)deselectAllItems;
+	{
+	[self deselectItemsAtIndexes:_selection];
+	}
+
+/*****************************************************************************\
+|* Select everything
+\*****************************************************************************/
+- (void)selectAll:(id)sender
+	{
+	NSRange range	= NSMakeRange(0, _contentArray.count);
+	NSIndexSet *set = [NSIndexSet indexSetWithIndexesInRange:range];
+	[self selectItemsAtIndexes:set];
+	}
+
+
+// MARK: User interaction
+
+
+/*****************************************************************************\
+|* Yes, we can accept keystrokes
+\*****************************************************************************/
+- (BOOL)acceptsFirstResponder
+	{
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Ok, someone else got a chance
+\*****************************************************************************/
+- (BOOL)resignFirstResponder
+	{
+	SEL responderSel = SELECTOR(@"collectionViewLostFirstResponder:");
+	if ([_delegate respondsToSelector:responderSel])
+		[_delegate collectionViewLostFirstResponder:self];
+	return [super resignFirstResponder];
+	}
+
+/*****************************************************************************\
+|* We are #1 for keys
+\*****************************************************************************/
+- (BOOL)becomeFirstResponder
+	{
+	SEL responderSel = SELECTOR(@"collectionViewBecameFirstResponder:");
+	if ([_delegate respondsToSelector:responderSel])
+		[_delegate collectionViewBecameFirstResponder:self];
+	return [super becomeFirstResponder];
+	}
+
+/*****************************************************************************\
+|* Not yet implemented in Azoth, but when (if) it is...
+\*****************************************************************************/
+- (BOOL)canBecomeKeyView
+	{
+	return YES;
+	}
+
+
+// MARK: Reloading and Updating the Icon View
+
+/*****************************************************************************\
+|* Do a reload just of the visible VCs
+\*****************************************************************************/
+- (void)softReloadVisibleViewControllers
+	{
+	NSMutableArray *removeKeys = NSMutableArray.new;
+
+	for (NSNumber *number in _visibleVCs)
+		{
+		NSUInteger index		= number.integerValue;
+		AZViewController *vc	= _visibleVCs[number];
+
+		if (index < _contentArray.count)
+			{
+			if ([_selection containsIndex:index])
+				[self delegateUpdateDeselectionForItemAtIndex:index];
+
+			[_delegate collectionView:self
+						   willShowVC:vc
+						      forItem:_contentArray[index]];
+			}
+		else
+			{
+			if ([_selection containsIndex:index])
+				[self delegateUpdateDeselectionForItemAtIndex:index];
+      
+			[self delegateViewControllerBecameInvisibleAtIndex:index];
+			[vc.view removeFromSuperview];
+			[_reusableVCs addObject:vc];
+			[removeKeys addObject:number];
+			}
+		}
+
+	[_visibleVCs removeObjectsForKeys:removeKeys];
+	}
+
+/*****************************************************************************\
+|* Resize the frame to fit the contents
+\*****************************************************************************/
+- (void)resizeFrameToFitContents
+	{
+	NSRect frame 						= self.frame;
+	frame.size.height 					= self.visibleRect.size.height;
+
+	if (_contentArray.count > 0)
+		{
+		AZCVLayoutItem *item = [_layoutManager.itemLayouts lastObject];
+		frame.size.height 	 = MAX(frame.size.height, NSMaxY(item.itemRect));
+		}
+
+	self.frame = frame;
+	}
+
+/*****************************************************************************\
+|* Add items, optionally clear the cache
+\*****************************************************************************/
+- (void)reloadDataWithItems:(NSArray *)newContent
+				emptyCaches:(BOOL)yn
+	{
+	[self reloadDataWithItems:newContent
+					   groups:nil
+				  emptyCaches:yn];
+	}
+
+/*****************************************************************************\
+|* Add items, specify groups, optionally clear the cache
+\*****************************************************************************/
+- (void)reloadDataWithItems:(NSArray *)newContent
+					 groups:(NSArray *)newGroups
+				emptyCaches:(BOOL)yn
+	{
+	[self reloadDataWithItems:newContent
+					   groups:newGroups
+				  emptyCaches:yn
+			  completionBlock:^{}];
+	}
+
+/*****************************************************************************\
+|* Add items, specify groups, run a block when done, optionally clear the cache
+\*****************************************************************************/
+- (void)reloadDataWithItems:(NSArray *)newContent
+					 groups:(NSArray *)newGroups
+				emptyCaches:(BOOL)shouldEmptyCaches
+		    completionBlock:(dispatch_block_t)completionBlock
+	{
+
+	[self deselectAllItems];
+	[_layoutManager cancelItemEnumerator];
+
+	if (_delegate == nil)
+		return;
+  
+	NSRect frame	= self.frame;
+	NSSize size 	= [_delegate cellSizeForCollectionView:self];
+	if ((NSWidth(frame) < size.width) || (NSHeight(frame) < size.height))
+		return;
+  
+	for (AZCVGroup *group in _groups)
+		[group removeObserver:self forKeyPath:@"isCollapsed"];
+	for (AZCVGroup *group in newGroups)
+		[group addObserver:self forKeyPath:@"isCollapsed" options:0 context:nil];
+
+	self.groups       = newGroups;
+	self.contentArray = newContent;
+  
+	for (AZViewController *vc in _visibleGroupVCs.allValues)
+		[vc.view removeFromSuperview];
+	[_visibleVCs removeAllObjects];
+  
+	if (shouldEmptyCaches)
+		{
+		SEL visSel = SELECTOR(@"collectionView:VCNoLongerVisible:");
+		for (AZViewController *vc in _visibleVCs.allValues)
+			{
+			[vc.view removeFromSuperview];
+			if ([_delegate respondsToSelector:visSel])
+				[_delegate collectionView:self VCNoLongerVisible:vc];
+			}
+    
+		[_reusableVCs removeAllObjects];
+		[_visibleVCs removeAllObjects];
+		}
+	else
+		[self softReloadVisibleViewControllers];
+  
+	[_selection removeAllIndexes];
+
+	NSRect visibleRect = self.visibleRect;
+	[_layoutManager enumerateItems:
+		^(AZCVLayoutItem *layoutItem)
+			{
+			NSInteger index = layoutItem.itemIndex;
+			NSRect rect		= layoutItem.itemRect;
+
+			AZViewController *vc = [self viewControllerForItemAtIndex:index];
+			if (vc)
+				{
+				[vc.view setFrame:rect];
+				[self.delegate collectionView:self
+								   willShowVC:vc
+									  forItem:[self.contentArray objectAtIndex:index]];
+				}
+			else if (NSIntersectsRect(visibleRect, rect))
+				[self addMissingViewControllerForItemAtIndex:index
+												   withFrame:rect];
+			}
+		completionBlock:
+			^{
+			[self resizeFrameToFitContents];
+			[self addMissingGroupHeaders];
+			dispatch_async(dispatch_get_main_queue(), completionBlock);
+			}];
+	}
+
+/*****************************************************************************\
+|* Called when we scroll
+\*****************************************************************************/
+- (void)scrollViewDidScroll:(NSNotification *)note
+	{
+	dispatch_async(dispatch_get_main_queue(),
+		^{
+		[self removeInvisibleViewControllers];
+		[self addMissingViewControllersToView];
+		});
+
+	SEL scrollSel = SELECTOR(@"collectionViewDidScroll:inDirection:");
+	if ([_delegate respondsToSelector:scrollSel])
+		{
+		if (self.visibleRect.origin.y > _previousFrameBounds.origin.y)
+			[_delegate collectionViewDidScroll:self inDirection:AZCVScrollDown];
+		else
+			[_delegate collectionViewDidScroll:self inDirection:AZCVScrollUp];
+		_previousFrameBounds = self.visibleRect;
+		}
+	}
+
+/*****************************************************************************\
+|* Called when the view changes size
+\*****************************************************************************/
+- (void)viewDidResize
+	{
+	if ((_contentArray.count > 0) && (_visibleVCs.count > 0))
+		[self softReloadDataWithCompletionBlock:nil];
+	}
+
+/*****************************************************************************\
+|* Handle a resize
+\*****************************************************************************/
+- (void)softReloadDataWithCompletionBlock:(nullable dispatch_block_t)block
+	{
+	NSSize size 	= [_delegate cellSizeForCollectionView:self];
+	NSRect visible	= self.visibleRect;
+
+	if (NSWidth(visible) < size.width || NSHeight(visible) < size.height)
+		return;
+  
+	NSRange range = [self rangeOfVisibleItemsWithOverflow];
+	[_layoutManager enumerateItems:
+		^(AZCVLayoutItem *layoutItem)
+			{
+			NSInteger idx 	= layoutItem.itemIndex;
+			NSRect rect		= layoutItem.itemRect;
+
+			if (NSLocationInRange(idx, range))
+				{
+				AZViewController *vc = [self viewControllerForItemAtIndex:idx];
+				if (vc)
+					[vc.view setFrame:rect];
+				else
+					[self addMissingViewControllerForItemAtIndex:idx
+													   withFrame:rect];
+				}
+			else
+				{
+				if ([self viewControllerForItemAtIndex:idx])
+					[self removeViewControllerForItemAtIndex:idx];
+				}
+			}
+		completionBlock:^(void)
+			{
+			[self resizeFrameToFitContents];
+			[self addMissingGroupHeaders];
+			[self setNeedsDisplay:YES];
+			if (block != NULL)
+				block();
+			}];
+	}
+
+/*****************************************************************************\
+|* Handle a context-menu option
+\*****************************************************************************/
+- (AZMenu *) menuForEvent:(AZEvent *)anEvent
+	{
+	[self mouseDown:anEvent];
+
+	SEL menuSel = SELECTOR(@"collectionView:menuForItemsAtIndexes:");
+	if ([_delegate respondsToSelector:menuSel])
+		return [_delegate collectionView:self
+				   menuForItemsAtIndexes:self.selection];
+	return nil;
 	}
 
 @end

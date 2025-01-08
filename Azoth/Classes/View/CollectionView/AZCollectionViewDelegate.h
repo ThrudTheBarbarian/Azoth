@@ -15,7 +15,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class AZCollectionView;
 @class AZCVGroup;
+@class AZMenu;
 @class AZViewController;
+
+/*****************************************************************************\
+|* Scroll directions for when the delegate is listening for them
+\*****************************************************************************/
+enum
+	{
+	AZCVScrollUp   = 0,
+	AZCVScrollDown = 1
+	};
 
 /*****************************************************************************\
 |* Delegate protocol. All "VC"s are AZViewController objects, or
@@ -134,6 +144,19 @@ NS_ASSUME_NONNULL_BEGIN
 // defaults to YES but subclasses can override and implement the above
 // redraw delegate methods
 - (BOOL)collectionViewShouldDrawHover:(AZCollectionView *)cv;
+
+// If the delegate wants to supply a context-sensitive menu, it can do
+// so by implementing the below. Note there is some more plumbing to do
+// in Azoth before menus will work
+- (AZMenu *) collectionView:(AZCollectionView *)cv
+	  menuForItemsAtIndexes:(NSIndexSet *)indexSet;
+
+// We lost first-responder status
+- (void)collectionViewLostFirstResponder:(AZCollectionView *)cv;
+
+// We gained first-responder status
+- (void)collectionViewBecameFirstResponder:(AZCollectionView *)cv;
+
 
 
 // MARK: Group management.

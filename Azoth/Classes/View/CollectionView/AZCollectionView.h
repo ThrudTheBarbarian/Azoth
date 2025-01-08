@@ -40,14 +40,14 @@ NS_ASSUME_NONNULL_BEGIN
 |* Add items, specify groups, optionally clear the cache
 \*****************************************************************************/
 - (void)reloadDataWithItems:(NSArray *)newContent
-					 groups:(NSArray *)newGroups
+					 groups:(nullable NSArray *)newGroups
 				emptyCaches:(BOOL)shouldEmptyCaches;
 
 /*****************************************************************************\
 |* Add items, specify groups, run a block when done, optionally clear the cache
 \*****************************************************************************/
 - (void)reloadDataWithItems:(NSArray *)newContent
-					 groups:(NSArray *)newGroups
+					 groups:(nullable NSArray *)newGroups
 				emptyCaches:(BOOL)shouldEmptyCaches
 			completionBlock:(dispatch_block_t)completionBlock;
 
@@ -84,6 +84,11 @@ NS_ASSUME_NONNULL_BEGIN
 |* Deselect an item using an index-set
 \*****************************************************************************/
 - (void)deselectItemsAtIndexes:(NSIndexSet *)indexes;
+
+/*****************************************************************************\
+|* Select everything
+\*****************************************************************************/
+- (void)selectAll:(id)sender;
 
 /*****************************************************************************\
 |* Deselect everything
@@ -151,7 +156,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Do a relayout
 \*****************************************************************************/
-- (void)softReloadDataWithCompletionBlock:(dispatch_block_t)block;
+- (void)softReloadDataWithCompletionBlock:(nullable dispatch_block_t)block;
 
 
 /*****************************************************************************\
@@ -180,6 +185,9 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleVCs;
 
 // The content array
 @property (nonatomic, copy) NSArray *					contentArray;
+
+// Current selection
+@property (readonly) NSMutableIndexSet *				selection;
 
 @end
 
