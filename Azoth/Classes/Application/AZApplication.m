@@ -173,7 +173,7 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 	if ([fm fileExistsAtPath:zibPath])
 		{
 		_zibObjects		= NSMutableArray.new;
-		[NSBundle.mainBundle loadZibNamed:zibPath
+		[NSBundle.mainBundle loadZibNamed:@"main"
 									owner:self
 						  topLevelObjects:_zibObjects];
 		}
