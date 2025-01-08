@@ -19,12 +19,13 @@ extern AZZibOptionsKey const AZZibExternalObjects;
 |* object, with a class check, and accepting options to replace the placeholder
 |* objects with real concrete ones.
 |*
-|* Returns an array to the top-level objects in the ZIB, not including the
-|* owner or any replaced-placeholder objects.
+|* Fills out an array with the top-level objects in the ZIB, not including the
+|* owner
 \*****************************************************************************/
-- (NSArray *)loadNibNamed:(NSString *)name
-                    owner:(NSObject *)owner 
-                  options:(NSDictionary<AZZibOptionsKey, id> *)options;
+- (BOOL)loadZibNamed:(NSString *)nibName
+               owner:(id)owner
+	 topLevelObjects:(nullable NSMutableArray *)topLevelObjects;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -91,6 +91,9 @@ NSString * const kZibWindow			= @"window";
 // The Array of objects that have been inflated
 @property(strong, nonatomic) NSMutableArray<id> *					inflated;
 
+// The Array of top-level objects that have been inflated
+@property(strong, nonatomic) NSMutableArray<id> *					topLevel;
+
 // The Path to the ZIB file
 @property(strong, nonatomic) NSString *								path;
 
@@ -113,6 +116,7 @@ NSString * const kZibWindow			= @"window";
 		_path 					= path;
 		_connect				= [NSMutableDictionary new];
 		_inflated				= [NSMutableArray new];
+		_topLevel				= [NSMutableArray new];
 		_byId					= [NSMutableDictionary new];
 		NSError *error 			= nil;
 		NSKeyedUnarchiver *src 	= nil;
@@ -151,7 +155,7 @@ NSString * const kZibWindow			= @"window";
 |* Inflate the ZIB file so we have real objects, not a dictionary representation
 \*****************************************************************************/
 - (BOOL) inflateWithOwner:(NSObject *)owner
-			   andOptions:(NSDictionary<AZZibOptionsKey, id> *)options
+					 into:(nullable NSMutableArray *)topLevelObjects;
 	{
 	BOOL ok = NO;
 	if (owner)
@@ -172,6 +176,19 @@ NSString * const kZibWindow			= @"window";
 		for (NSObject * object in _inflated)
 			if ([object respondsToSelector:@selector(awakeFromNib)])
 				[object awakeFromNib];
+
+		/*********************************************************************\
+		|* And then tell the objects that it's *really* almost showtime
+		\*********************************************************************/
+		for (NSObject * object in _inflated)
+			if ([object respondsToSelector:@selector(postAwakeFromNib)])
+				[object postAwakeFromNib];
+
+		/*********************************************************************\
+		|* If we were passed an array to hold the top-level objects, fill it
+		\*********************************************************************/
+		if (topLevelObjects)
+			[topLevelObjects addObjectsFromArray:_topLevel];
 		}
 
 	return ok;
@@ -281,7 +298,7 @@ NSString * const kZibWindow			= @"window";
 
 
 /*****************************************************************************\
-|* Inflate the Window, checking the class
+|* Inflate any other top-level views, checking the class
 \*****************************************************************************/
 - (BOOL) _inflateViews
 	{
@@ -319,6 +336,10 @@ NSString * const kZibWindow			= @"window";
 		\********************************************************************/
 		if (view && viewInfo[kZibConnect])
 			_connect[TO_KEY(view)] = info[kZibConnect];
+
+		// Add the view to the top-level objects we return back
+		if (view)
+			[_topLevel addObject:view];
 		}
 
 	return ok;
@@ -394,6 +415,9 @@ NSString * const kZibWindow			= @"window";
 		// And now we have a renderer, call the application to load up its
 		// texture-based resources
 		[AZApp _bootstrap];
+
+		// Add the window to the top-level objects we return back
+		[_topLevel addObject:window];
 		}
 
 	/*************************************************************************\
@@ -635,6 +659,10 @@ NSString * const kZibWindow			= @"window";
 				if (connections)
 					_connect[TO_KEY(obj)] = connections;
 				}
+
+
+			// Add the object to the top-level objects we return back
+			[_topLevel addObject:obj];
 			}
 		else
 			{

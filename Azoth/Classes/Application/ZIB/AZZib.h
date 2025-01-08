@@ -61,6 +61,7 @@ extern NSString * const kZibWindow;
 
 @interface NSObject (AZZib)
 - (void) awakeFromNib;
+- (void) postAwakeFromNib;
 @end
 
 
@@ -76,7 +77,7 @@ extern NSString * const kZibWindow;
 |* Inflate the ZIB file so we have real objects, not a dictionary representation
 \*****************************************************************************/
 - (BOOL) inflateWithOwner:(NSObject *)owner
-			   andOptions:(NSDictionary<AZZibOptionsKey, id> *)options;
+					 into:(nullable NSMutableArray *)topLevelObjects;
 
 /*****************************************************************************\
 |* Properties

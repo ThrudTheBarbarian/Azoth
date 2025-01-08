@@ -8,6 +8,7 @@
 #import <SDL3/SDL.h>
 
 #import "AZViewController.h"
+#import "NSBundle+ZIB.h"
 
 @implementation AZViewController
 
@@ -26,20 +27,15 @@
 	}
 
 /*****************************************************************************\
-|* Initialisation with a coder
+|* Initialisation with a dictionary (our version of Coder)
 \*****************************************************************************/
-- (instancetype) initWithCoder:(NSCoder *)coder
+- (instancetype) initWithDictionary:(NSDictionary *)info
 	{
-	if (coder.allowsKeyedCoding)
-		{
-		_nibName = [coder decodeObjectForKey:@"NSNibName"];
-		_title   = [coder decodeObjectForKey:@"NSTitle"];
-
-		NSString *bundleId = [coder decodeObjectForKey:@"NSNibBundleIdentifier"];
-		if (bundleId)
-			_bundle = [NSBundle bundleWithIdentifier:bundleId];
-		}
-
+	_nibName 			= info[@"NSNibName"];
+	_title   			= info[@"NSTitle"];
+	NSString *bundleId = info[@"NSNibBundleIdentifier"];
+	if (bundleId)
+		_bundle = [NSBundle bundleWithIdentifier:bundleId];
 	return self;
 	}
 
@@ -72,16 +68,7 @@
    
 	if (bundle == nil)
 		bundle = [NSBundle mainBundle];
-
-	NSString *path 			= [bundle pathForResource:name ofType:@"nib"];
-//	NSDictionary *nameTable = [NSDictionary dictionaryWithObject:self
-//														  forKey:NSNibOwner];
-
-   if (path == nil)
-		SDL_Log("AZViewController unable to find nib named %s, bundle=%s",
-				name.UTF8String, bundle.description.UTF8String);
-
-  // [bundle loadNibFile:path externalNameTable:nameTable withZone:NULL];
-}
+	[bundle loadZibNamed:name owner:self topLevelObjects:nil];
+	}
 
 @end

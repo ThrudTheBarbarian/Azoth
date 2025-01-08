@@ -47,6 +47,10 @@ NSString * const kCursorsMap	= @"cursors";
 // by the integer
 @property(strong, nonatomic)
 NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
+
+// A list of objects in the ZIB that we loaded
+@property(strong, nonatomic) NSMutableArray<NSObject *> *		zibObjects;
+
 @end
 
 @implementation AZApplication
@@ -168,9 +172,10 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 	NSFileManager *fm	= NSFileManager.defaultManager;
 	if ([fm fileExistsAtPath:zibPath])
 		{
-		[NSBundle.mainBundle loadNibNamed:zibPath
+		_zibObjects		= NSMutableArray.new;
+		[NSBundle.mainBundle loadZibNamed:zibPath
 									owner:self
-								  options:NSDictionary.new];
+						  topLevelObjects:_zibObjects];
 		}
 
 	/*************************************************************************\

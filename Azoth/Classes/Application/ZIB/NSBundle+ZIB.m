@@ -5,6 +5,8 @@
 //  Created by Simon Gornall on 1/3/25.
 //
 
+#import <SDL3/SDL.h>
+
 #import "AZZib.h"
 #import "NSBundle+ZIB.h"
 
@@ -20,16 +22,22 @@ AZZibOptionsKey const AZZibExternalObjects = @"AZ:ExternalObjects";
 |* Returns an array to the top-level objects in the ZIB, not including the
 |* owner or any replaced-placeholder objects.
 \*****************************************************************************/
-- (NSArray *)loadNibNamed:(NSString *)name
-                    owner:(NSObject *)owner 
-                  options:(NSDictionary<AZZibOptionsKey, id> *)options
+- (BOOL)loadZibNamed:(NSString *)zibName
+               owner:(id)owner
+	 topLevelObjects:(nullable NSMutableArray *)topLevelObjects
 	{
-	NSArray *results = [NSArray array];
+	BOOL ok			= NO;
+	NSString *path	= [self pathForResource:zibName ofType:@"zib"];
+	if (path == nil)
+		SDL_Log("NSBundle unable to find zib named %s, bundle=%s",
+				zibName.UTF8String, self.description.UTF8String);
+	else
+		{
+		AZZib *zib 	= [AZZib zibWithFile:path];
+		ok 			= [zib inflateWithOwner:owner into:topLevelObjects];
+		}
 
-	AZZib *zib = [AZZib zibWithFile:name];
-	[zib inflateWithOwner:owner andOptions:options];
-
-	return results;
+	return ok;
 	}
 
 @end
