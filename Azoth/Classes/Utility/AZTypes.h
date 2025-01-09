@@ -410,6 +410,12 @@ typedef struct
 typedef NSString * AZZibOptionsKey;
 
 /*****************************************************************************\
+|* Pasteboard constants
+\*****************************************************************************/
+typedef NSString * AZPasteboardType;
+typedef NSString * AZPasteboardName;;
+
+/*****************************************************************************\
 |* Popup menu callback
 \*****************************************************************************/
 typedef void (^MenuDoneBlock)(BOOL menuClicked);
