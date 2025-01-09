@@ -93,4 +93,11 @@
 	return self;
 	}
 
+/*****************************************************************************\
+|* Modifier flags currently set. Flags are mapped to SDL-native types
+\*****************************************************************************/
++ (NSInteger) modifierFlags
+	{
+	return SDL_GetModState();
+	}
 @end

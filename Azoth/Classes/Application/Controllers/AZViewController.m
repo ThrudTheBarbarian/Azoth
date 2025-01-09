@@ -26,6 +26,15 @@
 	return self;
 	}
 
+- (instancetype) initWithView:(AZView *)view
+	{
+	if (self = [super init])
+		{
+		_view = view;
+		}
+	return self;
+	}
+
 /*****************************************************************************\
 |* Initialisation with a dictionary (our version of Coder)
 \*****************************************************************************/
@@ -54,21 +63,24 @@
 \*****************************************************************************/
 - (void) loadView
 	{
-	NSString *name		= self.nibName;
-	NSBundle *bundle	= self.bundle;
-
-	if(name == nil)
+	if (_view == nil)
 		{
-		[NSException raise:NSInvalidArgumentException
-					format:@"-[%@ %@] nibName is nil",
-					self.class.description,
-					NSStringFromSelector(_cmd)];
-		return;
+		NSString *name		= self.nibName;
+		NSBundle *bundle	= self.bundle;
+
+		if (name == nil)
+			{
+			[NSException raise:NSInvalidArgumentException
+						format:@"-[%@ %@] nibName is nil",
+						self.class.description,
+						NSStringFromSelector(_cmd)];
+			return;
+			}
+
+		if (bundle == nil)
+			bundle = NSBundle.mainBundle;
+		[bundle loadZibNamed:name owner:self topLevelObjects:nil];
 		}
-   
-	if (bundle == nil)
-		bundle = [NSBundle mainBundle];
-	[bundle loadZibNamed:name owner:self topLevelObjects:nil];
 	}
 
 @end

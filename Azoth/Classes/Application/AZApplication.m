@@ -131,6 +131,14 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 	}
 
 /*****************************************************************************\
+|* Return a list of system symbol names for the named images
+\*****************************************************************************/
+- (NSArray<NSString *> *) systemSymbolNames
+	{
+	return _atlantes[kIconsMap].metadata.allKeys;
+	}
+
+/*****************************************************************************\
 |* Application startup code
 \*****************************************************************************/
 - (void) startWithArgc:(int)argc argv:(char **)argv

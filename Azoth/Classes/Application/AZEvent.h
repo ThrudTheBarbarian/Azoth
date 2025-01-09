@@ -26,6 +26,11 @@ union SDL_Event;
 - (instancetype) initWithMouseWheelEvent:(union SDL_Event *)sdlEvent;
 
 /*****************************************************************************\
+|* Return the current modifier state
+\*****************************************************************************/
++ (NSInteger) modifierFlags;
+
+/*****************************************************************************\
 |* Return the event co-ordinates (if any) in the global window space
 \*****************************************************************************/
 - (NSPoint) locationInWindow;

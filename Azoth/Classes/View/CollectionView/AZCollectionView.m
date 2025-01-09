@@ -12,12 +12,14 @@
 #import "AZCVGroup.h"
 #import "AZCVLayoutItem.h"
 #import "AZCVLayoutManager.h"
+#import "AZEvent.h"
 #import "AZGeometry.h"
 #import "AZMenu.h"
 #import "AZNotifications.h"
 #import "AZPainter.h"
 #import "AZScrollView.h"
 #import "AZViewController.h"
+#import "AZWindow.h"
 
 /*****************************************************************************\
 |* "Private" Properties
@@ -47,6 +49,9 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 @property (assign, nonatomic) NSUInteger				lastSelectionIndex;
 @property (nonatomic, copy) NSIndexSet *				originalSelection;
 @property (assign, nonatomic) NSInteger				 	dragHoverIndex;
+
+// The current offset of the tableview
+@property (assign, nonatomic) NSPoint		 			offset;
 
 @end
 
@@ -153,6 +158,43 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 							  context:context];
 	}
 
+// Large background management
+
+/*****************************************************************************\
+|* Return the size of the texture to create. This is used when the view could
+|* possibly grow outside of the size-limit of a GPU texture - eg when inside
+|* an enormous scrollview. In that instance, it ought to implement the clipView
+|* delegate -scrollToPoint:(NSPoint) to get where it is "scrolled" to, and
+|* handle drawing specially with a window-sized texture rather than a backing-
+|* sized texture. By default this method just returns the view's frame.size
+\*****************************************************************************/
+- (NSSize) textureSize
+	{
+	AZScrollView *sv = self.enclosingScrollView;
+	if (sv)
+		return sv.frame.size;
+	return self.frame.size;
+	}
+
+/*****************************************************************************\
+|* The companion method is -(BOOL)directRendering which turns off the view
+|* translation and will always render from 0,0->W,H (where W,H are taken from
+|* -(NSSize)textureSize. The default return from this method is NO
+\*****************************************************************************/
+- (BOOL) directRendering
+	{
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Emulate 'scrollToPoint' in the clipview
+\*****************************************************************************/
+- (void) scrollToPoint:(NSPoint)point
+	{
+	_offset = point;
+	}
+
+
 // MARK: Drawing
 
 /*****************************************************************************\
@@ -199,7 +241,7 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 	[painter rectangleWithRect:dirtyRect filled:YES colour:bg];
 
 	NSRect frame = NSRectFromTwoPoints(_atDown, _atDragged);
-	[painter rectangleWithRect:frame colour:AZColour.grey50];
+	//[painter rectangleWithRect:frame colour:AZColour.grey50];
 
 	if ((_selection.count > 0) && self.shouldDrawSelections)
 		{
@@ -223,8 +265,10 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 \*****************************************************************************/
 - (void) _drawItemSelectionInRect:(NSRect)aRect withPainter:(AZPainter*)painter
 	{
-	NSRect inset = NSInsetRect(aRect, 10, 10);
-	[painter rectangleWithRect:inset
+	aRect.origin.x -= _offset.x;
+	aRect.origin.y -= _offset.y;
+
+	[painter rectangleWithRect:aRect
 						radius:10
 						filled:YES
 						colour:AZColour.grey75];
@@ -495,14 +539,14 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 		{
 		AZViewController *vc = [self emptyViewControllerForInsertion];
 		[_visibleVCs setObject:vc forKey:@(idx)];
-		[vc.view setFrame:r];
-		[vc.view setAutoresizingMask:AZViewMaxXMargin | AZViewMaxYMargin];
 
 		id itemToLoad = [_contentArray objectAtIndex:idx];
 		[_delegate collectionView:self
 					   willShowVC:vc
 						  forItem:itemToLoad];
 
+		[vc.view setFrame:r];
+		[vc.view setAutoresizingMask:AZViewMaxXMargin | AZViewMaxYMargin];
 		[self addSubview:vc.view];
 		if ([_selection containsIndex:idx])
 			[self delegateUpdateSelectionForItemAtIndex:idx];
@@ -760,6 +804,184 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 	return YES;
 	}
 
+// MARK: mouse
+
+/*****************************************************************************\
+|* Is shift or command being held down right now
+\*****************************************************************************/
+- (BOOL) shiftOrCommandKeyPressed
+	{
+	return (AZEvent.modifierFlags & AZShiftKeyMask)
+		|| (AZEvent.modifierFlags & AZCommandKeyMask);
+	}
+
+/*****************************************************************************\
+|* We got a mouse-down event
+\*****************************************************************************/
+- (BOOL)mouseDown:(AZEvent *)e
+	{
+	[self.window makeFirstResponder:self];
+
+	_isDragging     = YES;
+  	_atDown    		= [self convertPoint:e.locationInWindow fromView:nil];
+  	_atDragged 		= _atDown;
+
+	/*************************************************************************\
+	|* See if we want to notify the delegate of a click
+	\*************************************************************************/
+	NSUInteger idx  = [_layoutManager indexOfItemContentRectAtPoint:_atDown];
+	SEL didClick	= SELECTOR(@"collectionView:didClickItem:withVC:");
+	if (idx != NSNotFound && [_delegate respondsToSelector:didClick])
+		[_delegate collectionView:self
+					 didClickItem:_contentArray[idx]
+						   withVC:_visibleVCs[@(idx)]];
+
+	if ((!self.shiftOrCommandKeyPressed) && ![_selection containsIndex:idx])
+		[self deselectAllItems];
+	_originalSelection = _selection.copy;
+
+	/*************************************************************************\
+	|* See if we want to notify the delegate of a double-click
+	\*************************************************************************/
+	SEL dblClick 		= SELECTOR(@"collectionView:didDoubleClickVC:");
+	BOOL dlgDblClick	= [_delegate respondsToSelector:dblClick];
+	if ((e.type == AZLeftMouseDown) && (e.clickCount == 2) && dlgDblClick)
+		[_delegate collectionView:self
+				 didDoubleClickVC:_visibleVCs[@(idx)]];
+
+	if (self.shiftOrCommandKeyPressed && [_originalSelection containsIndex:idx])
+		[self deselectItemAtIndex:idx];
+	else
+		{
+		BOOL cmdKey = AZEvent.modifierFlags & AZCommandKeyMask;
+
+		if (cmdKey || (_originalSelection.count == 0))
+			[self selectItemAtIndex:idx];
+		else if (AZEvent.modifierFlags & AZShiftKeyMask)
+			{
+			NSInteger one = _originalSelection.lastIndex;
+			NSInteger two = idx;
+
+			if (idx == NSNotFound)
+				return NO;
+
+			NSRange range;
+			if (two > one)
+				range = NSMakeRange(MIN(one,two), 1+MAX(one,two)-MIN(one,two));
+			else
+				range = NSMakeRange(MIN(one,two), MAX(one,two)-MIN(one,two));
+
+			NSIndexSet *set = [NSIndexSet indexSetWithIndexesInRange:range];
+			[self selectItemsAtIndexes:set];
+			}
+		}
+	return YES;
+	}
+
+
+/*****************************************************************************\
+|* The mouse was dragged, check for drag-and-drop or defer to regular routine
+\*****************************************************************************/
+- (BOOL) mouseDragged:(AZEvent *)e
+	{
+	// NYI [self autoscroll:anEvent];
+
+	if (_isDragging)
+		{
+		NSUInteger idx = [_layoutManager indexOfItemContentRectAtPoint:_atDown];
+		BOOL dragOk    = [self delegateSupportsDragForItemsAtIndexes:_selection];
+
+		if ((idx != NSNotFound) && (_selection.count > 0) && dragOk)
+			{
+//			NSPoint mouse = [self convertPoint:e.locationInWindow fromView:nil];
+//			CGFloat distance = sqrt(pow(mouse.x-_atDown.x,2)
+//								   +pow(mouse.y-_atDown.y,2));
+//			if (distance > 3)
+//				[self initiateDraggingSessionWithEvent:anEvent];
+			}
+		else
+			[self regularMouseDragged:e];
+		}
+	return YES;
+	}
+
+/*****************************************************************************\
+|* The mouse was dragged, regular style
+\*****************************************************************************/
+- (void)regularMouseDragged:(AZEvent *)e
+	{
+	NSIndexSet *originalSet 	= _selection.copy;
+	_selectionChangedDisabled 	= YES;
+	BOOL shiftOrCmd				= self.shiftOrCommandKeyPressed;
+
+	[self deselectAllItems];
+	if (shiftOrCmd)
+		{
+		[_originalSelection enumerateIndexesUsingBlock:
+			^(NSUInteger idx, BOOL *stop)
+				{
+				[self selectItemAtIndex:idx];
+				}];
+		}
+
+	[self setNeedsDisplay:YES];
+
+	_atDragged 			= [self convertPoint:e.locationInWindow fromView:nil];
+	NSRect dragRect		= NSRectFromTwoPoints(_atDown, _atDragged);
+	NSIndexSet *suggest = [self indexesOfItemContentRectsInRect:dragRect];
+
+	if (!shiftOrCmd)
+		{
+		NSMutableIndexSet *oldIndexes = _selection.mutableCopy;
+		[oldIndexes removeIndexes:suggest];
+		[self deselectItemsAtIndexes:oldIndexes];
+		}
+  
+	[suggest enumerateIndexesUsingBlock:
+		^(NSUInteger idx, BOOL *stop)
+			{
+			if (shiftOrCmd)
+				{
+				if ([_originalSelection containsIndex:idx])
+					[self deselectItemAtIndex:idx];
+				else
+					[self selectItemAtIndex:idx];
+				}
+			else
+				[self selectItemAtIndex:idx];
+			}];
+  
+	[self setNeedsDisplayInRect:dragRect];
+
+	_selectionChangedDisabled = NO;
+	if (![_selection isEqual:originalSet])
+		//[self performSelector:@selector(delegateCollectionViewSelectionDidChange)];
+		[self delegateCollectionViewSelectionDidChange];
+	}
+
+- (BOOL) delegateSupportsDragForItemsAtIndexes:(NSIndexSet *)indexSet
+	{
+//	SEL dragSel = SELECTOR(@"collectionView:canDragItemsAtIndexes:");
+//	if ([_delegate respondsToSelector:dragSel])
+//		return [_delegate collectionView:self canDragItemsAtIndexes:indexSet];
+	return NO;
+	}
+
+
+/*****************************************************************************\
+|* We released the mouse
+\*****************************************************************************/
+- (BOOL) mouseUp:(AZEvent *)e
+	{
+	[self setNeedsDisplay:YES];
+
+  	_atDown    	= NSZeroPoint;
+  	_atDragged 	= NSZeroPoint;
+	_isDragging	= NO;
+
+	_originalSelection = nil;
+	return YES;
+	}
 
 // MARK: Reloading and Updating the Icon View
 
@@ -937,6 +1159,7 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 			[_delegate collectionViewDidScroll:self inDirection:AZCVScrollUp];
 		_previousFrameBounds = self.visibleRect;
 		}
+	[self setNeedsDisplay:YES];
 	}
 
 /*****************************************************************************\

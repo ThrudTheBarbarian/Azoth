@@ -19,6 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype) initWithNibName:(NSString *)name
 						  bundle:(nullable NSBundle*)bundle;
 
+- (instancetype) initWithView:(AZView *)view;
+
 
 /*****************************************************************************\
 |* Load the view
@@ -42,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(copy, nonatomic) NSString *						title;
 
 // The view we're managing
-@property(strong, nonatomic) AZView *						view;
+@property(strong, nonatomic) IBOutlet AZView *				view;
 @end
 
 NS_ASSUME_NONNULL_END

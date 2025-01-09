@@ -118,6 +118,9 @@ typedef BOOL (^AZImageDrawingHandler)(NSRect dstRect, AZPainter *painter) ;
 
 // Whether this is a template image
 @property(assign, nonatomic) BOOL								isTemplate;
+
+// Just useful in general
+@property(strong, nonatomic) NSString *							identifier;
 @end
 
 NS_ASSUME_NONNULL_END
