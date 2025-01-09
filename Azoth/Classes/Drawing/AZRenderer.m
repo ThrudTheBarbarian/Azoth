@@ -134,6 +134,9 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 											  andHint:kTextureType];
 		return ref.integerValue;
 		}
+
+	SDL_Log("Cannot create surface of size %dx%d",
+			(int)size.width, (int)size.height);
 	return -1;
 	}
 
@@ -271,7 +274,8 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 								 IS_ZERORECT(dstRect) ? NULL : &dst);
 		}
 
-	SDL_Log("Cannot find texture %d to blit from", (int)textureId);
+	if (textureId > 0)
+		SDL_Log("Cannot find texture %d to blit from", (int)textureId);
 	return -1;
 	}
 
