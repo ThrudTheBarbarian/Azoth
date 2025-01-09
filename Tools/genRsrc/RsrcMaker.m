@@ -95,6 +95,7 @@
 		_maxH = 0;
 		_resultW = 0;
 		_resultH = 0;
+		[_meta removeAllObjects];
 
 		BOOL isDir;
 		NSString *path = [src stringByAppendingPathComponent:dir];
@@ -112,7 +113,6 @@
 
 - (void) _processDir:(NSString *)dir at:(NSString *)fulldir to:(NSString *)output
 	{
-	[_meta removeAllObjects];
 
 	/*************************************************************************\
 	|* Create the atlas texture
