@@ -6,6 +6,7 @@
 //
 
 #import "AppDelegate.h"
+#import "MainView.h"
 
 /*****************************************************************************\
 |* "Private" properties
@@ -26,6 +27,13 @@
 	[cv setBackgroundColour:AZColour.grey37];
 
 	/*************************************************************************\
+	|* Cover the content view with a view that we can do event processing on
+	\*************************************************************************/
+	MainView *mv	= [[MainView alloc] initWithFrame:[cv bounds]];
+	[cv addSubview:mv];
+	[mv.window makeFirstResponder:mv];
+
+	/*************************************************************************\
 	|* Load the images
 	\*************************************************************************/
 	_small 		= [AZImage imageWithSystemSymbolName:@"update"];
@@ -39,7 +47,7 @@
 	_imageView 		= [AZImageView imageViewWithImage:_medium inFrame:frame];
 	_imageView.backgroundColour = AZColour.white;
 	_imageView.scaling			= AZImageScaleNone;
-	[cv addSubview:_imageView];
+	[mv addSubview:_imageView];
 
 	/*************************************************************************\
 	|* Create a popup for the scaling options
@@ -50,7 +58,7 @@
 	[scale.itemArray[0] setTitle:@"Scaling..."];
 	[scale setTarget:self];
 	[scale setAction:@selector(chooseScale:)];
-	[cv addSubview:scale];
+	[mv addSubview:scale];
 
 	/*************************************************************************\
 	|* Create a popup for the alignment options
@@ -63,7 +71,7 @@
 	[align.itemArray[0] setTitle:@"Alignment..."];
 	[align setTarget:self];
 	[align setAction:@selector(chooseAlignment:)];
-	[cv addSubview:align];
+	[mv addSubview:align];
 
 	/*************************************************************************\
 	|* Create a popup for the frame style
@@ -75,7 +83,7 @@
 	[style.itemArray[0] setTitle:@"Frame style..."];
 	[style setTarget:self];
 	[style setAction:@selector(chooseStyle:)];
-	[cv addSubview:style];
+	[mv addSubview:style];
 
 	/*************************************************************************\
 	|* Create a popup for the image
@@ -86,8 +94,26 @@
 	[image.itemArray[0] setTitle:@"Image..."];
 	[image setTarget:self];
 	[image setAction:@selector(chooseImage:)];
-	[cv addSubview:image];
+	[mv addSubview:image];
 
+	/*************************************************************************\
+	|* If we pressed a key, save the image
+	\*************************************************************************/
+	NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
+	[nc addObserver:self
+		   selector:@selector(keyPressed:)
+			   name:@"key-down"
+			 object:nil];
+	}
+
+
+/*****************************************************************************\
+|* We got a key down message from the view
+\*****************************************************************************/
+- (void) keyPressed:(NSNotification *)n
+	{
+	AZImage *img = _imageView.image;
+	[img saveAs:@"/tmp/img.png" inFormat:AZImageFormatPNG withQuality:10];
 	}
 
 /*****************************************************************************\

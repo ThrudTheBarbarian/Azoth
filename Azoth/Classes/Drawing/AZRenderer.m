@@ -78,17 +78,24 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	}
 
 /*****************************************************************************\
-|* Create an SDL_Texture from a surface
+|* Create an SDL_Texture from a surface. Note that we duplicate and copy the
+|* data so that the SDL_TEXTUREACCESS_TARGET flag can be set
 \*****************************************************************************/
 - (NSInteger) createTextureWithSurface:(SDL_Surface *)surface
 	{
 	SDL_Texture *texture = SDL_CreateTextureFromSurface(_renderer, surface);
 	if (texture)
 		{
-		NSNumber *ref 	= [self nextTextureId];
-		_textures[ref] 	= [AZObject objectWithPointer:texture
-											  andHint:kTextureType];
-		return ref.integerValue;
+		NSSize size 		  = NSMakeSize(surface->w, surface->h);
+		NSInteger realTexture = [self createTextureOfSize:size];
+
+		NSInteger currentFocus = [self currentFocus];
+		[self lockFocusOn:realTexture];
+		SDL_RenderTexture(_renderer, texture, NULL, NULL);
+		[self restoreFocus:currentFocus];
+
+		SDL_DestroyTexture(texture);
+		return realTexture;
 		}
 	return -1;
 	}
@@ -113,6 +120,9 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 											  andHint:kTextureType];
 		return ref.integerValue;
 		}
+
+	SDL_Log("Cannot create surface of size %dx%d",
+			(int)size.width, (int)size.height);
 	return -1;
 	}
 
@@ -232,9 +242,10 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	SDL_Texture *texture = [self _textureFor:refId];
 	if (texture)
 		{
-		//SDL_Log("lock focus on %d", (int)refId);
-		SDL_SetRenderTarget(_renderer, texture);
-		ok = YES;
+		if (SDL_SetRenderTarget(_renderer, texture))
+			ok = YES;
+		else
+			SDL_Log("Failed to set render target: %s", SDL_GetError());
 		}
 	return ok;
 	}
