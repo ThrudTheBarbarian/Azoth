@@ -112,6 +112,8 @@
 
 - (void) _processDir:(NSString *)dir at:(NSString *)fulldir to:(NSString *)output
 	{
+	[_meta removeAllObjects];
+
 	/*************************************************************************\
 	|* Create the atlas texture
 	\*************************************************************************/
