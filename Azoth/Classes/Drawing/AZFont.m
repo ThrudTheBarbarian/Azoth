@@ -115,7 +115,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 		{
 		.size 	= points,
 		.name 	= AZApp.systemFontInfo.name,
-		.style 	= AZFONT_REGULAR
+		.style 	= AZFONT_MEDIUM
 		};
 	if ([font load:style])
 		return font;

@@ -204,6 +204,7 @@ static float _dh[STATE_NUM];
 		self.backgroundColour		= AZColour.clear;
 		self.stringValue 			= @"";
 		self.textColour				= AZColour.black;
+		self.editable				= YES;
 		//NSRect r 					= NSInsetRect(self.bounds, 6, 0);
 		//r.origin.y	  			   += 6;
 		//self.editArea 				= r;
@@ -232,7 +233,7 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (BOOL) becomeFirstResponder
 	{
-	if (self.enabled && (self.state == AZControlStateNormal))
+	if (self.enabled && self.editable && (self.state == AZControlStateNormal))
 		{
 		self.state = AZControlStateHighlighted;
 		SDL_StartTextInput(self.window.window);
@@ -268,9 +269,8 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (BOOL) resignFirstResponder
 	{
-	if (self.state != AZControlStateNormal)
+	if (self.editable)
 		{
-		self.state = AZControlStateNormal;
 		SDL_StopTextInput(self.window.window);
 		[_blinkTimer invalidate];
 		_blinkTimer = nil;
@@ -325,11 +325,12 @@ static float _dh[STATE_NUM];
 	{
 	[super drawInRect:dirtyRect withPainter:painter];
 
-	TTF_SetTextColor(_text, _textColour.R,
-							_textColour.G,
-							_textColour.B,
-							_textColour.A);
-	if (!self.enabled)
+	AZColour *colour = _textColour;
+	if ((!self.editable) && self.state == AZControlStateHighlighted)
+		colour = AZColour.selectedControl;
+
+	TTF_SetTextColor(_text, colour.R, colour.G, colour.B, colour.A);
+	if (!self.editable)
 		[self _drawAsLabelWithRect:dirtyRect andPainter:painter];
 	else if (_type == TextFieldSquare)
 		[self _drawSquareTextFieldWithRect:dirtyRect andPainter:painter];
@@ -553,7 +554,7 @@ static float _dh[STATE_NUM];
     _highlightFrom	= _cursor;
     _highlightTo 	= -1;
 
-	return self.enabled;
+	return self.editable;
 	}
 
 /*****************************************************************************\
@@ -770,7 +771,12 @@ static float _dh[STATE_NUM];
 - (void) _editDrawText:(TTF_Text *)text atX:(int)x y:(int)y
 		   withPainter:(AZPainter *)P
 	{
-    TTF_DrawRendererText(text, x, y+1);
+    TTF_DrawRendererText(text, x+2, y-2);
+	if ((!self.editable) && self.state != AZControlStateNormal)
+		{
+		TTF_DrawRendererText(text, x+2, y-2);
+		TTF_DrawRendererText(text, x+2, y-2);
+		}
 	}
 
 /*****************************************************************************\

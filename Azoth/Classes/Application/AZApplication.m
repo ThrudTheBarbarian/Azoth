@@ -121,7 +121,7 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 	/*************************************************************************\
 	|* Similarly the control font
 	\*************************************************************************/
-	_controlFont = [AZFont systemFontWithsize:18];
+	_controlFont = [AZFont systemFontWithsize:14];
 	if (!_controlFont)
 		{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -149,8 +149,8 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 	/*************************************************************************\
     |* Set up the system-font info with reasonable defaults
     \*************************************************************************/
-	_systemFontInfo.name = @"AlegreyaSans";
-	_systemFontInfo.size = 16;
+	_systemFontInfo.name = @"NotoSans";
+	_systemFontInfo.size = 12;
 	_systemFontInfo.style = AZFONT_MEDIUM;
 
 	/*************************************************************************\

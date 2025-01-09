@@ -130,7 +130,7 @@
 	AZTextField *tf = (AZTextField *)view;
 	tf.stringValue = [NSString stringWithFormat:@"row %d [%@]",
 					  (int)row, item.name];
-	tf.enabled = NO;
+	tf.editable = NO;
 	tf.autoresizingMask = AZViewWidthSizable;
 	return view;
 	}

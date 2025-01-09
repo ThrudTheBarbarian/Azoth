@@ -108,7 +108,7 @@
 		{
 		AZTextField *tf = (AZTextField *)view;
 		tf.stringValue = [NSString stringWithFormat:@"hi there %d", (int)row];
-		tf.enabled = NO;
+		tf.editable = NO;
 		tf.autoresizingMask = AZViewWidthSizable | AZViewHeightSizable;
 		}
 
@@ -116,7 +116,7 @@
 		{
 		AZTextField *tf = (AZTextField *)view;
 		tf.stringValue = [NSString stringWithFormat:@"hola! %d", (int)row];
-		tf.enabled = NO;
+		tf.editable = NO;
 		tf.autoresizingMask = AZViewWidthSizable;
 		}
 	return view;
@@ -137,7 +137,8 @@
 		for (AZTableColumn *col in cols)
 			{
 			AZTextField *tf = (AZTextField *)[col viewForRow:index];
-			tf.textColour = AZColour.black;
+			//tf.textColour = AZColour.black;
+			tf.state = AZControlStateNormal;
 			}
 		index = [indices indexGreaterThanIndex:index];
 		}
@@ -156,9 +157,11 @@
 		AZTextField *tf = (AZTextField *)[col viewForRow:row];
 		NSIndexSet *indices	= tv.selectedRowIndexes;
 		if ([indices containsIndex:row])
-			tf.textColour = AZColour.red;
+			tf.state = AZControlStateHighlighted;
+			//tf.textColour = AZColour.white;
 		else
-			tf.textColour = AZColour.black;
+			tf.state = AZControlStateNormal;
+			//tf.textColour = AZColour.black;
 		}
 	}
 
@@ -177,7 +180,8 @@
 		for (AZTableColumn *col in cols)
 			{
 			AZTextField *tf = (AZTextField *)[col viewForRow:index];
-			tf.textColour = AZColour.red;
+			tf.state = AZControlStateHighlighted;
+			//tf.textColour = AZColour.white;
 			}
 		index = [indices indexGreaterThanIndex:index];
 		}
@@ -238,6 +242,8 @@
 
 		AZTextField *tf = [[AZTextField alloc] initWithFrame:frame];
 		tf.identifier	= @"test";
+		tf.state = AZControlStateNormal;
+		[tf setTextColour:AZColour.black];
 		view = tf;
 		}
 	AZTextField *tf = (AZTextField *)view;
@@ -247,14 +253,20 @@
 	// going to work (though it does for TableView)
 	NSIndexSet *selected = [ov selectedRowIndexes];
 	if ([selected containsIndex:row])
-		[tf setTextColour:AZColour.red];
+		{
+		tf.state = AZControlStateHighlighted;
+		//[tf setTextColour:AZColour.red];
+		}
 	else
-		[tf setTextColour:AZColour.black];
+		{
+		tf.state = AZControlStateNormal;
+		//[tf setTextColour:AZColour.black];
+		}
 
 	Node *item 		= (Node *)[ov itemAtRow:row];
 	tf.stringValue = [NSString stringWithFormat:@"row %d [%@]",
 					  (int)row, item.name];
-	tf.enabled = NO;
+	tf.editable = NO;
 	tf.autoresizingMask = AZViewWidthSizable;
 	return view;
 	}

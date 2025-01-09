@@ -54,6 +54,12 @@
 	self.state = (_enabled) ? AZControlStateNormal : AZControlStateDisabled;
 	}
 
+- (void) setState:(AZControlState)state
+	{
+	_state = state;
+	[self setNeedsDisplay:YES];
+	}
+	
 /*****************************************************************************\
 |* Send actions to targets
 \*****************************************************************************/

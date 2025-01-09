@@ -36,6 +36,9 @@ NS_ASSUME_NONNULL_BEGIN
 // Whether it's a rounded or square textfield
 @property(assign, nonatomic) AZTextFieldType						type;
 
+// Whether it's editable or not
+@property(assign, nonatomic) BOOL									editable;
+
 // Colour for the text in the textbox, default is black
 @property(strong, nonatomic) AZColour *								textColour;
 @end

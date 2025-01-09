@@ -102,7 +102,7 @@
 		{
 		AZTextField *tf = (AZTextField *)view;
 		tf.stringValue = [NSString stringWithFormat:@"hi there %d", (int)row];
-		tf.enabled = NO;
+		tf.editable = NO;
 		tf.autoresizingMask = AZViewWidthSizable;
 		}
 
