@@ -357,12 +357,13 @@ NSString * const kZibWindow			= @"window";
 	NSUInteger styleMask 	= 0;
 
 	/*************************************************************************\
-	|* Make sure we actually have a window table!
+	|* Make sure we actually have a window table! However not finding one is
+	|* not a fatal error
 	\*************************************************************************/
 	if (info == nil)
 		{
-		SDL_Log("ZIB: Cannot find window table within ZIB %s", _path.UTF8String);
-		ok = NO;
+		//SDL_Log("ZIB: Cannot find window table within ZIB %s", _path.UTF8String);
+		return YES;
 		}
 
 	/*************************************************************************\
@@ -613,12 +614,13 @@ NSString * const kZibWindow			= @"window";
 	BOOL ok = YES;
 
 	/*************************************************************************\
-	|* Make sure we actually have an objects table!
+	|* Make sure we actually have an objects table! However not finding one is
+	|* not a fatal error
 	\*************************************************************************/
 	if (_zib[kZibObjects] == nil)
 		{
-		SDL_Log("ZIB: Cannot find objects table within ZIB %s", _path.UTF8String);
-		ok = NO;
+		//SDL_Log("ZIB: Cannot find objects table within ZIB %s", _path.UTF8String);
+		return YES;
 		}
 
 	/*************************************************************************\
