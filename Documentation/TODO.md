@@ -21,3 +21,9 @@ In (sort of) order
 	  application startup.
 	  
 
+Thoughts:
+
+- Perhaps we can mark a view as backed-by-texture or not, and if not it
+  has to draw itself on every pass. Similar to what we have now, but maybe
+  a little neater
+  
