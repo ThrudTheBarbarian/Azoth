@@ -14,12 +14,13 @@
 #import "AZGeometry.h"
 #import "AZPainter.h"
 #import "AZRenderer.h"
+#import "AZScrollView.h"
+#import "AZScroller.h"
 #import "AZView.h"
 #import "AZView+Internal.h"
 #import "AZWindow.h"
+#import "AZWindowContentView.h"
 
-#import "AZScrollView.h"
-#import "AZScroller.h"
 
 @implementation AZView (Internal)
 
@@ -370,6 +371,31 @@
 - (void) _removeSubview:(AZView *)subview
 	{
 	[self.subviews removeObject:subview];
+	}
+
+
+/*****************************************************************************\
+|* Tell any subview that it's either been exited or entered with a drag
+\*****************************************************************************/
+- (AZView *) _informSubviewOfDragEventAtPoint:(NSPoint)p
+	{
+	AZView *found = nil;
+
+	for (AZView *view in self.subviews.reverseObjectEnumerator)
+		{
+		found = [view _informSubviewOfDragEventAtPoint:p];
+		if (found)
+			break;
+		}
+
+	if (found == nil)
+		{
+		NSRect wframe = [self convertRect:self.frame toView:nil];
+		if (NSPointInRect(p, wframe))
+			return self;
+		}
+
+	return found;
 	}
 
 @end

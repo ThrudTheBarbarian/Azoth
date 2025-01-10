@@ -16,6 +16,7 @@
 #import "AZTableView.h"
 #import "AZTypes.h"
 #import "AZWindow.h"
+#import "AZWindowContentView.h"
 #import "AZView.h"
 #import "AZZib.h"
 #import "NSDictionary+ZIB.h"
@@ -443,6 +444,8 @@ NSString * const kZibWindow			= @"window";
 	return ok;
 	}
 
+#define IS_ROOT_VIEW ((window != nil) && (parentView == nil))
+
 /*****************************************************************************\
 |* Create a view
 \*****************************************************************************/
@@ -468,16 +471,23 @@ NSString * const kZibWindow			= @"window";
 	|* instantiation if this is the contentView of the window
 	\*************************************************************************/
 	if ([class instancesRespondToSelector:@selector(initWithDictionary:)])
-		view = [[class alloc] initWithDictionary:info];
+		{
+		// Any windows need an AZWindowContentView as their content-view, so
+		// override the class if window != nil and parentView == nil
+		if (IS_ROOT_VIEW)
+			view = [[AZWindowContentView alloc] initWithDictionary:info];
+		else
+			view = [[class alloc] initWithDictionary:info];
+		}
 	else
 		SDL_Log("ZIB: class %s does not implement -initWithDictionary!",
 				className.UTF8String);
 	if (view)
 		{
-		if ((window != nil) && (parentView == nil))
+		if (IS_ROOT_VIEW)
 			{
 			view.autoresizingMask = AZViewWidthSizable | AZViewHeightSizable;
-			[window installContentView:view];
+			[window installContentView:(AZWindowContentView*)view];
 			}
 		else
 			{

@@ -23,6 +23,7 @@
 #import "AZView.h"
 #import "AZView+Internal.h"
 #import "AZWindow.h"
+#import "AZWindowContentView.h"
 #import "NSBundle+ZIB.h"
 
 NSString * const kTextureType	= @"texture";
@@ -348,18 +349,22 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 	[azr setBlendMode:SDL_BLENDMODE_NONE];
 
 	// Redraw any of the subviews that need it into their own textures
-	AZView *view = [AZWindow contentViewForWindow:_window];
-	if (!NSEqualRects(view.dirty, NSZeroRect))
-		[view _drawDirtyRect];
-	[view redrawSubViewsIfNecessary];
+	AZWindowContentView *wcv = [AZWindow contentViewForWindow:_window];
+	if (!NSEqualRects(wcv.dirty, NSZeroRect))
+		[wcv _drawDirtyRect];
+	[wcv redrawSubViewsIfNecessary];
 
 	// Get the top-level view, draw it as the background
-	[azr blitFrom:view.bg src:view.bounds dst:view.bounds];
+	[azr blitFrom:wcv.bg src:wcv.bounds dst:wcv.bounds];
 
 	// Run through the views in reverse order, telling them to render their
 	// subviews to the screen
-	for (AZView *subview in [view.subviews reverseObjectEnumerator])
+	for (AZView *subview in [wcv.subviews reverseObjectEnumerator])
 		[subview _renderToScreen];
+
+	// Handle any drag-in-progress
+	[azr setClip:wcv.bounds];
+	[wcv showDragInProgress];
 
 	// Tell the renderer we're done
 	[azr present];

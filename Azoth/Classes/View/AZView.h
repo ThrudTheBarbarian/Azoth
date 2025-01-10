@@ -28,6 +28,7 @@
 #import <Azoth/AZResponder.h>
 #import <Azoth/AZTypes.h>
 
+NS_ASSUME_NONNULL_BEGIN
 
 /*****************************************************************************\
 |* Declare the types we're using from SDL3, because we can't import the
@@ -80,7 +81,6 @@ struct SDL_Mutex;
 
 @end
 
-NS_ASSUME_NONNULL_BEGIN
 
 @interface AZView : AZResponder <AZDraggingSource>
 
@@ -229,7 +229,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Initiate a dragging session
 \*****************************************************************************/
-- (AZDraggingSession *)
+- (nullable AZDraggingSession *)
 beginDraggingSessionWithItems:(NSArray<AZDraggingItem *> *) items
 						event:(AZEvent *) event
 					   source:(id<AZDraggingSource>) source;

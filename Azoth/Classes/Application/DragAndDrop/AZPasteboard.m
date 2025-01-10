@@ -11,7 +11,7 @@
 
 // These should all be lowercase
 AZPasteboardType const AZPasteboardTypeColour	= @"text/colour";
-AZPasteboardType const AZPasteboardTypeImagePNG	= @"image/png";
+AZPasteboardType const AZPasteboardTypeImage	= @"image/texture";
 AZPasteboardType const AZPasteboardTypeString	= @"text/plain;charset=utf-8";
 AZPasteboardType const AZPasteboardTypeURL		= @"text/url";
 
@@ -59,7 +59,7 @@ static NSMutableSet<NSString *> * _valid						= nil;
 			^{
 			_valid = NSMutableSet.new;
 			[_valid addObject:AZPasteboardTypeColour];
-			[_valid addObject:AZPasteboardTypeImagePNG];
+			[_valid addObject:AZPasteboardTypeImage];
 			[_valid addObject:AZPasteboardTypeString];
 			[_valid addObject:AZPasteboardTypeURL];
 			[_valid addObject:@"text/plain"];	// in case charset not set

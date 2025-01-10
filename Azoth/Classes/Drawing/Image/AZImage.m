@@ -214,7 +214,6 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 	BOOL ok 		 = NO;
 	const char *path = fullPath.fileSystemRepresentation;
 
-SDL_Log("Start to save texture %d", (int)_texture);
 	AZRenderer *azr = AZRenderer.renderer;
 	SDL_Surface *surface = [azr surfaceFor:_texture];
 	if (surface)
@@ -454,6 +453,30 @@ SDL_Log("Start to save texture %d", (int)_texture);
 		}
 
 	return success;
+	}
+
+// MARK: AZPasteboard
+
+/*****************************************************************************\
+|* Create a description of the image. Since we only do in-app cut/paste this
+|* ought to be sufficient. If we ever go outside the app, we will need to
+|* get a hold of the image's data and encode that instead
+\*****************************************************************************/
+- (nonnull id)pasteboardPropertyListForType:(nonnull AZPasteboardType)type
+	{
+	return @{
+		@"type"		: @"image",
+		@"texture" 	: @(_texture),
+		@"at"		: NSStringFromRect(_srcRect)
+		};
+	}
+
+/*****************************************************************************\
+|* The format of image we understand
+\*****************************************************************************/
+- (nonnull NSArray<NSString *> *)writableTypesForPasteboard:(nonnull AZPasteboard *)pasteboard
+	{
+	return @[AZPasteboardTypeImage];
 	}
 
 @end

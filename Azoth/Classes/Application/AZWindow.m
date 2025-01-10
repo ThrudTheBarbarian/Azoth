@@ -12,6 +12,7 @@
 #import "AZView.h"
 #import "AZView+Internal.h"
 #import "AZWindow.h"
+#import "AZWindowContentView.h"
 
 @interface AZWindow()
 // The list of responders in the window
@@ -21,7 +22,7 @@
 /*****************************************************************************\
 |* Store the top-level content-views for each window we know about
 \*****************************************************************************/
-static NSMutableDictionary<NSNumber *, AZView *> * _contentViews = nil;
+static NSMutableDictionary<NSNumber*,AZWindowContentView*>* _contentViews = nil;
 
 /*****************************************************************************\
 |* Store the top-level windows for each SDLwindow we know about
@@ -132,20 +133,21 @@ static NSMutableDictionary<NSNumber *, AZWindow *> * _windows = nil;
 	{
 	int w,h;
 	SDL_GetWindowSizeInPixels(_window, &w, &h);
-	AZView *contentView 	= [AZView viewWithFrame:NSMakeRect(0,0,w,h)];
-	[self installContentView:contentView];
+	AZWindowContentView *cv 	= [[AZWindowContentView alloc] initWithWindow:self];
+	[self installContentView:cv];
 	}
 
 /*****************************************************************************\
 |* Add a content view to the window
 \*****************************************************************************/
-- (void) installContentView:(AZView *)contentView
+- (void) installContentView:(AZWindowContentView *)contentView
 	{
 	contentView.window		= self;
 	NSNumber *windowId 		= @(SDL_GetWindowID(_window));
 
 	_contentViews[windowId] = contentView;
 	contentView.isOpaque 	= YES;
+	self.contentView		= contentView;
 
 	[contentView _installBackingTexture];
 	}
@@ -162,12 +164,12 @@ static NSMutableDictionary<NSNumber *, AZWindow *> * _windows = nil;
 |* Return the contentView for any given SDL_Window. If one does not exist it
 |* will be created and returned
 \*****************************************************************************/
-+ (AZView *) contentViewForWindow:(AZWindow *)window
++ (AZWindowContentView *) contentViewForWindow:(AZWindow *)window
 	{
 	return [self contentViewForSDLWindow:window.window];
 	}
 
-+ (AZView *) contentViewForSDLWindow:(struct SDL_Window *)window;
++ (AZWindowContentView *) contentViewForSDLWindow:(struct SDL_Window *)window;
 	{
 	NSNumber *windowId = @(SDL_GetWindowID(window));
 	return [_contentViews objectForKey:windowId];

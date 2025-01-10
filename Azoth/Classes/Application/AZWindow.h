@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 struct SDL_Renderer;
 struct SDL_Window;
 
-@class AZView;
+@class AZWindowContentView;
 
 @interface AZWindow : AZResponder
 
@@ -35,7 +35,7 @@ struct SDL_Window;
 |* we already have ready to go
 \*****************************************************************************/
 - (void) installContentView;
-- (void) installContentView:(AZView *)contentView;
+- (void) installContentView:(AZWindowContentView *)contentView;
 
 /*****************************************************************************\
 |* Return the window for any given SDL_Window.
@@ -45,8 +45,8 @@ struct SDL_Window;
 /*****************************************************************************\
 |* Return the contentView for any given (SDL_)Window.
 \*****************************************************************************/
-+ (AZView *) contentViewForWindow:(AZWindow *)window;
-+ (AZView *) contentViewForSDLWindow:(struct SDL_Window *)window;
++ (AZWindowContentView *) contentViewForWindow:(AZWindow *)window;
++ (AZWindowContentView *) contentViewForSDLWindow:(struct SDL_Window *)window;
 
 /*****************************************************************************\
 |* End editing in table-views. Should this move to AZTableView ?
@@ -95,7 +95,7 @@ struct SDL_Window;
 @property(copy, nonatomic) NSString *						title;
 
 // The content-view for the window
-@property(strong, nonatomic) AZView *						contentView;
+@property(strong, nonatomic) AZWindowContentView *			contentView;
 @end
 
 

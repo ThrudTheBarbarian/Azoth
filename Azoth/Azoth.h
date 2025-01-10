@@ -65,6 +65,7 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZView.h>
 #import <Azoth/AZViewController.h>
 #import <Azoth/AZWindow.h>
+#import <Azoth/AZWindowContentView.h>
 #import <Azoth/AZZib.h>
 #import <Azoth/NSBundle+ZIB.h>
 #import <Azoth/NSDictionary+ZIB.h>

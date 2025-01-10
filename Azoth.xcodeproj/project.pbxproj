@@ -438,6 +438,7 @@
 				Classes/View/AZImageView.h,
 				Classes/View/AZSplitView.h,
 				Classes/View/AZView.h,
+				Classes/View/AZWindowContentView.h,
 				Classes/View/Base/AZControl.h,
 				Classes/View/Base/AZResponder.h,
 				Classes/View/CollectionView/AZCollectionView.h,
@@ -488,6 +489,8 @@
 				AZDragAndDrop/AppDelegate.h,
 				AZDragAndDrop/AppDelegate.m,
 				AZDragAndDrop/Assets.xcassets,
+				AZDragAndDrop/DraggingView.h,
+				AZDragAndDrop/DraggingView.m,
 				AZDragAndDrop/main.m,
 				AZImageView/AppDelegate.h,
 				AZImageView/AppDelegate.m,
@@ -644,6 +647,7 @@
 			membershipExceptions = (
 				AZDragAndDrop/AppDelegate.m,
 				AZDragAndDrop/Assets.xcassets,
+				AZDragAndDrop/DraggingView.m,
 				AZDragAndDrop/main.m,
 			);
 			target = F4BD83792D318D990041034B /* AZDragAndDrop */;

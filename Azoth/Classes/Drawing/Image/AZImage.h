@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import <Azoth/AZTypes.h>
+#import <Azoth/AZPasteboard.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -37,7 +38,7 @@ typedef enum
 // rendered.
 typedef BOOL (^AZImageDrawingHandler)(NSRect dstRect, AZPainter *painter) ;
 
-@interface AZImage : NSObject
+@interface AZImage : NSObject <AZPasteboardWriting>
 
 /*****************************************************************************\
 |* Initialisation: Don't create images manually, call one of the convenience

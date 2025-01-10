@@ -6,11 +6,7 @@
 //
 
 #import "AppDelegate.h"
-
-
-#import "AppDelegate.h"
-
-#define ROW_HEIGHT  (35.f)
+#import "DraggingView.h"
 
 @interface AppDelegate ()
 @end
@@ -20,12 +16,20 @@
 - (void) applicationDidFinishLaunching:(NSNotification *)notification
 	{
 	/*************************************************************************\
-	|* Set up for vsync, though it doesn't seem to make much difference. We
-	|* still consume far too much CPU for my liking - might have to look into
-	|* how to limit FPS
+	|* Set up the UI for this application
 	\*************************************************************************/
-	AZRenderer *azr = AZRenderer.renderer;
-	[azr syncToVsync:YES];
+	AZView *cv		= [AZWindow contentViewForWindow:AZApp.window];
+	[cv setIdentifier:@"content-view"];
+
+	/*************************************************************************\
+	|* Add a view that supports dragging and dropping
+	\*************************************************************************/
+	NSRect bounds = cv.bounds;
+	bounds.size.width /= 2;
+	DraggingView *left = [[DraggingView alloc] initWithFrame:bounds];
+	left.backgroundColour = [AZColour colourNamed:@"goldenrod"];
+	[cv addSubview:left];
+
 	}
 
 

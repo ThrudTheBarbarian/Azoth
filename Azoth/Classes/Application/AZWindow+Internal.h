@@ -20,10 +20,10 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Initiate a dragging session
 \*****************************************************************************/
-- (AZDraggingSession *)
-_beginDraggingSessionWithItems:(NSArray<AZDraggingItem *> *) items
-						 event:(AZEvent *) event
-					    source:(id<AZDraggingSource>) source;
+- (nullable AZDraggingSession *)
+		_beginDraggingSessionWithItems:(NSArray<AZDraggingItem *> *) items
+								 event:(AZEvent *) event
+								source:(id<AZDraggingSource>) source;
 
 @end
 
