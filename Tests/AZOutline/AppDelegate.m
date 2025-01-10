@@ -63,7 +63,7 @@
 	// And add the scrollview to the content-view
 	[cv addSubview:sv];
 
-	[cv setBackgroundColour:[AZColour grey37Colour]];
+	[cv setBackgroundColour:[AZColour grey37]];
 	[ov tile];
 	[ov reloadData];
 	}
