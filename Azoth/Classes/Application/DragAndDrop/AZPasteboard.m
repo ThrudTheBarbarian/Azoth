@@ -9,9 +9,10 @@
 
 #import "AZPasteboard.h"
 
+// These should all be lowercase
 AZPasteboardType const AZPasteboardTypeColour	= @"text/colour";
 AZPasteboardType const AZPasteboardTypeImagePNG	= @"image/png";
-AZPasteboardType const AZPasteboardTypeString	= @"text/plain;charset=UTF-8";
+AZPasteboardType const AZPasteboardTypeString	= @"text/plain;charset=utf-8";
 AZPasteboardType const AZPasteboardTypeURL		= @"text/url";
 
 AZPasteboardType const AZPasteboardNameDrag		= @"AZ:PBName:Drag";
@@ -32,13 +33,14 @@ AZPasteboardType const AZPasteboardNameGeneral	= @"AZ:PBName:System";
 // Dictionary of objects by mime-type in the pasteboard
 @property(strong, nonatomic)
 NSMutableDictionary<NSString *,NSObject *> *						data;
+
 @end
 
 /*****************************************************************************\
 |* Shared list of pasteboards by name
 \*****************************************************************************/
-static NSMutableDictionary<NSString*, AZPasteboard*> * _boards = nil;
-
+static NSMutableDictionary<NSString*, AZPasteboard*> * _boards 	= nil;
+static NSMutableSet<NSString *> * _valid						= nil;
 @implementation AZPasteboard
 
 /*****************************************************************************\
@@ -51,6 +53,18 @@ static NSMutableDictionary<NSString*, AZPasteboard*> * _boards = nil;
 		_isSystem	= NO;
 		_changes 	= 0;
 		_data		= NSMutableDictionary.new;
+
+		static dispatch_once_t onceToken;
+		dispatch_once(&onceToken,
+			^{
+			_valid = NSMutableSet.new;
+			[_valid addObject:AZPasteboardTypeColour];
+			[_valid addObject:AZPasteboardTypeImagePNG];
+			[_valid addObject:AZPasteboardTypeString];
+			[_valid addObject:AZPasteboardTypeURL];
+			[_valid addObject:@"text/plain"];	// in case charset not set
+			});
+
 		}
 	return self;
 	}
@@ -123,6 +137,24 @@ static NSMutableDictionary<NSString*, AZPasteboard*> * _boards = nil;
 \*****************************************************************************/
 - (NSArray<AZPasteboardType> *) datatypes
 	{
+	if (_isSystem)
+		{
+		NSMutableArray<AZPasteboardType> *list = NSMutableArray.new;
+		size_t num   = 0;
+		char **types = SDL_GetClipboardMimeTypes(&num);
+		if (types == NULL)
+			SDL_Log("Cannot find system pasteboard. %s", SDL_GetError());
+		for (int i=0; i<num; i++)
+			{
+			NSString *entry = [NSString stringWithUTF8String:types[i]];
+			if ([_valid containsObject:entry.lowercaseString])
+				[list addObject:entry];
+			}
+		if (types)
+			SDL_free(types);
+		return list;
+		}
+
 	return _data.allKeys;
 	}
 
@@ -132,6 +164,18 @@ static NSMutableDictionary<NSString*, AZPasteboard*> * _boards = nil;
 \*****************************************************************************/
 - (NSData *) dataForType:(AZPasteboardType)type
 	{
+	if (_isSystem)
+		{
+		size_t size;
+		uint8_t *bytes = SDL_GetClipboardData(type.UTF8String, &size);
+		if (bytes == NULL)
+			return nil;
+
+		NSData *data = [NSData dataWithBytes:bytes length:size];
+		SDL_free(bytes);
+		return data;
+		}
+
 	id element = [_data objectForKey:type];
 	if ([element isKindOfClass:NSData.class])
 		return (NSData *)element;
@@ -140,6 +184,45 @@ static NSMutableDictionary<NSString*, AZPasteboard*> * _boards = nil;
 	NSString *str = (NSString *)element;
 	return [str dataUsingEncoding:NSUTF8StringEncoding];
 	}
+
+/*****************************************************************************\
+|* Returns the property list for the specified type from the first item in the
+|* receiver that contains the type
+\*****************************************************************************/
+- (id) propertyListForType:(AZPasteboardType)type
+	{
+	if (_isSystem)
+		{
+		// We don't really expect property-list serialised data from the
+		// system clipboard. Get it as data and return it in an array
+		NSData *data = [self dataForType:type];
+		if (data)
+			return @[data];
+		return nil;
+		}
+
+	id element = [_data objectForKey:type];
+	if ([element isKindOfClass:NSData.class])
+		{
+		NSError *error = nil;
+		element = [NSPropertyListSerialization
+			propertyListWithData:element
+						 options:NSPropertyListMutableContainersAndLeaves
+						  format:nil
+						   error:&error];
+
+		if (error)
+			{
+			SDL_Log("Pasteboard: cannot deserialise for type %s",
+					type.UTF8String);
+			return nil;
+			}
+		return element;
+		}
+
+	return nil;
+	}
+
 
 /*****************************************************************************\
 |* Returns a string value (if it can be decoded) for a given type.
@@ -151,6 +234,12 @@ static NSMutableDictionary<NSString*, AZPasteboard*> * _boards = nil;
 
 - (NSString *) stringForType:(AZPasteboardType)type
 	{
+	if (_isSystem)
+		{
+		NSData *data = [self dataForType:type];
+		return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+		}
+
 	return ((NSObject *)_data[type]).description;
 	}
 
@@ -170,6 +259,10 @@ static NSMutableDictionary<NSString*, AZPasteboard*> * _boards = nil;
 \*****************************************************************************/
 - (BOOL) writeObjects:(NSArray<id<AZPasteboardWriting>> *) objects;
 	{
+	// Don't support this on the system clipboard
+	if (_isSystem)
+		return NO;
+
 	if (objects.count < 1)
 		return YES;
 
@@ -182,7 +275,6 @@ static NSMutableDictionary<NSString*, AZPasteboard*> * _boards = nil;
 	id<AZPasteboardWriting> first 	= objects.firstObject;
 	[commonTypes addObjectsFromArray:[first writableTypesForPasteboard:self]];
 
-	NSMutableArray *results = [NSMutableArray new];
 	for (id<AZPasteboardWriting> o in objects)
 		{
 		NSSet *types = [NSSet setWithArray:[o writableTypesForPasteboard:self]];

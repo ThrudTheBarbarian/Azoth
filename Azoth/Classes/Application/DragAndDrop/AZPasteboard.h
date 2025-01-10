@@ -49,8 +49,9 @@ extern AZPasteboardName const AZPasteboardNameGeneral;
 @interface AZPasteboard : NSObject
 
 /*****************************************************************************\
-|* Initialisation
+|* Initialisation. Use the the class method, not -init
 \*****************************************************************************/
+- (instancetype) init NS_UNAVAILABLE;
 + (nullable AZPasteboard *) pasteboardWithName:(AZPasteboardName) name;
 
 /*****************************************************************************\
@@ -76,6 +77,12 @@ extern AZPasteboardName const AZPasteboardNameGeneral;
 |* receiver that contains the type
 \*****************************************************************************/
 - (NSData *) dataForType:(AZPasteboardType)dataType;
+
+/*****************************************************************************\
+|* Returns the property list for the specified type from the first item in the
+|* receiver that contains the type
+\*****************************************************************************/
+- (id) propertyListForType:(AZPasteboardType)dataType;
 
 /*****************************************************************************\
 |* Returns a string value (if it can be decoded) for a given type.

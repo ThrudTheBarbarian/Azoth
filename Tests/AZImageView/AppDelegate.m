@@ -112,6 +112,14 @@
 \*****************************************************************************/
 - (void) keyPressed:(NSNotification *)n
 	{
+	AZPasteboard *pb = [AZPasteboard pasteboardWithName:AZPasteboardNameGeneral];
+	NSArray *types = [pb datatypes];
+	NSLog(@"types: %@", types);
+	if ([types containsObject:@"text/plain;charset=utf-8"])
+		{
+		NSString *info = [pb stringForType:@"text/plain;charset=utf-8"];
+		NSLog(@"contents: %@", info);
+		}
 	AZImage *img = _imageView.image;
 	[img saveAs:@"/tmp/img.png" inFormat:AZImageFormatPNG withQuality:10];
 	}

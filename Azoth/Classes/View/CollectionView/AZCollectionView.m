@@ -240,7 +240,7 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 
 	[painter rectangleWithRect:dirtyRect filled:YES colour:bg];
 
-	NSRect frame = NSRectFromTwoPoints(_atDown, _atDragged);
+	//NSRect frame = NSRectFromTwoPoints(_atDown, _atDragged);
 	//[painter rectangleWithRect:frame colour:AZColour.grey50];
 
 	if ((_selection.count > 0) && self.shouldDrawSelections)
