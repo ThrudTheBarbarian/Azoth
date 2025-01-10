@@ -46,11 +46,43 @@ struct SDL_Mutex;
 @class AZWindow;
 @class AZZib;
 
-@protocol AZDraggingSource;
+/*****************************************************************************\
+|* Define the source's dragging responsibilities. These are methods implemented
+|* by an object that initiates a drag session. The source application is sent
+|* these messages during dragging.  The first must be implemented, the others
+|* are sent if the source responds to them. The dragging source is typically
+|* the view itself that initiated the drag, as AZView implements this protocol
+\*****************************************************************************/
+@protocol AZDraggingSource <NSObject>
+
+@required
+
+// Declares what types of operations the source allows to be performed
+- (AZDragOperation)draggingSession:(AZDraggingSession *)session
+	sourceOperationMaskForDraggingContext:(AZDraggingContext)context;
+
+@optional
+// Sent when the dragging starts
+- (void)draggingSession:(AZDraggingSession *)session
+	   willBeginAtPoint:(NSPoint)screenPoint;
+
+// Sent when as the dragging progresses
+- (void)draggingSession:(AZDraggingSession *)session
+		   movedToPoint:(NSPoint)screenPoint;
+
+// Sent when the dragging is complete, along with the operation performed
+- (void)draggingSession:(AZDraggingSession *)session
+		   endedAtPoint:(NSPoint)screenPoint
+		      operation:(AZDragOperation)operation;
+
+// Returns whether modifier keys will be ignored for this session
+- (BOOL)ignoreModifierKeysForDraggingSession:(AZDraggingSession *)session;
+
+@end
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AZView : AZResponder
+@interface AZView : AZResponder <AZDraggingSource>
 
 /*****************************************************************************\
 |* Initialisation

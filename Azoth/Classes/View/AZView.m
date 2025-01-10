@@ -10,6 +10,7 @@
 #import "AZApplication.h"
 #import "AZClipView.h"
 #import "AZColour.h"
+#import "AZDraggingSession.h"
 #import "AZGeometry.h"
 #import "AZNotifications.h"
 #import "AZPainter.h"
@@ -756,6 +757,18 @@
 	}
 
 
+// MARK: drag and drop
+/*****************************************************************************\
+|* AZDraggingSource: Return the type of drag the view wishes to perform. This
+|* should be overridden in a subclass
+\*****************************************************************************/
+- (AZDragOperation)draggingSession:(AZDraggingSession *)session
+	sourceOperationMaskForDraggingContext:(AZDraggingContext)context
+	{
+	return AZDragOperationNone;
+	}
+
+
 /*****************************************************************************\
 |* Initiate a dragging session
 \*****************************************************************************/
@@ -854,6 +867,4 @@ static inline void _buildTransformsIfNeeded(AZView *self)
 	for (AZView *view in _subviews)
 		[view _invalidateTransforms];
 	}
-
-
 @end

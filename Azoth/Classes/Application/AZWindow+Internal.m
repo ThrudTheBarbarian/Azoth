@@ -5,11 +5,22 @@
 //  Created by Simon Gornall on 12/16/24.
 //
 
+#import <SDL3/SDL.h>
+
+#import "AZApplication.h"
 #import "AZDraggingSession.h"
+#import "AZEvent.h"
 #import "AZEventSink.h"
 #import "AZView.h"
 #import "AZWindow+Internal.h"
 #import "AZResponder.h"
+
+/*****************************************************************************\
+|* We can only be dragging the mouse in one instance at a time, so this is ok
+|* to be a static reference
+\*****************************************************************************/
+static AZEventSink *_sink = nil;
+
 
 @implementation AZWindow (Internal)
 
@@ -40,10 +51,20 @@ _beginDraggingSessionWithItems:(NSArray<AZDraggingItem *> *) items
 	{
 	AZDraggingSession *session = AZDraggingSession.new;
 
-	session.sink = [[AZEventSink alloc] initWithAction:@selector(dragEvent:)
-											 forTarget:self];
-	[session.sink addEventMask:AZLeftMouseUpMask];
-	[session.sink addEventMask:AZMouseMovedMask];
+
+	/*************************************************************************\
+	|* This should never happen!
+	\*************************************************************************/
+	if (_sink != nil)
+		{
+		[AZApp removeEventSink:_sink];
+		SDL_Log("WARNING: Removing stale event sink");
+		}
+
+	_sink = [[AZEventSink alloc] initWithAction:@selector(dragEvent:)
+									  forTarget:self];
+	[_sink addEventMask:AZLeftMouseUpMask];
+	[_sink addEventMask:AZMouseMovedMask];
 	return session;
 	}
 
@@ -53,6 +74,12 @@ _beginDraggingSessionWithItems:(NSArray<AZDraggingItem *> *) items
 \*****************************************************************************/
 - (void) dragEvent:(AZEvent *)e
 	{
+	if (e.type == AZLeftMouseUp)
+		{
+		NSLog(@"Finish drag");
+		[AZApp removeEventSink:_sink];
+		_sink = nil;
+		}
 	}
 
 @end
