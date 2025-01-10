@@ -9,6 +9,7 @@
 
 #import "AZApplication.h"
 #import "AZColour.h"
+#import "AZEvent.h"
 #import "AZEventSink.h"
 #import "AZFont.h"
 #import "AZPainter.h"
@@ -98,16 +99,23 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 /*****************************************************************************\
 |* We got a mouse event
 \*****************************************************************************/
-- (void) _receivedEvent:(SDL_Event *)e
+- (void) _receivedEvent:(AZEvent *)e
 	{
-	switch (e->type)
+	switch (e.type)
 		{
-		case SDL_EVENT_MOUSE_BUTTON_DOWN:
+		case AZLeftMouseDown:
 			[self _handleMouseDown:e];
 			break;
 
-		case SDL_EVENT_MOUSE_MOTION:
+		case AZMouseMoved:
 			[self _handleMouseMoved:e];
+			break;
+
+		case AZLeftMouseUp:
+			break; // only used later
+			
+		default:
+			SDL_Log("Got unknown event type 0x%x", e.type);
 			break;
 		}
 	}
@@ -115,10 +123,9 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 /*****************************************************************************\
 |* The mouse button was pressed
 \*****************************************************************************/
-- (void) _handleMouseDown:(SDL_Event *)e
+- (void) _handleMouseDown:(AZEvent *)e
 	{
- 	NSPoint p 	= (NSPoint){e->button.x, e->button.y};
-	p 			= [self convertPoint:p fromView:nil];
+	NSPoint p	= [self convertPoint:e.locationInWindow fromView:nil];
 	float H 	= self.bounds.size.height - _menuBM.size.height;
 	float W 	= self.bounds.size.width;
 	BOOL inside	= NO;
@@ -154,10 +161,9 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 /*****************************************************************************\
 |* The mouse moved
 \*****************************************************************************/
-- (void) _handleMouseMoved:(SDL_Event *)e
+- (void) _handleMouseMoved:(AZEvent *)e
 	{
- 	NSPoint p 	= (NSPoint){e->motion.x, e->motion.y};
-	p 			= [self convertPoint:p fromView:nil];
+	NSPoint p	= [self convertPoint:e.locationInWindow fromView:nil];
 	float H 	= self.bounds.size.height - _menuBM.size.height;
 	float W 	= self.bounds.size.width;
 
@@ -169,6 +175,7 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 			sel = 0;
 		if (sel >= _menu.itemArray.count)
 			sel = (int) _menu.itemArray.count - 1;
+
 
 		if (_menu.itemArray[sel].state == AZControlStateValueOff)
 			{
@@ -191,9 +198,9 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 	{
 	_sink =	[[AZEventSink alloc] initWithAction:@selector(_receivedEvent:)
 									  forTarget:self];
-	[_sink addEventType:SDL_EVENT_MOUSE_BUTTON_UP];
-	[_sink addEventType:SDL_EVENT_MOUSE_BUTTON_DOWN];
-	[_sink addEventType:SDL_EVENT_MOUSE_MOTION];
+	[_sink addEventMask:AZLeftMouseUpMask];
+	[_sink addEventMask:AZLeftMouseDownMask];
+	[_sink addEventMask:AZMouseMovedMask];
 	[AZApp addEventSink:_sink];
 	}
 

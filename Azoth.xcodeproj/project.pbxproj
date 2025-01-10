@@ -384,6 +384,8 @@
 				Classes/Application/AZEventSink.h,
 				Classes/Application/AZWindow.h,
 				Classes/Application/Controllers/AZViewController.h,
+				Classes/Application/DragAndDrop/AZDraggingItem.h,
+				Classes/Application/DragAndDrop/AZDraggingSession.h,
 				Classes/Application/DragAndDrop/AZPasteboard.h,
 				Classes/Application/ZIB/AZZib.h,
 				"Classes/Application/ZIB/NSBundle+ZIB.h",

@@ -81,7 +81,13 @@ typedef enum
 	AZDragOperationDelete		= 1<<5,
 	AZDragOperationEvery		= -1,
 	AZDragOperationNone			= 0
-	} NSDragOperation;
+	} AZDragOperation;
+
+typedef enum
+	{
+	AZDraggingContextOutsideApplication = 0,
+    AZDraggingContextWithinApplication
+	} AZDraggingContext;
 
 /*****************************************************************************\
 |* Forms that highlighting can take

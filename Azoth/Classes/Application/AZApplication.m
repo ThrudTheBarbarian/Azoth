@@ -252,16 +252,18 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 	{
 	SDL_AppResult result 	= SDL_APP_CONTINUE;
 	AZView *cv 				= [AZWindow contentViewForWindow:_window];
-	AZEvent * event			= nil;
+	AZEvent * event			= [[AZEvent alloc] initWithSDLEvent:e];
 
 	/*************************************************************************\
 	|* If we have an event-sink installed, and it matches this event, then
 	|* divert to the sink
 	\*************************************************************************/
 	for (AZEventSink *sink in _eventSinks)
-		if ([sink matches:e])
-			if ([sink call:e])
+		{
+		if ([sink matches:event])
+			if ([sink call:event])
 				return result;
+		}
 
 	/*************************************************************************\
 	|* Else process the event
@@ -280,17 +282,14 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 		\*********************************************************************/
 		case SDL_EVENT_MOUSE_BUTTON_DOWN:
 		case SDL_EVENT_MOUSE_BUTTON_UP:
-			event = [[AZEvent alloc] initWithMouseButtonEvent:e];
 			[cv processMouseEvent:event];
 			break;
 
 		case SDL_EVENT_MOUSE_MOTION:
-			event = [[AZEvent alloc] initWithMouseMotionEvent:e];
 			[cv processMouseEvent:event];
 			break;
 
 		case SDL_EVENT_MOUSE_WHEEL:
-			event = [[AZEvent alloc] initWithMouseMotionEvent:e];
 			[cv processMouseEvent:event];
 			break;
 

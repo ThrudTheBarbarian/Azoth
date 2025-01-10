@@ -28,6 +28,8 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZCVLayoutItem.h>
 #import <Azoth/AZCVLayoutManager.h>
 #import <Azoth/AZCVLayoutOperation.h>
+#import <Azoth/AZDraggingItem.h>
+#import <Azoth/AZDraggingSession.h>
 #import <Azoth/AZEvent.h>
 #import <Azoth/AZEventSink.h>
 #import <Azoth/AZFont.h>

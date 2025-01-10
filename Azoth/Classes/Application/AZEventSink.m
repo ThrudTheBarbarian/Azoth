@@ -7,6 +7,7 @@
 
 #import <SDL3/SDL.h>
 
+#import "AZEvent.h"
 #import "AZEventSink.h"
 
 @interface AZEventSink()
@@ -14,8 +15,8 @@
 // Method to call with the event, if we match
 @property(nullable) SEL									action;
 @property(nullable, weak, nonatomic) NSObject *			target;
-@property(assign, nonatomic) NSUInteger					maxEvent;
-@property(nullable, assign, nonatomic)	uint8_t *		map;
+
+@property(assign, nonatomic) NSUInteger					mask;
 @end
 
 @implementation AZEventSink
@@ -29,38 +30,16 @@
 		{
 		_action 	= action;
 		_target		= target;
-		_map		= NULL;
-		_maxEvent	= 0;
 		}
 	return self;
 	}
 
 /*****************************************************************************\
-|* Clear up on dealloc
-\*****************************************************************************/
-- (void) dealloc
-	{
-	if (_map != NULL)
-		{
-		free(_map);
-		_map = NULL;
-		}
-	}
-
-/*****************************************************************************\
 |* Add an event into the filter-map
 \*****************************************************************************/
-- (void) addEventType:(NSUInteger)type
+- (void) addEventMask:(NSUInteger)type
 	{
-	if (type >= _maxEvent)
-		{
-		uint8_t *map = (uint8_t *) calloc(1, type+1);
-		memcpy(map, _map, _maxEvent);
-		free(_map);
-		_map = map;
-		_maxEvent = type;
-		}
-	_map[type] = 1;
+	_mask |= type;
 	}
 
 /*****************************************************************************\
@@ -68,30 +47,28 @@
 \*****************************************************************************/
 - (void) clearEventMask
 	{
-	memset(_map, 0, _maxEvent);
+	_mask = 0;
 	}
 
 /*****************************************************************************\
 |* Determine if this sink matches a given event, using its filter
 \*****************************************************************************/
-- (BOOL) matches:(SDL_Event *)event
+- (BOOL) matches:(AZEvent *)event
 	{
-	if (event)
-		if (event->type < _maxEvent)
-			if (_map[event->type])
-				return YES;
+	if (event && (((1 << event.type) & _mask) != 0))
+		return YES;
 	return NO;
 	}
 
 /*****************************************************************************\
 |* Make the sink call its action with the corresponding event
 \*****************************************************************************/
-- (BOOL) call:(union SDL_Event *)e
+- (BOOL) call:(AZEvent *)e
 	{
 	if ((_target != nil) && (_action != nil))
 		{
 		IMP imp = [_target methodForSelector:_action];
-		void (*func)(id, SEL, union SDL_Event *) = (void *)imp;
+		void (*func)(id, SEL, AZEvent *) = (void *)imp;
 		func(_target, _action, e);
 		return YES;
 		}

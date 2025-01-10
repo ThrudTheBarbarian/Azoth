@@ -9,7 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-union SDL_Event;
+@class AZEvent;
 
 @interface AZEventSink : NSObject
 
@@ -28,17 +28,17 @@ union SDL_Event;
 /*****************************************************************************\
 |* Add an event to the types we want to match
 \*****************************************************************************/
-- (void) addEventType:(NSUInteger)type;
+- (void) addEventMask:(NSUInteger)type;
 
 /*****************************************************************************\
 |* Determine if this sink matches a given event, using its filter
 \*****************************************************************************/
-- (BOOL) matches:(union SDL_Event *)e;
+- (BOOL) matches:(AZEvent *)e;
 
 /*****************************************************************************\
 |* Make the sink call its action with the corresponding event
 \*****************************************************************************/
-- (BOOL) call:(union SDL_Event *)e;
+- (BOOL) call:(AZEvent *)e;
 
 @end
 

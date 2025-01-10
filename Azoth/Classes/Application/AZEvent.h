@@ -19,7 +19,13 @@ union SDL_Event;
 
 @interface AZEvent : NSObject
 /*****************************************************************************\
-|* Instantiation
+|* Instantiation : generic - calls into the specific initialisers if it
+|*                 recognises the event as one of the below
+\*****************************************************************************/
+- (instancetype) initWithSDLEvent:(union SDL_Event *)e;
+
+/*****************************************************************************\
+|* Instantiation : specific
 \*****************************************************************************/
 - (instancetype) initWithMouseButtonEvent:(union SDL_Event *)sdlEvent;
 - (instancetype) initWithMouseMotionEvent:(union SDL_Event *)sdlEvent;

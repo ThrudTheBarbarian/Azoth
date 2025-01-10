@@ -24,6 +24,23 @@
 \*****************************************************************************/
 - (instancetype) initWithSDLEvent:(SDL_Event *)e
 	{
+	switch (e->type)
+		{
+		case SDL_EVENT_MOUSE_BUTTON_DOWN:
+		case SDL_EVENT_MOUSE_BUTTON_UP:
+			return [self initWithMouseButtonEvent:e];
+
+		case SDL_EVENT_MOUSE_MOTION:
+			return [self initWithMouseMotionEvent:e];
+
+		case SDL_EVENT_MOUSE_WHEEL:
+			return [self initWithMouseWheelEvent:e];
+
+		default:
+			// Fall through to generic event
+			break;
+		}
+
 	if (self = [super init])
 		{
 		_type				= AZAppKitSystem;

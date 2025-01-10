@@ -38,11 +38,15 @@ struct SDL_Mutex;
 
 @class AZClipView;
 @class AZColour;
+@class AZDraggingItem;
+@class AZDraggingSession;
 @class AZPainter;
 @class AZScrollView;
 @class AZTransform;
 @class AZWindow;
 @class AZZib;
+
+@protocol AZDraggingSource;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -187,6 +191,16 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 - (NSRect) convertRect:(NSRect)r toView:(nullable AZView *)otherView;
 
+
+// MARK: Drag and drop
+
+/*****************************************************************************\
+|* Initiate a dragging session
+\*****************************************************************************/
+- (AZDraggingSession *)
+beginDraggingSessionWithItems:(NSArray<AZDraggingItem *> *) items
+						event:(AZEvent *) event
+					   source:(id<AZDraggingSource>) source;
 
 /*****************************************************************************\
 |* Properties

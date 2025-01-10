@@ -19,6 +19,7 @@
 #import "AZView.h"
 #import "AZView+Internal.h"
 #import "AZWindow.h"
+#import "AZWindow+Internal.h"
 #import "AZZib.h"
 #import "NSDictionary+ZIB.h"
 
@@ -752,6 +753,20 @@
 			return (AZClipView *)result;
 
 	return nil;
+	}
+
+
+/*****************************************************************************\
+|* Initiate a dragging session
+\*****************************************************************************/
+- (AZDraggingSession *)
+beginDraggingSessionWithItems:(NSArray<AZDraggingItem *> *) items
+						event:(AZEvent *) event
+					   source:(id<AZDraggingSource>) source
+	{
+	return [self.window _beginDraggingSessionWithItems:items
+												 event:event
+											    source:source];
 	}
 
 // MARK: Private methods
