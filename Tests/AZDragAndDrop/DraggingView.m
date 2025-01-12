@@ -56,6 +56,8 @@
 	return YES;
 	}
 
+// MARK: AZDraggingSource
+
 /*****************************************************************************\
 |* We want to allow copy-drags
 \*****************************************************************************/
@@ -70,7 +72,7 @@
 \*****************************************************************************/
 - (void) draggingSession:(AZDraggingSession *)session willBeginAtPoint:(NSPoint)p
 	{
-	NSLog(@"start at %@", NSStringFromPoint(p));
+	NSLog(@"src: drag start at %@", NSStringFromPoint(p));
 	}
 
 /*****************************************************************************\
@@ -80,7 +82,7 @@
 			endedAtPoint:(NSPoint)p
 			   operation:(AZDragOperation)op
 	{
-	NSLog(@"end at %@ [%d]", NSStringFromPoint(p), op);
+	NSLog(@"src: drag end at %@ [%d]", NSStringFromPoint(p), op);
 	}
 
 @end

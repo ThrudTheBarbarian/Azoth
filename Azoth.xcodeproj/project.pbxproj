@@ -491,6 +491,7 @@
 				AZDragAndDrop/Assets.xcassets,
 				AZDragAndDrop/DraggingView.h,
 				AZDragAndDrop/DraggingView.m,
+				AZDragAndDrop/DroppingView.m,
 				AZDragAndDrop/main.m,
 				AZImageView/AppDelegate.h,
 				AZImageView/AppDelegate.m,
@@ -648,6 +649,7 @@
 				AZDragAndDrop/AppDelegate.m,
 				AZDragAndDrop/Assets.xcassets,
 				AZDragAndDrop/DraggingView.m,
+				AZDragAndDrop/DroppingView.m,
 				AZDragAndDrop/main.m,
 			);
 			target = F4BD83792D318D990041034B /* AZDragAndDrop */;

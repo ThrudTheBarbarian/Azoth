@@ -11,6 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class AZDraggingSession;
 @class AZDraggingItem;
+@class AZView;
 
 @protocol AZDraggingSource;
 
@@ -25,6 +26,10 @@ NS_ASSUME_NONNULL_BEGIN
 								 event:(AZEvent *) event
 								source:(id<AZDraggingSource>) source;
 
+/*****************************************************************************\
+|* Inform the window which view we're currently dragging over the top of
+\*****************************************************************************/
+- (void) _draggedOverView:(AZView *)view;
 @end
 
 NS_ASSUME_NONNULL_END

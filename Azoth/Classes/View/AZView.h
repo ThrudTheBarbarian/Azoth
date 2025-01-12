@@ -47,6 +47,8 @@ struct SDL_Mutex;
 @class AZWindow;
 @class AZZib;
 
+@protocol AZDraggingInfo;
+
 /*****************************************************************************\
 |* Define the source's dragging responsibilities. These are methods implemented
 |* by an object that initiates a drag session. The source application is sent
@@ -82,7 +84,33 @@ struct SDL_Mutex;
 @end
 
 
-@interface AZView : AZResponder <AZDraggingSource>
+/*****************************************************************************\
+|* A set of methods that the destination object (or recipient) of a
+|* dragged image must implement
+\*****************************************************************************/
+@protocol AZDraggingDestination <NSObject>
+
+// Invoked when the dragged image enters destination bounds or frame;
+// delegate returns dragging operation to perform
+- (AZDragOperation) draggingEntered:(id<AZDraggingInfo>) sender;
+
+// Asks the destination object whether it wants to receive periodic
+// draggingUpdated: messages
+- (BOOL) wantsPeriodicDraggingUpdates;
+
+// Invoked periodically as the image is held within the destination area,
+// allowing modification of the dragging operation or mouse-pointer position
+- (AZDragOperation) draggingUpdated:(id<AZDraggingInfo>) sender;
+
+// Invoked when the dragged image exits the destination’s bounds rectangle
+- (void) draggingExited:(id<AZDraggingInfo>) sender;
+
+// Called when a drag operation ends
+- (void) draggingEnded:(id<AZDraggingInfo>) sender;
+@end
+
+@interface AZView : AZResponder 	<AZDraggingSource,
+								 AZDraggingDestination>
 
 /*****************************************************************************\
 |* Initialisation
@@ -235,6 +263,30 @@ beginDraggingSessionWithItems:(NSArray<AZDraggingItem *> *) items
 					   source:(id<AZDraggingSource>) source;
 
 /*****************************************************************************\
+|* Register this view as having an interest in a bunch of drag-types
+\*****************************************************************************/
+- (void) registerForDraggedTypes:(NSArray<NSString *> *) newTypes;
+
+/*****************************************************************************\
+|* We got a mouse-release in an acceptable drop-target, prepare for the actual
+|* drop
+\*****************************************************************************/
+- (BOOL) prepareForDragOperation:(id<AZDraggingInfo>) sender;
+
+/*****************************************************************************\
+|* Do the actual drop, sent if the -prepareForDragOperation returns YES
+\*****************************************************************************/
+- (BOOL) performDragOperation:(id<AZDraggingInfo>) sender;
+
+/*****************************************************************************\
+|* And handle the drop completing, sent if -performDragOperation returns YES
+\*****************************************************************************/
+- (void) concludeDragOperation:(id<AZDraggingInfo>) sender;
+
+// MARK: End of methods
+
+
+/*****************************************************************************\
 |* Properties
 \*****************************************************************************/
 
@@ -296,6 +348,9 @@ beginDraggingSessionWithItems:(NSArray<AZDraggingItem *> *) items
 
 // Property from IB, justfor compatibility right now
 @property (copy, nonatomic) NSString * 						tooltip;
+
+// Property from IB, justfor compatibility right now
+@property (strong, nonatomic) NSSet<NSString *> * 			dragTypes;
 
 @end
 

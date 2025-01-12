@@ -14,11 +14,8 @@
 #import "AZView.h"
 #import "AZView+Internal.h"
 #import "AZWindow.h"
+#import "AZWindow+Internal.h"
 #import "AZWindowContentView.h"
-
-@interface AZWindowContentView()
-@property(strong, nonatomic, nullable) AZView *			lastSubviewDraggedInto;
-@end
 
 @implementation AZWindowContentView
 
@@ -58,7 +55,6 @@
 	{
 	self.backgroundColour 	= AZColour.red;
 	_drag  					= nil;
-	_lastSubviewDraggedInto	= nil;
 	}
 
 
@@ -91,13 +87,8 @@
 		|* Check to see if we've just crossed into a new view, and if so
 		|* tell the view that dragging has entered the building
 		\*********************************************************************/
-		AZView *in = [self _informSubviewOfDragEventAtPoint:_drag.at];
-		if (in != _lastSubviewDraggedInto)
-			{
-			NSLog(@"exited : %@", _lastSubviewDraggedInto);
-			NSLog(@"entered: %@", in);
-			_lastSubviewDraggedInto = in;
-			}
+		AZView *in = [self _findViewAtPoint:_drag.at];
+		[self.window _draggedOverView:in];
 		}
 	}
 

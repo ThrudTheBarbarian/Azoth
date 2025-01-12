@@ -25,14 +25,11 @@ AZPasteboardType const AZPasteboardNameGeneral	= @"AZ:PBName:System";
 @interface AZPasteboard()
 
 // Whether this pasteboard is the system-provided copy/paste buffer
-@property(assign, nonatomic) NSInteger 								changes;
-
-// Whether this pasteboard is the system-provided copy/paste buffer
 @property(assign, nonatomic) BOOL 									isSystem;
 
 // Dictionary of objects by mime-type in the pasteboard
 @property(strong, nonatomic)
-NSMutableDictionary<NSString *,NSObject *> *						data;
+NSMutableDictionary<NSString *,NSObject *> *							data;
 
 @end
 
@@ -53,6 +50,7 @@ static NSMutableSet<NSString *> * _valid						= nil;
 		_isSystem	= NO;
 		_changes 	= 0;
 		_data		= NSMutableDictionary.new;
+		_itemCount = 0;
 
 		static dispatch_once_t onceToken;
 		dispatch_once(&onceToken,
@@ -92,12 +90,21 @@ static NSMutableSet<NSString *> * _valid						= nil;
 	}
 
 /*****************************************************************************\
+|* Return the dragging pasteboard by asking for the system one
+\*****************************************************************************/
++ (AZPasteboard *)draggingPasteboard
+	{
+	return [AZPasteboard pasteboardWithName:AZPasteboardNameDrag];
+	}
+
+/*****************************************************************************\
 |* Sets the property list as the value for the given type in this pasteboard.
 |* If you want to set multiple items, encode them as elements within an
 |* NSArray or NSDictionary top-level item
 \*****************************************************************************/
 - (BOOL) setPropertyList:(id)plist forType:(AZPasteboardType)type
 	{
+	_itemCount = 1;
 	_changes ++;
 	NSError *error = nil;
 	NSData *data   = [NSPropertyListSerialization
@@ -127,6 +134,7 @@ static NSMutableSet<NSString *> * _valid						= nil;
 
 - (BOOL) setString:(NSString *)payload forType:(AZPasteboardType)type
 	{
+	_itemCount = 1;
 	_changes ++;
 	[_data setValue:payload forKey:type];
 	return YES;
@@ -248,6 +256,7 @@ static NSMutableSet<NSString *> * _valid						= nil;
 \*****************************************************************************/
 - (NSInteger) clearContents
 	{
+	_itemCount = 0;
 	_changes ++;
 	[_data removeAllObjects];
 	return _changes;
@@ -262,6 +271,7 @@ static NSMutableSet<NSString *> * _valid						= nil;
 	// Don't support this on the system clipboard
 	if (_isSystem)
 		return NO;
+	_itemCount = objects.count;
 
 	if (objects.count < 1)
 		return YES;

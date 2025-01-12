@@ -107,7 +107,21 @@ extern AZPasteboardName const AZPasteboardNameGeneral;
 |* Properties
 \*****************************************************************************/
 
-@property (class, strong, readonly) AZPasteboard * 			generalPasteboard;
+// Return the number of items at the top-level of the ,
+// pasteboard which is 1 for most pasteboardsm and
+// however many objects were written, if -writeObjects
+// was called
+@property (assign, nonatomic, readonly) NSInteger			itemCount;
+
+// A number that identifies a pasteboard, changing every
+// time the pasteboard does
+@property (assign, nonatomic) NSInteger 					changes;
+
+// Class method to return the system pasteboard
+@property (class, strong, readonly) AZPasteboard * 		generalPasteboard;
+
+// Class method to return the dragging pasteboard
+@property (class, strong, readonly) AZPasteboard * 		draggingPasteboard;
 @end
 
 NS_ASSUME_NONNULL_END

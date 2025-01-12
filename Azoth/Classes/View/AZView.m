@@ -98,7 +98,7 @@
 	self.transformsAreValid			= NO;
 	self.textureMutex				= SDL_CreateMutex();
 	self.hidden						= NO;
-
+	self.dragTypes					= NSSet.new;
 	[self setNeedsDisplay:YES];
 	}
 
@@ -126,11 +126,11 @@
 \*****************************************************************************/
 - (NSPoint) convertPoint:(NSPoint)p fromView:(nullable AZView *)otherView
 	{
-	AZView *fromView 	= (otherView != nil)
-						? otherView
-						: [AZWindow contentViewForWindow:self.window];
+	AZView * from = otherView;
+	if (from == nil)
+		from = (AZView *) [AZWindow contentViewForWindow:self.window];
 
-	AZTransform * toWindow		= fromView.transformToWindow;
+	AZTransform * toWindow	= from.transformToWindow;
 	AZTransform * fromWindow	= self.transformFromWindow;
 
 	return [fromWindow applyToPoint:[toWindow applyToPoint:p]];
@@ -140,13 +140,13 @@
 |* Convert a size from our own view's co-ordinate system to another. Calling
 |* this with nil will convert to window co-ordinates.
 \*****************************************************************************/
-- (NSSize) convertSize:(NSSize)size fromView:(nullable AZView *)viewOrNil
+- (NSSize) convertSize:(NSSize)size fromView:(nullable AZView *)otherView
 	{
-	AZView *fromView		= (viewOrNil != nil)
-							? viewOrNil
-							: [AZWindow contentViewForWindow:self.window];
+	AZView * from = otherView;
+	if (from == nil)
+		from = (AZView *) [AZWindow contentViewForWindow:self.window];
 
-	AZTransform *toWindow	= fromView.transformToWindow;
+	AZTransform * toWindow	= from.transformToWindow;
 	AZTransform *fromWindow	= self.transformFromWindow;
 
 	return [fromWindow applyToSize:[toWindow applyToSize:size]];
@@ -156,12 +156,13 @@
 |* Convert a rect from our own view's co-ordinate system to another. Calling
 |* this with nil will convert to window co-ordinates.
 \*****************************************************************************/
-- (NSRect) convertRect:(NSRect)r fromView:(nullable AZView *)viewOrNil
+- (NSRect) convertRect:(NSRect)r fromView:(nullable AZView *)otherView
 	{
-	AZView *fromView		= (viewOrNil != nil)
-							? viewOrNil
-							: [AZWindow contentViewForWindow:self.window];
-	AZTransform *toWindow	= fromView.transformToWindow;
+	AZView * from = otherView;
+	if (from == nil)
+		from = (AZView *) [AZWindow contentViewForWindow:self.window];
+
+	AZTransform *toWindow	= from.transformToWindow;
 	AZTransform *fromWindow	= self.transformFromWindow;
 
 	NSPoint p1				= r.origin;
@@ -186,11 +187,11 @@
 \*****************************************************************************/
 - (NSPoint) convertPoint:(NSPoint)p toView:(nullable AZView *)otherView
 	{
-	AZView *toView 	= (otherView != nil)
-					? otherView
-					: [AZWindow contentViewForWindow:self.window];
+	AZView * toView = otherView;
+	if (toView == nil)
+		toView = (AZView *) [AZWindow contentViewForWindow:self.window];
 
-	AZTransform * toWindow		= self.transformToWindow;
+	AZTransform * toWindow	= self.transformToWindow;
 	AZTransform * fromWindow	= toView.transformFromWindow;
 
 	return [fromWindow applyToPoint:[toWindow applyToPoint:p]];
@@ -200,11 +201,11 @@
 |* Convert a size from our own view's co-ordinate system to another. Calling
 |* this with nil will convert to window co-ordinates.
 \*****************************************************************************/
-- (NSSize) convertSize:(NSSize)size toView:(nullable AZView *)viewOrNil
+- (NSSize) convertSize:(NSSize)size toView:(nullable AZView *)otherView
 	{
-	AZView *toView 	= (viewOrNil != nil)
-					? viewOrNil
-					: [AZWindow contentViewForWindow:self.window];
+	AZView * toView = otherView;
+	if (toView == nil)
+		toView = (AZView *) [AZWindow contentViewForWindow:self.window];
 
 	AZTransform * toWindow		= self.transformToWindow;
 	AZTransform * fromWindow	= toView.transformFromWindow;
@@ -216,11 +217,11 @@
 /*****************************************************************************\
 |* Convenience method to do the same for a rect.
 \*****************************************************************************/
-- (NSRect) convertRect:(NSRect)r toView:(nullable AZView *)viewOrNil
+- (NSRect) convertRect:(NSRect)r toView:(nullable AZView *)otherView
 	{
-	AZView *toView 	= (viewOrNil != nil)
-					? viewOrNil
-					: [AZWindow contentViewForWindow:self.window];
+	AZView * toView = otherView;
+	if (toView == nil)
+		toView = (AZView *) [AZWindow contentViewForWindow:self.window];
 
 	AZTransform * toWindow		= self.transformToWindow;
 	AZTransform * fromWindow	= toView.transformFromWindow;
@@ -757,7 +758,8 @@
 	}
 
 
-// MARK: drag and drop
+// MARK: AZDraggingSource
+
 /*****************************************************************************\
 |* AZDraggingSource: Return the type of drag the view wishes to perform. This
 |* should be overridden in a subclass
@@ -781,6 +783,78 @@ beginDraggingSessionWithItems:(NSArray<AZDraggingItem *> *) items
 												 event:event
 											    source:source];
 	}
+
+
+
+// MARK: AZDraggingDestination
+
+/*****************************************************************************\
+|* Dragging has ended, inform the destination
+\*****************************************************************************/
+- (void)draggingEnded:(nonnull id<AZDraggingInfo>)sender
+	{}
+
+/*****************************************************************************\
+|* Dragging has entered this view, return what drop is acceptable
+\*****************************************************************************/
+- (AZDragOperation)draggingEntered:(nonnull id<AZDraggingInfo>)sender
+	{
+	return AZDragOperationNone;
+	}
+
+/*****************************************************************************\
+|* Dragging has exited this view
+\*****************************************************************************/
+- (void)draggingExited:(nonnull id<AZDraggingInfo>)sender
+	{}
+
+/*****************************************************************************\
+|* Dragging has lingered in this view, return what drop is now acceptable
+\*****************************************************************************/
+- (AZDragOperation)draggingUpdated:(nonnull id<AZDraggingInfo>)sender
+	{
+	return AZDragOperationNone;
+	}
+
+/*****************************************************************************\
+|* Inform the sender if we want to be updated (other than exit/enter)
+\*****************************************************************************/
+- (BOOL)wantsPeriodicDraggingUpdates
+	{
+	return NO;
+	}
+
+/*****************************************************************************\
+|* Register this view as having an interest in a bunch of drag-types
+\*****************************************************************************/
+- (void)registerForDraggedTypes:(nonnull NSArray<NSString *> *)newTypes
+	{
+	_dragTypes = [NSSet setWithArray:newTypes];
+	}
+
+/*****************************************************************************\
+|* We got a mouse-release in an acceptable drop-target, prepare for the actual
+|* drop
+\*****************************************************************************/
+- (BOOL) prepareForDragOperation:(id<AZDraggingInfo>) sender
+	{
+	return NO;
+	}
+
+/*****************************************************************************\
+|* Do the actual drop, sent if the -prepareForDragOperation returns YES
+\*****************************************************************************/
+- (BOOL) performDragOperation:(id<AZDraggingInfo>) sender
+	{
+	return NO;
+	}
+
+/*****************************************************************************\
+|* And handle the drop completing, sent if -performDragOperation returns YES
+\*****************************************************************************/
+- (void) concludeDragOperation:(id<AZDraggingInfo>) sender
+	{}
+
 
 // MARK: Private methods
 
@@ -821,7 +895,7 @@ static inline void _buildTransformsIfNeeded(AZView *self)
 	{
 	AZTransform *result = [AZTransform new];
 	AZView *sv			= self.superview;
-	BOOL doFrame		= YES;
+	BOOL doFrame			= YES;
 
 	if (sv != nil)
 		result = [sv transformToWindow];
@@ -867,4 +941,6 @@ static inline void _buildTransformsIfNeeded(AZView *self)
 	for (AZView *view in _subviews)
 		[view _invalidateTransforms];
 	}
+
+
 @end

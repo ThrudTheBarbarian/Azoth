@@ -375,22 +375,22 @@
 
 
 /*****************************************************************************\
-|* Tell any subview that it's either been exited or entered with a drag
+|* Find the subview at a given point, in reverse order
 \*****************************************************************************/
-- (AZView *) _informSubviewOfDragEventAtPoint:(NSPoint)p
+- (AZView *) _findViewAtPoint:(NSPoint)p
 	{
 	AZView *found = nil;
 
 	for (AZView *view in self.subviews.reverseObjectEnumerator)
 		{
-		found = [view _informSubviewOfDragEventAtPoint:p];
+		found = [view _findViewAtPoint:p];
 		if (found)
 			break;
 		}
 
 	if (found == nil)
 		{
-		NSRect wframe = [self convertRect:self.frame toView:nil];
+		NSRect wframe = [self convertRect:self.bounds toView:nil];
 		if (NSPointInRect(p, wframe))
 			return self;
 		}

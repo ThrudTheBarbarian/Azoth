@@ -59,9 +59,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void) _removeSubview:(AZView *)subview;
 
 /*****************************************************************************\
-|* Tell any subview that it's either been exited or entered with a drag
+|* Find the subview at a given point, in reverse order
 \*****************************************************************************/
-- (AZView *) _informSubviewOfDragEventAtPoint:(NSPoint)p;
+- (AZView *) _findViewAtPoint:(NSPoint)p;
 
 @end
 

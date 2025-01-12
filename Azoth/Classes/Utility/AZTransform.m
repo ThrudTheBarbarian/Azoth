@@ -76,9 +76,9 @@
 + (AZTransform *) rotation:(float)radians
 	{
 	return [[AZTransform alloc] initWithA:SDL_cos(radians)
-										b:SDL_sin(radians)
-										c:-SDL_sin(radians)
-										d:SDL_cos(radians)
+									   b:SDL_sin(radians)
+									   c:-SDL_sin(radians)
+									   d:SDL_cos(radians)
 									   tx:0.f
 									   ty:0.f];
 	}

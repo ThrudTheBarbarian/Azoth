@@ -68,7 +68,7 @@ static AZDraggingSession *_session = nil;
 	if (items.count == 0)
 		return nil;
 
-	_session = AZDraggingSession.new;
+	_session = [[AZDraggingSession alloc] initWithWindow:self];
 	_session.items = items;
 
 	/*************************************************************************\
@@ -126,7 +126,7 @@ static AZDraggingSession *_session = nil;
 	if (e.type == AZMouseMoved)
 		{
 		_session.at = e.locationInWindow;
-
+			
 		/*********************************************************************\
 		|* Send a drag-started before drag-moved
 		\*********************************************************************/
@@ -153,7 +153,7 @@ static AZDraggingSession *_session = nil;
 	else
 		{
 		/*********************************************************************\
-		|* Send a drag-ended
+		|* Send a drag-ended to the source
 		\*********************************************************************/
 		SEL moveSel = SELECTOR(@"draggingSession:endedAtPoint:operation:");
 		if ([_session.source respondsToSelector:moveSel])
@@ -162,12 +162,66 @@ static AZDraggingSession *_session = nil;
 								   operation:_session.operation];
 
 		/*********************************************************************\
+		|* If the most-recent response is not AZDragOperationNone then start
+		|* the drop operation
+		\*********************************************************************/
+		if (_session.lastView != nil)
+			if ([_session.lastView prepareForDragOperation:_session])
+				if ([_session.lastView performDragOperation:_session])
+					[_session.lastView concludeDragOperation:_session];
+
+		/*********************************************************************\
 		|* Clean up
 		\*********************************************************************/
 		[AZApp removeEventSink:_session.sink];
 		_session 				= nil;
 		self.contentView.drag 	= nil;
 		}
+	}
+
+/*****************************************************************************\
+|* Inform the window which view we're currently dragging over the top of that
+|* there is information it wants to know
+\*****************************************************************************/
+- (void) _draggedOverView:(AZView *)view
+	{
+	/*************************************************************************\
+	|* If we move out of a view we previously informed that we'd moved into,
+	|* then unconditionally tell it we've moved out
+	\*************************************************************************/
+	if (view != _session.lastView)
+		{
+		[_session.lastView draggingExited:_session];
+
+		/*********************************************************************\
+		|* At the same time, check to see if the new view we've moved into
+		|* also wants to know about drag/drop of the types on the pasteboard
+		\*********************************************************************/
+		AZPasteboard *pb = [AZPasteboard draggingPasteboard];
+		NSSet * dragTypes = [NSSet setWithArray:pb.datatypes];
+		if ([view.dragTypes intersectsSet:dragTypes])
+			{
+			_session.lastView	= view;
+			_session.lastUpdate	= NSDate.date;
+			_session.response 	= [_session.lastView draggingEntered:_session];
+			}
+		else
+			{
+			_session.lastView 	= nil;
+			_session.lastUpdate = nil;
+			}
+		}
+
+	/*************************************************************************\
+	|* If the view wants to get periodic updates, then send it the update
+	|* message if 0.1 secs has passed since the last time we did so
+	\*************************************************************************/
+	if ([_session.lastView wantsPeriodicDraggingUpdates])
+		if ([NSDate.new timeIntervalSinceDate:_session.lastUpdate] > 0.1)
+			{
+			_session.response 	= [_session.lastView draggingUpdated:_session];
+			_session.lastUpdate = NSDate.new;
+			}
 	}
 
 @end
