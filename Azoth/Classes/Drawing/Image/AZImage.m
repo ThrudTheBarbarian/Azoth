@@ -98,6 +98,7 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 	AZImage *img 	= [AZImage new];
 	img.texture		= [AZApp textureFor:kIconsMap];
 	img.srcRect		= r;
+	img.identifier	= name;
 	return img;
 	}
 
@@ -464,10 +465,15 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 \*****************************************************************************/
 - (nonnull id)pasteboardPropertyListForType:(nonnull AZPasteboardType)type
 	{
+	NSString *identity = (self.identifier != nil)
+					   ? self.identifier
+					   : @"unidentified";
+
 	return @{
-		@"type"		: @"image",
-		@"texture" 	: @(_texture),
-		@"at"		: NSStringFromRect(_srcRect)
+		@"type"			: @"image",
+		@"texture" 		: @(_texture),
+		@"at"			: NSStringFromRect(_srcRect),
+		@"identifier"	: identity
 		};
 	}
 

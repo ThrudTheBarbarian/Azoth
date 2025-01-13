@@ -12,6 +12,7 @@
 #import "AZColour.h"
 #import "AZDraggingSession.h"
 #import "AZGeometry.h"
+#import "AZImage.h"
 #import "AZNotifications.h"
 #import "AZPainter.h"
 #import "AZRenderer.h"
@@ -785,6 +786,42 @@ beginDraggingSessionWithItems:(NSArray<AZDraggingItem *> *) items
 	}
 
 
+/*****************************************************************************\
+|* Create an image from the backing textures of the view and its subviews
+\*****************************************************************************/
+- (AZImage *) backingImage
+	{
+	NSSize size 		= self.bounds.size;
+	AZImage *img 		= [AZImage imageWithSize:size];
+	AZRenderer *azr		= AZRenderer.renderer;
+	[azr lockFocusOn:img.texture];
+	NSPoint p			= self.frame.origin;
+	[self _renderRecursivelyAt:NSMakePoint(0,0)];
+	[azr unlockFocus];
+	return img;
+	}
+
+- (void) _renderRecursivelyAt:(NSPoint)p
+	{
+	AZRenderer *azr = AZRenderer.renderer;
+	NSRect dst = self.bounds;
+	dst.origin.x += p.x;
+	dst.origin.y += p.y;
+
+	[azr blitFrom:self.bg src:self.bounds dst:dst];
+	for (AZView *subview in [self.subviews reverseObjectEnumerator])
+		{
+		SDL_BlendMode mode = subview.isOpaque ? SDL_BLENDMODE_NONE
+											  : SDL_BLENDMODE_ADD_PREMULTIPLIED;
+		[azr setBlendMode:mode];
+			{
+			NSPoint pt = subview.frame.origin;
+			pt.x += p.x;
+			pt.y += p.y;
+			[subview _renderRecursivelyAt:pt];
+			}
+		}
+	}
 
 // MARK: AZDraggingDestination
 

@@ -41,6 +41,7 @@ struct SDL_Mutex;
 @class AZColour;
 @class AZDraggingItem;
 @class AZDraggingSession;
+@class AZImage;
 @class AZPainter;
 @class AZScrollView;
 @class AZTransform;
@@ -349,8 +350,12 @@ beginDraggingSessionWithItems:(NSArray<AZDraggingItem *> *) items
 // Property from IB, justfor compatibility right now
 @property (copy, nonatomic) NSString * 						tooltip;
 
-// Property from IB, justfor compatibility right now
+// A set of drag-types that we have registered interest in
 @property (strong, nonatomic) NSSet<NSString *> * 			dragTypes;
+
+// Create and return an image from the view's backing
+// texture
+@property (strong, nonatomic) AZImage *						backingImage;
 
 @end
 

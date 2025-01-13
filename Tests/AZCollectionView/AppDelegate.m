@@ -108,4 +108,10 @@
 	ctrl.label.stringValue 		= img.identifier;
 	}
 
+- (BOOL) collectionView:(AZCollectionView *)cv
+	canDragItemsAtIndexes:(NSIndexSet *)indexSet
+	{
+	return YES;
+	}
+
 @end

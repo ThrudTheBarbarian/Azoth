@@ -98,6 +98,7 @@ static AZDraggingSession *_session = nil;
 		_session.source 		= source;
 		_session.operation 		= op;
 		_session.start 			= event.locationInWindow;
+		_session.at				= _session.start;
 		self.contentView.drag 	= _session;
 
 		// And create the draggable content on the Drag pasteboard

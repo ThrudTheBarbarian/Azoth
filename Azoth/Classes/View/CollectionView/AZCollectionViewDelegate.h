@@ -15,7 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class AZCollectionView;
 @class AZCVGroup;
+@class AZImage;
 @class AZMenu;
+@class AZPasteboard;
 @class AZViewController;
 
 /*****************************************************************************\
@@ -160,6 +162,7 @@ enum
 
 
 // MARK: Group management.
+
 // Groups are just a range of views, but can indicate a relationship
 // between the views
 
@@ -172,6 +175,56 @@ enum
 
 // Offset for the top of the items within the group
 - (NSInteger) topOffsetForItemsInCollectionView:(AZCollectionView *)cv;
+
+
+
+// MARK: Drag and drop
+
+// Return an image for an item at a given index
+- (AZImage *) collectionView:(AZCollectionView *)cv
+		imageForItemAtIndex:(NSInteger)index;
+
+// Determine if the collection view is allowed to drag the items at a
+// given set of indices
+- (BOOL)collectionView:(AZCollectionView *)cv
+		canDragItemsAtIndexes:(NSIndexSet *)indexSet;
+
+// Write the items at the supplied indices to the pasteboard
+- (void)collectionView:(AZCollectionView *)cv
+		writeItemsAtIndexes:(NSIndexSet *)indexSet
+		toPasteboard:(AZPasteboard *)pb;
+
+// Determine if this is a valid drop location
+- (BOOL)collectionView:(AZCollectionView *)cv
+		validateDrop:(id <AZDraggingInfo>)info
+		onItemAtIndex:(NSInteger)index;
+
+// Tell the delegate that the drag is over a given view controller
+- (void)collectionView:(AZCollectionView *)cv
+		dragEnteredViewController:(AZViewController *)vc;
+
+// Tell the delegate that the drag is no longer over a given view controller
+- (void)collectionView:(AZCollectionView *)cv
+		dragExitedViewController:(AZViewController *)vc;
+
+// We want to perform a drag operation while over a given view controller
+- (BOOL)collectionView:(AZCollectionView *)cv
+  performDragOperation:(id <AZDraggingInfo>)info
+      onViewController:(AZViewController *)vc
+               forItem:(id)item;
+
+// Notification that a drag operation is now over this collection view
+- (AZDragOperation)collectionView:(AZCollectionView *)cv
+		draggingEntered:(id <AZDraggingInfo>)info;
+
+// Notification that a drag operation finished while over this collection view
+- (void)collectionView:(AZCollectionView *)cv
+		draggingEnded:(id <AZDraggingInfo>)info;
+
+// Notification that a drag operation is no longer over this collection view
+- (void)collectionView:(AZCollectionView *)cv
+		draggingExited:(id <AZDraggingInfo>)info;
+
 
 @end
 

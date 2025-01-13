@@ -12,11 +12,14 @@
 #import "AZCVGroup.h"
 #import "AZCVLayoutItem.h"
 #import "AZCVLayoutManager.h"
+#import "AZDraggingItem.h"
 #import "AZEvent.h"
 #import "AZGeometry.h"
+#import "AZImage.h"
 #import "AZMenu.h"
 #import "AZNotifications.h"
 #import "AZPainter.h"
+#import "AZPasteboard.h"
 #import "AZScrollView.h"
 #import "AZViewController.h"
 #import "AZWindow.h"
@@ -239,9 +242,6 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 				 : AZColour.white;
 
 	[painter rectangleWithRect:dirtyRect filled:YES colour:bg];
-
-	//NSRect frame = NSRectFromTwoPoints(_atDown, _atDragged);
-	//[painter rectangleWithRect:frame colour:AZColour.grey50];
 
 	if ((_selection.count > 0) && self.shouldDrawSelections)
 		{
@@ -890,14 +890,15 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 		{
 		NSUInteger idx = [_layoutManager indexOfItemContentRectAtPoint:_atDown];
 		BOOL dragOk    = [self delegateSupportsDragForItemsAtIndexes:_selection];
+		dragOk 		  &= (_originalSelection.count > 0);
 
 		if ((idx != NSNotFound) && (_selection.count > 0) && dragOk)
 			{
-//			NSPoint mouse = [self convertPoint:e.locationInWindow fromView:nil];
-//			CGFloat distance = sqrt(pow(mouse.x-_atDown.x,2)
-//								   +pow(mouse.y-_atDown.y,2));
-//			if (distance > 3)
-//				[self initiateDraggingSessionWithEvent:anEvent];
+			NSPoint mouse = [self convertPoint:e.locationInWindow fromView:nil];
+			CGFloat distance = sqrt(pow(mouse.x-_atDown.x,2)
+								   +pow(mouse.y-_atDown.y,2));
+			if (distance > 3)
+				[self initiateDraggingSessionWithEvent:e];
 			}
 		else
 			[self regularMouseDragged:e];
@@ -961,9 +962,9 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 
 - (BOOL) delegateSupportsDragForItemsAtIndexes:(NSIndexSet *)indexSet
 	{
-//	SEL dragSel = SELECTOR(@"collectionView:canDragItemsAtIndexes:");
-//	if ([_delegate respondsToSelector:dragSel])
-//		return [_delegate collectionView:self canDragItemsAtIndexes:indexSet];
+	SEL dragSel = SELECTOR(@"collectionView:canDragItemsAtIndexes:");
+	if ([_delegate respondsToSelector:dragSel])
+		return [_delegate collectionView:self canDragItemsAtIndexes:indexSet];
 	return NO;
 	}
 
@@ -982,6 +983,67 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 	_originalSelection = nil;
 	return YES;
 	}
+
+
+
+// MARK: Drag and drop support
+
+/*****************************************************************************\
+|* We want to allow copy-drags
+\*****************************************************************************/
+- (AZDragOperation) draggingSession:(AZDraggingSession *)session
+			sourceOperationMaskForDraggingContext:(AZDraggingContext)context
+	{
+	return AZDragOperationCopy;
+	}
+
+/*****************************************************************************\
+|* Called when the mouse drags a small way away from one of our items, having
+|* previously already selected at least one item.
+\*****************************************************************************/
+- (void)initiateDraggingSessionWithEvent:(AZEvent *)e
+	{
+	NSMutableArray<AZDraggingItem *> *items = NSMutableArray.new;
+	SEL imgSel = SELECTOR(@"collectionView:imageForItemAtIndex:");
+	if ([_delegate respondsToSelector:imgSel])
+		{
+		NSInteger index = _originalSelection.firstIndex;
+		while (index != NSNotFound)
+			{
+			AZImage *img = [_delegate collectionView:self
+								 imageForItemAtIndex:index];
+			AZDraggingItem *item = [AZDraggingItem itemWithPasteboardWriter:img];
+			NSRect itemRect 	 = [_layoutManager rectOfItemAtIndex:index];
+			itemRect.origin.x 	-= _offset.x;
+			itemRect.origin.y 	-= _offset.y;
+			[item setDraggingFrame:itemRect];
+			[items addObject:item];
+			index = [_originalSelection indexGreaterThanIndex:index];
+			}
+		}
+	else
+		{
+		NSInteger idx = _originalSelection.firstIndex;
+		while (idx != NSNotFound)
+			{
+			AZView *view 		 = [self viewControllerForItemAtIndex:idx].view;
+			AZImage *img 		 = view.backingImage;
+			AZDraggingItem *item = [AZDraggingItem itemWithPasteboardWriter:img];
+			item.image			 = img;
+			NSRect itemRect 	 = [_layoutManager rectOfItemAtIndex:idx];
+			itemRect.origin.x 	-= _offset.x;
+			itemRect.origin.y 	-= _offset.y;
+			[item setDraggingFrame:itemRect];
+			[items addObject:item];
+
+			idx = [_originalSelection indexGreaterThanIndex:idx];
+			}
+		}
+
+	[self beginDraggingSessionWithItems:items event:e source:self];
+	}
+
+
 
 // MARK: Reloading and Updating the Icon View
 
