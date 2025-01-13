@@ -1039,6 +1039,7 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 			{
 			AZView *view 		 = [self viewControllerForItemAtIndex:idx].view;
 			AZImage *img 		 = view.backingImage;
+			img.identifier		 = [NSString stringWithFormat:@"%ld", (long)idx];
 			AZDraggingItem *item = [AZDraggingItem itemWithPasteboardWriter:img];
 			item.image			 = img;
 			NSRect itemRect 	 = [_layoutManager rectOfItemAtIndex:idx];

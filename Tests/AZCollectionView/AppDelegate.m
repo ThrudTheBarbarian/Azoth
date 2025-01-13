@@ -147,6 +147,18 @@
 	   onViewController:(AZViewController *)vc
 				forItem:(id)item
 	{
+	AZPasteboard *pb = [AZPasteboard draggingPasteboard];
+	NSArray *items = [pb propertyListForType:AZPasteboardTypeImage];
+
+	NSMutableArray *names = NSMutableArray.new;
+	for (NSDictionary *item in items)
+		{
+		NSInteger idx = ((NSString *)item[@"identifier"]).integerValue;
+		AZImage *img  = _images[idx];
+		[names addObject:img.identifier];
+		}
+
+	NSLog(@"dropped %@", names);
 	return YES;
 	}
 

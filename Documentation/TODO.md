@@ -3,8 +3,8 @@
 In (sort of) order
 * NSCoder classes as foundation work for
     * initWithDictionary to work, which might allow XIBs
-    - NSPasteboard as foundation work for
-        - Drag and drop support (then into views)
+    * NSPasteboard as foundation work for
+        * Drag and drop support (then into views)
             - Not sure we'll manage to integrate with Windows D&D though
 				- SDL3 has a 'drop' type event. Don't see a drag one.
 				- Only copes with filename or text content

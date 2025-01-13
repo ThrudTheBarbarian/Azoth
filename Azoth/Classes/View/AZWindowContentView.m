@@ -53,7 +53,7 @@
 \*****************************************************************************/
 - (void) _commonWindowContentViewInit
 	{
-	self.backgroundColour 	= AZColour.red;
+	self.backgroundColour 	= AZColour.grey95;
 	_drag  					= nil;
 	}
 
