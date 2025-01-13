@@ -187,29 +187,32 @@ static AZDraggingSession *_session = nil;
 - (void) _draggedOverView:(AZView *)view
 	{
 	/*************************************************************************\
-	|* If we move out of a view we previously informed that we'd moved into,
-	|* then unconditionally tell it we've moved out
+	|* The logic here is a little subtle. We want to deselect any previous
+	|* drop target, but only if the new candidate drop target actually wants
+	|* to accept the drop.
 	\*************************************************************************/
 	if (view != _session.lastView)
 		{
-		[_session.lastView draggingExited:_session];
-
 		/*********************************************************************\
-		|* At the same time, check to see if the new view we've moved into
-		|* also wants to know about drag/drop of the types on the pasteboard
+		|* Check to see if the new view we've moved into also wants to know
+		|* about drag/drop of the types on the pasteboard. If so, in order,
+		|*   o  Exit from the last view
+		|*   o  Update the last-view to be the current view
+		|*   o  Enter to the currnt view
+		|*
+		|* Do not set the session last-view to nil if the current view doesn't
+		|* want to be dropped on because that will prevent the cycle from
+		|* working when we do find another view that we can drop onto
 		\*********************************************************************/
 		AZPasteboard *pb = [AZPasteboard draggingPasteboard];
 		NSSet * dragTypes = [NSSet setWithArray:pb.datatypes];
 		if ([view.dragTypes intersectsSet:dragTypes])
 			{
+			[_session.lastView draggingExited:_session];
+
 			_session.lastView	= view;
 			_session.lastUpdate	= NSDate.date;
 			_session.response 	= [_session.lastView draggingEntered:_session];
-			}
-		else
-			{
-			_session.lastView 	= nil;
-			_session.lastUpdate = nil;
 			}
 		}
 

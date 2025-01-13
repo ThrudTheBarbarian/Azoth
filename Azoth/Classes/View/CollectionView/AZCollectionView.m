@@ -5,6 +5,8 @@
 //  Created by Simon Gornall on 1/7/25.
 //
 
+#include <SDL3/SDL.h>
+
 #import "AZClipView.h"
 #import "AZCollectionView.h"
 #import "AZCollectionViewDelegate.h"
@@ -13,6 +15,7 @@
 #import "AZCVLayoutItem.h"
 #import "AZCVLayoutManager.h"
 #import "AZDraggingItem.h"
+#import "AZDraggingSession.h"
 #import "AZEvent.h"
 #import "AZGeometry.h"
 #import "AZImage.h"
@@ -960,27 +963,20 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 		[self delegateCollectionViewSelectionDidChange];
 	}
 
-- (BOOL) delegateSupportsDragForItemsAtIndexes:(NSIndexSet *)indexSet
-	{
-	SEL dragSel = SELECTOR(@"collectionView:canDragItemsAtIndexes:");
-	if ([_delegate respondsToSelector:dragSel])
-		return [_delegate collectionView:self canDragItemsAtIndexes:indexSet];
-	return NO;
-	}
-
 
 /*****************************************************************************\
 |* We released the mouse
 \*****************************************************************************/
 - (BOOL) mouseUp:(AZEvent *)e
 	{
+
+  	_atDown    			= NSZeroPoint;
+  	_atDragged 			= NSZeroPoint;
+	_isDragging			= NO;
+	_dragHoverIndex		= NSNotFound;
+	_originalSelection	= nil;
+
 	[self setNeedsDisplay:YES];
-
-  	_atDown    	= NSZeroPoint;
-  	_atDragged 	= NSZeroPoint;
-	_isDragging	= NO;
-
-	_originalSelection = nil;
 	return YES;
 	}
 
@@ -1003,22 +999,37 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 \*****************************************************************************/
 - (void)initiateDraggingSessionWithEvent:(AZEvent *)e
 	{
+	id<AZPasteboardWriting> writer 			= nil;
 	NSMutableArray<AZDraggingItem *> *items = NSMutableArray.new;
-	SEL imgSel = SELECTOR(@"collectionView:imageForItemAtIndex:");
-	if ([_delegate respondsToSelector:imgSel])
+
+	SEL writeSel = SELECTOR(@"collectionView:writerForItem:");
+	if ([_delegate respondsToSelector:writeSel])
 		{
-		NSInteger index = _originalSelection.firstIndex;
-		while (index != NSNotFound)
+		SEL imgSel = SELECTOR(@"collectionView:imageForItemAtIndex:");
+		if ([_delegate respondsToSelector:imgSel])
 			{
-			AZImage *img = [_delegate collectionView:self
-								 imageForItemAtIndex:index];
-			AZDraggingItem *item = [AZDraggingItem itemWithPasteboardWriter:img];
-			NSRect itemRect 	 = [_layoutManager rectOfItemAtIndex:index];
-			itemRect.origin.x 	-= _offset.x;
-			itemRect.origin.y 	-= _offset.y;
-			[item setDraggingFrame:itemRect];
-			[items addObject:item];
-			index = [_originalSelection indexGreaterThanIndex:index];
+			NSInteger index = _originalSelection.firstIndex;
+			while (index != NSNotFound)
+				{
+				AZImage *img 		 = [_delegate collectionView:self
+											imageForItemAtIndex:index];
+				writer 				 = [_delegate collectionView:self
+											writerForItemAtIndex:index];
+				AZDraggingItem *item = [AZDraggingItem itemWithPasteboardWriter:img];
+				NSRect itemRect 	 = [_layoutManager rectOfItemAtIndex:index];
+				itemRect.origin.x 	-= _offset.x;
+				itemRect.origin.y 	-= _offset.y;
+				item.draggingFrame	 = itemRect;
+				item.image			 = img;
+				[items addObject:item];
+				index = [_originalSelection indexGreaterThanIndex:index];
+				}
+			}
+		else
+			{
+			SDL_Log("Collection view delegate responds to "
+				    "collectionView:writerForItem: but not "
+				    "collectionView:imageForItemAtIndex:");
 			}
 		}
 	else
@@ -1034,6 +1045,7 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 			itemRect.origin.x 	-= _offset.x;
 			itemRect.origin.y 	-= _offset.y;
 			[item setDraggingFrame:itemRect];
+
 			[items addObject:item];
 
 			idx = [_originalSelection indexGreaterThanIndex:idx];
@@ -1041,6 +1053,206 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 		}
 
 	[self beginDraggingSessionWithItems:items event:e source:self];
+	}
+
+/*****************************************************************************\
+|* Invoked when the dragged image enters destination bounds or frame;
+|* delegate returns dragging operation to perform.
+\*****************************************************************************/
+- (AZDragOperation) draggingEntered:(id<AZDraggingInfo>) sender
+	{
+	SEL dragEnter = SELECTOR(@"collectionView:draggingEntered:");
+	if ([_delegate respondsToSelector:dragEnter])
+		return [_delegate collectionView:self draggingEntered:sender];
+
+    return [self draggingUpdated:sender];
+	}
+
+/*****************************************************************************\
+|* Invoked periodically as the image is held within the destination area
+|* allowing modification of the dragging operation or mouse-pointer position.
+\*****************************************************************************/
+- (AZDragOperation) draggingUpdated:(id<AZDraggingInfo>)sender;
+	{
+	if (_dragHoverIndex != NSNotFound)
+		{
+		NSRect where = [_layoutManager rectOfItemAtIndex:_dragHoverIndex];
+		[self setNeedsDisplayInRect:where];
+		}
+
+	NSPoint mouse 	 = [self convertPoint:sender.draggingLocation fromView:nil];
+	NSUInteger index = [_layoutManager indexOfItemAtPoint:mouse];
+
+  	AZDragOperation operation = AZDragOperationNone;
+	if ([sender draggingSource] == self)
+		{
+		if ([_selection containsIndex:index])
+			[self setDragHoverIndex:NSNotFound];
+		else if ([self _delegateCanDrop:sender onIndex:index])
+			{
+			[self setDragHoverIndex:index];
+			operation = AZDragOperationMove;
+			}
+		else
+			[self setDragHoverIndex:NSNotFound];
+		}
+	else
+		{
+		if ([self _delegateCanDrop:sender onIndex:index])
+			{
+			[self setDragHoverIndex:index];
+			operation = AZDragOperationCopy;
+			}
+		}
+  
+	if (_dragHoverIndex != NSNotFound)
+		{
+		NSRect where = [_layoutManager rectOfItemAtIndex:_dragHoverIndex];
+		[self setNeedsDisplayInRect:where];
+		}
+  
+	return operation;
+	}
+
+/*****************************************************************************\
+|* Inform the sender if we want to be updated (other than exit/enter)
+\*****************************************************************************/
+- (BOOL)wantsPeriodicDraggingUpdates
+	{
+	return YES;
+	}
+
+
+/*****************************************************************************\
+|* Called when a drag operation ends
+\*****************************************************************************/
+- (void) draggingEnded:(id<AZDraggingInfo>) sender;
+	{
+	[self concludeDragOperation:sender];
+	}
+
+/*****************************************************************************\
+|* Invoked when the dragged image exits the destination’s bounds rectangle
+\*****************************************************************************/
+- (void) draggingExited:(id<AZDraggingInfo>) sender
+	{
+	NSPoint mouse    = [self convertPoint:sender.draggingLocation fromView:nil];
+	NSUInteger index = [_layoutManager indexOfItemAtPoint:mouse];
+
+	if (index == NSNotFound)
+		{
+		NSRect where = [_layoutManager rectOfItemAtIndex:_dragHoverIndex];
+		[self setNeedsDisplayInRect:where];
+		[self setDragHoverIndex:NSNotFound];
+
+		SEL dragExit = SELECTOR(@"collectionView:draggingExited:");
+		if ([_delegate respondsToSelector:dragExit])
+			[_delegate collectionView:self draggingExited:sender];
+		}
+	}
+
+
+/*****************************************************************************\
+|* Allow a drop to go ahead, let the delegate know
+\*****************************************************************************/
+- (BOOL) performDragOperation:(id<AZDraggingInfo>) sender;
+	{
+	AZViewController *vc	= nil;
+	id item 				= nil;
+
+	if ((_dragHoverIndex >= 0) && (_dragHoverIndex <_contentArray.count))
+		item = _contentArray[_dragHoverIndex];
+
+	SEL dragDo = SELECTOR(@"collectionView:performDragOperation:"
+						   "onViewController:forItem:");
+	if ([_delegate respondsToSelector:dragDo])
+		{
+		vc = [self viewControllerForItemAtIndex:_dragHoverIndex];
+		return [_delegate collectionView:self
+					performDragOperation:sender
+						onViewController:vc
+								 forItem:item];
+		}
+
+    return NO;
+	}
+
+/*****************************************************************************\
+|* And handle the drop completing, sent if -performDragOperation returns YES
+\*****************************************************************************/
+- (void) concludeDragOperation:(id<AZDraggingInfo>) sender
+	{
+	if (_dragHoverIndex != NSNotFound)
+		{
+		NSRect where = [_layoutManager rectOfItemAtIndex:_dragHoverIndex];
+		[self setNeedsDisplayInRect:where];
+
+		[self setDragHoverIndex:NSNotFound];
+
+		SEL dragDone = SELECTOR(@"collectionView:draggingEnded:");
+		if ([_delegate respondsToSelector:dragDone])
+			[_delegate collectionView:self draggingEnded:sender];
+		}
+	}
+
+/*****************************************************************************\
+|* Set the hover-index for when we're accepting a drop
+\*****************************************************************************/
+- (void)setDragHoverIndex:(NSInteger)hoverIndex
+	{
+	AZViewController *vc = nil;
+
+	if (hoverIndex != _dragHoverIndex)
+		{
+		if (_dragHoverIndex != NSNotFound)
+			{
+			NSRect where = [_layoutManager rectOfItemAtIndex:_dragHoverIndex];
+			[self setNeedsDisplayInRect:where];
+			}
+
+		SEL exitSel = SELECTOR(@"collectionView:dragExitedViewController:");
+		vc = [self viewControllerForItemAtIndex:_dragHoverIndex];
+
+		if ([_delegate respondsToSelector:exitSel])
+			[_delegate collectionView:self dragExitedViewController:vc];
+
+		_dragHoverIndex = hoverIndex;
+
+		SEL enterSel = SELECTOR(@"collectionView:dragEnteredViewController:");
+		vc 			 = [self viewControllerForItemAtIndex:_dragHoverIndex];
+		if ([_delegate respondsToSelector:enterSel])
+			[_delegate collectionView:self dragEnteredViewController:vc];
+
+		if (_dragHoverIndex != NSNotFound)
+			{
+			NSRect where = [_layoutManager rectOfItemAtIndex:_dragHoverIndex];
+			[self setNeedsDisplayInRect:where];
+			}
+		}
+	}
+
+/*****************************************************************************\
+|* Do we support drag for a set of indices
+\*****************************************************************************/
+- (BOOL) delegateSupportsDragForItemsAtIndexes:(NSIndexSet *)indexSet
+	{
+	SEL dragSel = SELECTOR(@"collectionView:canDragItemsAtIndexes:");
+	if ([_delegate respondsToSelector:dragSel])
+		return [_delegate collectionView:self canDragItemsAtIndexes:indexSet];
+	return NO;
+	}
+
+/*****************************************************************************\
+|* If the delegate allows us to drop on an item, go for it, otherwise refuse
+\*****************************************************************************/
+- (BOOL)_delegateCanDrop:(id)draggingInfo onIndex:(NSUInteger)index
+	{
+	SEL canDrop = SELECTOR(@"collectionView:validateDrop:onItemAtIndex:");
+	if ([_delegate respondsToSelector:canDrop])
+		return [_delegate collectionView:self
+							validateDrop:draggingInfo
+						  onItemAtIndex:index];
+    return NO;
 	}
 
 

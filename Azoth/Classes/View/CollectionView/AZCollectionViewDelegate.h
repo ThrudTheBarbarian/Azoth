@@ -20,6 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 @class AZPasteboard;
 @class AZViewController;
 
+@protocol AZPasteboardWriting;
+
 /*****************************************************************************\
 |* Scroll directions for when the delegate is listening for them
 \*****************************************************************************/
@@ -189,10 +191,10 @@ enum
 - (BOOL)collectionView:(AZCollectionView *)cv
 		canDragItemsAtIndexes:(NSIndexSet *)indexSet;
 
-// Write the items at the supplied indices to the pasteboard
-- (void)collectionView:(AZCollectionView *)cv
-		writeItemsAtIndexes:(NSIndexSet *)indexSet
-		toPasteboard:(AZPasteboard *)pb;
+// Provide an id<AZPasteboardWriting> object that can write to the
+// pasteboard when a given item is serialised
+- (id<AZPasteboardWriting>) collectionView:(AZCollectionView *)cv
+					  writerForItemAtIndex:(NSUInteger)itemIndex;
 
 // Determine if this is a valid drop location
 - (BOOL)collectionView:(AZCollectionView *)cv

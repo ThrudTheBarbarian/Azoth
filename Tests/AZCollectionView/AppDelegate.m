@@ -55,6 +55,7 @@
 	_collection = [[AZCollectionView alloc] initWithFrame:bounds];
 	_collection.delegate = self;
 	_collection.backgroundColour = [AZColour colourNamed:@"snow"];
+	[_collection registerForDraggedTypes:@[AZPasteboardTypeImage]];
 
 	/*************************************************************************\
 	|* Add it to a scrollview
@@ -79,11 +80,18 @@
 
 // MARK: AZCollectionView
 
+/*****************************************************************************\
+|* Return the size of a given cell
+\*****************************************************************************/
 - (NSSize) cellSizeForCollectionView:(AZCollectionView *)cv
 	{
 	return NSMakeSize(160, 97);
 	}
 
+/*****************************************************************************\
+|* Create a view-controller for the cell, these will be recycled as needed
+|* as views go off-screen
+\*****************************************************************************/
 - (AZViewController *) reusableVCForCollectionView:(AZCollectionView *)cv
 	{
 	CVItemViewController *vc = nil;
@@ -96,6 +104,10 @@
 	return vc;
 	}
 
+/*****************************************************************************\
+|* Because they're being recycled, we need to be able to reconfigure the VC
+|* when it's about to be displayed
+\*****************************************************************************/
 - (void) collectionView:(AZCollectionView *)cv
 			 willShowVC:(AZViewController *)vc
 			    forItem:(id)anItem
@@ -108,8 +120,32 @@
 	ctrl.label.stringValue 		= img.identifier;
 	}
 
+/*****************************************************************************\
+|* Allow drag
+\*****************************************************************************/
 - (BOOL) collectionView:(AZCollectionView *)cv
 	canDragItemsAtIndexes:(NSIndexSet *)indexSet
+	{
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Allow drop
+\*****************************************************************************/
+- (BOOL) collectionView:(AZCollectionView *)cv
+		   validateDrop:(id<AZDraggingInfo>)info
+		  onItemAtIndex:(NSInteger)index
+	{
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Pretend to complete the drop
+\*****************************************************************************/
+- (BOOL) collectionView:(AZCollectionView *)cv
+   performDragOperation:(id<AZDraggingInfo>)info
+	   onViewController:(AZViewController *)vc
+				forItem:(id)item
 	{
 	return YES;
 	}

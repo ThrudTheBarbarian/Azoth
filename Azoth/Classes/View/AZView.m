@@ -875,7 +875,7 @@ beginDraggingSessionWithItems:(NSArray<AZDraggingItem *> *) items
 \*****************************************************************************/
 - (BOOL) prepareForDragOperation:(id<AZDraggingInfo>) sender
 	{
-	return NO;
+	return YES;
 	}
 
 /*****************************************************************************\
