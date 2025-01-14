@@ -16,11 +16,14 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 // In this header, you should import all the public headers of your framework
 // using statements like #import <Azoth/PublicHeader.h>
 
+#import <SDL3/SDL.h>
+
 #import <Azoth/AZApplication.h>
 #import <Azoth/AZAppDelegate.h>
 #import <Azoth/AZButton.h>
 #import <Azoth/AZClipView.h>
 #import <Azoth/AZColour.h>
+#import <Azoth/AZColourTarget.h>
 #import <Azoth/AZControl.h>
 #import <Azoth/AZCollectionView.h>
 #import <Azoth/AZCollectionViewDelegate.h>
@@ -45,14 +48,18 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZOutlineView.h>
 #import <Azoth/AZPainter.h>
 #import <Azoth/AZPasteboard.h>
+#import <Azoth/AZPipelineTarget.h>
 #import <Azoth/AZPopupButton.h>
 #import <Azoth/AZRenderer.h>
 #import <Azoth/AZRenderer2d.h>
+#import <Azoth/AZRenderer3d.h>
+#import <Azoth/AZRenderPipeline.h>
 #import <Azoth/AZResponder.h>
 #import <Azoth/AZRulerView.h>
 #import <Azoth/AZScroller.h>
 #import <Azoth/AZScrollView.h>
 #import <Azoth/AZSegmentedControl.h>
+#import <Azoth/AZShader.h>
 #import <Azoth/AZSlider.h>
 #import <Azoth/AZSplitView.h>
 #import <Azoth/AZTableColumn.h>
@@ -63,6 +70,8 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZTextPainter.h>
 #import <Azoth/AZTransform.h>
 #import <Azoth/AZTypes.h>
+#import <Azoth/AZVertexAttribute.h>
+#import <Azoth/AZVertexBuffer.h>
 #import <Azoth/AZView.h>
 #import <Azoth/AZViewController.h>
 #import <Azoth/AZWindow.h>

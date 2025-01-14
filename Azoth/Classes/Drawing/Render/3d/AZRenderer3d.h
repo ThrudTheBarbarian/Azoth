@@ -6,10 +6,12 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <Azoth/AZRenderer.h>
+#import <Azoth/AZTypes.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AZRenderer3d : NSObject
+@interface AZRenderer3d : NSObject <AZRenderer>
 
 @end
 
