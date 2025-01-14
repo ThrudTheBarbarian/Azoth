@@ -35,6 +35,16 @@ NS_ASSUME_NONNULL_BEGIN
 |* Decrement the SDL retain-count for this shader
 \*****************************************************************************/
 - (void) releaseShader;
+
+
+
+/*****************************************************************************\
+|* Properties
+\*****************************************************************************/
+
+// The actual shader
+@property(assign, nonatomic) SDL_GPUShader *						shader;
+
 @end
 
 NS_ASSUME_NONNULL_END

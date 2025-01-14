@@ -10,35 +10,26 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class AZPipelineTarget;
 @class AZShader;
-@class AZVertexAttribute;
-@class AZVertexBuffer;
+@class AZVertexInputState;
 
 @interface AZRenderPipeline : NSObject
 
 /*****************************************************************************\
-|* Add a vertex buffer
+|* Build the render pipeline
 \*****************************************************************************/
-- (void) addVertexBuffer:(AZVertexBuffer *)buffer;
-
-/*****************************************************************************\
-|* Add a vertex attribute
-\*****************************************************************************/
-- (void) addVertexAttribute:(AZVertexAttribute *)attribute;
-
-
+- (BOOL) buildWithDevice:(SDL_GPUDevice *)gpu;
 
 /*****************************************************************************\
 |* Properties
 \*****************************************************************************/
 
-// The list of vertex buffers
-@property(strong, nonatomic)
-NSMutableArray<AZVertexBuffer *> *							vertexBuffers;
+// The vertex input state
+@property(strong, nonatomic) AZVertexInputState *			vertexInputState;
 
-// The list of vertex attributes
-@property(strong, nonatomic)
-NSMutableArray<AZVertexAttribute *> *						vertexAttributes;
+// The pipeline targets (colour/stencil)
+@property(strong, nonatomic) AZPipelineTarget *				pipelineTarget;
 
 // The fragment shader, if there is one
 @property(strong, nonatomic, nullable) AZShader *			fragment;
@@ -48,6 +39,10 @@ NSMutableArray<AZVertexAttribute *> *						vertexAttributes;
 
 // The primitive type used in the pipeline.
 @property(assign, nonatomic) SDL_GPUPrimitiveType			primitiveType;
+
+// The actual pipeline that SDL uses
+@property(assign, nonatomic, readonly)
+SDL_GPUGraphicsPipeline *									pipeline;
 @end
 
 NS_ASSUME_NONNULL_END

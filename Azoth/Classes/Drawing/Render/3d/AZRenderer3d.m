@@ -7,15 +7,41 @@
 
 #import <SDL3/SDL.h>
 
+#import "AZ3dUtils.h"
+#import "AZColour.h"
+#import "AZColourTarget.h"
+#import "AZComputePipeline.h"
+#import "AZPipelineTarget.h"
 #import "AZRenderer3d.h"
 #import "AZRenderPipeline.h"
 #import "AZShader.h"
+#import "AZTexture.h"
+#import "AZVertexAttribute.h"
+#import "AZVertexBuffer.h"
+#import "AZVertexInputState.h"
 #import "AZWindow.h"
+
+/*****************************************************************************\
+|* Typedefs, enums etc.
+\*****************************************************************************/
+
+typedef struct SpriteVertex
+	{
+	float x, y, z, w;
+	float u, v, padding_a, padding_b;
+	float r, g, b, a;
+	} SpriteVertex;
+
 
 /*****************************************************************************\
 |* "Private" properties
 \*****************************************************************************/
 @interface AZRenderer3d()
+
+// The texture map for handing out textures
+@property(strong, nonatomic)
+NSMutableDictionary<NSNumber *, AZTexture *> * 						textures;
+
 // The SDL window we associate this renderer with
 @property(assign, nonatomic) SDL_Window *							sdl;
 
@@ -28,7 +54,17 @@
 // The sprite render pipeline
 @property(strong, nonatomic) AZRenderPipeline *						spritePipe;
 
+// The sprite compute pipeline
+@property(strong, nonatomic) AZComputePipeline *					computePipe;
+
 @end
+
+
+/*****************************************************************************\
+|* File-private entities
+\*****************************************************************************/
+static NSInteger 		_textureId;
+static SDL_SpinLock 	_textureLock;
 
 @implementation AZRenderer3d
 /*****************************************************************************\
@@ -38,6 +74,15 @@
 	{
 	if (self = [super init])
 		{
+		/*********************************************************************\
+		|* Prepare to store the textures
+		\*********************************************************************/
+		_textures 	= [NSMutableDictionary new];
+
+		/*********************************************************************\
+		|* Default clear colour is in fact ... clear
+		\*********************************************************************/
+		_clearColour = AZColour.clear;
 		}
 	return self;
 	}
@@ -51,9 +96,24 @@
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken,
 		^{
-		azr = [AZRenderer3d new];
+		azr 			= [AZRenderer3d new];
+		_textureId 		= 1;
+		_textureLock 	= 0;
 		});
 	return azr;
+	}
+
+
+/*****************************************************************************\
+|* Delete everything on dealloc
+\*****************************************************************************/
+- (void) dealloc
+	{
+	for (NSNumber *textureId in _textures.allKeys.copy)
+		[self releaseTexture:textureId.integerValue];
+
+	SDL_ReleaseGPUComputePipeline(_gpu,_computePipe.pipeline);
+	SDL_ReleaseGPUGraphicsPipeline(_gpu,_spritePipe.pipeline);
 	}
 
 /*****************************************************************************\
@@ -78,6 +138,26 @@
 	return ok;
 	}
 
+/*****************************************************************************\
+|* Get a texture-id
+\*****************************************************************************/
+- (NSNumber *) nextTextureId;
+	{
+	SDL_LockSpinlock(&_textureLock);
+	_textureId ++;
+	NSNumber * retVal = [NSNumber numberWithInteger:_textureId];
+	SDL_UnlockSpinlock(&_textureLock);
+	return retVal;
+	}
+
+
+/*****************************************************************************\
+|* Return the swapchain texture format
+\*****************************************************************************/
+- (SDL_GPUTextureFormat) swapchainFormat
+	{
+	return SDL_GetGPUSwapchainTextureFormat(_gpu, _sdl);
+	}
 
 /*****************************************************************************\
 |* Initialise the GPU
@@ -129,23 +209,65 @@
 	/*************************************************************************\
     |* Create the sprite-rendering pipeline
     \*************************************************************************/
-	AZShader *vert, *frag;
 	_spritePipe = [AZRenderPipeline new];
 
+	_spritePipe.primitiveType = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
 
-	vert = [AZShader shaderWithRenderer:self
-								   name:@"TexturedQuadColorWithMatrix.vert"
-							   samplers:0
-						 uniformBuffers:1
-						 storageBuffers:0
-						storageTextures:0];
+	_spritePipe.vertex = [AZShader shaderWithRenderer:self
+												 name:@"sprite.vert"
+											 samplers:0
+									   uniformBuffers:1
+									   storageBuffers:0
+									  storageTextures:0];
 
-	frag = [AZShader shaderWithRenderer:self
-								   name:@"TexturedQuadColor.frag"
-							   samplers:1
-						 uniformBuffers:0
-						 storageBuffers:0
-						storageTextures:0];
+	_spritePipe.fragment = [AZShader shaderWithRenderer:self
+												   name:@"sprite.frag"
+											   samplers:1
+										 uniformBuffers:0
+										 storageBuffers:0
+										storageTextures:0];
+
+	AZPipelineTarget *pt = AZPipelineTarget.new;
+
+	[pt addColourTarget:[AZColourTarget targetWithFormat:self.swapchainFormat]];
+	_spritePipe.pipelineTarget = pt;
+
+	AZVertexInputState *is = AZVertexInputState.new;
+	[is addBuffer:[AZVertexBuffer bufferWithSlot:0
+										  pitch:sizeof(SpriteVertex)
+									  inputRate:SDL_GPU_VERTEXINPUTRATE_VERTEX
+							   instanceStepRate:0]];
+
+	[is addAttribute:[AZVertexAttribute
+						atLocation:0
+						bufferSlot:0
+							format:SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4
+							offset:0]];
+
+	[is addAttribute:[AZVertexAttribute
+						atLocation:1
+						bufferSlot:0
+							format:SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2
+							offset:16]];
+
+	[is addAttribute:[AZVertexAttribute
+						atLocation:2
+						bufferSlot:0
+							format:SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4
+							offset:32]];
+
+	_spritePipe.vertexInputState = is;
+	[_spritePipe buildWithDevice:_gpu];
+
+
+	/*************************************************************************\
+    |* Create the compute pipeline
+    \*************************************************************************/
+	_computePipe = [AZComputePipeline pipelineFor:self
+											 name:@"sprite.comp"
+								 storageBuffersRO:1
+								 storageBuffersRW:1
+										  threads:AZMakeThreadSize(64,1,1)];
 
 	return YES;
 	}
@@ -256,10 +378,115 @@
 	}
 
 
+/*****************************************************************************\
+|* Create a texture of a given size. We assume RGBA8888 format for the
+|* texture. This needs to:
+|*
+|*  - Allocate a texture-id for the new texture
+|*  - create a transfer buffer and map it so the CPU can see it
+|*  - fill the transfer buffer with the current clear-colour
+|*  - create a GPU texture of the same size
+|*  - start a copy pass and upload the data to the texture
+|*  - finish the copy pass and return the texture-id to the caller
+|*
+\*****************************************************************************/
 - (NSInteger)createTextureOfSize:(NSSize)size
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return 0;
+	/*************************************************************************\
+	|* Get a new unique texture id
+	\*************************************************************************/
+	NSNumber *tId = self.nextTextureId;
+
+	/*************************************************************************\
+	|* Create a transfer buffer of the correct size
+	\*************************************************************************/
+	SDL_GPUTransferBuffer *upload = [self _uploadBufferOfSize:size];
+	if (upload == NULL)
+		{
+		SDL_Log("Cannot obtain GPU upload buffer of size %dx%d",
+				(int)size.width, (int)size.height);
+		return -1;
+		}
+
+	/*************************************************************************\
+	|* Map the buffer
+	\*************************************************************************/
+	uint32_t* cpuPtr = SDL_MapGPUTransferBuffer(_gpu, upload, NO);
+
+	/*************************************************************************\
+	|* Clear the buffer
+	\*************************************************************************/
+	uint32_t colour  	= _clearColour.value32;
+	uint32_t *pixel  	= cpuPtr;
+	NSInteger num  		= size.width * size.height;
+
+	for (NSInteger i=0; i<num; i++)
+		*pixel++ = colour;
+
+	/*************************************************************************\
+	|* Unmap the buffer
+	\*************************************************************************/
+	SDL_UnmapGPUTransferBuffer(_gpu, upload);
+
+	/*************************************************************************\
+	|* Create the GPU texture
+	\*************************************************************************/
+	SDL_GPUTextureUsageFlags flags = SDL_GPU_TEXTUREUSAGE_SAMPLER
+								   | SDL_GPU_TEXTUREUSAGE_COLOR_TARGET
+								   | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ
+								   | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE;
+
+	AZTexture *tex = [AZTexture textureFor:self
+								 withIndex:tId
+									  size:size
+									 usage:flags];
+	/*************************************************************************\
+	|* If we have a valid texture resource, then store it
+	\*************************************************************************/
+	if (tex)
+		_textures[tId] = tex;
+	else
+		tId = @(-1);
+
+	/*************************************************************************\
+	|* Create a copy pass to upload the cleared data to the texture
+	\*************************************************************************/
+	if (tId.integerValue > 0)
+		{
+		SDL_GPUCommandBuffer* cmds 	= SDL_AcquireGPUCommandBuffer(_gpu);
+		SDL_GPUCopyPass* pass 		= SDL_BeginGPUCopyPass(cmds);
+		SDL_GPUTextureTransferInfo info =
+			{
+			.transfer_buffer = upload,
+			.offset = 0,
+			// Zeroes out the rest
+			};
+		SDL_GPUTextureRegion region =
+			{
+			.texture = tex.texture,
+			.w  	 = (int)tex.size.width,
+			.h  	 = (int)tex.size.height,
+			.d    	 = 1
+			};
+
+		SDL_UploadToGPUTexture(pass, &info, &region, NO);
+
+		/*********************************************************************\
+		|* Tell the GPU that's all we're copying, and to go ahead and start
+		\*********************************************************************/
+		SDL_EndGPUCopyPass(pass);
+		SDL_SubmitGPUCommandBuffer(cmds);
+		}
+
+	/*************************************************************************\
+	|* Housekeeping
+	\*************************************************************************/
+	SDL_ReleaseGPUTransferBuffer(_gpu, upload);
+
+	/*************************************************************************\
+	|* Return the reference to the texture in the local map
+	\*************************************************************************/
+	return tId.integerValue;
 	}
 
 
@@ -329,9 +556,14 @@
 	}
 
 
-- (void)releaseTexture:(NSInteger)refId
+/*****************************************************************************\
+|* Release a texture, removing it from the cache
+\*****************************************************************************/
+- (void) releaseTexture:(NSInteger)refId
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
+	AZTexture *texture = _textures[@(refId)];
+	if (texture)
+		[_textures removeObjectForKey:@(refId)];
 	}
 
 
@@ -537,6 +769,23 @@
 	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
 	return 0;
 	}
+
+// MARK: Private methods
+
+/*****************************************************************************\
+|* Create a transfer buffer of the correct size
+\*****************************************************************************/
+- (SDL_GPUTransferBuffer *) _uploadBufferOfSize:(NSSize)size
+	{
+	SDL_GPUTransferBufferCreateInfo info =
+		{
+		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
+		.size  = size.width * size.height * 4
+		};
+
+	return SDL_CreateGPUTransferBuffer(_gpu, &info);
+	}
+
 
 
 

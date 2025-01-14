@@ -435,6 +435,13 @@ typedef enum
 	AZRendererType3d	= 3
 	} AZRendererType;
 
+typedef struct
+	{
+	int x;			// Thread count in X
+	int y;			// Thread count in Y
+	int z;			// Thread count in Z
+	} AZThreadSize;
+
 /*****************************************************************************\
 |* Vsync options
 \*****************************************************************************/
@@ -484,7 +491,7 @@ enum
 #define SAFELY_FREE(x) do													\
 		{                                                       			\
 		if (x)																\
-			free((void *)x);                   								\
+			free((void *)(x));                   							\
 		x = NULL;     		                       							\
 		}                                                       			\
 	while (false)

@@ -28,6 +28,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 /*****************************************************************************\
+|* Return a description of this vertex buffer
+\*****************************************************************************/
+- (SDL_GPUVertexBufferDescription) bufferDescription;
+
+/*****************************************************************************\
 |* Properties
 \*****************************************************************************/
 
@@ -47,6 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 // buffer by one element. Ignored unless input_rate is
 // SDL_GPU_VERTEXINPUTRATE_INSTANCE
 @property(assign, nonatomic) uint32_t 						instanceStepRate;
+
 @end
 
 NS_ASSUME_NONNULL_END

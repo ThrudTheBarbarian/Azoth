@@ -39,4 +39,20 @@
 	}
 
 
+/*****************************************************************************\
+|* Return a description of this vertex buffer
+\*****************************************************************************/
+- (SDL_GPUVertexBufferDescription) bufferDescription
+	{
+	SDL_GPUVertexBufferDescription dsc;
+
+	dsc.input_rate 			= _inputRate;
+	dsc.instance_step_rate 	= _instanceStepRate;
+	dsc.pitch 				= _pitch;
+	dsc.slot 				= _slot;
+
+	return dsc;
+	}
+
+
 @end

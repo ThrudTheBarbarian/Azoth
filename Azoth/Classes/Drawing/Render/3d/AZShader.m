@@ -10,7 +10,7 @@
 #import "AZShader.h"
 
 #define SHADER_PATH(base,dir,name,ext) [NSString stringWithFormat:			\
-										@"%@/Shaders/Compiled/%@/%@.%@",	\
+										@"%@/Shaders/%@/%@.%@",	\
 										base, dir, name, ext]
 
 
@@ -18,9 +18,6 @@
 |* "Private" properties
 \*****************************************************************************/
 @interface AZShader()
-
-// The actual shader
-@property(assign, nonatomic) SDL_GPUShader *						shader;
 
 // The GPU device we were created with
 @property(assign, nonatomic) SDL_GPUDevice *						gpu;
@@ -93,7 +90,8 @@
 
 		if (self)
 			{
-			NSString *rsrc 				= NSBundle.mainBundle.resourcePath;
+			NSBundle *bundle			= [NSBundle bundleForClass:AZShader.class];
+			NSString *rsrc 				= bundle.resourcePath;
 			SDL_GPUShaderFormat known	= SDL_GetGPUShaderFormats(_gpu);
 
 			if (known & SDL_GPU_SHADERFORMAT_SPIRV)

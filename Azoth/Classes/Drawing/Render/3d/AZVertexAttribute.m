@@ -28,10 +28,10 @@
 	return self;
 	}
 
-+ (instancetype) attributeWithLocation:(uint32_t)location
-							bufferSlot:(uint32_t)bufferSlot
-								format:(uint32_t)format
-								offset:(uint32_t)offset
++ (instancetype) atLocation:(uint32_t)location
+				 bufferSlot:(uint32_t)bufferSlot
+					 format:(uint32_t)format
+					 offset:(uint32_t)offset;
 	{
 	return [[AZVertexAttribute alloc] initWithLocation:location
 											bufferSlot:bufferSlot

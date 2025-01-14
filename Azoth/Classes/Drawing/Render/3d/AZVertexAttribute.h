@@ -21,10 +21,10 @@ NS_ASSUME_NONNULL_BEGIN
 						   format:(uint32_t)format
 						   offset:(uint32_t)offset;
 
-+ (instancetype) attributeWithLocation:(uint32_t)location
-							bufferSlot:(uint32_t)bufferSlot
-								format:(uint32_t)format
-								offset:(uint32_t)offset;
++ (instancetype) atLocation:(uint32_t)location
+				 bufferSlot:(uint32_t)bufferSlot
+					 format:(uint32_t)format
+					 offset:(uint32_t)offset;
 
 
 /*****************************************************************************\

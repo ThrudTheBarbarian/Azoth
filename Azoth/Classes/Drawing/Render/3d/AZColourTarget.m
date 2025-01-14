@@ -9,4 +9,14 @@
 
 @implementation AZColourTarget
 
+/*****************************************************************************\
+|* Initialisation
+\*****************************************************************************/
++ (AZColourTarget*) targetWithFormat:(SDL_GPUTextureFormat)format
+	{
+	AZColourTarget *target = AZColourTarget.new;
+	target.format = format;
+	return target;
+	}
+
 @end

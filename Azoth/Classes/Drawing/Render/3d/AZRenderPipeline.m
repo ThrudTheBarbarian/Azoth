@@ -5,37 +5,30 @@
 //  Created by Simon Gornall on 1/13/25.
 //
 
+#import "AZPipelineTarget.h"
 #import "AZRenderPipeline.h"
+#import "AZShader.h"
+#import "AZVertexInputState.h"
 
 @implementation AZRenderPipeline
-/*****************************************************************************\
-|* Initialisation
-\*****************************************************************************/
-- (instancetype) init
-	{
-	if (self = [super init])
-		{
-		_vertexBuffers 		= NSMutableArray.new;
-		_vertexAttributes	= NSMutableArray.new;
-		}
-	return self;
-	}
-
 
 /*****************************************************************************\
-|* Add a vertex buffer
+|* Build the render pipeline
 \*****************************************************************************/
-- (void) addVertexBuffer:(AZVertexBuffer *)buffer
+- (BOOL) buildWithDevice:(SDL_GPUDevice *)gpu
 	{
-	[_vertexBuffers addObject:buffer];
-	}
+	SDL_GPUGraphicsPipelineCreateInfo info;
+	memset(&info, 0, sizeof(info));
 
-/*****************************************************************************\
-|* Add a vertex attribute
-\*****************************************************************************/
-- (void) addVertexAttribute:(AZVertexAttribute *)attribute;
-	{
-	[_vertexAttributes addObject:attribute];
+	info.vertex_shader 		= _vertex.shader;
+	info.fragment_shader	= _fragment.shader;
+	info.vertex_input_state	= _vertexInputState.state;
+	info.primitive_type		= _primitiveType;
+	info.target_info		= _pipelineTarget.info;
+
+	_pipeline = SDL_CreateGPUGraphicsPipeline(gpu, &info);
+
+	return (_pipeline != NULL);
 	}
 
 @end
