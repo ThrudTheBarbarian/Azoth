@@ -29,7 +29,7 @@
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/
-- (instancetype) initWithRenderer:(AZRenderer *)renderer
+- (instancetype) initWithRenderer:(id<AZRenderer>)renderer
 	{
 	if (self = [super init])
 		{

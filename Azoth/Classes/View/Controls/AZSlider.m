@@ -305,7 +305,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 				  sR.size.width,
 				  sR.size.height};
 
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	NSInteger ui	= [AZApp textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
@@ -361,7 +361,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 				  sB.size.width,
 				  sB.size.height};
 
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	NSInteger ui	= [AZApp textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
@@ -404,7 +404,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 							sC.size.width,
 							sC.size.height};
 
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	NSInteger ui	= [AZApp textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];

@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 
 // Renderer for drawing with
-@property(assign, nonatomic) AZRenderer *					renderer;
+@property(assign, nonatomic) id<AZRenderer>					renderer;
 
 // Font to use
 @property(strong, nonatomic) AZFont *						font;

@@ -63,9 +63,12 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 	{
 	if (self = [super init])
 		{
-		_bin 			= [NSMutableArray new];
-		_eventSinks		= [NSMutableArray new];
-		_atlantes		= [NSMutableDictionary new];
+		_bin 				= [NSMutableArray new];
+		_eventSinks			= [NSMutableArray new];
+		_atlantes			= [NSMutableDictionary new];
+		_windowTitle		= @"Window title";
+		_rendererType	 	= AZRendererType2d;
+		_windowFlags		= 0;
 		}
 	return self;
 	}
@@ -91,7 +94,7 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 \*****************************************************************************/
 - (void) _bootstrap
 	{
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 
 	/*************************************************************************\
     |* Create the text renderer for any textboxes
@@ -144,8 +147,39 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 \*****************************************************************************/
 - (void) startWithArgc:(int)argc argv:(char **)argv
 	{
-	AZRenderer *azr 	= nil;
 	NSNotification *n 	= nil;
+
+	/*************************************************************************\
+    |* Make sure we can initialise video
+    \*************************************************************************/
+    if (!SDL_Init(SDL_INIT_VIDEO))
+		{
+        SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
+		self.viability = SDL_APP_FAILURE;
+		return;
+		}
+
+	/*************************************************************************\
+    |* Initialise font system
+    \*************************************************************************/
+    if (!TTF_Init())
+		{
+        SDL_Log("Couldn't initialize TTF: %s\n",SDL_GetError());
+        self.viability = SDL_APP_FAILURE;
+        return;
+		}
+
+	/*************************************************************************\
+    |* Choose a renderer
+    \*************************************************************************/
+	self.viability		= SDL_APP_CONTINUE;
+	if (![AZRenderer makeDefaultRendererOfType:_rendererType])
+		{
+        SDL_Log("Couldn't create renderer: %s", SDL_GetError());
+		self.viability = SDL_APP_FAILURE;
+		return;
+		}
+	id<AZRenderer> azr = AZRenderer.renderer;
 
 	/*************************************************************************\
     |* Set up the system-font info with reasonable defaults
@@ -192,6 +226,27 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
     \*************************************************************************/
     if (_window == nil)
 		{
+		BOOL ok = [azr createWindowWithTitle:_windowTitle
+									   frame:_initialFrame
+									   style:_windowFlags];
+		if (ok)
+			{
+			_window = azr.window;
+			[_window installContentView];
+			[self _bootstrap];
+			}
+		else
+			{
+			SDL_Log("Couldn't create main window: %s", SDL_GetError());
+			self.viability = SDL_APP_FAILURE;
+			}
+		}
+#if 0
+	/*************************************************************************\
+    |* Create the window if we didn't load one from a ZIB
+    \*************************************************************************/
+    if (_window == nil)
+		{
 		_window = [AZWindow windowWithContentRect:_initialFrame
 										styleMask:_windowFlags];
 		if (self.window == nil)
@@ -206,6 +261,7 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 			[self _bootstrap];
 			}
 		}
+#endif
 
 	/*************************************************************************\
     |* Let the delegate know that we've now launched
@@ -342,7 +398,7 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 \*****************************************************************************/
 - (SDL_AppResult) nextFrameWithAppState:(void *)state
 	{
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 
 	// Before we render anything into the *textures* make sure there is
 	// no outstanding blending effect from the last cycle around
@@ -447,7 +503,7 @@ void SDL_AppQuit(void *appState, SDL_AppResult result)
 \*****************************************************************************/
 - (void) _purgeBin
 	{
-	AZRenderer *azr = [AZRenderer renderer];
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	for (NSNumber *obj in _bin)
 		[azr releaseTexture:obj.integerValue];
 

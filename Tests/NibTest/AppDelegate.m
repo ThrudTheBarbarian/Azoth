@@ -23,7 +23,7 @@
 	|* still consume far too much CPU for my liking - might have to look into
 	|* how to limit FPS
 	\*************************************************************************/
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	[azr syncToVsync:YES];
 
 	/*************************************************************************\

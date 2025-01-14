@@ -33,7 +33,7 @@ typedef struct TargetState
 	AZScale			scale;			// scaling factors
 	} TargetState;
 
-static void _preserveTargetState(TargetState *state, AZRenderer *azr)
+static void _preserveTargetState(TargetState *state, id<AZRenderer> azr)
 	{
 	state->clipEnabled = azr.clipEnabled;
 	if (state->clipEnabled)
@@ -44,7 +44,7 @@ static void _preserveTargetState(TargetState *state, AZRenderer *azr)
 	state->lMode = azr.presentationMode;
 	}
 
-static void _restoreTargetState(TargetState *state, AZRenderer *azr)
+static void _restoreTargetState(TargetState *state, id<AZRenderer> azr)
 	{
 	if (state->clipEnabled)
 		[azr setClip:state->clip];
@@ -193,7 +193,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 \*****************************************************************************/
 - (BOOL) loadFont:(TTF_Font *)ttf
 	{
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 
     BOOL ok = (ttf != NULL);
 	if (ok)
@@ -371,7 +371,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 \*****************************************************************************/
 - (void) setColourForAllCaches:(AZColour *)c
 	{
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 
 	for (NSNumber *textureId in _textures)
 		{
@@ -400,7 +400,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 	if (_ttfFont == NULL)
 		return nil;
 
-	AZRenderer *azr 	= AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	AZGlyphData *data 	= _extents[@(codepoint)];
 
 	if (data == nil)
@@ -457,7 +457,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 	BOOL ok = (glyph != NULL);
 	if (ok)
 		{
-		AZRenderer *azr = AZRenderer.renderer;
+		id<AZRenderer> azr	= AZRenderer.renderer;
 		SDL_SetSurfaceBlendMode(glyph, SDL_BLENDMODE_NONE);
 		// move [azr lockFocusOn:_lastGlyph.cacheId];
 
@@ -495,7 +495,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 - (BOOL) _growGlyphCache
 	{
 	BOOL ok 			= NO;
-	AZRenderer *azr		= AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 
 	NSSize size			= NSMakeSize(_height * 12,_height * 12);
 	NSInteger cache 	= [azr createTextureOfSize:size
@@ -579,7 +579,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 	_ownsTTF = NO;
 	_ttfFont = NULL;
 
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	for (NSNumber *textureId in _textures)
 		[azr releaseTexture:textureId.integerValue];
 	[_textures removeAllObjects];
@@ -648,7 +648,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 \*****************************************************************************/
 - (BOOL) _uploadGlyphCache:(int)cacheId surface:(SDL_Surface*)data_surface
 	{
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 
 	BOOL ok = (data_surface != NULL);
 

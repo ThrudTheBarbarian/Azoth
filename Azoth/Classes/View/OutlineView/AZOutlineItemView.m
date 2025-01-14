@@ -90,12 +90,12 @@ static NSRect	_rB;
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
-	AZRenderer *azr 	= AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	NSInteger ui		= [AZApp textureFor:kUiMap];
 
 	if (_selected)
 		{
-		AZRenderer *azr = AZRenderer.renderer;
+		id<AZRenderer> azr	= AZRenderer.renderer;
 		NSInteger ui	= [AZApp textureFor:kUiMap];
 
 		float bx		= _indent;

@@ -113,12 +113,10 @@ static NSRect	_sortDn;
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
-	//NSArray<AZTableColumn *> *cols 	= _tableView.tableColumns;
     NSInteger count 				= _tableView.tableColumns.count;
-   // NSRect columnRect 				= self.bounds;
     NSSize spacing 					= _tableView.spacing;
 
-	AZRenderer *azr					= AZRenderer.renderer;
+	id<AZRenderer> azr				= AZRenderer.renderer;
 	NSInteger ui					= [AZApp textureFor:kUiMap];
 
 	[painter setTextColour:AZColour.black];

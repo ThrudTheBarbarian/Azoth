@@ -30,6 +30,35 @@ static NSMutableDictionary<NSNumber*,AZWindowContentView*>* _contentViews = nil;
 static NSMutableDictionary<NSNumber *, AZWindow *> * _windows = nil;
 
 @implementation AZWindow
+
+/*****************************************************************************\
+|* Initialisation
+\*****************************************************************************/
+- (instancetype) initWithWindow:(struct SDL_Window *)window
+	{
+	if (self = [super init])
+		{
+		/*********************************************************************\
+		|* Set up the responder state storage and content-view map
+		\*********************************************************************/
+		static dispatch_once_t onceToken;
+		dispatch_once(&onceToken,
+			^{
+			self.responders 		= [NSMutableArray new];
+			self.firstResponder 	= nil;
+
+			_contentViews 			= [NSMutableDictionary new];
+			_windows				= [NSMutableDictionary new];
+			});
+
+		_window 								= window;
+		_windows[@(SDL_GetWindowID(_window))] 	= self;
+		}
+
+	return self;
+	}
+
+#if 0
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/
@@ -125,6 +154,7 @@ static NSMutableDictionary<NSNumber *, AZWindow *> * _windows = nil;
 
 	return ok;
 	}
+#endif
 
 /*****************************************************************************\
 |* Add a content view to the window

@@ -10,7 +10,7 @@
 #import "AZApplication.h"
 #import "AZColour.h"
 #import "AZObject.h"
-#import "AZRenderer.h"
+#import "AZRenderer2d.h"
 #import "AZWindow.h"
 
 static NSInteger 		_textureId;
@@ -19,13 +19,23 @@ static SDL_SpinLock 	_textureLock;
 /*****************************************************************************\
 |* "Private" properties
 \*****************************************************************************/
-@interface AZRenderer()
+@interface AZRenderer2d()
 @property(strong, nonatomic)
-NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
+// The texture map for handing out textures
+NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
+
+// The SDL window we associate this renderer with
+@property(assign, nonatomic) SDL_Window *							sdlWindow;
+
+// The AZWindow we associate this renderer with
+@property(strong, nonatomic) AZWindow *								window;
+
+// The 2D renderer that we represent
+@property(assign, nonatomic) SDL_Renderer *							renderer;
 
 @end
 
-@implementation AZRenderer
+@implementation AZRenderer2d
 
 /*****************************************************************************\
 |* Initialisation
@@ -41,27 +51,24 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 		\*********************************************************************/
 		_textures 	= [NSMutableDictionary new];
 
-		_rendererName = [NSString stringWithFormat:@"%s",
-						SDL_GetRendererName(_renderer)];
 		}
 	return self;
 	}
 
-
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/
-+ (AZRenderer *) renderer;
++ (AZRenderer2d *) renderer;
 	{
-	static AZRenderer *tmgr = nil;
+	static AZRenderer2d *azr = nil;
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken,
 		^{
-		tmgr 			= [AZRenderer new];
+		azr 			= [AZRenderer2d new];
 		_textureId 		= 1;
 		_textureLock 	= 0;
 		});
-	return tmgr;
+	return azr;
 	}
 
 
@@ -669,6 +676,58 @@ NSMutableDictionary<NSNumber *, AZObject *> * 				textures;
 	{
 	return SDL_RenderCoordinatesToWindow(_renderer, rx, ry, wx, wy);
 	}
+
+/*****************************************************************************\
+|* Create a window with a given size, title, flags that is compatible with
+|* this type of renderer
+\*****************************************************************************/
+- (BOOL) createWindowWithTitle:(NSString *)title
+						 frame:(NSRect)frame
+						 style:(NSInteger)styleFlags
+	{
+	BOOL ok = NO;
+	if (!SDL_CreateWindowAndRenderer(title.UTF8String,
+									 frame.size.width,
+									 frame.size.height,
+									 styleFlags,
+									 &_sdlWindow,
+									 &_renderer))
+		{
+        SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
+		}
+	else
+		{
+		ok = YES;
+		_window = [[AZWindow alloc] initWithWindow:_sdlWindow];
+		}
+
+	return ok;
+	}
+
+
+/*****************************************************************************\
+|* We do not support the GPU device
+\*****************************************************************************/
+- (nullable struct SDL_GPUDevice *)gpu
+	{
+	return NULL;
+	}
+
+
+/*****************************************************************************\
+|* Return the renderer name
+\*****************************************************************************/
+- (nonnull NSString *)rendererName
+	{
+	return [NSString stringWithFormat:@"%s", SDL_GetRendererName(_renderer)];
+	}
+
+
+- (nonnull AZWindow *)window
+	{
+	return _window;
+	}
+
 
 
 @end

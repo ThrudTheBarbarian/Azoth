@@ -130,7 +130,7 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 \*****************************************************************************/
 + (AZImage *) imageWithSize:(NSSize) size
 	{
-	AZRenderer *azr		= AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	NSInteger texture	= [azr createTextureOfSize:size];
 	if (texture < 0)
 		return nil;
@@ -215,7 +215,7 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 	BOOL ok 		 = NO;
 	const char *path = fullPath.fileSystemRepresentation;
 
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	SDL_Surface *surface = [azr surfaceFor:_texture];
 	if (surface)
 		{
@@ -342,11 +342,11 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 \*****************************************************************************/
 - (BOOL) _loadSurface:(SDL_Surface *)surface
 	{
-	BOOL success	= NO;
-	AZRenderer *azr	= AZRenderer.renderer;
-	int sizes[] 	= {16, 32, 64, 128, 256};
-	int numSizes	= sizeof(sizes)/sizeof(sizes[0]);
-	BOOL inAtlas	= NO;
+	BOOL success		= NO;
+	id<AZRenderer> azr	= AZRenderer.renderer;
+	int sizes[] 		= {16, 32, 64, 128, 256};
+	int numSizes		= sizeof(sizes)/sizeof(sizes[0]);
+	BOOL inAtlas		= NO;
 
 	/*************************************************************************\
 	|* See if this surface will fit into any of the smaller image-atlas tiles

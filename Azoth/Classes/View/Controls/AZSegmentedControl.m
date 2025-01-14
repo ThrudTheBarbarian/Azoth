@@ -257,7 +257,7 @@ typedef struct
 
 	NSRect b 			= self.bounds;
 	float H				= b.size.height;
-	AZRenderer *azr		= AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	NSInteger ui		= [AZApp textureFor:kUiMap];
 	BOOL allDisabled 	= (self.state == AZControlStateDisabled);
 
@@ -651,7 +651,7 @@ typedef struct
 \*****************************************************************************/
 - (void) _renderTextures
 	{
-	AZRenderer *azr 	= AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	NSInteger S			= [AZApp textureFor:kUiMap];
 
 	for (int i=0; i<STATE_NUM; i++)

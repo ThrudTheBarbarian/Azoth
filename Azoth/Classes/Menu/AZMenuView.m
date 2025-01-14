@@ -236,7 +236,7 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 	NSRect bounds	= self.bounds;
 	[super drawInRect:dirtyRect withPainter:painter];
 
-	AZRenderer *azr		= AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 
 	NSInteger ui		= [AZApp textureFor:kUiMap];

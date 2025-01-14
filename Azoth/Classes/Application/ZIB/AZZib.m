@@ -391,7 +391,15 @@ NSString * const kZibWindow			= @"window";
 	|* Create the window if we have a rect
 	\*************************************************************************/
 	if (ok)
-		window = [AZWindow windowWithContentRect:frame styleMask:styleMask];
+		{
+		id<AZRenderer> azr = AZRenderer.renderer;
+
+		BOOL ok = [azr createWindowWithTitle:@"Untitled"
+									   frame:frame
+									   style:styleMask];
+		if (ok)
+			window = [azr window];
+		}
 
 	/*************************************************************************\
 	|* Ok, if we're good, then set the identifier

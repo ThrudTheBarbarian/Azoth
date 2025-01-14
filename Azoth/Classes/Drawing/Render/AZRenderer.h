@@ -2,27 +2,43 @@
 //  AZRenderer.h
 //  Azoth
 //
-//  Created by Simon Gornall on 12/17/24.
+//  Created by Simon Gornall on 1/13/25.
 //
 
-#import <Foundation/Foundation.h>
 #import <Azoth/AZTypes.h>
+#import <Foundation/Foundation.h>
+#import <SDL3/SDL.h>
+
+@class AZColour;
+@class AZWindow;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class AZColour;
+// ==========================================================================\\
+// Defines the API for a renderer. We support both 3D (via the GPU API) and
+// 2D renderers (via the render API). Both renderers implement this protocol
+// ==========================================================================//
 
-struct SDL_Surface;
-struct SDL_Renderer;
-struct SDL_FPoint;
-
-@interface AZRenderer : NSObject
+@protocol AZRenderer <NSObject>
 
 /*****************************************************************************\
-|* Initialisation
+|* Create a window with a given size, title, flags that is compatible with
+|* this type of renderer
 \*****************************************************************************/
-- (instancetype) init NS_UNAVAILABLE;
-+ (AZRenderer *) renderer;
+- (BOOL) createWindowWithTitle:(NSString *)title
+						 frame:(NSRect)frame
+						 style:(NSInteger)styleFlags;
+
+
+/*****************************************************************************\
+|* Return the window that we created for our renderer
+\*****************************************************************************/
+- (AZWindow *) window;
+
+/*****************************************************************************\
+|* Return the GPU device we created. This is not supported in 2D
+\*****************************************************************************/
+- (nullable struct SDL_GPUDevice *) gpu;
 
 /*****************************************************************************\
 |* Create a new texture and return a reference-id. Returns <0 value on error
@@ -192,10 +208,28 @@ struct SDL_FPoint;
 \*****************************************************************************/
 - (BOOL) convertRx:(float)rx ry:(float)ry to:(float*)wx wy:(float*)wy;
 
-@property(assign, nonatomic) struct SDL_Renderer *					renderer;
+/*****************************************************************************\
+|* The name of the renderer
+\*****************************************************************************/
+- (NSString *) rendererName;
 
-// The name of the renderer
-@property(strong, nonatomic) NSString *							rendererName;
+- (SDL_Renderer *) renderer;
+@end
+
+
+
+@interface AZRenderer : NSObject
+
+/*****************************************************************************\
+|* Return the default renderer
+\*****************************************************************************/
++ (id<AZRenderer>) renderer;
+
+/*****************************************************************************\
+|* Return a renderer of the requested type
+\*****************************************************************************/
++ (BOOL) makeDefaultRendererOfType:(AZRendererType)type;
+
 @end
 
 NS_ASSUME_NONNULL_END

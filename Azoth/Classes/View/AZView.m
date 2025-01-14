@@ -793,9 +793,9 @@ beginDraggingSessionWithItems:(NSArray<AZDraggingItem *> *) items
 	{
 	NSSize size 		= self.bounds.size;
 	AZImage *img 		= [AZImage imageWithSize:size];
-	AZRenderer *azr		= AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	[azr lockFocusOn:img.texture];
-	NSPoint p			= self.frame.origin;
+
 	[self _renderRecursivelyAt:NSMakePoint(0,0)];
 	[azr unlockFocus];
 	return img;
@@ -803,7 +803,7 @@ beginDraggingSessionWithItems:(NSArray<AZDraggingItem *> *) items
 
 - (void) _renderRecursivelyAt:(NSPoint)p
 	{
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	NSRect dst = self.bounds;
 	dst.origin.x += p.x;
 	dst.origin.y += p.y;

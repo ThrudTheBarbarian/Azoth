@@ -192,7 +192,7 @@ static float 		_uiS[STATE_NUM];		// bottom-border for 9-way
 		bR[STATE_DN]	= [AZApp srcRectFor:@"popup-bezel-disabled-right" in:kUiMap];
 		bR[STATE_DP]	= [AZApp srcRectFor:@"popup-bezel-disabled-right-pullsdown" in:kUiMap];
 
-		AZRenderer *azr 	= AZRenderer.renderer;
+		id<AZRenderer> azr	= AZRenderer.renderer;
 		NSInteger S			= [AZApp textureFor:kUiMap];
 
 		for (int i=0; i<STATE_NUM; i++)
@@ -240,7 +240,7 @@ static float 		_uiS[STATE_NUM];		// bottom-border for 9-way
 	NSRect bounds	= self.bounds;
 	[super drawInRect:dirtyRect withPainter:painter];
 
-	AZRenderer *azr		= AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	int state 			= self.state + (_menu.pullsDown ? 1 : 0);
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];

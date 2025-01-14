@@ -98,6 +98,9 @@ struct TTF_TextEngine;
 // The application viability - whether it can continue
 @property(assign, nonatomic) int							viability;
 
+// The title for the window
+@property(strong, nonatomic) NSString *						windowTitle;
+
 // The system font info, the app provides default values
 // before notifying the delegate that it has been started
 // so the delegate can override these at that point
@@ -122,6 +125,10 @@ struct TTF_TextEngine;
 
 // The main menu, pulled from a NIB
 @property(assign, nonatomic) AZMenu * 						mainMenu;
+
+// Which renderer we are using
+@property(assign, nonatomic) AZRendererType					rendererType;
+
 @end
 
 NS_ASSUME_NONNULL_END

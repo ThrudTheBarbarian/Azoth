@@ -35,14 +35,14 @@
 	{
 	if (self = [super init])
 		{
-		_slots			= [NSMutableSet new];
-		_width 			= width;
-		_height 		= height;
-		_size 			= size;
+		_slots				= [NSMutableSet new];
+		_width 				= width;
+		_height 			= height;
+		_size 				= size;
 
-		AZRenderer *azr	= AZRenderer.renderer;
-		NSSize tSize	= NSMakeSize(width, height);
-		_textureId		= [azr createTextureOfSize:tSize];
+		id<AZRenderer> azr	= AZRenderer.renderer;
+		NSSize tSize		= NSMakeSize(width, height);
+		_textureId			= [azr createTextureOfSize:tSize];
 		if (_textureId < 0)
 			self = nil;
 

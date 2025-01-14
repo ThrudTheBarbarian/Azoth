@@ -16,6 +16,7 @@ struct SDL_Window;
 
 @interface AZWindow : AZResponder
 
+#if 0
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/
@@ -29,6 +30,13 @@ struct SDL_Window;
 
 + (AZWindow *) windowWithContentRect:(NSRect)contentRect
 						   styleMask:(NSInteger)styleMask;
+#endif
+
+/*****************************************************************************\
+|* Initialisation
+\*****************************************************************************/
+- (instancetype) initWithWindow:(struct SDL_Window *)window;
+
 
 /*****************************************************************************\
 |* Add a content view to the window, either make a default one, or install one

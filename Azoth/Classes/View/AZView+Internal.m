@@ -191,7 +191,7 @@
 	\*************************************************************************/
 	if (w*h > 0)
 		{
-		AZRenderer *azr = AZRenderer.renderer;
+		id<AZRenderer> azr	= AZRenderer.renderer;
 
 		SDL_LockMutex(self.textureMutex);
 		if (self.bg >= 0)
@@ -260,7 +260,7 @@
 \*****************************************************************************/
 - (void) _render
 	{
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 
 	/*************************************************************************\
 	|* If we are hidden, short-circuit the display routine for ourselves and

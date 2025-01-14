@@ -490,7 +490,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		float yMax 	= self.textureSize.height;
 		float w		= self.bounds.size.width;
 
-		AZRenderer *azr = AZRenderer.renderer;
+		id<AZRenderer> azr	= AZRenderer.renderer;
 
 		int idx = 0;
 		while ((y < yMax) && (idx < _numberOfRows))
@@ -1305,7 +1305,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	NSSize nSz		= NSMakeSize(6, _rA[STATE_N].size.height);
 	NSSize hSz		= NSMakeSize(6, _rA[STATE_H].size.height);
 
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	_ui[STATE_N] = [azr createTextureOfSize:nSz];
 	_ui[STATE_H] = [azr createTextureOfSize:hSz];
 

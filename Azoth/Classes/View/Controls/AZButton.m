@@ -200,7 +200,7 @@ static dispatch_once_t _rectToken;
 	NSRect dstR		= NSMakeRect(srcL.size.width + stretch, 0,
 								 srcR.size.width, srcR.size.height);
 
-	AZRenderer *azr		= AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	NSInteger ui		= [AZApp textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
@@ -243,8 +243,8 @@ static dispatch_once_t _rectToken;
 	int by			= (H-NSHeight(src))/2;
 	dst.origin  	= rhs ? NSMakePoint(W-NSWidth(src), by) : NSMakePoint(0, by);
 
-	AZRenderer *azr	= AZRenderer.renderer;
-	NSInteger ui	= [AZApp textureFor:kUiMap];
+	id<AZRenderer> azr	= AZRenderer.renderer;
+	NSInteger ui		= [AZApp textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 	[azr blitFrom:ui src:src dst:dst];

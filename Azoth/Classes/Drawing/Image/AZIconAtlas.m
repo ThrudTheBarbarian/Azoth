@@ -47,7 +47,7 @@
 - (NSInteger) load:(NSString *)name
 	{
 	NSInteger result	= SDL_APP_CONTINUE;
-	AZRenderer *azr 	= [AZRenderer renderer];
+	id<AZRenderer> azr 	= AZRenderer.renderer;
 
 	NSString *rsrc = [[NSBundle bundleForClass:[self class]] resourcePath];
 	NSString *atlasPath = [NSString stringWithFormat:@"%@/%@.png", rsrc, name];

@@ -54,7 +54,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 |* "Private" properties
 \*****************************************************************************/
 @interface AZPainter()
-@property(assign, nonatomic) AZRenderer *						renderer;
+@property(assign, nonatomic) id<AZRenderer>						renderer;
 @property(strong, nonatomic, nullable) AZView * 				view;
 @property(assign, nonatomic) NSInteger 							texture;
 @property(assign, nonatomic) NSRect 							oldClip;
@@ -2333,7 +2333,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 \*****************************************************************************/
 - (void) image:(AZImage *)img at:(NSPoint)xy
 	{
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	if (img.handler != nil)
 		[img draw];
 
@@ -2362,7 +2362,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	NSRect dstRect = clipped;
 	dstRect.origin = p;
 
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	if (img.handler != nil)
 		[img draw];
 	[azr blitFrom:img.texture src:clipped dst:dstRect];
@@ -2373,7 +2373,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 \*****************************************************************************/
 - (void) image:(AZImage *)img to:(NSRect)dstRect
 	{
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	if (img.handler != nil)
 		[img draw];
 	NSRect srcRect = img.srcRect;
@@ -2395,7 +2395,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	if ((NSWidth(clipped) == 0) || (NSHeight(clipped) == 0))
 		return;
 
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 	if (img.handler != nil)
 		[img draw];
 	[azr blitFrom:img.texture src:clipped dst:dstRect];
@@ -2412,7 +2412,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		 about:(NSPoint)center
 		  flip:(AZFlipMode)flipMask
 	{
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 
 	NSRect srcRect = img.srcRect;
 	NSRect dstRect = srcRect;
@@ -2442,7 +2442,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		 about:(NSPoint)center
 		  flip:(AZFlipMode)flipMask
 	{
-	AZRenderer *azr = AZRenderer.renderer;
+	id<AZRenderer> azr	= AZRenderer.renderer;
 
 	// Make sure we have a reasonable srcRect. The image srcRect is possibly
 	// from an Atlas texture (else its origin will be at 0,0) so add in the

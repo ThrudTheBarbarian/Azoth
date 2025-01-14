@@ -325,7 +325,7 @@
 	{
 	NSLog(@"radio button pressed:%@", sender);
 
-//	AZRenderer *azr = AZRenderer.renderer;
+//	id<AZRenderer> azr	= AZRenderer.renderer;
 //	SDL_Log("renderer:%s", azr.rendererName.UTF8String);
 //
 //	AZImage *img = [AZImage imageWithContentsOfFile:@"/Volumes/raid/Freya/Mapper/Resources/Backgrounds/Background_10.png"];
