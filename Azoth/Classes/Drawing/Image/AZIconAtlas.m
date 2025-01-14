@@ -50,13 +50,13 @@
 	id<AZRenderer> azr 	= AZRenderer.renderer;
 
 	NSString *rsrc = [[NSBundle bundleForClass:[self class]] resourcePath];
-	NSString *atlasPath = [NSString stringWithFormat:@"%@/%@.png", rsrc, name];
-	SDL_Surface *atlasSurface = IMG_Load(atlasPath.fileSystemRepresentation);
+	NSString *path = [NSString stringWithFormat:@"%@/Atlas/%@.png", rsrc, name];
+	SDL_Surface *atlasSurface = IMG_Load(path.fileSystemRepresentation);
 	if (!atlasSurface)
 		{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
 					  "Failed to load icon atlas at %s!",
-					  atlasPath.fileSystemRepresentation);
+					  path.fileSystemRepresentation);
         result = SDL_APP_FAILURE;
 		}
 	else
@@ -70,13 +70,13 @@
 			}
 
 		SDL_DestroySurface(atlasSurface);
-		atlasPath 	= [NSString stringWithFormat:@"%@/%@.plist", rsrc, name];
-		_metadata  	= [NSDictionary dictionaryWithContentsOfFile:atlasPath];
+		path 		= [NSString stringWithFormat:@"%@/Atlas/%@.plist", rsrc, name];
+		_metadata  	= [NSDictionary dictionaryWithContentsOfFile:path];
 		if (!_metadata)
 			{
 			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
 						  "Failed to load UI atlas metadata at %s!",
-						  atlasPath.fileSystemRepresentation);
+						  path.fileSystemRepresentation);
 			result =  SDL_APP_FAILURE;
 			}
 		}

@@ -13,6 +13,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface AZRenderer3d : NSObject <AZRenderer>
 
+/*****************************************************************************\
+|* Return the 3D renderer
+\*****************************************************************************/
++ (AZRenderer3d *) renderer;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -28,7 +28,7 @@ static id<AZRenderer> _renderer = nil;
 			break;
 
 		case AZRendererType3d:
-			//_renderer = AZRenderer3d.renderer;
+			_renderer = AZRenderer3d.renderer;
 			break;
 			
 		default:

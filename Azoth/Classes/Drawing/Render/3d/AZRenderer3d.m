@@ -8,6 +8,8 @@
 #import <SDL3/SDL.h>
 
 #import "AZRenderer3d.h"
+#import "AZRenderPipeline.h"
+#import "AZShader.h"
 #import "AZWindow.h"
 
 /*****************************************************************************\
@@ -22,6 +24,9 @@
 
 // The GPU device
 @property(assign, nonatomic) SDL_GPUDevice *						gpu;
+
+// The sprite render pipeline
+@property(strong, nonatomic) AZRenderPipeline *						spritePipe;
 
 @end
 
@@ -120,6 +125,27 @@
 								  _sdl,
 								  SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
 								  mode);
+
+	/*************************************************************************\
+    |* Create the sprite-rendering pipeline
+    \*************************************************************************/
+	AZShader *vert, *frag;
+	_spritePipe = [AZRenderPipeline new];
+
+
+	vert = [AZShader shaderWithRenderer:self
+								   name:@"TexturedQuadColorWithMatrix.vert"
+							   samplers:0
+						 uniformBuffers:1
+						 storageBuffers:0
+						storageTextures:0];
+
+	frag = [AZShader shaderWithRenderer:self
+								   name:@"TexturedQuadColor.frag"
+							   samplers:1
+						 uniformBuffers:0
+						 storageBuffers:0
+						storageTextures:0];
 
 	return YES;
 	}

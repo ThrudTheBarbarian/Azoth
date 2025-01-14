@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "AZRenderer.h"
+#import <Azoth/AZRenderer.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
