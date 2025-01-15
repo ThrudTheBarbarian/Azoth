@@ -174,6 +174,11 @@
 							 "Failed to get window max size : %s",
 							 SDL_GetError());
 				}
+			if (w*h == 0)
+				{
+				w = NSWidth(self.frame);
+				h = NSHeight(self.frame);
+				}
 			}
 		}
 
