@@ -277,11 +277,13 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 
 		AZColour *textColour = nil;
 
+		int times = 1;
 		if (item.state == AZControlStateValueOn)
 			{
 			NSRect dstC = NSMakeRect(0, y, self.bounds.size.width, H);
 			[azr tileFrom:ui src:_barSel dst:dstC];
-				textColour = AZColour.white;
+			textColour = AZColour.white;
+			times = 3;
 			}
 		else
 			{
@@ -297,8 +299,10 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 			}
 
 		[painter setTextAlignment:AZTextAlignmentLeft];
+		[azr setBlendMode:SDL_BLENDMODE_NONE];
 		[painter setTextColour:textColour];
-		[painter textInBox:inset text:item.title];
+		for (int time = 0; time<times; time++)
+			[painter textInBox:inset text:item.title];
 
 		y += H;
 		}

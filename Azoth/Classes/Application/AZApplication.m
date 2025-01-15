@@ -67,7 +67,7 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 		_eventSinks			= [NSMutableArray new];
 		_atlantes			= [NSMutableDictionary new];
 		_windowTitle		= @"Window title";
-		_rendererType	 	= AZRendererType3d;
+		_rendererType	 	= AZRendererType2d;
 		_windowFlags		= 0;
 		}
 	return self;

@@ -59,6 +59,20 @@
 		F45ED93B2D11480A00CE8B28 /* avif.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F45ED93C2D11480D00CE8B28 /* jxl.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F45ED9402D11481600CE8B28 /* webp.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F47AB75A2D38218700501720 /* avif.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F47AB75B2D38218700501720 /* Azoth.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F47AB75C2D38218700501720 /* jxl.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F47AB75D2D38218700501720 /* SDL3_image.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F47AB75E2D38218700501720 /* SDL3_ttf.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F47AB75F2D38218700501720 /* SDL3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F47AB7602D38218700501720 /* webp.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F47AB7622D3821AC00501720 /* avif.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; };
+		F47AB7632D3821AC00501720 /* Azoth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; };
+		F47AB7642D3821AC00501720 /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
+		F47AB7652D3821AC00501720 /* SDL3_image.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; };
+		F47AB7662D3821AC00501720 /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
+		F47AB7672D3821AC00501720 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
+		F47AB7682D3821AC00501720 /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
 		F49528402D1F4B3100D6B8A6 /* avif.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; };
 		F49528412D1F4B3100D6B8A6 /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
 		F49528442D1F4B3100D6B8A6 /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
@@ -272,6 +286,23 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F47AB7612D38219400501720 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F47AB75D2D38218700501720 /* SDL3_image.xcframework in Embed Frameworks */,
+				F47AB75A2D38218700501720 /* avif.xcframework in Embed Frameworks */,
+				F47AB75C2D38218700501720 /* jxl.xcframework in Embed Frameworks */,
+				F47AB75B2D38218700501720 /* Azoth.framework in Embed Frameworks */,
+				F47AB75F2D38218700501720 /* SDL3.xcframework in Embed Frameworks */,
+				F47AB7602D38218700501720 /* webp.xcframework in Embed Frameworks */,
+				F47AB75E2D38218700501720 /* SDL3_ttf.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F49528462D1F4C6300D6B8A6 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -391,6 +422,7 @@
 		F45ED9242D1145B900CE8B28 /* jxl.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = jxl.xcframework; path = ../../../../opt/SDL3/jxl.xcframework; sourceTree = "<group>"; };
 		F45ED9252D1145B900CE8B28 /* avif.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = avif.xcframework; path = ../../../../opt/SDL3/avif.xcframework; sourceTree = "<group>"; };
 		F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3_image.xcframework; path = ../../../../opt/SDL3/SDL3_image.xcframework; sourceTree = "<group>"; };
+		F47AB7392D381F2A00501720 /* GpuTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GpuTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F495282B2D1F496200D6B8A6 /* AZTable.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZTable.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F495337E2D1F840800D6B8A6 /* SDL3.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3.xcframework; path = ../../../../opt/SDL3/SDL3.xcframework; sourceTree = "<group>"; };
 		F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3_ttf.xcframework; path = ../../../../opt/SDL3/SDL3_ttf.xcframework; sourceTree = "<group>"; };
@@ -478,6 +510,13 @@
 			);
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
 		};
+		F47AB7552D381F3200501720 /* Exceptions for "Tests" folder in "GpuTest" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				GpuTest/main.m,
+			);
+			target = F47AB7382D381F2A00501720 /* GpuTest */;
+		};
 		F4B3BF2D2D264D7C000C343A /* Exceptions for "Tests" folder in "Azoth" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -525,6 +564,7 @@
 				AZTable/AppDelegate.m,
 				AZTable/Assets.xcassets,
 				AZTable/main.m,
+				GpuTest/main.m,
 				NibTest/AppDelegate.h,
 				NibTest/AppDelegate.m,
 				NibTest/Assets.xcassets,
@@ -706,6 +746,7 @@
 				F4BD82C92D2F25030041034B /* Exceptions for "Tests" folder in "AZCollectionView" target */,
 				F4BD83612D309AC50041034B /* Exceptions for "Tests" folder in "AzothTests" target */,
 				F4BD83A52D318F450041034B /* Exceptions for "Tests" folder in "AZDragAndDrop" target */,
+				F47AB7552D381F3200501720 /* Exceptions for "Tests" folder in "GpuTest" target */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -767,6 +808,20 @@
 				F454E2132D24DFA1002D2DAB /* avif.xcframework in Frameworks */,
 				F454E2142D24DFA1002D2DAB /* jxl.xcframework in Frameworks */,
 				F454E2152D24DFA1002D2DAB /* webp.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F47AB7362D381F2A00501720 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F47AB7622D3821AC00501720 /* avif.xcframework in Frameworks */,
+				F47AB7632D3821AC00501720 /* Azoth.framework in Frameworks */,
+				F47AB7642D3821AC00501720 /* jxl.xcframework in Frameworks */,
+				F47AB7652D3821AC00501720 /* SDL3_image.xcframework in Frameworks */,
+				F47AB7662D3821AC00501720 /* SDL3_ttf.xcframework in Frameworks */,
+				F47AB7672D3821AC00501720 /* SDL3.xcframework in Frameworks */,
+				F47AB7682D3821AC00501720 /* webp.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -898,6 +953,7 @@
 				F4BD82AB2D2F24D90041034B /* AZCollectionView.app */,
 				F4BD83542D309AB80041034B /* AzothTests.xctest */,
 				F4BD837A2D318D990041034B /* AZDragAndDrop.app */,
+				F47AB7392D381F2A00501720 /* GpuTest.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -994,6 +1050,26 @@
 			);
 			productName = AZOutline;
 			productReference = F454E1FD2D24D1DA002D2DAB /* AZOutline.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F47AB7382D381F2A00501720 /* GpuTest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F47AB7462D381F2B00501720 /* Build configuration list for PBXNativeTarget "GpuTest" */;
+			buildPhases = (
+				F47AB7352D381F2A00501720 /* Sources */,
+				F47AB7362D381F2A00501720 /* Frameworks */,
+				F47AB7372D381F2A00501720 /* Resources */,
+				F47AB7612D38219400501720 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GpuTest;
+			packageProductDependencies = (
+			);
+			productName = GpuTest;
+			productReference = F47AB7392D381F2A00501720 /* GpuTest.app */;
 			productType = "com.apple.product-type.application";
 		};
 		F495282A2D1F496200D6B8A6 /* AZTable */ = {
@@ -1176,6 +1252,9 @@
 					F454E1FC2D24D1DA002D2DAB = {
 						CreatedOnToolsVersion = 16.1;
 					};
+					F47AB7382D381F2A00501720 = {
+						CreatedOnToolsVersion = 16.1;
+					};
 					F495282A2D1F496200D6B8A6 = {
 						CreatedOnToolsVersion = 16.1;
 					};
@@ -1231,6 +1310,7 @@
 				F4BD82AA2D2F24D90041034B /* AZCollectionView */,
 				F4BD83532D309AB80041034B /* AzothTests */,
 				F4BD83792D318D990041034B /* AZDragAndDrop */,
+				F47AB7382D381F2A00501720 /* GpuTest */,
 			);
 		};
 /* End PBXProject section */
@@ -1251,6 +1331,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F454E1FB2D24D1DA002D2DAB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F47AB7372D381F2A00501720 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1358,6 +1445,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F454E1F92D24D1DA002D2DAB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F47AB7352D381F2A00501720 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1801,6 +1895,56 @@
 			};
 			name = Release;
 		};
+		F47AB7472D381F2B00501720 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Tests/GpuTest/GpuTest.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainNibFile = MainMenu;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.moebius-tech.GpuTest";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Debug;
+		};
+		F47AB7482D381F2B00501720 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Tests/GpuTest/GpuTest.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainNibFile = MainMenu;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.moebius-tech.GpuTest";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Release;
+		};
 		F49528392D1F496300D6B8A6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2218,6 +2362,15 @@
 			buildConfigurations = (
 				F454E20B2D24D1DB002D2DAB /* Debug */,
 				F454E20C2D24D1DB002D2DAB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F47AB7462D381F2B00501720 /* Build configuration list for PBXNativeTarget "GpuTest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F47AB7472D381F2B00501720 /* Debug */,
+				F47AB7482D381F2B00501720 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

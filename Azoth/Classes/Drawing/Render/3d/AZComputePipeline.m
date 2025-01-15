@@ -10,13 +10,16 @@
 
 
 #define SHADER_PATH(base,dir,name,ext) [NSString stringWithFormat:			\
-										@"%@/Shaders/Compiled/%@/%@.%@",	\
+										@"%@/Shaders/%@/%@.%@",	\
 										base, dir, name, ext]
 
 /*****************************************************************************\
 |* "Private" properties
 \*****************************************************************************/
 @interface AZComputePipeline()
+
+// The name of the compute shader
+@property(strong, nonatomic) NSString *								name;
 
 // The GPU device we were created with
 @property(assign, nonatomic) SDL_GPUDevice *						gpu;
@@ -27,15 +30,14 @@
 /*****************************************************************************\
 |* Initialisation - convenience
 \*****************************************************************************/
-+ (instancetype) pipelineFor:(id<AZRenderer>)renderer
-						name:(NSString *)name
-			storageBuffersRO:(int)numROStorageBuffers
-			storageBuffersRW:(int)numRWStorageBuffers
-					 threads:(AZThreadSize)threads
++ (instancetype) pipelineNamed:(NSString *)name
+			  storageBuffersRO:(int)numROStorageBuffers
+			  storageBuffersRW:(int)numRWStorageBuffers
+					   threads:(AZThreadSize)threads
 	{
 	AZComputePipeline *pipe = nil;
 
-	pipe = [[AZComputePipeline alloc] initWithRenderer:renderer name:name];
+	pipe = [[AZComputePipeline alloc] initWithName:name];
 	if (pipe)
 		{
 		pipe.roStorageBuffers 	= numROStorageBuffers;
@@ -48,21 +50,51 @@
 /*****************************************************************************\
 |* Initialisation - create an instance
 \*****************************************************************************/
-- (instancetype) initWithRenderer:(id<AZRenderer>)renderer name:(NSString *)name
+- (instancetype) initWithName:(NSString *)name
 	{
 	if (self = [super init])
 		{
-		/*********************************************************************\
-		|* Get the GPU device from the renderer
-		\*********************************************************************/
-		_gpu = renderer.gpu;
-		if (_gpu == NULL)
-			{
-			SDL_Log("GPU device is not registered");
-			self = nil;
-			}
+		_name = name;
+		}
+	return self;
+	}
+
+/*****************************************************************************\
+|* Build the compute pipeline
+\*****************************************************************************/
+- (BOOL) buildWithDevice:(id<AZRenderer>)renderer
+	{
+	/*************************************************************************\
+	|* Get the GPU device from the renderer
+	\*************************************************************************/
+	_gpu = renderer.gpu;
+	if (_gpu == NULL)
+		{
+		SDL_Log("GPU device is not registered");
+		return NO;
 		}
 
+	/*********************************************************************\
+	|* Attempt to load from the framework bundle then the application
+	\*********************************************************************/
+	if (![self _load:_name from:[NSBundle bundleForClass:self.class]])
+		[self _load:_name from:NSBundle.mainBundle];
+
+	if (_pipeline == NULL)
+		{
+		SDL_Log("%s", "Cannot create compute pipeline!");
+		return NO;
+		}
+
+	return YES;
+	}
+
+
+/*****************************************************************************\
+|* Load a compute shader from a location
+\*****************************************************************************/
+- (BOOL) _load:(NSString *)name from:(NSBundle *)bundle
+	{
 	/*************************************************************************\
 	|* Do a format match to get the correct shader format
 	\*************************************************************************/
@@ -72,7 +104,7 @@
 	
 	if (self)
 		{
-		NSString *rsrc 				= NSBundle.mainBundle.resourcePath;
+		NSString *rsrc 				= bundle.resourcePath;
 		SDL_GPUShaderFormat known	= SDL_GetGPUShaderFormats(_gpu);
 
 		if (known & SDL_GPU_SHADERFORMAT_SPIRV)
@@ -96,7 +128,7 @@
 		else
 			{
 			SDL_Log("%s", "Unrecognized backend compute shader format!");
-			self = nil;
+			return NO;
 			}
 		}
 
@@ -109,7 +141,7 @@
 		if (code == nil)
 			{
 			SDL_Log("Can't load compute shader at %s", fullPath.UTF8String);
-			self = nil;
+			return NO;
 			}
 		else
 			{
@@ -126,15 +158,9 @@
 			info.format							 = format;
 
 			_pipeline = SDL_CreateGPUComputePipeline(_gpu, &info);
-			if (_pipeline == NULL)
-				{
-				SDL_Log("%s", "Cannot create compute pipeline!");
-				self = nil;
-				}
 			}
 		}
-
-	return self;
+	return (_pipeline != NULL);
 	}
 
 @end

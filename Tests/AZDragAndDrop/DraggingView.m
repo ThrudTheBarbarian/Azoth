@@ -22,7 +22,7 @@
 	if (self = [super initWithFrame:frame])
 		{
 		_srcImg = [AZImage imageWithSystemSymbolName:@"cyclone"];
-		_srcRect = NSMakeRect(200,200,_srcImg.width, _srcImg.height);
+		_srcRect = NSMakeRect(140,200,_srcImg.width, _srcImg.height);
 		}
 	return self;
 	}

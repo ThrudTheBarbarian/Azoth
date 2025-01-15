@@ -19,18 +19,21 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Initialisation - create an instance
 \*****************************************************************************/
-- (instancetype) initWithRenderer:(id<AZRenderer>)renderer
-							 name:(NSString *)name;
+- (instancetype) initWithName:(NSString *)name;
 
 /*****************************************************************************\
 |* Initialisation - convenience
 \*****************************************************************************/
-+ (instancetype) pipelineFor:(id<AZRenderer>)renderer
-						name:(NSString *)name
-			storageBuffersRO:(int)numROStorageBuffers
-			storageBuffersRW:(int)numRWStorageBuffers
-					 threads:(AZThreadSize)threads;
++ (instancetype) pipelineNamed:(NSString *)name
+			  storageBuffersRO:(int)numROStorageBuffers
+			  storageBuffersRW:(int)numRWStorageBuffers
+					   threads:(AZThreadSize)threads;
 
+
+/*****************************************************************************\
+|* Build the compute pipeline
+\*****************************************************************************/
+- (BOOL) buildWithDevice:(id<AZRenderer>)renderer;
 
 
 /*****************************************************************************\

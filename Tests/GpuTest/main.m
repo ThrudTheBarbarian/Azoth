@@ -1,8 +1,8 @@
 //
 //  main.m
-//  AZDragAndDrop
+//  GpuTest
 //
-//  Created by Simon Gornall on 1/10/25.
+//  Created by Simon Gornall on 1/15/25.
 //
 
 #define SDL_MAIN_USE_CALLBACKS 1
@@ -17,7 +17,7 @@
 \*****************************************************************************/
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 	{
-    SDL_SetAppMetadata("Azoth drag-and-drop app",
+    SDL_SetAppMetadata("Test 3d rendering",
 					   "1.0",
 					   "com.moebius-tech.azoth");
 
@@ -26,8 +26,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     \*************************************************************************/
 	AZApp.delegate		= [AppDelegate new];
 	AZApp.initialFrame	= NSMakeRect(50, 50, 640, 480);
-	AZApp.windowFlags	= SDL_WINDOW_RESIZABLE;
-	AZApp.windowTitle	= @"Drag and drop demo";
+	AZApp.windowTitle	= @"3D GPU rendering";
+	AZApp.rendererType	= AZRendererType3d;
 	
 	*appstate			= (__bridge void *)(AZApp);
 

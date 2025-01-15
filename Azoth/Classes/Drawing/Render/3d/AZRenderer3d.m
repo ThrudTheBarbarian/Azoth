@@ -14,6 +14,7 @@
 #import "AZPipelineTarget.h"
 #import "AZRenderer3d.h"
 #import "AZRenderPipeline.h"
+#import "AZSampler.h"
 #import "AZShader.h"
 #import "AZTexture.h"
 #import "AZVertexAttribute.h"
@@ -56,6 +57,9 @@ NSMutableDictionary<NSNumber *, AZTexture *> * 						textures;
 
 // The sprite compute pipeline
 @property(strong, nonatomic) AZComputePipeline *					computePipe;
+
+// The sampler
+@property(strong, nonatomic) AZSampler *							sampler;
 
 @end
 
@@ -257,17 +261,42 @@ static SDL_SpinLock 	_textureLock;
 							offset:32]];
 
 	_spritePipe.vertexInputState = is;
-	[_spritePipe buildWithDevice:_gpu];
+	if (![_spritePipe buildWithDevice:self])
+		{
+		SDL_Log("Failed to create remder pipeline");
+		return NO;
+		}
 
 
 	/*************************************************************************\
     |* Create the compute pipeline
     \*************************************************************************/
-	_computePipe = [AZComputePipeline pipelineFor:self
-											 name:@"sprite.comp"
-								 storageBuffersRO:1
-								 storageBuffersRW:1
-										  threads:AZMakeThreadSize(64,1,1)];
+	_computePipe = [AZComputePipeline pipelineNamed:@"sprite.comp"
+								   storageBuffersRO:1
+								   storageBuffersRW:1
+										    threads:AZMakeThreadSize(64,1,1)];
+
+	if (![_computePipe buildWithDevice:self])
+		{
+		SDL_Log("Failed to create compute pipeline");
+		return NO;
+		}
+
+	/*************************************************************************\
+    |* Create the sampler
+    \*************************************************************************/
+	_sampler =
+	[AZSampler withMinFilter:SDL_GPU_FILTER_NEAREST
+				   magFilter:SDL_GPU_FILTER_NEAREST
+				  mipMapMode:SDL_GPU_SAMPLERMIPMAPMODE_NEAREST
+				addressModeU:SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE
+				addressModeV:SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE
+				addressModeW:SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE];
+	if (![_sampler buildWithDevice:self])
+		{
+		SDL_Log("Failed to create sampler");
+		return NO;
+		}
 
 	return YES;
 	}

@@ -253,6 +253,7 @@ static float 		_uiS[STATE_NUM];		// bottom-border for 9-way
 			   bottom:_uiS[state]
 				  dst:self.bounds];
 
+	[azr setBlendMode:SDL_BLENDMODE_BLEND];
 	[painter setTextColour:AZColour.black];
 	NSRect box 		= NSInsetRect(bounds, 5, 2);
 	box.size.width 	= box.size.width + 5 - _uiE[state];

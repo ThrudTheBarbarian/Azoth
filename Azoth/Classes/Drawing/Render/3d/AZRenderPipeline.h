@@ -14,12 +14,14 @@ NS_ASSUME_NONNULL_BEGIN
 @class AZShader;
 @class AZVertexInputState;
 
+@protocol AZRenderer;
+
 @interface AZRenderPipeline : NSObject
 
 /*****************************************************************************\
 |* Build the render pipeline
 \*****************************************************************************/
-- (BOOL) buildWithDevice:(SDL_GPUDevice *)gpu;
+- (BOOL) buildWithDevice:(id<AZRenderer>)renderer;
 
 /*****************************************************************************\
 |* Properties

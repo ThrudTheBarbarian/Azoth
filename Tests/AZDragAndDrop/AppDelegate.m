@@ -19,28 +19,29 @@
 	/*************************************************************************\
 	|* Set up the UI for this application
 	\*************************************************************************/
-	AZView *cv		= [AZWindow contentViewForWindow:AZApp.window];
-	[cv setIdentifier:@"content-view"];
+	AZView *contentView = [AZWindow contentViewForWindow:AZApp.window];
+	[contentView setIdentifier:@"content-view"];
 
 	/*************************************************************************\
-	|* Add a view that supports dragging
+	|* Add a view that supports dragging, taking up the left hand side of the
+	|* window's content-view
 	\*************************************************************************/
-	NSRect bounds = cv.bounds;
+	NSRect bounds = contentView.bounds;
 	bounds.size.width /= 2;
 	DraggingView *left = [[DraggingView alloc] initWithFrame:bounds];
 	left.backgroundColour = [AZColour colourNamed:@"goldenrod"];
-	[cv addSubview:left];
+	[contentView addSubview:left];
 
 	/*************************************************************************\
-	|* Add a view that supports dropping
+	|* Add a view that supports dropping, taking up the right hand side of the
+	|* window's content-view
 	\*************************************************************************/
-	bounds = cv.bounds;
+	bounds = contentView.bounds;
 	bounds.size.width /= 2;
 	bounds.origin.x = bounds.size.width;
 	DroppingView *right = [[DroppingView alloc] initWithFrame:bounds];
 	right.backgroundColour = [AZColour colourNamed:@"snow"];
-	[cv addSubview:right];
-
+	[contentView addSubview:right];
 	}
 
 

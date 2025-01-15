@@ -22,7 +22,7 @@
 	{
 	if (self = [super initWithFrame:frame])
 		{
-		_dstRect = NSMakeRect(100,100,200, 200);
+		_dstRect = NSMakeRect(100,100,120, 120);
 		_mouseIsOver = NO;
 
 		[self registerForDraggedTypes:@[AZPasteboardTypeImage]];
@@ -38,8 +38,10 @@
 	{
 	[super drawInRect:dirtyRect withPainter:painter];
 
-	AZColour *colour = _mouseIsOver ? AZColour.red : AZColour.blue;
-	[painter rectangleWithRect:_dstRect colour:colour];
+	if (_mouseIsOver)
+		[painter rectangleWithRect:_dstRect filled:YES colour:AZColour.red];
+	else
+		[painter rectangleWithRect:_dstRect colour:AZColour.blue];
 	}
 
 /*****************************************************************************\
