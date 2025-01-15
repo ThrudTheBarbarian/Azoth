@@ -63,7 +63,7 @@ void _testMouseEvents(void)
 	IdentifiedView *v1 = [[IdentifiedView alloc]
 							initWithFrame:NSMakeRect(0,0, 1200, 720)
 								  andName:@"view1"];
-	[v1 setBackgroundColour:[AZColour whiteColour]];
+	[v1 setBackgroundColour:[AZColour white]];
 
 	AZScrollView *sv = [[AZScrollView alloc]
 							initWithFrame:NSMakeRect(100, 100, 600, 360)];
@@ -79,7 +79,7 @@ void _testMouseEvents(void)
 	spv.autoresizingMask = AZViewHeightSizable|AZViewWidthSizable;
 
 	r = NSMakeRect(0, 0, 600, 180);
-	AZView *c1 = [[ColouredView alloc] initWithFrame:r colour:AZColour.whiteColour];
+	AZView *c1 = [[ColouredView alloc] initWithFrame:r colour:AZColour.white];
 	[spv addSubview:c1];
 
 
@@ -96,5 +96,5 @@ void _testMouseEvents(void)
 	[cv addSubview:spv];
 
 
-	[cv setBackgroundColour:[AZColour orangeColour]];
+	[cv setBackgroundColour:[AZColour orange]];
 	}

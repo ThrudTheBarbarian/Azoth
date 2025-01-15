@@ -218,7 +218,7 @@
 
 	[painter rectangleWithRect:NSInsetRect(dirtyRect, 10, 10)
 						radius:20 filled:YES
-						colour:[AZColour whiteColour]];
+						colour:[AZColour white]];
 
 	[painter setUsingAntiAliasing:YES];
 //	[painter lineAtX:20 y:20 toX:90 y:70 withR:100 g:200 b:50 a:200];
@@ -260,7 +260,7 @@
 					   "happy too so ... Maybe it's all for the best";
 
 	NSRect r = NSMakeRect(35, 15, 250, 190);
-	[painter rectangleWithRect:r colour:[AZColour redColour]];
+	[painter rectangleWithRect:r colour:[AZColour red]];
 	[painter textInBox:r text:text];
 	}
 
