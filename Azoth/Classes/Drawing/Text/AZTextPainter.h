@@ -15,14 +15,15 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 @class AZColour;
 @class AZFont;
-@class AZRenderer;
+
+@protocol AZRenderer;
 
 @interface AZTextPainter : NSObject
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/
-- (instancetype) initWithRenderer:(AZRenderer *)renderer;
-+ (AZTextPainter *) painterWithRenderer:(AZRenderer *)renderer;
+- (instancetype) initWithRenderer:(id<AZRenderer>)renderer;
++ (AZTextPainter *) painterWithRenderer:(id<AZRenderer>)renderer;
 
 /*****************************************************************************\
 |* Basic drawing routine
