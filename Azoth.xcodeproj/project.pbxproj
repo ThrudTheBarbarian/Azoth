@@ -513,6 +513,7 @@
 		F47AB7552D381F3200501720 /* Exceptions for "Tests" folder in "GpuTest" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				GpuTest/AppDelegate.m,
 				GpuTest/main.m,
 			);
 			target = F47AB7382D381F2A00501720 /* GpuTest */;
@@ -564,6 +565,7 @@
 				AZTable/AppDelegate.m,
 				AZTable/Assets.xcassets,
 				AZTable/main.m,
+				GpuTest/AppDelegate.m,
 				GpuTest/main.m,
 				NibTest/AppDelegate.h,
 				NibTest/AppDelegate.m,

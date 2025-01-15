@@ -528,10 +528,112 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
+/*****************************************************************************\
+|* Create a texture from an existing surface. We assume RGBA8888 format for the
+|* surface. This needs to:
+|*
+|*  - Allocate a texture-id for the new texture
+|*  - create a transfer buffer and map it so the CPU can see it
+|*  - fill the transfer buffer with the texture data
+|*  - create a GPU texture of the same size
+|*  - start a copy pass and upload the data to the texture
+|*  - finish the copy pass and return the texture-id to the caller
+|*
+\*****************************************************************************/
 - (NSInteger)createTextureWithSurface:(nonnull struct SDL_Surface *)surface
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return 0;
+	/*************************************************************************\
+	|* Get a new unique texture id
+	\*************************************************************************/
+	NSNumber *tId = self.nextTextureId;
+
+	/*************************************************************************\
+	|* Create a transfer buffer of the correct size
+	\*************************************************************************/
+	NSSize size = NSMakeSize(surface->w, surface->h);
+	SDL_GPUTransferBuffer *upload = [self _uploadBufferOfSize:size];
+	if (upload == NULL)
+		{
+		SDL_Log("Cannot obtain GPU upload buffer of size %dx%d",
+				(int)size.width, (int)size.height);
+		return -1;
+		}
+
+	/*************************************************************************\
+	|* Map the buffer
+	\*************************************************************************/
+	uint32_t* cpuPtr = SDL_MapGPUTransferBuffer(_gpu, upload, NO);
+
+	/*************************************************************************\
+	|* Copy the data from the RGBA8888 surface to the texture
+	\*************************************************************************/
+	memcpy(cpuPtr, surface->pixels, surface->w * surface->h * 4);
+
+
+	/*************************************************************************\
+	|* Unmap the buffer
+	\*************************************************************************/
+	SDL_UnmapGPUTransferBuffer(_gpu, upload);
+
+	/*************************************************************************\
+	|* Create the GPU texture
+	\*************************************************************************/
+	SDL_GPUTextureUsageFlags flags = SDL_GPU_TEXTUREUSAGE_SAMPLER
+								   | SDL_GPU_TEXTUREUSAGE_COLOR_TARGET
+								   | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ
+								   | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE;
+
+	AZTexture *tex = [AZTexture textureFor:self
+								 withIndex:tId
+									  size:size
+									 usage:flags];
+	/*************************************************************************\
+	|* If we have a valid texture resource, then store it
+	\*************************************************************************/
+	if (tex)
+		_textures[tId] = tex;
+	else
+		tId = @(-1);
+
+	/*************************************************************************\
+	|* Create a copy pass to upload the cleared data to the texture
+	\*************************************************************************/
+	if (tId.integerValue > 0)
+		{
+		SDL_GPUCommandBuffer* cmds 	= SDL_AcquireGPUCommandBuffer(_gpu);
+		SDL_GPUCopyPass* pass 		= SDL_BeginGPUCopyPass(cmds);
+		SDL_GPUTextureTransferInfo info =
+			{
+			.transfer_buffer = upload,
+			.offset = 0,
+			// Zeroes out the rest
+			};
+		SDL_GPUTextureRegion region =
+			{
+			.texture = tex.texture,
+			.w  	 = (int)tex.size.width,
+			.h  	 = (int)tex.size.height,
+			.d    	 = 1
+			};
+
+		SDL_UploadToGPUTexture(pass, &info, &region, NO);
+
+		/*********************************************************************\
+		|* Tell the GPU that's all we're copying, and to go ahead and start
+		\*********************************************************************/
+		SDL_EndGPUCopyPass(pass);
+		SDL_SubmitGPUCommandBuffer(cmds);
+		}
+
+	/*************************************************************************\
+	|* Housekeeping
+	\*************************************************************************/
+	SDL_ReleaseGPUTransferBuffer(_gpu, upload);
+
+	/*************************************************************************\
+	|* Return the reference to the texture in the local map
+	\*************************************************************************/
+	return tId.integerValue;
 	}
 
 
