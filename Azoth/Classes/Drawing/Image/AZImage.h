@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 
 // These are the formats that AZImage can save (and load, though loading is
-// far more capable). The LZ4 format is an ARGB8888 pixel format, documented at
+// far more capable). The LZ4 format is an RGBA8888 pixel format, documented at
 // https://tinyurl.com/as8sba5y and is lossless, using LZ4 for compression. It
 // is currently not implemented though :)
 
