@@ -11,6 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class AZColour;
+@class AZFont;
 @class AZImage;
 @class AZTextPainter;
 @class AZView;
@@ -282,6 +283,11 @@ struct SDL_Surface;
 |* Set text scale (for effects, use different sized fonts for "normal" use)
 \*****************************************************************************/
 - (void) setTextScale:(AZScale)scale;
+
+/*****************************************************************************\
+|* Set the font to use
+\*****************************************************************************/
+- (void) setFont:(AZFont *)font;
 
 
 

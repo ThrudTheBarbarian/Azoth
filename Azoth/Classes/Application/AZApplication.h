@@ -112,6 +112,9 @@ struct TTF_TextEngine;
 // And an appropriately sized control font
 @property(strong, nonatomic) AZFont *						controlFont;
 
+// And an appropriately sized control font
+@property(strong, nonatomic) AZFont *						boldControlFont;
+
 // The Initial frame at startup. If not set, a default
 // 640x480 size will be used
 @property(assign, nonatomic) NSRect							initialFrame;

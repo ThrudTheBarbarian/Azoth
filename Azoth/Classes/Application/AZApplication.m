@@ -122,14 +122,38 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 					  "Failed to load system font %s!",
 					  _systemFontInfo.name.fileSystemRepresentation);
 		}
+
 	/*************************************************************************\
 	|* Similarly the control font
 	\*************************************************************************/
-	_controlFont = [AZFont systemFontWithsize:14];
+	AZFontStyle style =
+		{
+		.size 	= 14,
+		.name 	= AZApp.systemFontInfo.name,
+		.style 	= AZFONT_MEDIUM
+		};
+	_controlFont = [AZFont fontWithStyle:style];
 	if (!_controlFont)
 		{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
 					  "Failed to load control font %s!",
+					  _systemFontInfo.name.fileSystemRepresentation);
+		}
+		
+	/*************************************************************************\
+	|* Similarly the boldened-control font
+	\*************************************************************************/
+	AZFontStyle bstyle =
+		{
+		.size 	= 14,
+		.name 	= AZApp.systemFontInfo.name,
+		.style 	= AZFONT_BOLD
+		};
+	_boldControlFont = [AZFont fontWithStyle:bstyle];
+	if (!_boldControlFont)
+		{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+					  "Failed to load bold control font %s!",
 					  _systemFontInfo.name.fileSystemRepresentation);
 		}
 	}
@@ -241,27 +265,6 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 			self.viability = SDL_APP_FAILURE;
 			}
 		}
-#if 0
-	/*************************************************************************\
-    |* Create the window if we didn't load one from a ZIB
-    \*************************************************************************/
-    if (_window == nil)
-		{
-		_window = [AZWindow windowWithContentRect:_initialFrame
-										styleMask:_windowFlags];
-		if (self.window == nil)
-			{
-			SDL_Log("Couldn't create main window: %s", SDL_GetError());
-			self.viability = SDL_APP_FAILURE;
-			}
-		else
-			{
-			azr = [AZRenderer renderer];
-			[self.window installContentView];
-			[self _bootstrap];
-			}
-		}
-#endif
 
 	/*************************************************************************\
     |* Let the delegate know that we've now launched

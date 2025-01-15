@@ -117,7 +117,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	_usingAntiAliasing	= NO;
 	_drawAAEndpoint		= NO;
 	_textPainter		= [AZTextPainter painterWithRenderer:_renderer];
-	_textPainter.font	= AZApp.systemFont;
+	_textPainter.font	= AZApp.controlFont;
 	return YES;
 	}
 
@@ -2250,6 +2250,15 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	}
 
 // MARK: Text drawing
+
+/*****************************************************************************\
+|* Set the font to use
+\*****************************************************************************/
+- (void) setFont:(AZFont *)font
+	{
+	_textPainter.font = font;
+	}
+
 
 /*****************************************************************************\
 |* Set text colour, separate from drawing colour

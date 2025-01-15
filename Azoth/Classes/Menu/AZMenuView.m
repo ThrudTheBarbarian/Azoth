@@ -13,6 +13,7 @@
 #import "AZEventSink.h"
 #import "AZFont.h"
 #import "AZPainter.h"
+#import "AZTextPainter.h"
 #import "AZRenderer.h"
 #import "AZMenu.h"
 #import "AZMenuItem.h"
@@ -277,13 +278,12 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 
 		AZColour *textColour = nil;
 
-		int times = 1;
 		if (item.state == AZControlStateValueOn)
 			{
 			NSRect dstC = NSMakeRect(0, y, self.bounds.size.width, H);
 			[azr tileFrom:ui src:_barSel dst:dstC];
 			textColour = AZColour.white;
-			times = 3;
+			painter.textPainter.font = AZApp.boldControlFont;
 			}
 		else
 			{
@@ -295,14 +295,14 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 			[azr tileFrom:ui src:_menuCL dst:dstL];
 			[azr tileFrom:ui src:_menuCM dst:dstC];
 			[azr tileFrom:ui src:_menuCR dst:dstR];
+			painter.textPainter.font = AZApp.controlFont;
 			textColour = AZColour.black;
 			}
 
 		[painter setTextAlignment:AZTextAlignmentLeft];
 		[azr setBlendMode:SDL_BLENDMODE_NONE];
 		[painter setTextColour:textColour];
-		for (int time = 0; time<times; time++)
-			[painter textInBox:inset text:item.title];
+		[painter textInBox:inset text:item.title];
 
 		y += H;
 		}

@@ -291,6 +291,7 @@ typedef struct
 		int black = (idx == STATE_N) | (idx == STATE_D);
 		[painter setTextAlignment:_info[i].alignment];
 		[painter setTextColour:black ? AZColour.black : AZColour.white];
+		[painter setFont:black? AZApp.controlFont : AZApp.boldControlFont];
 
 		NSRect box = NSInsetRect(r, 3, 2);
 		[painter textInBox:box text:_info[i].label];
