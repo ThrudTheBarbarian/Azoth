@@ -514,6 +514,36 @@ extern void _AZUnimplementedMethod(SEL selector,
 #define AZInvalidAbstractInvocation() \
     _AZInvalidAbstractInvocation(_cmd, self, __FILE__, __LINE__)
 
+/*****************************************************************************\
+|* Shamelessly stolen from the SDL internal header file
+\*****************************************************************************/
+
+// AZ_SMALL_ALLOC_STACKSIZE is smaller than _ALLOCA_S_THRESHOLD
+// and should be generally safe
+#ifdef _MSC_VER
+#  pragma warning(disable : 6255)
+#endif
+#  define AZ_SMALL_ALLOC_STACKSIZE	(128)
+#  define AZSmallAlloc(type, count, pisstack)								\
+	((*(pisstack) = ((sizeof(type) * (count)) < AZ_SMALL_ALLOC_STACKSIZE)), \
+	 (*(pisstack) ? AZ_stack_alloc(type, count) 							\
+				  : (type *)SDL_malloc(sizeof(type) * (count))))
+
+#  define AZSmallFree(ptr, isstack) 										\
+		if ((isstack)) {                 									\
+			AZ_stack_free(ptr);         									\
+		} else {                         									\
+			SDL_free(ptr);               									\
+		}
+
+#ifdef __APPLE__
+#  define AZ_stack_alloc(type, count)    (type*)__alloca(sizeof(type)*(count))
+#  define AZ_stack_free(data)
+#else
+#  define AZ_stack_alloc(type, count)    (type*)SDL_malloc(sizeof(type)*(count))
+#  define AZ_stack_free(data)            SDL_free(data)
+#endif
+
 
 /*****************************************************************************\
 |* Platform names
