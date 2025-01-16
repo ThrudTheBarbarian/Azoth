@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <SDL3/SDL.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -22,6 +23,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (nullable AZColour *) colourNamed:(NSString *)name;
 
+
+/*****************************************************************************\
+|* Return the colour as something the renderer can use
+\*****************************************************************************/
+- (SDL_FColor) sdlColour;
 
 // MARK: predefined colours
 

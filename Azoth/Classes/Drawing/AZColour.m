@@ -772,6 +772,14 @@ static NSMutableDictionary * _usedColours = nil;
 	}
 
 /*****************************************************************************\
+|* Return the colour as something the renderer can use
+\*****************************************************************************/
+- (SDL_FColor) sdlColour
+	{
+	return (SDL_FColor){_R / 255.f, _G / 255.f, _B / 255.f, _A / 255.f};
+	}
+
+/*****************************************************************************\
 |* Set/Get floating point red values
 \*****************************************************************************/
 - (void) setRedAsFloat:(float)fVal
