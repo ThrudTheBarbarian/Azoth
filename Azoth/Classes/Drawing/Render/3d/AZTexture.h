@@ -42,8 +42,17 @@ NS_ASSUME_NONNULL_BEGIN
 // Index for this texture in pool
 @property(strong, nonatomic, readonly) NSNumber *					index;
 
+// The colour associated with this texture
+@property(assign, nonatomic) SDL_FColor 							colour;
+
+// The blend-mode for this texture
+@property(assign, nonatomic) SDL_BlendMode 							blendMode;
+
 // The actual texture pointer for SDL
 @property(assign, nonatomic, readonly) SDL_GPUTexture *				texture;
+
+// The colourspace for the texture
+@property(assign, nonatomic) SDL_Colorspace							colourspace;
 @end
 
 NS_ASSUME_NONNULL_END

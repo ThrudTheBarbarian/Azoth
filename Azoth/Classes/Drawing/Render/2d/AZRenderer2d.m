@@ -510,10 +510,10 @@ NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
 	return NS_RECT(viewport);
 	}
 
-- (void) setViewport:(NSRect)viewport
+- (BOOL) setViewport:(NSRect)viewport
 	{
 	SDL_Rect vp = SDL_RECT(viewport);
-	SDL_SetRenderViewport(_renderer, &vp);
+	return SDL_SetRenderViewport(_renderer, &vp);
 	}
 
 
@@ -582,9 +582,9 @@ NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
 /*****************************************************************************\
 |* Clear the current texture target
 \*****************************************************************************/
-- (void) clear
+- (BOOL) clear
 	{
-	SDL_RenderClear(_renderer);
+	return SDL_RenderClear(_renderer);
 	}
 
 
@@ -653,7 +653,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
 /*****************************************************************************\
 |* Render a filled rectangle
 \*****************************************************************************/
-- (int) renderFilledRect:(NSRect)r
+- (BOOL) renderFilledRect:(NSRect)r
 	{
 	SDL_FRect rect = SDL_FRECT(r);
 	return SDL_RenderFillRect(_renderer, &rect);
