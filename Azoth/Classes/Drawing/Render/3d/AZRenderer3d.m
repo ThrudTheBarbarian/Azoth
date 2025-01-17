@@ -11,6 +11,7 @@
 #import "AZColour.h"
 #import "AZColourTarget.h"
 #import "AZComputePipeline.h"
+#import "AZMatrix.h"
 #import "AZPipelineTarget.h"
 #import "AZRenderer3d.h"
 #import "AZRenderCommand.h"
@@ -51,6 +52,50 @@ typedef struct
 	} AZViewState;
 
 static const int _rectIndexOrder[] = { 0, 1, 2, 0, 2, 3 };
+
+typedef struct GPU_ShaderUniformData
+	{
+    Float4x4 mvp;					// 16 floats
+    SDL_FColor color;				// 4 floats
+    float texture_size[2];			// 2 floats
+	} GPU_ShaderUniformData;
+
+typedef struct GPU_RenderData
+	{
+	NSMutableArray<AZShader *> * vertShaders;
+	NSMutableArray<AZShader *> * fragShaders;
+
+	AZTexture *backbuffer;
+
+    struct
+		{
+        SDL_GPUSwapchainComposition composition;
+        SDL_GPUPresentMode present_mode;
+		} swapchain;
+
+    struct
+		{
+        SDL_GPUTransferBuffer *transfer_buf;
+        SDL_GPUBuffer *buffer;
+        Uint32 buffer_size;
+		} vertices;
+
+    struct
+		{
+        SDL_GPURenderPass *render_pass;
+        SDL_Texture *render_target;
+        SDL_GPUCommandBuffer *command_buffer;
+        SDL_GPUColorTargetInfo color_attachment;
+        SDL_GPUViewport viewport;
+        SDL_Rect scissor;
+        SDL_FColor draw_color;
+        bool scissor_enabled;
+        bool scissor_was_enabled;
+        GPU_ShaderUniformData shader_data;
+		} state;
+
+    SDL_GPUSampler *samplers[3][2];
+	} GPU_RenderData;
 
 /*****************************************************************************\
 |* Predefined blend modes
@@ -1427,7 +1472,7 @@ static SDL_SpinLock 	_textureLock;
 		case SDL_BLENDMODE_ADD_PREMULTIPLIED:
 		case SDL_BLENDMODE_MOD:
 		case SDL_BLENDMODE_MUL:
-        return true;
+        return YES;
 
 		default:
 			break;
@@ -1440,15 +1485,15 @@ static SDL_SpinLock 	_textureLock;
 	SDL_BlendFactor dstAlphaFactor 	= [self blendModeDstAlphaFactor:blendMode];
 	SDL_BlendOperation alphaOp 		= [self blendModeAlphaOperation:blendMode];
 
-    if (GPU_ConvertBlendFactor(srcColorFactor) == SDL_GPU_BLENDFACTOR_INVALID ||
-        GPU_ConvertBlendFactor(srcAlphaFactor) == SDL_GPU_BLENDFACTOR_INVALID ||
-        GPU_ConvertBlendOperation(colourOp) == SDL_GPU_BLENDOP_INVALID ||
-        GPU_ConvertBlendFactor(dstColourFactor) == SDL_GPU_BLENDFACTOR_INVALID ||
-        GPU_ConvertBlendFactor(dstAlphaFactor) == SDL_GPU_BLENDFACTOR_INVALID ||
-        GPU_ConvertBlendOperation(alphaOp) == SDL_GPU_BLENDOP_INVALID) {
-        return false;
-		}
-	
+    if (AZConvertBlendFactor(srcColorFactor) == SDL_GPU_BLENDFACTOR_INVALID  ||
+        AZConvertBlendFactor(srcAlphaFactor) == SDL_GPU_BLENDFACTOR_INVALID  ||
+        AZConvertBlendOperation(colourOp) == SDL_GPU_BLENDOP_INVALID 		 ||
+        AZConvertBlendFactor(dstColourFactor) == SDL_GPU_BLENDFACTOR_INVALID ||
+        AZConvertBlendFactor(dstAlphaFactor) == SDL_GPU_BLENDFACTOR_INVALID  ||
+        AZConvertBlendOperation(alphaOp) == SDL_GPU_BLENDOP_INVALID)
+        return NO;
+
+	return YES;
 	}
 
 /*****************************************************************************\
@@ -1886,6 +1931,166 @@ float AZsRGBfromLinear(float v)
 	return result;
 	}
 
+- (BOOL) _runCommandQueue
+	{
+	void *vertices 	= _vertexData;
+	size_t vertSize	= _vertexDataInUse;
+
+    GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
+
+    if (!UploadVertices(data, vertices, vertsize)) {
+        return false;
+    }
+
+    data->state.color_attachment.load_op = SDL_GPU_LOADOP_LOAD;
+
+    if (renderer->target) {
+        GPU_TextureData *tdata = renderer->target->internal;
+        data->state.color_attachment.texture = tdata->texture;
+    } else {
+        data->state.color_attachment.texture = data->backbuffer.texture;
+    }
+
+    if (!data->state.color_attachment.texture) {
+        return SDL_SetError("Render target texture is NULL");
+    }
+
+    while (cmd) {
+        switch (cmd->command) {
+        case SDL_RENDERCMD_SETDRAWCOLOR:
+        {
+            data->state.draw_color = GetDrawCmdColor(renderer, cmd);
+            break;
+        }
+
+        case SDL_RENDERCMD_SETVIEWPORT:
+        {
+            SDL_Rect *viewport = &cmd->data.viewport.rect;
+            data->state.viewport.x = viewport->x;
+            data->state.viewport.y = viewport->y;
+            data->state.viewport.w = viewport->w;
+            data->state.viewport.h = viewport->h;
+            break;
+        }
+
+        case SDL_RENDERCMD_SETCLIPRECT:
+        {
+            const SDL_Rect *rect = &cmd->data.cliprect.rect;
+            data->state.scissor.x = (int)data->state.viewport.x + rect->x;
+            data->state.scissor.y = (int)data->state.viewport.y + rect->y;
+            data->state.scissor.w = rect->w;
+            data->state.scissor.h = rect->h;
+            data->state.scissor_enabled = cmd->data.cliprect.enabled;
+            break;
+        }
+
+        case SDL_RENDERCMD_CLEAR:
+        {
+            data->state.color_attachment.clear_color = GetDrawCmdColor(renderer, cmd);
+            data->state.color_attachment.load_op = SDL_GPU_LOADOP_CLEAR;
+            break;
+        }
+
+        case SDL_RENDERCMD_FILL_RECTS: // unused
+            break;
+
+        case SDL_RENDERCMD_COPY: // unused
+            break;
+
+        case SDL_RENDERCMD_COPY_EX: // unused
+            break;
+
+        case SDL_RENDERCMD_DRAW_LINES:
+        {
+            Uint32 count = (Uint32)cmd->data.draw.count;
+            Uint32 offset = (Uint32)cmd->data.draw.first;
+
+            if (count > 2) {
+                // joined lines cannot be grouped
+                Draw(data, cmd, count, offset, SDL_GPU_PRIMITIVETYPE_LINESTRIP);
+            } else {
+                // let's group non joined lines
+                SDL_RenderCommand *finalcmd = cmd;
+                SDL_RenderCommand *nextcmd = cmd->next;
+                SDL_BlendMode thisblend = cmd->data.draw.blend;
+
+                while (nextcmd) {
+                    const SDL_RenderCommandType nextcmdtype = nextcmd->command;
+                    if (nextcmdtype != SDL_RENDERCMD_DRAW_LINES) {
+                        break; // can't go any further on this draw call, different render command up next.
+                    } else if (nextcmd->data.draw.count != 2) {
+                        break; // can't go any further on this draw call, those are joined lines
+                    } else if (nextcmd->data.draw.blend != thisblend) {
+                        break; // can't go any further on this draw call, different blendmode copy up next.
+                    } else {
+                        finalcmd = nextcmd; // we can combine copy operations here. Mark this one as the furthest okay command.
+                        count += (Uint32)nextcmd->data.draw.count;
+                    }
+                    nextcmd = nextcmd->next;
+                }
+
+                Draw(data, cmd, count, offset, SDL_GPU_PRIMITIVETYPE_LINELIST);
+                cmd = finalcmd; // skip any copy commands we just combined in here.
+            }
+            break;
+        }
+
+        case SDL_RENDERCMD_DRAW_POINTS:
+        case SDL_RENDERCMD_GEOMETRY:
+        {
+            /* as long as we have the same copy command in a row, with the
+               same texture, we can combine them all into a single draw call. */
+            SDL_Texture *thistexture = cmd->data.draw.texture;
+            SDL_BlendMode thisblend = cmd->data.draw.blend;
+            const SDL_RenderCommandType thiscmdtype = cmd->command;
+            SDL_RenderCommand *finalcmd = cmd;
+            SDL_RenderCommand *nextcmd = cmd->next;
+            Uint32 count = (Uint32)cmd->data.draw.count;
+            Uint32 offset = (Uint32)cmd->data.draw.first;
+
+            while (nextcmd) {
+                const SDL_RenderCommandType nextcmdtype = nextcmd->command;
+                if (nextcmdtype != thiscmdtype) {
+                    break; // can't go any further on this draw call, different render command up next.
+                } else if (nextcmd->data.draw.texture != thistexture || nextcmd->data.draw.blend != thisblend) {
+                    // FIXME should we check address mode too?
+                    break; // can't go any further on this draw call, different texture/blendmode copy up next.
+                } else {
+                    finalcmd = nextcmd; // we can combine copy operations here. Mark this one as the furthest okay command.
+                    count += (Uint32)nextcmd->data.draw.count;
+                }
+                nextcmd = nextcmd->next;
+            }
+
+            SDL_GPUPrimitiveType prim = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST; // SDL_RENDERCMD_GEOMETRY
+            if (thiscmdtype == SDL_RENDERCMD_DRAW_POINTS) {
+                prim = SDL_GPU_PRIMITIVETYPE_POINTLIST;
+            }
+
+            Draw(data, cmd, count, offset, prim);
+
+            cmd = finalcmd; // skip any copy commands we just combined in here.
+            break;
+        }
+
+        case SDL_RENDERCMD_NO_OP:
+            break;
+        }
+
+        cmd = cmd->next;
+    }
+
+    if (data->state.color_attachment.load_op == SDL_GPU_LOADOP_CLEAR) {
+        RestartRenderPass(data);
+    }
+
+    if (data->state.render_pass) {
+        SDL_EndGPURenderPass(data->state.render_pass);
+        data->state.render_pass = NULL;
+    }
+
+    return true;
+}
 
 
 // MARK: Queueing of commands

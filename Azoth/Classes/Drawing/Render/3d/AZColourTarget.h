@@ -10,12 +10,21 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class AZRenderer3d;
+
 @interface AZColourTarget : NSObject
 
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/
 + (AZColourTarget*) targetWithFormat:(SDL_GPUTextureFormat)format;
+
+
+/*****************************************************************************\
+|* Use the renderer to convert a blend mode to a target-blendstate
+\*****************************************************************************/
+- (void) updataBlendStateWith:(AZRenderer3d *)renderer
+				 andBlendMode:(SDL_BlendMode)mode;
 
 /*****************************************************************************\
 |* Properties

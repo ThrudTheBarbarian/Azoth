@@ -12,6 +12,9 @@
 #import <Foundation/Foundation.h>
 #import <SDL3/SDL.h>
 
+@class AZShader;
+
+
 static AZThreadSize AZMakeThreadSize(int x, int y, int z)
 	{
 	AZThreadSize azts;
@@ -21,5 +24,94 @@ static AZThreadSize AZMakeThreadSize(int x, int y, int z)
 	return azts;
 	};
 	
+/*****************************************************************************\
+|* Shader utilities
+\*****************************************************************************/
+
+typedef enum
+	{
+    AZVertShaderInvalid = -1,
+    AZVertShaderLinePoint,
+    AZVertShaderTriColour,
+    AZVertShaderTriTexture,
+
+    AZNumVertShaders,
+	} AZVertexShaderID;
+
+typedef enum
+	{
+    AZFragShaderInvalid = -1,
+    AZFragShaderColour,
+    AZFragShaderTextureRGB,
+    AZFragShaderTextureRGBA,
+
+    AZNumFragShaders,
+	} AZFragmentShaderID;
+
+struct AZShaders
+	{
+    AZShader *vertShaders[AZNumVertShaders];
+    AZShader *fragShaders[AZNumFragShaders];
+	};
+
+typedef struct AZShaders AZShaders;
+
+// Fetch a vertex shader with sanity tests
+AZShader * AZVertexShader(AZShaders *shaders, AZVertexShaderID which);
+
+// Fetch a fragment shader with sanity tests
+AZShader * AZFragmentShader(AZShaders *shaders, AZFragmentShaderID which);
+
+
+/*****************************************************************************\
+|* Determine if we support a blend factor or not
+\*****************************************************************************/
+static SDL_INLINE SDL_GPUBlendFactor AZConvertBlendFactor(SDL_BlendFactor factor)
+	{
+    switch (factor)
+		{
+		case SDL_BLENDFACTOR_ZERO:
+			return SDL_GPU_BLENDFACTOR_ZERO;
+		case SDL_BLENDFACTOR_ONE:
+			return SDL_GPU_BLENDFACTOR_ONE;
+		case SDL_BLENDFACTOR_SRC_COLOR:
+			return SDL_GPU_BLENDFACTOR_SRC_COLOR;
+		case SDL_BLENDFACTOR_ONE_MINUS_SRC_COLOR:
+			return SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_COLOR;
+		case SDL_BLENDFACTOR_SRC_ALPHA:
+			return SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+		case SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA:
+			return SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+		case SDL_BLENDFACTOR_DST_COLOR:
+			return SDL_GPU_BLENDFACTOR_DST_COLOR;
+		case SDL_BLENDFACTOR_ONE_MINUS_DST_COLOR:
+			return SDL_GPU_BLENDFACTOR_ONE_MINUS_DST_COLOR;
+		case SDL_BLENDFACTOR_DST_ALPHA:
+			return SDL_GPU_BLENDFACTOR_DST_ALPHA;
+		case SDL_BLENDFACTOR_ONE_MINUS_DST_ALPHA:
+			return SDL_GPU_BLENDFACTOR_ONE_MINUS_DST_ALPHA;
+		default:
+			return SDL_GPU_BLENDFACTOR_INVALID;
+		}
+	}
+
+static SDL_INLINE SDL_GPUBlendOp AZConvertBlendOperation(SDL_BlendOperation op)
+	{
+	switch (op)
+		{
+		case SDL_BLENDOPERATION_ADD:
+			return SDL_GPU_BLENDOP_ADD;
+		case SDL_BLENDOPERATION_SUBTRACT:
+			return SDL_GPU_BLENDOP_SUBTRACT;
+		case SDL_BLENDOPERATION_REV_SUBTRACT:
+			return SDL_GPU_BLENDOP_REVERSE_SUBTRACT;
+		case SDL_BLENDOPERATION_MINIMUM:
+			return SDL_GPU_BLENDOP_MIN;
+		case SDL_BLENDOPERATION_MAXIMUM:
+			return SDL_GPU_BLENDOP_MAX;
+		default:
+			return SDL_GPU_BLENDOP_INVALID;
+		}
+	}
 
 #endif /* AZ3dUtils_h */

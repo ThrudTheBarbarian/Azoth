@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import <SDL3/SDL.h>
+#import <Azoth/AZ3dUtils.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -16,7 +17,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol AZRenderer;
 
+typedef struct AZPipelineParameters
+	{
+    SDL_BlendMode 			blendMode;
+    AZFragmentShaderID 		fragShader;
+    AZVertexShaderID 		vertShader;
+    SDL_GPUTextureFormat 	attachmentFormat;
+    SDL_GPUPrimitiveType 	primitiveType;
+	} AZPipelineParameters;
+
+
 @interface AZRenderPipeline : NSObject
+
+/*****************************************************************************\
+|* Create a render pipeline
+\*****************************************************************************/
++ (nullable AZRenderPipeline *) pipelineWithRenderer:(AZRenderer *)renderer
+											 shaders:(AZShaders *)shaders
+											  params:(AZPipelineParameters *)params;
 
 /*****************************************************************************\
 |* Build the render pipeline
@@ -41,6 +59,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 // The primitive type used in the pipeline.
 @property(assign, nonatomic) SDL_GPUPrimitiveType			primitiveType;
+
+// The format of the texture data
+@property(assign, nonatomic) SDL_GPUTextureFormat			attachmentFormat;
+
+// The multisampling state
+@property(assign, nonatomic) SDL_GPUMultisampleState		multisample;
+
+// The rasteriser state
+@property(assign, nonatomic) SDL_GPURasterizerState			rasteriser;
 
 // The actual pipeline that SDL uses
 @property(assign, nonatomic, readonly)

@@ -18,6 +18,7 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 
 #import <SDL3/SDL.h>
 
+#import <Azoth/AZ3dUtils.h>
 #import <Azoth/AZApplication.h>
 #import <Azoth/AZAppDelegate.h>
 #import <Azoth/AZButton.h>
@@ -27,6 +28,7 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZControl.h>
 #import <Azoth/AZCollectionView.h>
 #import <Azoth/AZCollectionViewDelegate.h>
+#import <Azoth/AZComputePipeline.h>
 #import <Azoth/AZCVGroup.h>
 #import <Azoth/AZCVLayoutItem.h>
 #import <Azoth/AZCVLayoutManager.h>
@@ -41,6 +43,7 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZImage.h>
 #import <Azoth/AZImageView.h>
 #import <Azoth/AZLabel.h>
+#import <Azoth/AZMatrix.h>
 #import <Azoth/AZMenu.h>
 #import <Azoth/AZMenuItem.h>
 #import <Azoth/AZNotifications.h>
@@ -58,6 +61,7 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZRulerView.h>
 #import <Azoth/AZScroller.h>
 #import <Azoth/AZScrollView.h>
+#import <Azoth/AZSampler.h>
 #import <Azoth/AZSegmentedControl.h>
 #import <Azoth/AZShader.h>
 #import <Azoth/AZSlider.h>
@@ -68,6 +72,7 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZTableView.h>
 #import <Azoth/AZTextField.h>
 #import <Azoth/AZTextPainter.h>
+#import <Azoth/AZTexture.h>
 #import <Azoth/AZTransform.h>
 #import <Azoth/AZTypes.h>
 #import <Azoth/AZVertexAttribute.h>
