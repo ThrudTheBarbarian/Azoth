@@ -16,6 +16,7 @@
 #import "AZRenderer3d.h"
 #import "AZRenderCommand.h"
 #import "AZRenderPipeline.h"
+#import "AZRenderProperties.h"
 #import "AZSampler.h"
 #import "AZShader.h"
 #import "AZTexture.h"
@@ -60,42 +61,41 @@ typedef struct GPU_ShaderUniformData
     float texture_size[2];			// 2 floats
 	} GPU_ShaderUniformData;
 
-typedef struct GPU_RenderData
+typedef struct AZRenderData
 	{
-	NSMutableArray<AZShader *> * vertShaders;
-	NSMutableArray<AZShader *> * fragShaders;
+	AZShaders shaders;
 
 	AZTexture *backbuffer;
 
     struct
 		{
         SDL_GPUSwapchainComposition composition;
-        SDL_GPUPresentMode present_mode;
+        SDL_GPUPresentMode presentMode;
 		} swapchain;
 
     struct
 		{
-        SDL_GPUTransferBuffer *transfer_buf;
+        SDL_GPUTransferBuffer *transferBuf;
         SDL_GPUBuffer *buffer;
-        Uint32 buffer_size;
+        Uint32 bufferSize;
 		} vertices;
 
     struct
 		{
-        SDL_GPURenderPass *render_pass;
-        SDL_Texture *render_target;
-        SDL_GPUCommandBuffer *command_buffer;
-        SDL_GPUColorTargetInfo color_attachment;
+        SDL_GPURenderPass *renderPass;
+        SDL_Texture *renderTarget;
+        SDL_GPUCommandBuffer *commandBuffer;
+        SDL_GPUColorTargetInfo colourAttachment;
         SDL_GPUViewport viewport;
         SDL_Rect scissor;
-        SDL_FColor draw_color;
-        bool scissor_enabled;
-        bool scissor_was_enabled;
-        GPU_ShaderUniformData shader_data;
+        SDL_FColor drawColour;
+        bool scissorEnabled;
+        bool scissorWasEnabled;
+        GPU_ShaderUniformData shaderData;
 		} state;
 
     SDL_GPUSampler *samplers[3][2];
-	} GPU_RenderData;
+	} AZRenderData;
 
 /*****************************************************************************\
 |* Predefined blend modes
@@ -280,6 +280,11 @@ SDL_RendererLogicalPresentation								logicalPresentMode;
 // Incremented once per flush of the render queue
 @property(assign, nonatomic) NSInteger						cmdGeneration;
 
+// Keep track of the rendering state etc.
+@property(assign, nonatomic) AZRenderData					renderData;
+
+// Properties we set on this renderer
+@property(strong, nonatomic) NSMutableDictionary *			properties;
 @end
 
 
@@ -297,6 +302,12 @@ static SDL_SpinLock 	_textureLock;
 	{
 	if (self = [super init])
 		{
+		/*********************************************************************\
+		|* Set the properties dictionary up
+		\*********************************************************************/
+		_properties 	= [NSMutableDictionary new];
+		_properties[AZRendererValid] = @(YES);
+
 		/*********************************************************************\
 		|* Prepare to store the textures
 		\*********************************************************************/
@@ -349,7 +360,6 @@ static SDL_SpinLock 	_textureLock;
 		_vertexData			= NULL;
 		_vertexDataSize		= 0;
 		_vertexDataInUse	= 0;
-
 		}
 	return self;
 	}
@@ -401,6 +411,13 @@ static SDL_SpinLock 	_textureLock;
     \*************************************************************************/
 	if (ok)
 		ok &= [self _initialiseGPU];
+
+	/*************************************************************************\
+    |* Initialise
+    \*************************************************************************/
+	const char *hint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
+	if (hint && *hint)
+		_properties[AZRendererVSync] = @(YES);
 
 	return ok;
 	}
@@ -594,16 +611,29 @@ static SDL_SpinLock 	_textureLock;
 	/*************************************************************************\
     |* Initialise the main view
     \*************************************************************************/
-	_mainView.pixelW 		= w;
-	_mainView.pixelH 		= h;
-	_mainView.scale 		= (NSPoint){1.f, 1.f};
-	_mainView.logicalScale 	= _mainView.scale;
-	_mainView.currentScale 	= _mainView.scale;
-	_view 					= &_mainView;
+	_mainView.view.size.width	= -1;
+	_mainView.view.size.height	= -1;
+	_mainView.scale 			= (NSPoint){1.f, 1.f};
+	_mainView.logicalScale 		= _mainView.scale;
+	_mainView.currentScale 		= _mainView.scale;
+	_dpiScale					= _mainView.scale;
+	_view						= &_mainView;
 
 	[self _updatePixelViewport:&_mainView];
 	[self _updatePixelClipRect:&_mainView];
+	[self _updateMainViewDimensions];
 
+	_properties[AZRendererWindow] 		= _window;
+	_properties[AZRendererColourspace]	= @(_outputColourspace);
+	_properties[AZRendererRenderer] 	= self;
+
+
+	_cmdGeneration	= 1;
+	_lineMethod		= [self _renderLineMethod];
+
+	[self _updateHdrProperties];
+
+	SDL_ClearError();
 	return YES;
 	}
 
@@ -1936,7 +1966,7 @@ float AZsRGBfromLinear(float v)
 	void *vertices 	= _vertexData;
 	size_t vertSize	= _vertexDataInUse;
 
-    GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
+    // _renderData ... GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
 
     if (!UploadVertices(data, vertices, vertsize)) {
         return false;
