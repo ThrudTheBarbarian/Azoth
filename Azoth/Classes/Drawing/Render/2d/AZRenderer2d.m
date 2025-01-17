@@ -525,9 +525,9 @@ NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
 	SDL_GetRenderScale(_renderer, xs, ys);
 	}
 
-- (void) setScaleX:(float)xs y:(float)ys
+- (BOOL) setScaleX:(float)xs y:(float)ys
 	{
-	SDL_SetRenderScale(_renderer, xs, ys);
+	return SDL_SetRenderScale(_renderer, xs, ys);
 	}
 
 
