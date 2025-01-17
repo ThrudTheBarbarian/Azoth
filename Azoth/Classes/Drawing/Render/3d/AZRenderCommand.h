@@ -64,7 +64,7 @@ typedef enum AZTextureAddressMode
 @property(assign, nonatomic) SDL_FColor								colour;
 
 // The blend mode
-@property(assign, nonatomic) SDL_BlendMode							blend;
+@property(assign, nonatomic) SDL_BlendMode							blendMode;
 
 // A texture pointer
 @property(strong, nonatomic) AZTexture *							texture;

@@ -48,9 +48,77 @@ typedef struct
 	NSPoint logicalScale;			// Logical scaling factor (!)
 	NSPoint logicalOffset;			// Logical offset in x,y
 	NSPoint currentScale;			// Just logicalScale * scale
-	} ViewState;
+	} AZViewState;
 
 static const int _rectIndexOrder[] = { 0, 1, 2, 0, 2, 3 };
+
+/*****************************************************************************\
+|* Predefined blend modes
+\*****************************************************************************/
+#define AZ_COMPOSE_BLENDMODE(srcColorFactor, dstColorFactor, colorOperation, \
+                              srcAlphaFactor, dstAlphaFactor, alphaOperation) \
+    (SDL_BlendMode)(((Uint32)(colorOperation) << 0) |                         \
+                    ((Uint32)(srcColorFactor) << 4) |                         \
+                    ((Uint32)(dstColorFactor) << 8) |                         \
+                    ((Uint32)(alphaOperation) << 16) |                        \
+                    ((Uint32)(srcAlphaFactor) << 20) |                        \
+                    ((Uint32)(dstAlphaFactor) << 24))
+
+#define AZ_BLENDMODE_NONE_FULL												\
+    AZ_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_ONE, 								\
+						 SDL_BLENDFACTOR_ZERO,								\
+						 SDL_BLENDOPERATION_ADD, 							\
+                         SDL_BLENDFACTOR_ONE, 								\
+						 SDL_BLENDFACTOR_ZERO, 								\
+                         SDL_BLENDOPERATION_ADD)
+
+#define AZ_BLENDMODE_BLEND_FULL                                                                                  \
+    AZ_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_SRC_ALPHA, 						\
+						 SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, 				\
+						 SDL_BLENDOPERATION_ADD, 							\
+						 SDL_BLENDFACTOR_ONE, 								\
+						 SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, 				\
+						 SDL_BLENDOPERATION_ADD)
+
+#define AZ_BLENDMODE_BLEND_PREMULTIPLIED_FULL                                                              \
+    AZ_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_ONE, 								\
+						  SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, 				\
+						  SDL_BLENDOPERATION_ADD, 							\
+                          SDL_BLENDFACTOR_ONE, 								\
+                          SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, 				\
+                          SDL_BLENDOPERATION_ADD)
+
+#define AZ_BLENDMODE_ADD_FULL                                          		\
+    AZ_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_SRC_ALPHA, 						\
+						 SDL_BLENDFACTOR_ONE, 								\
+						 SDL_BLENDOPERATION_ADD, 							\
+                         SDL_BLENDFACTOR_ZERO, 								\
+                         SDL_BLENDFACTOR_ONE, 								\
+                         SDL_BLENDOPERATION_ADD)
+
+#define AZ_BLENDMODE_ADD_PREMULTIPLIED_FULL                               	\
+    AZ_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_ONE,  								\
+						 SDL_BLENDFACTOR_ONE, 								\
+						 SDL_BLENDOPERATION_ADD, 							\
+                         SDL_BLENDFACTOR_ZERO, 								\
+                         SDL_BLENDFACTOR_ONE, 								\
+                         SDL_BLENDOPERATION_ADD)
+
+#define AZ_BLENDMODE_MOD_FULL                                            	\
+    AZ_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_ZERO, 								\
+						 SDL_BLENDFACTOR_SRC_COLOR, 						\
+						 SDL_BLENDOPERATION_ADD, 							\
+                         SDL_BLENDFACTOR_ZERO, 								\
+                         SDL_BLENDFACTOR_ONE, 								\
+                         SDL_BLENDOPERATION_ADD)
+
+#define AZ_BLENDMODE_MUL_FULL                                            	\
+    AZ_COMPOSE_BLENDMODE(SDL_BLENDFACTOR_DST_COLOR, 						\
+						 SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA, 				\
+						 SDL_BLENDOPERATION_ADD, 							\
+                         SDL_BLENDFACTOR_ZERO, 								\
+                         SDL_BLENDFACTOR_ONE, 								\
+                         SDL_BLENDOPERATION_ADD)
 
 
 /*****************************************************************************\
@@ -84,10 +152,10 @@ NSMutableDictionary<NSNumber *, AZTexture *> * 				textures;
 @property(strong, nonatomic, nullable) AZTexture *			target;
 
 // The current view state
-@property(assign, nonatomic) ViewState						view;
+@property(assign, nonatomic) AZViewState *					view;
 
 // The main view state
-@property(assign, nonatomic) ViewState						mainView;
+@property(assign, nonatomic) AZViewState					mainView;
 
 // The size of the eventual output window, in pixels
 @property(assign, nonatomic) NSSize							pixelSize;
@@ -140,7 +208,7 @@ NSMutableArray<AZRenderCommand *> *							commandPool;
 NSMutableArray<AZRenderCommand *> *							commandQ;
 
 // Different ways to blend
-@property(assign, nonatomic) SDL_BlendMode					blend;
+@property(assign, nonatomic) SDL_BlendMode					blendModeValue;
 
 // The amount of space used for vertices so far
 @property(assign, nonatomic) NSInteger						vertexDataInUse;
@@ -150,6 +218,22 @@ NSMutableArray<AZRenderCommand *> *							commandQ;
 
 // The actual vertex data
 @property(assign, nonatomic) void *							vertexData;
+
+// The logical presentation mode
+@property(assign, nonatomic)
+SDL_RendererLogicalPresentation								logicalPresentMode;
+
+// The logical size
+@property(assign, nonatomic) NSSize							logicalSize;
+
+// The logical source rectangle
+@property(assign, nonatomic) NSRect							logicalSrcRect;
+
+// The logical destination rectangle
+@property(assign, nonatomic) NSRect							logicalDstRect;
+
+// Incremented once per flush of the render queue
+@property(assign, nonatomic) NSInteger						cmdGeneration;
 
 @end
 
@@ -184,14 +268,15 @@ static SDL_SpinLock 	_textureLock;
 		_colour = AZColour.white;
 
 		/*********************************************************************\
-		|* Default render target is the screen
+		|* Default render target is the screen, no logical presentation
 		\*********************************************************************/
-		_target = nil;
+		_target 			= nil;
+		_logicalPresentMode	= SDL_LOGICAL_PRESENTATION_DISABLED;
 
 		/*********************************************************************\
 		|* We use line-drawing by default for rendering lines
 		\*********************************************************************/
-		_lineMethod = AZ_RENDERLINEMETHOD_LINES;
+		_lineMethod 		= AZ_RENDERLINEMETHOD_LINES;
 
 		/*********************************************************************\
 		|* Colour scaling
@@ -469,7 +554,7 @@ static SDL_SpinLock 	_textureLock;
 	_mainView.scale 		= (NSPoint){1.f, 1.f};
 	_mainView.logicalScale 	= _mainView.scale;
 	_mainView.currentScale 	= _mainView.scale;
-	_view 					= _mainView;
+	_view 					= &_mainView;
 
 	[self _updatePixelViewport:&_mainView];
 	[self _updatePixelClipRect:&_mainView];
@@ -875,9 +960,27 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
-- (void)present
+/*****************************************************************************\
+|* It's time. Update the screen
+\*****************************************************************************/
+- (void) present
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
+    BOOL presented = YES;
+
+    AZTexture *target = _target;
+    if (target)
+       	_target = nil;
+
+	[self _renderLogicalPresentation];
+
+	[self _flushRenderCommands];
+
+    if (!renderer->RenderPresent(renderer)) {
+        presented = false;
+    }
+
+    if (target)
+		_target = target;
 	}
 
 
@@ -916,6 +1019,7 @@ static SDL_SpinLock 	_textureLock;
 /*****************************************************************************\
 |* Render a filled rectangle
 \*****************************************************************************/
+// SDL_RenderFillRect
 - (BOOL) renderFilledRect:(NSRect)r
 	{
 	// if r is zeroRect, fill the entire current rendering target
@@ -947,8 +1051,8 @@ static SDL_SpinLock 	_textureLock;
 	/*************************************************************************\
 	|* Scale the rects
 	\*************************************************************************/
-    const float sx = _view.currentScale.x;
-    const float sy = _view.currentScale.y;
+    const float sx = _view->currentScale.x;
+    const float sy = _view->currentScale.y;
     for (NSInteger i = 0; i < count; ++i)
 		{
         frects[i].origin.x 		= rects[i].origin.x * sx;
@@ -1045,16 +1149,24 @@ static SDL_SpinLock 	_textureLock;
 /*****************************************************************************\
 |* Set the blend mode
 \*****************************************************************************/
-- (int) setBlendMode:(SDL_BlendMode)blendMode
+// SDL_SetRenderDrawBlendMode
+- (BOOL) setBlendMode:(SDL_BlendMode)blendMode
 	{
-	_blend = blendMode;
+    if (blendMode == SDL_BLENDMODE_INVALID)
+        return SDL_InvalidParamError("blendMode");
+
+    if (![self _isSupportedBlendMode:blendMode])
+        return SDL_Unsupported();
+
+	_blendModeValue = blendMode;
 	return YES;
 	}
 
 
 - (void) setClip:(NSRect)clipRect
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
+	// FIXME: no need for the indirection
+	[self setClipRect:clipRect];
 	}
 
 
@@ -1081,13 +1193,8 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
-- (void)setScaleX:(float)xs y:(float)ys
-	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	}
 
-
-- (int)setTexture:(NSInteger)refId blendMode:(uint32_t)blendMode
+- (int)setTexture:(NSInteger)refId blendMode:(SDL_BlendMode)blendMode
 	{
 	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
 	return 0;
@@ -1101,23 +1208,103 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
+// SDL_SetRenderViewport
 - (BOOL)setViewport:(NSRect)rect
 	{
-	if (NSEqualRects(rect, NSZeroRect))
+	if (!NSEqualRects(rect, NSZeroRect))
 		{
         if ((NSWidth(rect) < 0) || (NSHeight(rect) < 0))
             return SDL_SetError("viewport rect has a negative size");
-		_view.view = rect;
+		_view->view = rect;
 		}
 	else
-		_view.view = NSMakeRect(0,0,-1,-1);
+		_view->view = NSMakeRect(0,0,-1,-1);
 
-	[self _updatePixelViewport:&_view];
-
-
+	[self _updatePixelViewport:_view];
     return [self _queueCmdSetViewport];
 	}
 
+// SDL_SetRenderClipRect
+- (BOOL) setClipRect:(NSRect)rect
+	{
+	BOOL isZero = NSEqualRects(rect, NSZeroRect);
+    if ((!isZero) && (NSWidth(rect) >= 0) && (NSHeight(rect) >= 0))
+		{
+        _view->doClip 	= YES;
+		_view->clip		= rect;
+		}
+	else
+		{
+        _view->doClip 	= NO;
+		_view->clip		= NSZeroRect;
+		}
+	[self _updatePixelClipRect:_view];
+	return [self _queueCmdSetClipRect];
+	}
+
+// SDL_SetRenderScale
+- (BOOL) setScaleX:(float)sx y:(float)sy
+	{
+    bool result = true;
+
+    if ((_view->scale.x == sx) && (_view->scale.y == sy))
+        return YES;
+
+    _view->scale.x = sx;
+    _view->scale.y = sy;
+    _view->currentScale.x = sx * _view->logicalScale.x;
+    _view->currentScale.y = sy * _view->logicalScale.y;
+
+	[self _updatePixelViewport:_view];
+	[self _updatePixelClipRect:_view];
+
+    // The scale affects the existing viewport and clip rectangle
+	result &= [self _queueCmdSetViewport];
+	result &= [self _queueCmdSetClipRect];
+
+    return result;
+	}
+
+/*****************************************************************************\
+|* Render any letterboxes around the logical view
+\*****************************************************************************/
+// SDL_RenderLogicalBorders
+- (void) _renderLogicalBorders
+	{
+    NSRect dst = _logicalDstRect;
+
+    if (dst.origin.x > 0.f || dst.origin.y > 0.f)
+		{
+        SDL_BlendMode savedBlend 	= _blendModeValue;
+		AZColour *savedColour 		= _colour.copy;
+
+		[self setBlendMode:SDL_BLENDMODE_NONE];
+		_colour = AZColour.black;
+
+        if (dst.origin.x > 0.f)
+			{
+			NSRect r = NSMakeRect(0.f, 0.f, NSMinX(dst), _view->pixelH);
+			[self renderFilledRect:r];
+
+            r.origin.x 		= NSMaxX(dst);
+            r.size.width	= _view->pixelW - r.origin.x;
+			[self renderFilledRect:r];
+			}
+
+        if (dst.origin.y > 0.f)
+			{
+			NSRect r = NSMakeRect(0.f, 0.f, _view->pixelW, dst.origin.y);
+			[self renderFilledRect:r];
+
+			r.origin.y 		= NSMaxY(dst);
+			r.size.height	= _view->pixelH - r.origin.y;
+			[self renderFilledRect:r];
+			}
+
+		[self setBlendMode:savedBlend];
+		_colour = savedColour;
+		}
+	}
 
 - (nullable struct SDL_Surface *)surfaceFor:(NSInteger)refId
 	{
@@ -1132,7 +1319,7 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
-- (int)texture:(NSInteger)refId blendMode:(nonnull uint32_t *)blendMode
+- (int)texture:(NSInteger)refId blendMode:(nonnull SDL_BlendMode *)blendMode
 	{
 	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
 	return 0;
@@ -1193,20 +1380,270 @@ static SDL_SpinLock 	_textureLock;
 	{
 	float w,h;
 
-    if (_view.view.size.width >= 0)
-        w = _view.view.size.width;
+    if (_view->view.size.width >= 0)
+        w = _view->view.size.width;
     else
-        w = _view.pixelW / _view.currentScale.x;
+        w = _view->pixelW / _view->currentScale.x;
 
-    if (_view.view.size.height >= 0)
-        h = _view.view.size.height;
+    if (_view->view.size.height >= 0)
+        h = _view->view.size.height;
     else
-        h = _view.pixelH / _view.currentScale.y;
+        h = _view->pixelH / _view->currentScale.y;
 
 	return NSMakeRect(0.f, 0.f, w, h);
 	}
 
+
+/*****************************************************************************\
+|* set the logical presentation size and mode
+\*****************************************************************************/
+- (BOOL) setLogicalPresentationWidth:(int)w
+							  height:(int)h
+							    mode:(SDL_RendererLogicalPresentation)mode
+	{
+    _logicalPresentMode	= mode;
+	_logicalSize.width 	= w;
+	_logicalSize.height = h;
+
+	[self _updateLogicalPresentation];
+    return YES;
+	}
+
+
+// MARK: Blending
+
+/*****************************************************************************\
+|* Do we support this blend mode or not
+\*****************************************************************************/
+- (BOOL) _isSupportedBlendMode:(SDL_BlendMode)blendMode
+	{
+    switch (blendMode)
+		{
+		// These are required to be supported by all renderers
+		case SDL_BLENDMODE_NONE:
+		case SDL_BLENDMODE_BLEND:
+		case SDL_BLENDMODE_BLEND_PREMULTIPLIED:
+		case SDL_BLENDMODE_ADD:
+		case SDL_BLENDMODE_ADD_PREMULTIPLIED:
+		case SDL_BLENDMODE_MOD:
+		case SDL_BLENDMODE_MUL:
+        return true;
+
+		default:
+			break;
+		}
+
+	SDL_BlendFactor srcColorFactor 	= [self blendModeSrcColourFactor:blendMode];
+	SDL_BlendFactor srcAlphaFactor 	= [self blendModeSrcAlphaFactor:blendMode];
+	SDL_BlendOperation colourOp 	= [self blendModeColourOperation:blendMode];
+	SDL_BlendFactor dstColourFactor = [self blendModeDstColourFactor:blendMode];
+	SDL_BlendFactor dstAlphaFactor 	= [self blendModeDstAlphaFactor:blendMode];
+	SDL_BlendOperation alphaOp 		= [self blendModeAlphaOperation:blendMode];
+
+    if (GPU_ConvertBlendFactor(srcColorFactor) == SDL_GPU_BLENDFACTOR_INVALID ||
+        GPU_ConvertBlendFactor(srcAlphaFactor) == SDL_GPU_BLENDFACTOR_INVALID ||
+        GPU_ConvertBlendOperation(colourOp) == SDL_GPU_BLENDOP_INVALID ||
+        GPU_ConvertBlendFactor(dstColourFactor) == SDL_GPU_BLENDFACTOR_INVALID ||
+        GPU_ConvertBlendFactor(dstAlphaFactor) == SDL_GPU_BLENDFACTOR_INVALID ||
+        GPU_ConvertBlendOperation(alphaOp) == SDL_GPU_BLENDOP_INVALID) {
+        return false;
+		}
+	
+	}
+
+/*****************************************************************************\
+|* Construct the long form of the blend mode
+\*****************************************************************************/
+- (SDL_BlendMode) _getLongBlendMode:(SDL_BlendMode)blendMode
+	{
+    if (blendMode == SDL_BLENDMODE_NONE)
+        return AZ_BLENDMODE_NONE_FULL;
+
+    if (blendMode == SDL_BLENDMODE_BLEND)
+        return AZ_BLENDMODE_BLEND_FULL;
+
+    if (blendMode == SDL_BLENDMODE_BLEND_PREMULTIPLIED)
+        return AZ_BLENDMODE_BLEND_PREMULTIPLIED_FULL;
+
+    if (blendMode == SDL_BLENDMODE_ADD)
+        return AZ_BLENDMODE_ADD_FULL;
+
+    if (blendMode == SDL_BLENDMODE_ADD_PREMULTIPLIED)
+        return AZ_BLENDMODE_ADD_PREMULTIPLIED_FULL;
+
+    if (blendMode == SDL_BLENDMODE_MOD)
+        return AZ_BLENDMODE_MOD_FULL;
+
+    if (blendMode == SDL_BLENDMODE_MUL)
+        return AZ_BLENDMODE_MUL_FULL;
+
+    return blendMode;
+	}
+
+/*****************************************************************************\
+|* Extract various parts of the blend mode
+\*****************************************************************************/
+
+- (SDL_BlendFactor) blendModeSrcColourFactor:(SDL_BlendMode)blendMode
+	{
+    blendMode = [self _getLongBlendMode:blendMode];
+    return (SDL_BlendFactor)(((Uint32)blendMode >> 4) & 0xF);
+	}
+
+- (SDL_BlendFactor) blendModeDstColourFactor:(SDL_BlendMode)blendMode
+	{
+    blendMode = [self _getLongBlendMode:blendMode];
+    return (SDL_BlendFactor)(((Uint32)blendMode >> 8) & 0xF);
+	}
+
+- (SDL_BlendOperation) blendModeColourOperation:(SDL_BlendMode)blendMode
+	{
+    blendMode = [self _getLongBlendMode:blendMode];
+    return (SDL_BlendOperation)(((Uint32)blendMode >> 0) & 0xF);
+	}
+
+- (SDL_BlendFactor) blendModeSrcAlphaFactor:(SDL_BlendMode)blendMode
+	{
+    blendMode = [self _getLongBlendMode:blendMode];
+    return (SDL_BlendFactor)(((Uint32)blendMode >> 20) & 0xF);
+	}
+
+- (SDL_BlendFactor) blendModeDstAlphaFactor:(SDL_BlendMode)blendMode
+	{
+    blendMode = [self _getLongBlendMode:blendMode];
+    return (SDL_BlendFactor)(((Uint32)blendMode >> 24) & 0xF);
+	}
+
+- (SDL_BlendOperation) blendModeAlphaOperation:(SDL_BlendMode)blendMode
+	{
+    blendMode = [self _getLongBlendMode:blendMode];
+    return (SDL_BlendOperation)(((Uint32)blendMode >> 16) & 0xF);
+	}
+
+
 // MARK: Private methods
+
+/*****************************************************************************\
+|* Update the logical presentation
+\*****************************************************************************/
+- (void) _updateLogicalPresentation
+	{
+    if (_logicalPresentMode == SDL_LOGICAL_PRESENTATION_DISABLED)
+		{
+        _mainView.logicalOffset.x = _mainView.logicalOffset.y = 0.0f;
+        _mainView.logicalScale.x  = _mainView.logicalScale.y  = 1.0f;
+
+        // skip the multiplications against 1.0f.
+        _mainView.currentScale.x  = _mainView.scale.x;
+        _mainView.currentScale.y  = _mainView.scale.y;
+
+		[self _updateMainViewDimensions];
+		[self _updatePixelClipRect:&_mainView];
+
+		// All done!
+		return;
+		}
+
+	NSSize size 			= [self _getOutputSize];
+	NSSize lSize			= _logicalSize;
+    const float wantAspect 	= lSize.width / lSize.height;
+	const float realAspect 	= size.width / size.height;
+	BOOL close				= SDL_fabsf(wantAspect - realAspect) < 0.0001f;
+
+	_logicalSrcRect			= NSZeroRect;
+	_logicalSrcRect.size	= lSize;
+
+    if (_logicalPresentMode == SDL_LOGICAL_PRESENTATION_INTEGER_SCALE)
+		{
+		// This an integer division!
+        float scale 	= (wantAspect > realAspect)
+						? (float)((int)size.width / (int)lSize.width)
+						: (float)((int)size.height / (int)lSize.height);
+		scale 			= (scale < 1.f) ? 1.f : scale;
+
+        const float W 	= SDL_floorf(lSize.width * scale);
+        const float X 	= (size.width - W) / 2.f;
+        const float H 	= SDL_floorf(lSize.height * scale);
+        const float Y 	= (size.height - H) / 2.f;
+
+		_logicalDstRect = NSMakeRect(X,Y,W,H);
+		}
+
+	else if (_logicalPresentMode == SDL_LOGICAL_PRESENTATION_STRETCH || close)
+		{
+		_logicalDstRect = NSMakeRect(0.f, 0.f, size.width, size.height);
+		}
+	else if (wantAspect > realAspect)
+		{
+        if (_logicalPresentMode == SDL_LOGICAL_PRESENTATION_LETTERBOX)
+			{
+            // We want a wider aspect ratio than is available - letterbox it
+            const float scale 	= size.width / lSize.width;
+			const float W 		= size.width;
+			const float X 		= 0.f;
+			const float H 		= SDL_floorf(lSize.height * scale);
+			const float Y 		= (size.height - H) / 2.f;
+			_logicalDstRect 	= NSMakeRect(X,Y,W,H);
+        }
+		else
+			{
+			// _logicalPresentMode == SDL_LOGICAL_PRESENTATION_OVERSCAN
+			// We want a wider aspect ratio than is available - zoom so logical
+			// height matches the real height and  width will grow offscreen
+            const float scale 	= size.height / lSize.height;
+			const float Y 		= 0.f;
+			const float H 		= size.height;
+			const float W 		= SDL_floorf(lSize.width * scale);
+			const float X 		= (size.width - W) / 2.f;
+			_logicalDstRect 	= NSMakeRect(X,Y,W,H);
+			}
+		}
+	else
+		{
+        if (_logicalPresentMode == SDL_LOGICAL_PRESENTATION_LETTERBOX)
+			{
+            // We want a narrower aspect ratio than is available - use side-bars
+            const float scale 	= size.height / lSize.height;
+			const float Y 		= 0.f;
+			const float H 		= size.height;
+			const float W 		= SDL_floorf(lSize.width * scale);
+			const float X 		= (size.width - W) / 2.f;
+			_logicalDstRect 	= NSMakeRect(X,Y,W,H);
+			}
+		else
+			{
+ 			// _logicalPresentMode == SDL_LOGICAL_PRESENTATION_OVERSCAN
+			// We want a narrower aspect ratio than is available - zoom so
+			// logical width matches the real width, height will grow offscreen
+            const float scale 	= size.width / lSize.width;
+			const float X 		= 0.f;
+			const float W 		= size.width;
+			const float H 		= SDL_floorf(lSize.height * scale);
+			const float Y 		= (size.height - H) / 2.f;
+			_logicalDstRect 	= NSMakeRect(X,Y,W,H);
+			}
+		}
+
+    _mainView.logicalScale.x  = (lSize.width != 0.0f)
+							  ? _logicalDstRect.size.width / lSize.width
+							  : 0.0f;
+	_mainView.logicalScale.y  = (lSize.height != 0.0f)
+							  ? _logicalDstRect.size.height / lSize.height
+							  : 0.0f;
+    _mainView.currentScale.x  = _mainView.scale.x * _mainView.logicalScale.x;
+    _mainView.currentScale.y  = _mainView.scale.y * _mainView.logicalScale.y;
+    _mainView.logicalOffset.x = _logicalDstRect.origin.x;
+    _mainView.logicalOffset.y = _logicalDstRect.origin.y;
+
+	[self _updateMainViewDimensions];
+
+    _mainView.pixelW = (int) _logicalDstRect.size.width;
+    _mainView.pixelH = (int) _logicalDstRect.size.height;
+
+	[self _updatePixelViewport:&_mainView];
+	[self _updatePixelClipRect:&_mainView];
+	}
+
 
 /*****************************************************************************\
 |* Create a transfer buffer of the correct size
@@ -1226,7 +1663,7 @@ static SDL_SpinLock 	_textureLock;
 /*****************************************************************************\
 |* Work out the pixel-based viewport from the viewport
 \*****************************************************************************/
-- (void) _updatePixelViewport:(ViewState *)vs
+- (void) _updatePixelViewport:(AZViewState *)vs
 	{
     vs->pixelView.origin.x = vs->view.origin.x * vs->currentScale.x
 						   + vs->logicalOffset.x;
@@ -1256,7 +1693,7 @@ static SDL_SpinLock 	_textureLock;
 /*****************************************************************************\
 |* Work out the pixel-based clipping rectangle from the viewport
 \*****************************************************************************/
-- (void) _updatePixelClipRect:(ViewState *)vs
+- (void) _updatePixelClipRect:(AZViewState *)vs
 	{
     const float sx = vs->currentScale.x;
     const float sy = vs->currentScale.y;
@@ -1309,6 +1746,59 @@ static SDL_SpinLock 	_textureLock;
 
 	[self _updatePixelViewport:&_mainView];
 	}
+
+
+/*****************************************************************************\
+|* Render out the logically-sized presentation, basically cope with letterbox
+\*****************************************************************************/
+- (void) _renderLogicalPresentation
+	{
+    const SDL_RendererLogicalPresentation mode = _logicalPresentMode;
+    if (mode == SDL_LOGICAL_PRESENTATION_LETTERBOX)
+		{
+        // save off some state we're going to trample.
+        SDL_assert(_view == &_mainView);
+        AZViewState *view 	= &_mainView;
+		const int logicalW 	= _logicalSize.width;
+        const int logicalH 	= _logicalSize.height;
+        const float sx 		= view->scale.x;
+        const float sy 		= view->scale.y;
+		const BOOL doClip	= view->doClip;
+
+		NSRect origViewport	= view->view;
+		NSRect origClip;
+		if (doClip)
+			origClip = view->clip;
+
+        // trample some state.
+		[self setLogicalPresentationWidth:logicalW
+								   height:logicalH
+									 mode:SDL_LOGICAL_PRESENTATION_DISABLED];
+
+		[self setViewport:NSZeroRect];
+        if (doClip)
+			[self setClipRect:NSZeroRect];
+		[self setScaleX:1.f y:1.f];
+
+        // draw the borders.
+        [self _renderLogicalBorders];
+
+
+        // now set everything back.
+        _logicalPresentMode 	= mode;
+		[self setViewport:origViewport];
+
+        if (doClip)
+ 			[self setClipRect:origClip];
+
+		[self setScaleX:sx y:sy];
+
+		[self setLogicalPresentationWidth:logicalW
+								   height:logicalH
+									 mode:mode];
+		}
+	}
+
 
 // MARK: Colourspace
 
@@ -1367,6 +1857,37 @@ float AZsRGBfromLinear(float v)
     return v;
 	}
 
+// MARK: Rendering
+
+// FlushRenderCommands
+/*****************************************************************************\
+|* Entry point to rendering to the screen
+\*****************************************************************************/
+- (BOOL) _flushRenderCommands
+	{
+	if (_commandQ.count == 0)
+		return YES; // Nothing to do!
+
+	BOOL result = [self _runCommandQueue];
+
+    // Reset the command-queue and pool
+	[_poolLock lock];
+
+	[_commandPool addObjectsFromArray:_commandQ];
+	[_commandQ removeAllObjects];
+
+	_vertexDataInUse 	= 0;
+	_colourQueued		= NO;
+	_clipRectQueued		= NO;
+	_viewportQueued		= NO;
+	_cmdGeneration ++;
+
+	[_poolLock unlock];
+	return result;
+	}
+
+
+
 // MARK: Queueing of commands
 
 /*****************************************************************************\
@@ -1411,7 +1932,7 @@ float AZsRGBfromLinear(float v)
 	else
 		{
 		colour 	= _colour.sdlColour;
-        blend 	= _blend;
+        blend 	= _blendModeValue;
 		}
 
 	/*************************************************************************\
@@ -1443,7 +1964,7 @@ float AZsRGBfromLinear(float v)
             cmd.count 		= 0; // render backend will fill this in.
             cmd.colourScale	= _colourScale;
             cmd.colour 		= colour;
-            cmd.blend 		= blend;
+            cmd.blendMode 	= blend;
             cmd.texture 	= texture;
             cmd.addressMode = AZTextureAddressClamp;
         }
@@ -1457,7 +1978,7 @@ float AZsRGBfromLinear(float v)
 - (BOOL) _queueCmdSetViewport
 	{
     BOOL result = YES;
-	NSRect view	= _view.pixelView;
+	NSRect view	= _view->pixelView;
 
 	BOOL newVP = (SDL_memcmp(&view, &_lastQueuedViewport, sizeof(NSRect)) != 0);
     if (!_viewportQueued || newVP)
@@ -1516,8 +2037,8 @@ float AZsRGBfromLinear(float v)
 	{
     BOOL result = YES;
 
-    NSRect clipRect = _view.pixelClip;
-	BOOL same		= _view.doClip == _lastQueuedDoClip &&
+    NSRect clipRect = _view->pixelClip;
+	BOOL same		= _view->doClip == _lastQueuedDoClip &&
 					   NSEqualRects(clipRect, _lastQueuedClip);
 
     if ((!_clipRectQueued) || (!same))
@@ -1526,10 +2047,10 @@ float AZsRGBfromLinear(float v)
         if (cmd)
 			{
             cmd.command 		= AZRenderCmdSetCliprect;
-			cmd.enabled 		= _view.doClip;
+			cmd.enabled 		= _view->doClip;
 			cmd.rect			= clipRect;
 			_lastQueuedClip		= clipRect;
-			_lastQueuedDoClip	= _view.doClip;
+			_lastQueuedDoClip	= _view->doClip;
 			_clipRectQueued		= YES;
 			}
 		else

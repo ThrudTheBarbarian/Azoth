@@ -122,7 +122,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Set the blend mode
 \*****************************************************************************/
-- (int) setBlendMode:(SDL_BlendMode)blendMode;
+- (BOOL) setBlendMode:(SDL_BlendMode)blendMode;
 
 /*****************************************************************************\
 |* Set the blend mode on a texture
@@ -163,7 +163,7 @@ NS_ASSUME_NONNULL_BEGIN
 |* Scale...
 \*****************************************************************************/
 - (void) renderScaleX:(float *)xs y:(float *)ys;
-- (void) setScaleX:(float)xs y:(float)ys;
+- (BOOL) setScaleX:(float)xs y:(float)ys;
 
 /*****************************************************************************\
 |* Presentation...
