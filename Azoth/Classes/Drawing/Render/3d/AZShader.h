@@ -25,6 +25,24 @@ NS_ASSUME_NONNULL_BEGIN
 				  storageTextures:(int)numStorageTextures;
 
 + (instancetype) shaderWithRenderer:(id<AZRenderer>)renderer
+							   name:(NSString *)name;
+
++ (instancetype) shaderWithRenderer:(id<AZRenderer>)renderer
+							   name:(NSString *)name
+						   samplers:(int)numSamplers;
+
++ (instancetype) shaderWithRenderer:(id<AZRenderer>)renderer
+							   name:(NSString *)name
+						   samplers:(int)numSamplers
+				     uniformBuffers:(int)numUniformBuffers;
+
++ (instancetype) shaderWithRenderer:(id<AZRenderer>)renderer
+							   name:(NSString *)name
+						   samplers:(int)numSamplers
+				     uniformBuffers:(int)numUniformBuffers
+				     storageBuffers:(int)numStorageBuffers;
+
++ (instancetype) shaderWithRenderer:(id<AZRenderer>)renderer
 							   name:(NSString *)name
 						   samplers:(int)numSamplers
 				     uniformBuffers:(int)numUniformBuffers

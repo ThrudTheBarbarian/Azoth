@@ -439,11 +439,6 @@
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		F41BC6572D0A61BA00E61EDD /* Exceptions for "Azoth" folder in "Azoth" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Resources/ShaderSource/sprite.comp.hlsl,
-				Resources/ShaderSource/sprite.frag.hlsl,
-				Resources/ShaderSource/sprite.vert.hlsl,
-			);
 			publicHeaders = (
 				Azoth.h,
 				Classes/Application/AZAppDelegate.h,

@@ -13,9 +13,9 @@
 
 typedef enum
 	{
-    AZ_RENDERLINEMETHOD_POINTS,
-    AZ_RENDERLINEMETHOD_LINES,
-    AZ_RENDERLINEMETHOD_GEOMETRY,
+    AZRenderLineMethodPoints = 1,
+    AZRenderLineMethodLines,
+    AZRenderLineMethodGeometry,
 	} AZRenderLineMethod;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -61,6 +61,9 @@ SDL_GPUTextureFormat 										swapchainFormat;
 
 // The colourspace used for screen display
 @property(assign, nonatomic) SDL_Colorspace					outputColourspace;
+
+// Force vsync for the render-presentation-mode
+@property(assign, nonatomic) BOOL							useVsyncForPresent;
 @end
 
 NS_ASSUME_NONNULL_END

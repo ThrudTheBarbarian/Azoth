@@ -40,6 +40,21 @@
 	return self;
 	}
 
+
++ (instancetype) withMinFilter:(SDL_GPUFilter)min
+			 	     magFilter:(SDL_GPUFilter)mag
+			 	    mipMapMode:(SDL_GPUSamplerMipmapMode)mipMapMode
+			       addressMode:(SDL_GPUSamplerAddressMode)addressMode
+	{
+	return [self withMinFilter:min
+					 magFilter:mag
+					mipMapMode:mipMapMode
+				  addressModeU:addressMode
+				  addressModeV:addressMode
+				  addressModeW:addressMode];
+	}
+
+
 + (instancetype) withMinFilter:(SDL_GPUFilter)min
 			 	     magFilter:(SDL_GPUFilter)mag
 			 	    mipMapMode:(SDL_GPUSamplerMipmapMode)mipMapMode

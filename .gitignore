@@ -9,6 +9,9 @@ xcuserdata/
 ## Obj-C/Swift specific
 *.hmap
 
+# Shaders are generated
+Azoth/Resources/Shaders/
+
 ## App packaging
 *.ipa
 *.dSYM.zip

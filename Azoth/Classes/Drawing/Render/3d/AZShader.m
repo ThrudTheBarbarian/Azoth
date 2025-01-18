@@ -29,6 +29,57 @@
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/
+
++ (instancetype) shaderWithRenderer:(id<AZRenderer>)renderer
+							   name:(NSString *)name
+	{
+	return [self shaderWithRenderer:renderer
+							   name:name
+						   samplers:0
+					 uniformBuffers:0
+					 storageBuffers:0
+					storageTextures:0];
+	}
+
++ (instancetype) shaderWithRenderer:(id<AZRenderer>)renderer
+							   name:(NSString *)name
+						   samplers:(int)numSamplers
+	{
+	return [self shaderWithRenderer:renderer
+							   name:name
+						   samplers:numSamplers
+					 uniformBuffers:0
+					 storageBuffers:0
+					storageTextures:0];
+	}
+
++ (instancetype) shaderWithRenderer:(id<AZRenderer>)renderer
+							   name:(NSString *)name
+						   samplers:(int)numSamplers
+				     uniformBuffers:(int)numUniformBuffers
+	{
+	return [self shaderWithRenderer:renderer
+							   name:name
+						   samplers:numSamplers
+					 uniformBuffers:numUniformBuffers
+					 storageBuffers:0
+					storageTextures:0];
+	}
+
++ (instancetype) shaderWithRenderer:(id<AZRenderer>)renderer
+							   name:(NSString *)name
+						   samplers:(int)numSamplers
+				     uniformBuffers:(int)numUniformBuffers
+				     storageBuffers:(int)numStorageBuffers;
+	{
+	return [self shaderWithRenderer:renderer
+							   name:name
+						   samplers:numSamplers
+					 uniformBuffers:numUniformBuffers
+					 storageBuffers:numStorageBuffers
+					storageTextures:0];
+	}
+
 + (instancetype) shaderWithRenderer:(id<AZRenderer>)renderer
 							   name:(NSString *)name
 						   samplers:(int)numSamplers
@@ -43,6 +94,7 @@
 							   storageBuffers:numStorageBuffers
 							  storageTextures:numStorageTextures];
 	}
+
 
 - (instancetype) initWithRenderer:(id<AZRenderer>)renderer
 							 name:(NSString *)name

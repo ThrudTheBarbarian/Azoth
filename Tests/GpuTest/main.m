@@ -24,11 +24,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 	/*************************************************************************\
     |* Create the application.
     \*************************************************************************/
-	AZApp.delegate		= [AppDelegate new];
+	AZApp.delegate		= AppDelegate.new;
 	AZApp.initialFrame	= NSMakeRect(50, 50, 640, 480);
 	AZApp.windowTitle	= @"3D GPU rendering";
 	AZApp.rendererType	= AZRendererType3d;
-	
+
 	*appstate			= (__bridge void *)(AZApp);
 
 	[AZApp startWithArgc:argc argv:argv];

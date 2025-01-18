@@ -26,6 +26,11 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype) withMinFilter:(SDL_GPUFilter)min
 			 	     magFilter:(SDL_GPUFilter)mag
 			 	    mipMapMode:(SDL_GPUSamplerMipmapMode)mipMapMode
+			       addressMode:(SDL_GPUSamplerAddressMode)addressMode;
+
++ (instancetype) withMinFilter:(SDL_GPUFilter)min
+			 	     magFilter:(SDL_GPUFilter)mag
+			 	    mipMapMode:(SDL_GPUSamplerMipmapMode)mipMapMode
 			      addressModeU:(SDL_GPUSamplerAddressMode)addressU
 			      addressModeV:(SDL_GPUSamplerAddressMode)addressV
 			      addressModeW:(SDL_GPUSamplerAddressMode)addressW;

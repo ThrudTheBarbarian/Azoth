@@ -94,8 +94,10 @@ typedef struct AZRenderData
         GPU_ShaderUniformData shaderData;
 		} state;
 
-    SDL_GPUSampler *samplers[3][2];
+    AZSampler *samplers[2][2];
 	} AZRenderData;
+
+#define SAMPLER(address,scale) _renderData.samplers[scale][address-1]
 
 /*****************************************************************************\
 |* Predefined blend modes
@@ -183,9 +185,6 @@ NSMutableDictionary<NSNumber *, AZTexture *> * 				textures;
 
 // The GPU device
 @property(assign, nonatomic) SDL_GPUDevice *				gpu;
-
-// The sprite render pipeline
-@property(strong, nonatomic) AZRenderPipeline *				spritePipe;
 
 // The sprite compute pipeline
 @property(strong, nonatomic) AZComputePipeline *			computePipe;
@@ -296,7 +295,9 @@ static SDL_SpinLock 	_textureLock;
 
 @implementation AZRenderer3d
 /*****************************************************************************\
-|* Initialisation
+|* Initialisation. We don't do all the initialisation here, because some
+|* things depend on the window and GPU device. Look in _initialiseGPU for
+|* more, later, initialisation.
 \*****************************************************************************/
 - (instancetype) init
 	{
@@ -332,7 +333,7 @@ static SDL_SpinLock 	_textureLock;
 		/*********************************************************************\
 		|* We use line-drawing by default for rendering lines
 		\*********************************************************************/
-		_lineMethod 		= AZ_RENDERLINEMETHOD_LINES;
+		_lineMethod 		= AZRenderLineMethodLines;
 
 		/*********************************************************************\
 		|* Colour scaling
@@ -360,6 +361,11 @@ static SDL_SpinLock 	_textureLock;
 		_vertexData			= NULL;
 		_vertexDataSize		= 0;
 		_vertexDataInUse	= 0;
+
+		/*********************************************************************\
+		|* Default value for forcing a vsync-based presentation mode
+		\*********************************************************************/
+		_useVsyncForPresent	= NO;
 		}
 	return self;
 	}
@@ -389,8 +395,8 @@ static SDL_SpinLock 	_textureLock;
 	for (NSNumber *textureId in _textures.allKeys.copy)
 		[self releaseTexture:textureId.integerValue];
 
-	SDL_ReleaseGPUComputePipeline(_gpu,_computePipe.pipeline);
-	SDL_ReleaseGPUGraphicsPipeline(_gpu,_spritePipe.pipeline);
+	if (_computePipe.pipeline)
+		SDL_ReleaseGPUComputePipeline(_gpu,_computePipe.pipeline);
 	}
 
 /*****************************************************************************\
@@ -444,7 +450,8 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 /*****************************************************************************\
-|* Initialise the GPU
+|* Initialise the GPU and its related things. Called once a window has been
+|* created
 \*****************************************************************************/
 - (BOOL) _initialiseGPU
 	{
@@ -491,92 +498,44 @@ static SDL_SpinLock 	_textureLock;
 								  mode);
 
 	/*************************************************************************\
-    |* Create the sprite-rendering pipeline
-    \*************************************************************************/
-	_spritePipe = [AZRenderPipeline new];
-
-	_spritePipe.primitiveType = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
-
-	_spritePipe.vertex = [AZShader shaderWithRenderer:self
-												 name:@"sprite.vert"
-											 samplers:0
-									   uniformBuffers:1
-									   storageBuffers:0
-									  storageTextures:0];
-
-	_spritePipe.fragment = [AZShader shaderWithRenderer:self
-												   name:@"sprite.frag"
-											   samplers:1
-										 uniformBuffers:0
-										 storageBuffers:0
-										storageTextures:0];
-
-	AZPipelineTarget *pt = AZPipelineTarget.new;
-
-	[pt addColourTarget:[AZColourTarget targetWithFormat:self.swapchainFormat]];
-	_spritePipe.pipelineTarget = pt;
-
-	AZVertexInputState *is = AZVertexInputState.new;
-	[is addBuffer:[AZVertexBuffer bufferWithSlot:0
-										  pitch:sizeof(SpriteVertex)
-									  inputRate:SDL_GPU_VERTEXINPUTRATE_VERTEX
-							   instanceStepRate:0]];
-
-	[is addAttribute:[AZVertexAttribute
-						atLocation:0
-						bufferSlot:0
-							format:SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4
-							offset:0]];
-
-	[is addAttribute:[AZVertexAttribute
-						atLocation:1
-						bufferSlot:0
-							format:SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2
-							offset:16]];
-
-	[is addAttribute:[AZVertexAttribute
-						atLocation:2
-						bufferSlot:0
-							format:SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4
-							offset:32]];
-
-	_spritePipe.vertexInputState = is;
-	if (![_spritePipe buildWithDevice:self])
-		{
-		SDL_Log("Failed to create remder pipeline");
-		return NO;
-		}
-
-
-	/*************************************************************************\
     |* Create the compute pipeline
     \*************************************************************************/
-	_computePipe = [AZComputePipeline pipelineNamed:@"sprite.comp"
-								   storageBuffersRO:1
-								   storageBuffersRW:1
-										    threads:AZMakeThreadSize(64,1,1)];
+//	_computePipe = [AZComputePipeline pipelineNamed:@"sprite.comp"
+//								   storageBuffersRO:1
+//								   storageBuffersRW:1
+//										    threads:AZMakeThreadSize(64,1,1)];
+//
+//	if (![_computePipe buildWithDevice:self])
+//		{
+//		SDL_Log("Failed to create compute pipeline");
+//		return NO;
+//		}
 
-	if (![_computePipe buildWithDevice:self])
+	/*************************************************************************\
+    |* Load the shaders and samplers
+    \*************************************************************************/
+	[self _loadShaders];
+	[self _createSamplers];
+
+	/*************************************************************************\
+    |* ... and initialise the vertex buffer
+    \*************************************************************************/
+	if (![self _initialiseVertexBuffer:1<<16])
 		{
-		SDL_Log("Failed to create compute pipeline");
+		SDL_Log("Cannot initialise the vertex/transfer buffers");
 		return NO;
 		}
 
 	/*************************************************************************\
-    |* Create the sampler
+    |* ... and set up the swapchain info
     \*************************************************************************/
-	_sampler =
-	[AZSampler withMinFilter:SDL_GPU_FILTER_NEAREST
-				   magFilter:SDL_GPU_FILTER_NEAREST
-				  mipMapMode:SDL_GPU_SAMPLERMIPMAPMODE_NEAREST
-				addressModeU:SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE
-				addressModeV:SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE
-				addressModeW:SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE];
-	if (![_sampler buildWithDevice:self])
-		{
-		SDL_Log("Failed to create sampler");
-		return NO;
-		}
+	_renderData.swapchain.composition = SDL_GPU_SWAPCHAINCOMPOSITION_SDR;
+	_renderData.swapchain.presentMode = SDL_GPU_PRESENTMODE_VSYNC;
+
+	/*************************************************************************\
+    |* ... and choose how to handle -present
+    \*************************************************************************/
+	[self _choosePresentationMode:&(_renderData.swapchain.presentMode)];
 
 	return YES;
 	}
@@ -1599,6 +1558,243 @@ static SDL_SpinLock 	_textureLock;
 // MARK: Private methods
 
 /*****************************************************************************\
+|* Create the samplers
+\*****************************************************************************/
+- (void) _choosePresentationMode:(out SDL_GPUPresentMode*)presentMode
+	{
+    SDL_GPUPresentMode mode;
+
+    if (!_useVsyncForPresent)
+		{
+        mode = SDL_GPU_PRESENTMODE_MAILBOX;
+
+		if (!SDL_WindowSupportsGPUPresentMode(_gpu, _window.window, mode))
+			{
+            mode = SDL_GPU_PRESENTMODE_IMMEDIATE;
+            if (!SDL_WindowSupportsGPUPresentMode(_gpu, _window.window, mode))
+                mode = SDL_GPU_PRESENTMODE_VSYNC;
+
+			}
+		}
+    else
+        mode = SDL_GPU_PRESENTMODE_VSYNC;
+
+    *presentMode = mode;
+	}
+
+/*****************************************************************************\
+|* Create the samplers
+\*****************************************************************************/
+- (BOOL) _initialiseVertexBuffer:(Uint32)size
+	{
+    SDL_GPUBufferCreateInfo bci;
+    SDL_zero(bci);
+    bci.size = size;
+    bci.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
+
+    _renderData.vertices.buffer = SDL_CreateGPUBuffer(_gpu, &bci);
+
+    if (!_renderData.vertices.buffer)
+        return NO;
+
+    SDL_GPUTransferBufferCreateInfo tbci;
+    SDL_zero(tbci);
+    tbci.size = size;
+    tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+
+    _renderData.vertices.transferBuf = SDL_CreateGPUTransferBuffer(_gpu, &tbci);
+
+    if (!_renderData.vertices.transferBuf)
+        return NO;
+
+    return YES;
+	}
+
+
+/*****************************************************************************\
+|* Create the samplers
+\*****************************************************************************/
+- (void) _createSamplers
+	{
+	struct
+		{
+		AZTextureAddressMode textureAddressMode;
+		SDL_ScaleMode scaleMode;
+
+		SDL_GPUSamplerAddressMode samplerMode;
+		SDL_GPUFilter filter;
+		SDL_GPUSamplerMipmapMode mipmapMode;
+		Uint32 anisotropy;
+		}
+    cfg[] = {
+		{AZTextureAddressClamp,
+		 SDL_SCALEMODE_NEAREST,
+		 SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
+		 SDL_GPU_FILTER_NEAREST,
+		 SDL_GPU_SAMPLERMIPMAPMODE_NEAREST,
+		 0 },
+
+		{AZTextureAddressClamp,
+		 SDL_SCALEMODE_LINEAR,
+		 SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
+		 SDL_GPU_FILTER_LINEAR,
+		 SDL_GPU_SAMPLERMIPMAPMODE_LINEAR,
+		 0 },
+
+		{AZTextureAddressClamp,
+		 SDL_SCALEMODE_NEAREST,
+		 SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
+		 SDL_GPU_FILTER_NEAREST,
+		 SDL_GPU_SAMPLERMIPMAPMODE_NEAREST,
+		 0 },
+
+		{AZTextureAddressClamp,
+		 SDL_SCALEMODE_LINEAR,
+		 SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
+		 SDL_GPU_FILTER_LINEAR,
+		 SDL_GPU_SAMPLERMIPMAPMODE_LINEAR,
+		 0 }
+		};
+
+    for (Uint32 i = 0; i < SDL_arraysize(cfg); ++i)
+		{
+		AZSampler *sampler = [AZSampler withMinFilter:cfg[i].filter
+											magFilter:cfg[i].filter
+										   mipMapMode:cfg[i].mipmapMode
+										  addressMode:cfg[i].samplerMode];
+		sampler.maxAnisotropy = cfg[i].anisotropy;
+		sampler.enableAnisotropy = (sampler.maxAnisotropy > 0);
+		[sampler buildWithDevice:self];
+		SAMPLER(cfg[i].textureAddressMode,cfg[i].scaleMode) = sampler;
+		}
+	}
+
+/*****************************************************************************\
+|* Load up the shaders
+\*****************************************************************************/
+- (void) _loadShaders
+	{
+	NSDictionary<NSNumber *, NSArray *> *fragMap =
+		@{
+		@(AZFragShaderColour) 		: @[@0, @"colour.frag"],
+		@(AZFragShaderTextureRGB)	: @[@1, @"texture_rgb.frag"],
+		@(AZFragShaderTextureRGBA)	: @[@1, @"texture_rgba.frag"]
+		};
+
+	NSDictionary<NSNumber *, NSString *> *vertMap =
+		@{
+		@(AZVertShaderLinePoint) 	: @"linepoint.vert",
+		@(AZVertShaderTriColour)	: @"tri_color.vert",
+		@(AZVertShaderTriTexture)	: @"tri_texture.vert"
+		};
+
+	/*************************************************************************\
+	|* Load up the fragment shaders
+	\*************************************************************************/
+	for (NSNumber *identifier in fragMap)
+		{
+		NSArray *info	 = fragMap[identifier];
+		int samplers	 = ((NSNumber *)info[0]).intValue;
+		NSString *name 	 = info[1];
+		AZShader *shader = [AZShader shaderWithRenderer:self
+												   name:name
+											   samplers:samplers];
+		if (shader)
+			_renderData.shaders.fragShaders[identifier.intValue] = shader;
+		else
+			{
+			NSString *msg = [NSString stringWithFormat:
+							@"Couldn't load fragment shader '%@'", name];
+			SDL_Log("%s", msg.UTF8String);
+			}
+		}
+
+
+	/*************************************************************************\
+	|* Load up the vertex shaders
+	\*************************************************************************/
+	for (NSNumber *identifier in vertMap)
+		{
+		NSString *name = vertMap[identifier];
+		AZShader *shader = [AZShader shaderWithRenderer:self
+												   name:name
+											   samplers:0
+										 uniformBuffers:1];
+		if (shader)
+			_renderData.shaders.vertShaders[identifier.intValue] = shader;
+		else
+			{
+			NSString *msg = [NSString stringWithFormat:
+							@"Couldn't load vertex shader '%@'", name];
+			SDL_Log("%s", msg.UTF8String);
+			}
+		}
+
+	}
+
+/*****************************************************************************\
+|* Decide on the line-rendering method
+\*****************************************************************************/
+- (AZRenderLineMethod) _renderLineMethod
+	{
+    const char *hint = SDL_GetHint(SDL_HINT_RENDER_LINE_METHOD);
+    int method 		 = (hint) ? SDL_atoi(hint) : 0;
+
+    switch (method)
+		{
+		case 1:
+			return AZRenderLineMethodPoints;
+		case 2:
+			return AZRenderLineMethodLines;
+		case 3:
+			return AZRenderLineMethodGeometry;
+		default:
+			return AZRenderLineMethodPoints;
+		}
+	}
+
+/*****************************************************************************\
+|* Cope with rendering using an extended dynamic range
+\*****************************************************************************/
+- (void) _updateHdrProperties
+	{
+	SDL_PropertiesID windowProps = SDL_GetWindowProperties(_window.window);
+    if (!windowProps)
+        return;
+
+    if (_outputColourspace == SDL_COLORSPACE_SRGB_LINEAR)
+		{
+        _sdrWhitePoint 	= SDL_GetFloatProperty(windowProps,
+								SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
+        _hdrHeadroom 	= SDL_GetFloatProperty(windowProps,
+								SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
+		}
+	else
+		{
+        _sdrWhitePoint = 1.0f;
+        _hdrHeadroom = 1.0f;
+		}
+
+	_properties[AZRendererHdrEnabled] 	= @(_hdrHeadroom > 1.0f);
+	_properties[AZRendererWhitePoint] 	= @(_sdrWhitePoint);
+	_properties[AZRendererHdrHeadroom] 	= @(_hdrHeadroom);
+
+	[self _updateColourScale];
+	}
+
+/*****************************************************************************\
+|* Update the colour scaling based on the colourspace
+\*****************************************************************************/
+- (void) _updateColourScale
+	{
+    float sdrWhitePoint = (_target)
+						? _target.sdrWhitePoint
+						: _sdrWhitePoint;
+
+    _colourScale 		= _desiredColourScale * sdrWhitePoint;
+	}
+
+/*****************************************************************************\
 |* Update the logical presentation
 \*****************************************************************************/
 - (void) _updateLogicalPresentation
@@ -2122,6 +2318,25 @@ float AZsRGBfromLinear(float v)
     return true;
 }
 
+
+/*****************************************************************************\
+|* Set the swapchain parameters
+\*****************************************************************************/
+- (BOOL) setSwapchainParameters:(SDL_GPUSwapchainComposition)composition
+					presentMode:(SDL_GPUPresentMode) presentMode
+	{
+    if (_window.window == NULL)
+		{
+        SDL_InvalidParamError("setSwapchainParameters window");
+        return NO;
+		}
+
+    return device->SetSwapchainParameters(
+        device->driverData,
+        window,
+        swapchain_composition,
+        present_mode);
+}
 
 // MARK: Queueing of commands
 
