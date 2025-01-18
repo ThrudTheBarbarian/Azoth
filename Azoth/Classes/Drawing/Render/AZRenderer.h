@@ -47,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSInteger) createTextureWithSurface:(struct SDL_Surface *)surface;
 - (NSInteger) createTextureOfSize:(NSSize)size;
 - (NSInteger) createTextureOfSize:(NSSize)size
-							format:(int)format
+							format:(SDL_PixelFormat)format
 						 withFlags:(int)flags;
 
 /*****************************************************************************\

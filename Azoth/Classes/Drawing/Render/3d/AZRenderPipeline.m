@@ -102,9 +102,9 @@ static NSMutableDictionary<NSNumber *, AZRenderPipeline *> * _pipelineCache;
 /*****************************************************************************\
 |* Fetch (from cache) or create a render pipeline
 \*****************************************************************************/
-+ (nullable AZRenderPipeline *) pipelineWithRenderer:(AZRenderer3d *)azr
-											 shaders:(AZShaders *)shaders
-											  params:(AZPipelineParameters *)p
++ (nullable AZRenderPipeline *) withRenderer:(id<AZRenderer>)azr
+									 shaders:(AZShaders *)shaders
+									  params:(AZPipelineParameters *)p
 	{
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken,
@@ -126,7 +126,7 @@ static NSMutableDictionary<NSNumber *, AZRenderPipeline *> * _pipelineCache;
 /*****************************************************************************\
 |* Make a render pipeline
 \*****************************************************************************/
-+ (nullable AZRenderPipeline *) makeWithRenderer:(AZRenderer3d *)azr
++ (nullable AZRenderPipeline *) makeWithRenderer:(id<AZRenderer>)azr
 										 shaders:(AZShaders *)shaders
 										  params:(AZPipelineParameters *)params
 	{
@@ -142,6 +142,7 @@ static NSMutableDictionary<NSNumber *, AZRenderPipeline *> * _pipelineCache;
 	pipe.vertex 			= AZVertexShader(shaders, params->vertShader);
 	pipe.fragment			= AZFragmentShader(shaders, params->fragShader);
 	pipe.primitiveType		= params->primitiveType;
+	pipe.pipelineTarget		= pt;
 
 	AZVertexInputState *vis = AZVertexInputState.new;
 	pipe.vertexInputState	= vis;

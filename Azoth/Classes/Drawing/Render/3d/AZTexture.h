@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <SDL3/SDL.h>
+#import <SDL3/SDL_gpu.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -21,13 +22,25 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype) initFor:(id<AZRenderer>)renderer
 			   withIndex:(NSNumber *)index
 				    size:(NSSize)size
+				  format:(SDL_PixelFormat)format
 				   usage:(SDL_GPUTextureUsageFlags)flags;
 
 + (instancetype) textureFor:(id<AZRenderer>)renderer
 				  withIndex:(NSNumber *)index
 					   size:(NSSize)size
+				     format:(SDL_PixelFormat)format
 					  usage:(SDL_GPUTextureUsageFlags)flags;
 
+
+/*****************************************************************************\
+|* Map from a texture format to a pixel format
+\*****************************************************************************/
++ (SDL_PixelFormat) pixelFormatFor:(SDL_GPUTextureFormat)format;
+
+/*****************************************************************************\
+|* Map from a pixel format to a texture format
+\*****************************************************************************/
++ (SDL_GPUTextureFormat) textureFormatFor:(SDL_PixelFormat)format;
 
 /*****************************************************************************\
 |* Properties
@@ -48,14 +61,24 @@ NS_ASSUME_NONNULL_BEGIN
 // The blend-mode for this texture
 @property(assign, nonatomic) SDL_BlendMode 						blendMode;
 
-// The actual texture pointer for SDL
-@property(assign, nonatomic, readonly) SDL_GPUTexture *			texture;
-
 // The colourspace for the texture
 @property(assign, nonatomic) SDL_Colorspace						colourspace;
 
 // The white point for this texture
 @property(assign, nonatomic) float								sdrWhitePoint;
+
+// How to scale this texture
+@property(assign, nonatomic) SDL_ScaleMode						scaleMode;
+
+
+// The texture itself
+@property(assign, nonatomic) SDL_GPUTexture *					texture;
+
+// The texture format
+@property(assign, nonatomic) SDL_GPUTextureFormat 				format;
+
+// Which kind of fragment shader
+@property(assign, nonatomic) AZFragmentShaderID 				shader;
 @end
 
 NS_ASSUME_NONNULL_END

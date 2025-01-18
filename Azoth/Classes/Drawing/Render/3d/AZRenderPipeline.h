@@ -32,9 +32,9 @@ typedef struct AZPipelineParameters
 /*****************************************************************************\
 |* Create a render pipeline
 \*****************************************************************************/
-+ (nullable AZRenderPipeline *) pipelineWithRenderer:(AZRenderer *)renderer
-											 shaders:(AZShaders *)shaders
-											  params:(AZPipelineParameters *)params;
++ (nullable AZRenderPipeline *) withRenderer:(id<AZRenderer>)renderer
+									 shaders:(AZShaders *)shaders
+									  params:(AZPipelineParameters *)params;
 
 /*****************************************************************************\
 |* Build the render pipeline

@@ -30,13 +30,6 @@
 |* Typedefs, enums etc.
 \*****************************************************************************/
 
-typedef struct SpriteVertex
-	{
-	float x, y, z, w;
-	float u, v, padding_a, padding_b;
-	float r, g, b, a;
-	} SpriteVertex;
-
 typedef struct
 	{
 	int pixelW;						// Pixels wide
@@ -52,47 +45,46 @@ typedef struct
 	NSPoint currentScale;			// Just logicalScale * scale
 	} AZViewState;
 
-static const int _rectIndexOrder[] = { 0, 1, 2, 0, 2, 3 };
 
 typedef struct GPU_ShaderUniformData
 	{
     Float4x4 mvp;					// 16 floats
-    SDL_FColor color;				// 4 floats
-    float texture_size[2];			// 2 floats
+    SDL_FColor colour;				// 4 floats
+    float textureSize[2];			// 2 floats
 	} GPU_ShaderUniformData;
+
+typedef struct
+	{
+	SDL_GPURenderPass *renderPass;
+	AZTexture *renderTarget;
+	SDL_GPUCommandBuffer *commandBuffer;
+	SDL_GPUColorTargetInfo colourAttachment;
+	SDL_GPUViewport viewport;
+	SDL_Rect scissor;
+	SDL_FColor drawColour;
+	bool scissorEnabled;
+	bool scissorWasEnabled;
+	GPU_ShaderUniformData shaderData;
+	} AZRenderState;
+
+typedef struct
+	{
+	SDL_GPUTransferBuffer *transferBuf;
+	SDL_GPUBuffer *buffer;
+	Uint32 bufferSize;
+	} AZVertices;
+
+static const int _rectIndexOrder[] = { 0, 1, 2, 0, 2, 3 };
 
 typedef struct AZRenderData
 	{
-	AZShaders shaders;
-
-	AZTexture *backbuffer;
-
     struct
 		{
         SDL_GPUSwapchainComposition composition;
         SDL_GPUPresentMode presentMode;
 		} swapchain;
 
-    struct
-		{
-        SDL_GPUTransferBuffer *transferBuf;
-        SDL_GPUBuffer *buffer;
-        Uint32 bufferSize;
-		} vertices;
 
-    struct
-		{
-        SDL_GPURenderPass *renderPass;
-        SDL_Texture *renderTarget;
-        SDL_GPUCommandBuffer *commandBuffer;
-        SDL_GPUColorTargetInfo colourAttachment;
-        SDL_GPUViewport viewport;
-        SDL_Rect scissor;
-        SDL_FColor drawColour;
-        bool scissorEnabled;
-        bool scissorWasEnabled;
-        GPU_ShaderUniformData shaderData;
-		} state;
 
     AZSampler *samplers[2][2];
 	} AZRenderData;
@@ -186,6 +178,18 @@ NSMutableDictionary<NSNumber *, AZTexture *> * 				textures;
 // The GPU device
 @property(assign, nonatomic) SDL_GPUDevice *				gpu;
 
+// The backbuffer
+@property(assign, nonatomic) AZTexture *					backbuffer;
+
+// The set of shaders loaded
+@property(assign, nonatomic) AZShaders 						shaders;
+
+// The current render-state
+@property(assign, nonatomic) AZRenderState					state;
+
+// The vertices to send to the GPU
+@property(assign, nonatomic) AZVertices						vertices;
+
 // The sprite compute pipeline
 @property(strong, nonatomic) AZComputePipeline *			computePipe;
 
@@ -255,7 +259,7 @@ NSMutableArray<AZRenderCommand *> *							commandQ;
 @property(assign, nonatomic) SDL_BlendMode					blendModeValue;
 
 // The amount of space used for vertices so far
-@property(assign, nonatomic) NSInteger						vertexDataInUse;
+@property(assign, nonatomic) Uint32							vertexDataInUse;
 
 // The amount of space allocated for vertices so far
 @property(assign, nonatomic) NSInteger						vertexDataSize;
@@ -284,6 +288,9 @@ SDL_RendererLogicalPresentation								logicalPresentMode;
 
 // Properties we set on this renderer
 @property(strong, nonatomic) NSMutableDictionary *			properties;
+
+// Allowed texture formats
+@property(strong, nonatomic) NSMutableSet<NSNumber*> *		textureFormats;
 @end
 
 
@@ -312,7 +319,21 @@ static SDL_SpinLock 	_textureLock;
 		/*********************************************************************\
 		|* Prepare to store the textures
 		\*********************************************************************/
-		_textures 	= [NSMutableDictionary new];
+		_textures 		= NSMutableDictionary.new;
+
+		/*********************************************************************\
+		|* Set up which texture formats we support
+		\*********************************************************************/
+		_textureFormats	= NSMutableSet.new;
+		[_textureFormats addObject:@(SDL_PIXELFORMAT_RGBA32)];
+		[_textureFormats addObject:@(SDL_PIXELFORMAT_BGRA32)];
+		[_textureFormats addObject:@(SDL_PIXELFORMAT_RGBX32)];
+		[_textureFormats addObject:@(SDL_PIXELFORMAT_BGRX32)];
+
+		/*********************************************************************\
+		|* ... and how large those textures can be
+		\*********************************************************************/
+		_properties[AZRendererMaxTextureSize] = @(16384);
 
 		/*********************************************************************\
 		|* Default clear colour is in fact ... clear
@@ -322,7 +343,7 @@ static SDL_SpinLock 	_textureLock;
 		/*********************************************************************\
 		|* Default draw colour is white
 		\*********************************************************************/
-		_colour = AZColour.white;
+		_colour = AZColour.red;
 
 		/*********************************************************************\
 		|* Default render target is the screen, no logical presentation
@@ -537,6 +558,41 @@ static SDL_SpinLock 	_textureLock;
     \*************************************************************************/
 	[self _choosePresentationMode:&(_renderData.swapchain.presentMode)];
 
+	/*************************************************************************\
+    |* ... and the swapchain parameters
+    \*************************************************************************/
+	[self setSwapchainParameters:_renderData.swapchain.composition
+					 presentMode:_renderData.swapchain.presentMode];
+
+	/*************************************************************************\
+    |* ... and how many frames are allowed to be in-flight
+    \*************************************************************************/
+	[self setAllowedFramesInFlight: 1];
+
+
+	/*************************************************************************\
+	|* Set up the renderer state
+	\*************************************************************************/
+	_state.drawColour 			= _colour.sdlColour;
+	_state.viewport.max_depth 	= 1;
+	_state.viewport.min_depth 	= 0;
+	_state.commandBuffer 		= SDL_AcquireGPUCommandBuffer(_gpu);
+
+	/*************************************************************************\
+	|* Create the back-buffer
+	\*************************************************************************/
+    int w, h;
+    SDL_GetWindowSizeInPixels(_window.window, &w, &h);
+
+    SDL_GPUTextureFormat fmt;
+	fmt = SDL_GetGPUSwapchainTextureFormat(_gpu, _window.window);
+
+	SDL_PixelFormat pFmt = [AZTexture pixelFormatFor:fmt];
+	if (pFmt != SDL_PIXELFORMAT_UNKNOWN)
+		[self _createBackBufferOfSize:NSMakeSize(w,h) format:pFmt];
+	else
+		SDL_Log("Cannot convert swapchain format - got 0x%x", fmt);
+
 	return YES;
 	}
 
@@ -737,6 +793,24 @@ static SDL_SpinLock 	_textureLock;
 - (NSInteger)createTextureOfSize:(NSSize)size
 	{
 	/*************************************************************************\
+	|* Create the GPU texture
+	\*************************************************************************/
+	SDL_GPUTextureUsageFlags flags = SDL_GPU_TEXTUREUSAGE_SAMPLER
+								   | SDL_GPU_TEXTUREUSAGE_COLOR_TARGET
+								   | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ
+								   | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE;
+
+	return [self createTextureOfSize:size
+							  format:SDL_PIXELFORMAT_RGBA32
+						   withFlags:flags];
+	}
+
+
+- (NSInteger)createTextureOfSize:(NSSize)size
+						  format:(SDL_PixelFormat)format
+					   withFlags:(int)flags
+	{
+	/*************************************************************************\
 	|* Get a new unique texture id
 	\*************************************************************************/
 	NSNumber *tId = self.nextTextureId;
@@ -772,18 +846,13 @@ static SDL_SpinLock 	_textureLock;
 	\*************************************************************************/
 	SDL_UnmapGPUTransferBuffer(_gpu, upload);
 
-	/*************************************************************************\
-	|* Create the GPU texture
-	\*************************************************************************/
-	SDL_GPUTextureUsageFlags flags = SDL_GPU_TEXTUREUSAGE_SAMPLER
-								   | SDL_GPU_TEXTUREUSAGE_COLOR_TARGET
-								   | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ
-								   | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE;
 
 	AZTexture *tex = [AZTexture textureFor:self
 								 withIndex:tId
 									  size:size
+									 format:format
 									 usage:flags];
+
 	/*************************************************************************\
 	|* If we have a valid texture resource, then store it
 	\*************************************************************************/
@@ -834,15 +903,6 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
-- (NSInteger)createTextureOfSize:(NSSize)size
-						  format:(int)format
-					   withFlags:(int)flags
-	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return 0;
-	}
-
-
 /*****************************************************************************\
 |* Create a texture from an existing surface. We assume RGBA8888 format for the
 |* surface. This needs to:
@@ -857,6 +917,11 @@ static SDL_SpinLock 	_textureLock;
 \*****************************************************************************/
 - (NSInteger)createTextureWithSurface:(nonnull struct SDL_Surface *)surface
 	{
+	SDL_GPUTextureFormat format = [AZTexture textureFormatFor:surface->format];
+    if (format == SDL_GPU_TEXTUREFORMAT_INVALID)
+        return SDL_SetError("Texture format %s not supported by 3d Renderer",
+                            SDL_GetPixelFormatName(surface->format));
+
 	/*************************************************************************\
 	|* Get a new unique texture id
 	\*************************************************************************/
@@ -901,7 +966,9 @@ static SDL_SpinLock 	_textureLock;
 	AZTexture *tex = [AZTexture textureFor:self
 								 withIndex:tId
 									  size:size
+									format:SDL_PIXELFORMAT_RGBA32
 									 usage:flags];
+
 	/*************************************************************************\
 	|* If we have a valid texture resource, then store it
 	\*************************************************************************/
@@ -1009,9 +1076,8 @@ static SDL_SpinLock 	_textureLock;
 
 	[self _flushRenderCommands];
 
-    if (!renderer->RenderPresent(renderer)) {
-        presented = false;
-    }
+    if (![self _renderPresent])
+        presented = NO;
 
     if (target)
 		_target = target;
@@ -1558,6 +1624,137 @@ static SDL_SpinLock 	_textureLock;
 // MARK: Private methods
 
 /*****************************************************************************\
+|* Set the viewpoint and scissor (clip)
+\*****************************************************************************/
+- (void) _setViewportAndScissor
+	{
+    SDL_SetGPUViewport(_state.renderPass, &_state.viewport);
+
+    if (_state.scissorEnabled)
+		{
+        SDL_SetGPUScissor(_state.renderPass, &_state.scissor);
+        _state.scissorWasEnabled = YES;
+		}
+	else if (_state.scissorWasEnabled)
+		{
+        SDL_Rect r;
+        r.x = (int)_state.viewport.x;
+        r.y = (int)_state.viewport.y;
+        r.w = (int)_state.viewport.w;
+        r.h = (int)_state.viewport.h;
+        SDL_SetGPUScissor(_state.renderPass, &r);
+        _state.scissorWasEnabled = NO;
+		}
+	}
+
+/*****************************************************************************\
+|* Restart a renderpass
+\*****************************************************************************/
+- (SDL_GPURenderPass *) _restartRenderPass
+	{
+    if (_state.renderPass)
+        SDL_EndGPURenderPass(_state.renderPass);
+
+
+    _state.renderPass = SDL_BeginGPURenderPass(_state.commandBuffer,
+											   &_state.colourAttachment,
+											   1,
+											   NULL);
+
+    // *** FIXME ***
+    // This is busted. We should be able to know which load op to use.
+    // LOAD is incorrect behavior most of the time, unless we had to break a render pass.
+    // -cosmonaut
+    _state.colourAttachment.load_op = SDL_GPU_LOADOP_LOAD;
+    _state.scissorWasEnabled 		= NO;
+
+    return _state.renderPass;
+	}
+
+/*****************************************************************************\
+|* Get a colour out of a command in the queue
+\*****************************************************************************/
+- (SDL_FColor) _drawColourForCommand:(AZRenderCommand *)cmd
+	{
+    SDL_FColor colour = cmd.colour;
+
+	if ([self _renderingLinearSpace])
+		[self _convertToLinear:&colour];
+
+    colour.r *= cmd.colourScale;
+    colour.g *= cmd.colourScale;
+    colour.b *= cmd.colourScale;
+
+    return colour;
+	}
+
+/*****************************************************************************\
+|* Upload the vertices to the GPU
+\*****************************************************************************/
+- (BOOL) _uploadVertices
+	{
+	SDL_GPUCopyPass *pass	= NULL;
+	void *staging			= NULL;
+
+	// Quick sanity check
+    if (_vertexDataInUse == 0)
+        return YES;
+
+
+	// Resize the buffers upwards if we need to
+    if (_vertexDataInUse > _vertices.bufferSize)
+		{
+		[self _releaseVertexBuffer];
+		if (![self _initialiseVertexBuffer:_vertexDataInUse])
+            return NO;
+        }
+
+	// Push through the staging buffer
+	staging = SDL_MapGPUTransferBuffer(_gpu, _vertices.transferBuf, YES);
+
+    SDL_memcpy(staging, _vertexData, _vertexDataInUse);
+    SDL_UnmapGPUTransferBuffer(_gpu, _vertices.transferBuf);
+
+	// Create the copy-pass and execute
+	pass = SDL_BeginGPUCopyPass(_state.commandBuffer);
+    if (!pass)
+        return NO;
+
+    SDL_GPUTransferBufferLocation src;
+    SDL_zero(src);
+    src.transfer_buffer = _vertices.transferBuf;
+
+    SDL_GPUBufferRegion dst;
+    SDL_zero(dst);
+    dst.buffer 	= _vertices.buffer;
+    dst.size 	= _vertexDataInUse;
+
+    SDL_UploadToGPUBuffer(pass, &src, &dst, true);
+    SDL_EndGPUCopyPass(pass);
+
+    return YES;
+	}
+
+/*****************************************************************************\
+|* Create the back-buffer
+\*****************************************************************************/
+- (BOOL) _createBackBufferOfSize:(NSSize)size format:(SDL_PixelFormat)fmt
+	{
+	SDL_GPUTextureUsageFlags flags = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET
+								   | SDL_GPU_TEXTUREUSAGE_SAMPLER;
+
+	NSInteger identifier 	= [self createTextureOfSize:size
+											     format:fmt
+											  withFlags:flags];
+
+	_backbuffer = _textures[@(identifier)];
+	if (!_backbuffer)
+        return NO;
+
+    return YES;
+	}
+
+/*****************************************************************************\
 |* Create the samplers
 \*****************************************************************************/
 - (void) _choosePresentationMode:(out SDL_GPUPresentMode*)presentMode
@@ -1592,9 +1789,9 @@ static SDL_SpinLock 	_textureLock;
     bci.size = size;
     bci.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
 
-    _renderData.vertices.buffer = SDL_CreateGPUBuffer(_gpu, &bci);
+    _vertices.buffer = SDL_CreateGPUBuffer(_gpu, &bci);
 
-    if (!_renderData.vertices.buffer)
+    if (!_vertices.buffer)
         return NO;
 
     SDL_GPUTransferBufferCreateInfo tbci;
@@ -1602,12 +1799,27 @@ static SDL_SpinLock 	_textureLock;
     tbci.size = size;
     tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
 
-    _renderData.vertices.transferBuf = SDL_CreateGPUTransferBuffer(_gpu, &tbci);
+    _vertices.transferBuf = SDL_CreateGPUTransferBuffer(_gpu, &tbci);
 
-    if (!_renderData.vertices.transferBuf)
+    if (!_vertices.transferBuf)
         return NO;
 
     return YES;
+	}
+
+
+/*****************************************************************************\
+|* Release the current vertex buffers
+\*****************************************************************************/
+- (void) _releaseVertexBuffer
+	{
+    if (_vertices.buffer)
+        SDL_ReleaseGPUBuffer(_gpu, _vertices.buffer);
+
+    if (_vertices.transferBuf)
+        SDL_ReleaseGPUTransferBuffer(_gpu, _vertices.transferBuf);
+
+    _vertices.bufferSize = 0;
 	}
 
 
@@ -1700,7 +1912,7 @@ static SDL_SpinLock 	_textureLock;
 												   name:name
 											   samplers:samplers];
 		if (shader)
-			_renderData.shaders.fragShaders[identifier.intValue] = shader;
+			_shaders.fragShaders[identifier.intValue] = shader;
 		else
 			{
 			NSString *msg = [NSString stringWithFormat:
@@ -1721,7 +1933,7 @@ static SDL_SpinLock 	_textureLock;
 											   samplers:0
 										 uniformBuffers:1];
 		if (shader)
-			_renderData.shaders.vertShaders[identifier.intValue] = shader;
+			_shaders.vertShaders[identifier.intValue] = shader;
 		else
 			{
 			NSString *msg = [NSString stringWithFormat:
@@ -2037,7 +2249,7 @@ static SDL_SpinLock 	_textureLock;
 		const BOOL doClip	= view->doClip;
 
 		NSRect origViewport	= view->view;
-		NSRect origClip;
+		NSRect origClip 	= NSZeroRect;
 		if (doClip)
 			origClip = view->clip;
 
@@ -2130,6 +2342,175 @@ float AZsRGBfromLinear(float v)
 
 // MARK: Rendering
 
+/*****************************************************************************\
+|* Draw primitives
+\*****************************************************************************/
+- (void) _pushUniformsFor:(AZRenderCommand *)cmd
+	{
+    GPU_ShaderUniformData uniforms;
+    SDL_zero(uniforms);
+    uniforms.mvp.m[0][0] = 2.0f / _state.viewport.w;
+    uniforms.mvp.m[1][1] = -2.0f / _state.viewport.h;
+    uniforms.mvp.m[2][2] = 1.0f;
+    uniforms.mvp.m[3][0] = -1.0f;
+    uniforms.mvp.m[3][1] = 1.0f;
+    uniforms.mvp.m[3][3] = 1.0f;
+
+    uniforms.colour = _state.drawColour;
+
+    if (cmd.texture)
+		{
+		uniforms.textureSize[0] = cmd.texture.size.width;
+        uniforms.textureSize[1] = cmd.texture.size.height;
+		}
+
+    SDL_PushGPUVertexUniformData(_state.commandBuffer,
+								 0,
+								 &uniforms,
+								 sizeof(uniforms));
+	}
+
+/*****************************************************************************\
+|* Draw primitives
+\*****************************************************************************/
+- (void) _draw:(AZRenderCommand *)cmd
+		 count:(Uint32)numVerts
+	    offset:(Uint32)offset
+	      type:(SDL_GPUPrimitiveType)prim
+	{
+	BOOL notRender	= !_state.renderPass;
+	BOOL isClear   	= _state.colourAttachment.load_op == SDL_GPU_LOADOP_CLEAR;
+
+    if (notRender|| isClear)
+        [self _restartRenderPass];
+
+    AZVertexShaderID 	v_shader;
+    AZFragmentShaderID 	f_shader;
+    SDL_GPURenderPass *pass = _state.renderPass;
+
+    if (prim == SDL_GPU_PRIMITIVETYPE_TRIANGLELIST)
+		{
+        if (cmd.texture)
+			{
+            v_shader = AZVertShaderTriTexture;
+            f_shader = cmd.texture.shader;
+			}
+		else
+			{
+            v_shader = AZVertShaderTriColour;
+            f_shader = AZFragShaderColour;
+			}
+		}
+	else
+		{
+        v_shader = AZVertShaderLinePoint;
+        f_shader = AZFragShaderColour;
+		}
+
+    AZPipelineParameters pipeParams;
+    SDL_zero(pipeParams);
+    pipeParams.blendMode 		= cmd.blendMode;
+    pipeParams.vertShader 		= v_shader;
+    pipeParams.fragShader 		= f_shader;
+    pipeParams.primitiveType	= prim;
+	pipeParams.attachmentFormat = (_state.renderTarget)
+								? _state.renderTarget.format
+								: _backbuffer.format;
+
+	AZRenderPipeline *pipe = [AZRenderPipeline withRenderer:self
+													shaders:&_shaders
+													 params:&pipeParams];
+    if (!pipe)
+        return;
+
+	[self _setViewportAndScissor];
+
+	SDL_BindGPUGraphicsPipeline(_state.renderPass, pipe.pipeline);
+
+	if (cmd.texture)
+		{
+        SDL_GPUTextureSamplerBinding samplerBind;
+        SDL_zero(samplerBind);
+        AZSampler *sampler  = SAMPLER(cmd.addressMode, cmd.texture.scaleMode);
+		samplerBind.sampler = sampler.sampler;
+        samplerBind.texture = cmd.texture.texture;
+        SDL_BindGPUFragmentSamplers(pass, 0, &samplerBind, 1);
+    }
+
+    SDL_GPUBufferBinding bufferBind;
+    SDL_zero(bufferBind);
+    bufferBind.buffer = _vertices.buffer;
+    bufferBind.offset = offset;
+
+    SDL_BindGPUVertexBuffers(pass, 0, &bufferBind, 1);
+	[self _pushUniformsFor:cmd];
+    SDL_DrawGPUPrimitives(_state.renderPass, numVerts, 1, 0, 0);
+	}
+
+
+// GPU_RenderPresent
+/*****************************************************************************\
+|* GPU side of the -present call
+\*****************************************************************************/
+- (BOOL) _renderPresent
+	{
+	SDL_GPUTextureFormat fmt;
+    SDL_GPUTexture *swapchain;
+    Uint32 swapW, swapH;
+    BOOL result = SDL_WaitAndAcquireGPUSwapchainTexture(
+						_state.commandBuffer,
+						_window.window,
+						&swapchain,
+						&swapW,
+						&swapH);
+
+    if (!result)
+        SDL_LogError(SDL_LOG_CATEGORY_RENDER,
+					 "Failed to acquire swapchain texture: %s",
+					 SDL_GetError());
+
+
+    if (swapchain != NULL)
+		{
+        SDL_GPUBlitInfo blitInfo;
+        SDL_zero(blitInfo);
+
+        blitInfo.source.texture 		= _backbuffer.texture;
+        blitInfo.source.w 				= _backbuffer.size.width;
+        blitInfo.source.h 				= _backbuffer.size.height;
+        blitInfo.destination.texture 	= swapchain;
+        blitInfo.destination.w 			= swapW;
+        blitInfo.destination.h 			= swapH;
+        blitInfo.load_op 				= SDL_GPU_LOADOP_DONT_CARE;
+        blitInfo.filter 				= SDL_GPU_FILTER_LINEAR;
+
+        SDL_BlitGPUTexture(_state.commandBuffer, &blitInfo);
+
+        SDL_SubmitGPUCommandBuffer(_state.commandBuffer);
+
+		BOOL diffW = (swapW != (Uint32) _backbuffer.size.width);
+		BOOL diffH = (swapH != (Uint32) _backbuffer.size.height);
+
+        if (diffW || diffH)
+			{
+			[self releaseTexture:_backbuffer.index.integerValue];
+			_backbuffer = nil;
+
+			NSSize size = NSMakeSize(swapW, swapH);
+			fmt = SDL_GetGPUSwapchainTextureFormat(_gpu, _window.window);
+
+			SDL_PixelFormat pFmt = [AZTexture pixelFormatFor:fmt];
+			[self _createBackBufferOfSize:size format:pFmt];
+			}
+		}
+	else
+        SDL_SubmitGPUCommandBuffer(_state.commandBuffer);
+
+
+    _state.commandBuffer = SDL_AcquireGPUCommandBuffer(_gpu);
+    return YES;
+	}
+
 // FlushRenderCommands
 /*****************************************************************************\
 |* Entry point to rendering to the screen
@@ -2159,164 +2540,198 @@ float AZsRGBfromLinear(float v)
 
 - (BOOL) _runCommandQueue
 	{
-	void *vertices 	= _vertexData;
-	size_t vertSize	= _vertexDataInUse;
+	if (![self _uploadVertices])
+		return NO;
 
-    // _renderData ... GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
+    _state.colourAttachment.load_op = SDL_GPU_LOADOP_LOAD;
 
-    if (!UploadVertices(data, vertices, vertsize)) {
-        return false;
-    }
+    if (_target)
+        _state.colourAttachment.texture = _target.texture;
+	else
+		_state.colourAttachment.texture = _backbuffer.texture;
 
-    data->state.color_attachment.load_op = SDL_GPU_LOADOP_LOAD;
 
-    if (renderer->target) {
-        GPU_TextureData *tdata = renderer->target->internal;
-        data->state.color_attachment.texture = tdata->texture;
-    } else {
-        data->state.color_attachment.texture = data->backbuffer.texture;
-    }
-
-    if (!data->state.color_attachment.texture) {
+    if (!_state.colourAttachment.texture)
         return SDL_SetError("Render target texture is NULL");
-    }
 
-    while (cmd) {
-        switch (cmd->command) {
-        case SDL_RENDERCMD_SETDRAWCOLOR:
-        {
-            data->state.draw_color = GetDrawCmdColor(renderer, cmd);
-            break;
-        }
+	NSInteger numCmds = _commandQ.count;
+	NSInteger last    = numCmds - 1;
 
-        case SDL_RENDERCMD_SETVIEWPORT:
-        {
-            SDL_Rect *viewport = &cmd->data.viewport.rect;
-            data->state.viewport.x = viewport->x;
-            data->state.viewport.y = viewport->y;
-            data->state.viewport.w = viewport->w;
-            data->state.viewport.h = viewport->h;
-            break;
-        }
+	for (NSInteger cmdId = 0; cmdId < numCmds; cmdId ++)
+		{
+		AZRenderCommand *cmd = _commandQ[cmdId];
 
-        case SDL_RENDERCMD_SETCLIPRECT:
-        {
-            const SDL_Rect *rect = &cmd->data.cliprect.rect;
-            data->state.scissor.x = (int)data->state.viewport.x + rect->x;
-            data->state.scissor.y = (int)data->state.viewport.y + rect->y;
-            data->state.scissor.w = rect->w;
-            data->state.scissor.h = rect->h;
-            data->state.scissor_enabled = cmd->data.cliprect.enabled;
-            break;
-        }
+        switch (cmd.command)
+			{
+			case AZRenderCmdSetDrawColour:
+				{
+            	_state.drawColour = [self _drawColourForCommand:cmd];
+				break;
+				}
 
-        case SDL_RENDERCMD_CLEAR:
-        {
-            data->state.color_attachment.clear_color = GetDrawCmdColor(renderer, cmd);
-            data->state.color_attachment.load_op = SDL_GPU_LOADOP_CLEAR;
-            break;
-        }
+			case AZRenderCmdSetViewport:
+				{
+				_state.viewport.x 	= cmd.rect.origin.x;
+				_state.viewport.y 	= cmd.rect.origin.y;
+				_state.viewport.w	= cmd.rect.size.width;
+				_state.viewport.h	= cmd.rect.size.height;
+				break;
+				}
 
-        case SDL_RENDERCMD_FILL_RECTS: // unused
-            break;
+			case AZRenderCmdSetCliprect:
+				{
+				_state.scissor.x 		= _state.viewport.x + cmd.rect.origin.x;
+				_state.scissor.y 		= _state.viewport.y + cmd.rect.origin.y;
+				_state.scissor.w		= cmd.rect.size.width;
+				_state.scissor.h		= cmd.rect.size.height;
+				_state.scissorEnabled	= cmd.enabled;
+				break;
+				}
 
-        case SDL_RENDERCMD_COPY: // unused
-            break;
+			case AZRenderCmdClear:
+				{
+				_state.colourAttachment.clear_color = [self _drawColourForCommand:cmd];
+            	_state.colourAttachment.load_op 	= SDL_GPU_LOADOP_CLEAR;
+				break;
+				}
 
-        case SDL_RENDERCMD_COPY_EX: // unused
-            break;
+			case AZRenderCmdFillRects:
+				// unused
+				break;
 
-        case SDL_RENDERCMD_DRAW_LINES:
-        {
-            Uint32 count = (Uint32)cmd->data.draw.count;
-            Uint32 offset = (Uint32)cmd->data.draw.first;
+			case AZRenderCmdCopy:
+				// unused
+				break;
 
-            if (count > 2) {
-                // joined lines cannot be grouped
-                Draw(data, cmd, count, offset, SDL_GPU_PRIMITIVETYPE_LINESTRIP);
-            } else {
-                // let's group non joined lines
-                SDL_RenderCommand *finalcmd = cmd;
-                SDL_RenderCommand *nextcmd = cmd->next;
-                SDL_BlendMode thisblend = cmd->data.draw.blend;
+			case AZRenderCmdCopyExtended:
+				// unused
+				break;
 
-                while (nextcmd) {
-                    const SDL_RenderCommandType nextcmdtype = nextcmd->command;
-                    if (nextcmdtype != SDL_RENDERCMD_DRAW_LINES) {
-                        break; // can't go any further on this draw call, different render command up next.
-                    } else if (nextcmd->data.draw.count != 2) {
-                        break; // can't go any further on this draw call, those are joined lines
-                    } else if (nextcmd->data.draw.blend != thisblend) {
-                        break; // can't go any further on this draw call, different blendmode copy up next.
-                    } else {
-                        finalcmd = nextcmd; // we can combine copy operations here. Mark this one as the furthest okay command.
-                        count += (Uint32)nextcmd->data.draw.count;
-                    }
-                    nextcmd = nextcmd->next;
-                }
+			case AZRenderCmdDrawLines:
+				{
+				Uint32 count 	= (Uint32)cmd.count;
+				Uint32 offset 	= (Uint32)cmd.first;
 
-                Draw(data, cmd, count, offset, SDL_GPU_PRIMITIVETYPE_LINELIST);
-                cmd = finalcmd; // skip any copy commands we just combined in here.
-            }
-            break;
-        }
+				if (count > 2)
+					{
+					// joined lines cannot be grouped
+					[self _draw:cmd
+						  count:count
+						 offset:offset
+						   type:SDL_GPU_PRIMITIVETYPE_LINESTRIP];
+					}
+				else
+					{
+					// let's group non joined lines
+                	AZRenderCommand *nextcmd 	= (cmdId == last)
+												? nil
+												: _commandQ[cmdId+1];
+					SDL_BlendMode thisblend = cmd.blendMode;
 
-        case SDL_RENDERCMD_DRAW_POINTS:
-        case SDL_RENDERCMD_GEOMETRY:
-        {
-            /* as long as we have the same copy command in a row, with the
-               same texture, we can combine them all into a single draw call. */
-            SDL_Texture *thistexture = cmd->data.draw.texture;
-            SDL_BlendMode thisblend = cmd->data.draw.blend;
-            const SDL_RenderCommandType thiscmdtype = cmd->command;
-            SDL_RenderCommand *finalcmd = cmd;
-            SDL_RenderCommand *nextcmd = cmd->next;
-            Uint32 count = (Uint32)cmd->data.draw.count;
-            Uint32 offset = (Uint32)cmd->data.draw.first;
+					while (nextcmd)
+						{
+						const AZRenderCommandType nextType = nextcmd.command;
+						if (nextType != AZRenderCmdDrawLines)
+							// can't go any further on this draw call,
+							// different render command up next.
+							break;
 
-            while (nextcmd) {
-                const SDL_RenderCommandType nextcmdtype = nextcmd->command;
-                if (nextcmdtype != thiscmdtype) {
-                    break; // can't go any further on this draw call, different render command up next.
-                } else if (nextcmd->data.draw.texture != thistexture || nextcmd->data.draw.blend != thisblend) {
-                    // FIXME should we check address mode too?
-                    break; // can't go any further on this draw call, different texture/blendmode copy up next.
-                } else {
-                    finalcmd = nextcmd; // we can combine copy operations here. Mark this one as the furthest okay command.
-                    count += (Uint32)nextcmd->data.draw.count;
-                }
-                nextcmd = nextcmd->next;
-            }
+						else if (nextcmd.count != 2)
+							// can't go any further on this draw call,
+							// those are joined lines
+							break;
 
-            SDL_GPUPrimitiveType prim = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST; // SDL_RENDERCMD_GEOMETRY
-            if (thiscmdtype == SDL_RENDERCMD_DRAW_POINTS) {
-                prim = SDL_GPU_PRIMITIVETYPE_POINTLIST;
-            }
+						else if (nextcmd.blendMode != thisblend)
+							// can't go any further on this draw call,
+							// different blendmode copy up next.
+							break;
 
-            Draw(data, cmd, count, offset, prim);
+						else
+							{
+							// we can combine copy operations here.
+							// Mark this one as the furthest okay command.
+							count += (Uint32)nextcmd.count;
+							}
+						cmdId ++;
+						nextcmd = (cmdId == last) ? nil : _commandQ[cmdId+1];
+						}
 
-            cmd = finalcmd; // skip any copy commands we just combined in here.
-            break;
-        }
+					[self _draw:cmd
+						  count:count
+						 offset:offset
+						   type:SDL_GPU_PRIMITIVETYPE_LINELIST];
+					}
+				break;
+				}
 
-        case SDL_RENDERCMD_NO_OP:
-            break;
-        }
+			case AZRenderCmdDrawPoints:
+			case AZRenderCmdGeometry:
+				{
+				// as long as we have the same copy command in a row, with the
+				// same texture, we can combine them all into a single draw call
+				AZTexture *thistexture 				= cmd.texture;
+				SDL_BlendMode thisblend 			= cmd.blendMode;
+				const AZRenderCommandType thisType 	= cmd.command;
+				AZRenderCommand *finalcmd 			= cmd;
+				AZRenderCommand *nextcmd 			= (cmdId == last)
+													? nil
+													: _commandQ[cmdId+1];;
+				Uint32 count 						= (Uint32)cmd.count;
+				Uint32 offset 						= (Uint32)cmd.first;
 
-        cmd = cmd->next;
-    }
+				while (nextcmd)
+					{
+					const AZRenderCommandType nextType = nextcmd.command;
+					BOOL diffTexture = (nextcmd.texture != thistexture);
+					BOOL diffBlend   = (nextcmd.blendMode != thisblend);
 
-    if (data->state.color_attachment.load_op == SDL_GPU_LOADOP_CLEAR) {
-        RestartRenderPass(data);
-    }
+					if (nextType != thisType)
+						// can't go any further on this draw call,
+						// different render command up next.
+						break;
 
-    if (data->state.render_pass) {
-        SDL_EndGPURenderPass(data->state.render_pass);
-        data->state.render_pass = NULL;
-    }
+					else if (diffTexture || diffBlend)
+						// FIXME should we check address mode too?
+						// can't go any further on this draw call,
+						// different texture/blendmode copy up next.
+						break;
+
+					else
+						{
+						// we can combine copy operations here.
+						// Mark this one as the furthest okay command.
+						finalcmd = nextcmd;
+						count += (Uint32)nextcmd.count;
+						}
+					cmdId ++;
+					nextcmd = (cmdId == last) ? nil : _commandQ[cmdId+1];
+					}
+
+				// Default to SDL_RENDERCMD_GEOMETRY
+				SDL_GPUPrimitiveType prim = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
+				if (thisType == AZRenderCmdDrawPoints)
+					prim = SDL_GPU_PRIMITIVETYPE_POINTLIST;
+
+				[self _draw:cmd count:count offset:offset type:prim];
+				break;
+				}
+
+			case AZRenderCmdNoOp:
+				break;
+			}
+		}
+
+	if (_state.colourAttachment.load_op == SDL_GPU_LOADOP_CLEAR)
+		[self _restartRenderPass];
+
+	if (_state.renderPass)
+		{
+        SDL_EndGPURenderPass(_state.renderPass);
+        _state.renderPass = NULL;
+		}
 
     return true;
-}
+	}
 
 
 /*****************************************************************************\
@@ -2325,18 +2740,19 @@ float AZsRGBfromLinear(float v)
 - (BOOL) setSwapchainParameters:(SDL_GPUSwapchainComposition)composition
 					presentMode:(SDL_GPUPresentMode) presentMode
 	{
-    if (_window.window == NULL)
-		{
-        SDL_InvalidParamError("setSwapchainParameters window");
-        return NO;
-		}
+	return SDL_SetGPUSwapchainParameters(_gpu,
+										 _window.window,
+										 composition,
+										 presentMode);
+	}
 
-    return device->SetSwapchainParameters(
-        device->driverData,
-        window,
-        swapchain_composition,
-        present_mode);
-}
+/*****************************************************************************\
+|* Set how many frames are allowed to be in-flight
+\*****************************************************************************/
+- (BOOL) setAllowedFramesInFlight:(uint32_t)number
+	{
+	return SDL_SetGPUAllowedFramesInFlight(_gpu, number);
+	}
 
 // MARK: Queueing of commands
 

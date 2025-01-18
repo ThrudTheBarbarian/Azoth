@@ -71,7 +71,6 @@ typedef enum AZTextureAddressMode
 
 // How to address the texture
 @property(assign, nonatomic) AZTextureAddressMode 					addressMode;
-
 @end
 
 NS_ASSUME_NONNULL_END

@@ -114,4 +114,28 @@ static SDL_INLINE SDL_GPUBlendOp AZConvertBlendOperation(SDL_BlendOperation op)
 		}
 	}
 
+
+
+/*****************************************************************************\
+|* Here we define references to some external symbols that aren't usually
+|* exposed outside of the SDL framework itself
+\*****************************************************************************/
+
+// Set the swapchain parameters
+extern BOOL SDL_SetGPUSwapchainParameters
+	(
+    SDL_GPUDevice *device,
+    SDL_Window *window,
+    SDL_GPUSwapchainComposition swapchain_composition,
+    SDL_GPUPresentMode present_mode
+    );
+
+// How many frames are allowed to be in-flight
+extern BOOL SDL_SetGPUAllowedFramesInFlight
+	(
+    SDL_GPUDevice *device,
+    Uint32 allowed_frames_in_flight
+    );
+
+
 #endif /* AZ3dUtils_h */

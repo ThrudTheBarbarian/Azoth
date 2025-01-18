@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 extern NSString * const AZRendererColourspace;
 extern NSString * const AZRendererHdrEnabled;
 extern NSString * const AZRendererHdrHeadroom;
+extern NSString * const AZRendererMaxTextureSize;
 extern NSString * const AZRendererRenderer;
 extern NSString * const AZRendererValid;
 extern NSString * const AZRendererVSync;
