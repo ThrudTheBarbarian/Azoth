@@ -426,7 +426,7 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 	[azr setClip:wcv.bounds];
 	[wcv showDragInProgress];
 	[azr clear];
-/*
+
 	[azr unlockFocus];
 	[azr setDrawColour:AZColour.red];
 	[azr renderRect:NSMakeRect(50,50,100,100)];
@@ -439,7 +439,7 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 		}
 	[azr setDrawColour:AZColour.blue];
 	[azr renderPoints:pts count:10000];
-*/
+
 	// Tell the renderer we're done
 	[azr present];
 

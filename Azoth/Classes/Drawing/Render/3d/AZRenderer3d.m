@@ -329,7 +329,7 @@ static SDL_SpinLock 	_textureLock;
 		/*********************************************************************\
 		|* Default draw colour is white
 		\*********************************************************************/
-		_colour = AZColour.white;
+		_colour = AZColour.red;
 
 		/*********************************************************************\
 		|* Default render target is the screen, no logical presentation
@@ -2330,6 +2330,12 @@ float AZsRGBfromLinear(float v)
 \*****************************************************************************/
 - (BOOL) _renderTexture:(AZTexture *)texture src:(NSRect)src dst:(NSRect)dst
 	{
+	NSRect full = NSMakeRect(0,0,texture.size.width, texture.size.height);
+	src			= NSIntersectionRect(src, full);
+
+	if (NSEqualRects(dst, NSZeroRect))
+		dst = full;
+		
     const float sx = _view->currentScale.x;
     const float sy = _view->currentScale.y;
 
@@ -2344,49 +2350,49 @@ float AZsRGBfromLinear(float v)
 	const int numIndices 	= 6;
 	const int sizeIndices 	= 4;
 
-		float minu = src.origin.x / texture.size.width;
-		float minv = src.origin.y / texture.size.height;
-        float maxu = NSMaxX(src)  / texture.size.width;
-        float maxv = NSMaxY(src)  / texture.size.height;
+	float minu = src.origin.x / texture.size.width;
+	float minv = src.origin.y / texture.size.height;
+	float maxu = NSMaxX(src)  / texture.size.width;
+	float maxv = NSMaxY(src)  / texture.size.height;
 
-        float minx = NSMinX(dst);
-        float miny = NSMinY(dst);
-        float maxx = NSMaxX(dst);
-        float maxy = NSMaxY(dst);
+	float minx = NSMinX(dst);
+	float miny = NSMinY(dst);
+	float maxx = NSMaxX(dst);
+	float maxy = NSMaxY(dst);
 
-        uv[0] = minu;
-        uv[1] = minv;
-        uv[2] = maxu;
-        uv[3] = minv;
-        uv[4] = maxu;
-        uv[5] = maxv;
-        uv[6] = minu;
-        uv[7] = maxv;
+	uv[0] = minu;
+	uv[1] = minv;
+	uv[2] = maxu;
+	uv[3] = minv;
+	uv[4] = maxu;
+	uv[5] = maxv;
+	uv[6] = minu;
+	uv[7] = maxv;
 
-        xy[0] = minx;
-        xy[1] = miny;
-        xy[2] = maxx;
-        xy[3] = miny;
-        xy[4] = maxx;
-        xy[5] = maxy;
-        xy[6] = minx;
-        xy[7] = maxy;
+	xy[0] = minx;
+	xy[1] = miny;
+	xy[2] = maxx;
+	xy[3] = miny;
+	xy[4] = maxx;
+	xy[5] = maxy;
+	xy[6] = minx;
+	xy[7] = maxy;
 
-		SDL_FColor colour = texture.colour;
-		return [self _queueCmdGeometryWithTexture:texture
-											   xy:xy
-										 xyStride:xyStride
-										   colour:&colour
-										  colourStride:0
-											   uv:uv
-										 uvStride:uvStride
-									  numVertices:numVertices
-										  indices:indices
-									   numIndices:numIndices
-									  sizeIndices:sizeIndices
-										   scaleX:sx
-										   scaleY:sy
-									  addressMode:AZTextureAddressClamp];
+	SDL_FColor colour = texture.colour;
+	return [self _queueCmdGeometryWithTexture:texture
+										   xy:xy
+									 xyStride:xyStride
+									   colour:&colour
+									  colourStride:0
+										   uv:uv
+									 uvStride:uvStride
+								  numVertices:numVertices
+									  indices:indices
+								   numIndices:numIndices
+								  sizeIndices:sizeIndices
+									   scaleX:sx
+									   scaleY:sy
+								  addressMode:AZTextureAddressClamp];
 	}
 
 /*****************************************************************************\
@@ -3698,20 +3704,20 @@ float AZsRGBfromLinear(float v)
     if (cmd)
 		{
 		cmd.addressMode = addressMode;
-			result = [self _queueGeometryWith:cmd
-									  texture:texture
-										   xy:xy
-									 xyStride:xyStride
-									   colour:colour
-								 colourStride:colourStride
-										   uv:uv
-									 uvStride:uvStride
-								  numVertices:numVertices
-									  indices:indices
-								   numIndices:numIndices
-								  sizeIndices:sizeIndices
-									   scaleX:scaleX
-									   scaleY:scaleY];
+		result = [self _queueGeometryWith:cmd
+								  texture:texture
+									   xy:xy
+								 xyStride:xyStride
+								   colour:colour
+							 colourStride:colourStride
+									   uv:uv
+								 uvStride:uvStride
+							  numVertices:numVertices
+								  indices:indices
+							   numIndices:numIndices
+							  sizeIndices:sizeIndices
+								   scaleX:scaleX
+								   scaleY:scaleY];
         if (!result)
             cmd.command = AZRenderCmdNoOp;
 		}

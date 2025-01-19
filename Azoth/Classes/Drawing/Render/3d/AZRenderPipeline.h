@@ -61,7 +61,7 @@ typedef struct AZPipelineParameters
 @property(assign, nonatomic) SDL_GPUPrimitiveType			primitiveType;
 
 // The format of the texture data
-@property(assign, nonatomic) SDL_GPUTextureFormat			attachmentFormat;
+//@property(assign, nonatomic) SDL_GPUTextureFormat			attachmentFormat;
 
 // The multisampling state
 @property(assign, nonatomic) SDL_GPUMultisampleState		multisample;
