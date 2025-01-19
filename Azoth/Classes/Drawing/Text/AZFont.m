@@ -499,7 +499,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 
 	NSSize size			= NSMakeSize(_height * 12,_height * 12);
 	NSInteger cache 	= [azr createTextureOfSize:size
-											format:SDL_PIXELFORMAT_RGBA8888
+											format:SDL_PIXELFORMAT_BGRA8888
 										 withFlags:SDL_TEXTUREACCESS_TARGET];
 
 	if (cache < 0 || ![self _setGlyphCache:(int)_textures.count texture:cache])
@@ -592,7 +592,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 \*****************************************************************************/
 - (SDL_Surface *) _createSurfaceOfWidth:(int)width height:(int)height
 	{
-	return SDL_CreateSurface(width, height, SDL_PIXELFORMAT_RGBA8888);
+	return SDL_CreateSurface(width, height, SDL_PIXELFORMAT_BGRA8888);
 	}
 
 /*****************************************************************************\

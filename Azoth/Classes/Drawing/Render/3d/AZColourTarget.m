@@ -43,7 +43,7 @@
     _blendState.src_alpha_blendfactor = AZConvertBlendFactor(factor);
 
 	op 								  = [azr blendModeColourOperation:bm];
-    _blendState.alpha_blend_op 		  = AZConvertBlendOperation(op);
+    _blendState.color_blend_op 		  = AZConvertBlendOperation(op);
 
 	factor							  = [azr blendModeDstColourFactor:bm];
     _blendState.dst_color_blendfactor = AZConvertBlendFactor(factor);

@@ -11,6 +11,7 @@
 
 #import "AZApplication.h"
 #import "AZAppDelegate.h"
+#import "AZColour.h"
 #import "AZEvent.h"
 #import "AZEventSink.h"
 #import "AZFont.h"
@@ -424,7 +425,21 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 	// Handle any drag-in-progress
 	[azr setClip:wcv.bounds];
 	[wcv showDragInProgress];
+	[azr clear];
+/*
+	[azr unlockFocus];
+	[azr setDrawColour:AZColour.red];
+	[azr renderRect:NSMakeRect(50,50,100,100)];
 
+	NSPoint pts[10000];
+	for (int i=0; i<10000; i++)
+		{
+		pts[i].x = SDL_rand(640);
+		pts[i].y = SDL_rand(480);
+		}
+	[azr setDrawColour:AZColour.blue];
+	[azr renderPoints:pts count:10000];
+*/
 	// Tell the renderer we're done
 	[azr present];
 

@@ -74,7 +74,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(assign, nonatomic) uint8_t					B;
 @property(assign, nonatomic) uint8_t					A;
 
-// MARK: as a uint32_t RGBA
+// MARK: as a uint32_t BGRA
 @property(assign, nonatomic, readonly) uint32_t			value32;
 @end
 

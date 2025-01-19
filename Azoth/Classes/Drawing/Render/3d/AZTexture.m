@@ -9,7 +9,9 @@
 
 #import "AZ3dUtils.h"
 #import "AZRenderer.h"
+#import "AZRenderProperties.h"
 #import "AZTexture.h"
+
 
 /*****************************************************************************\
 |* "Private" properties
@@ -37,7 +39,43 @@
 		_size   	= size;
 		_flags  	= flags;
 		_index 		= index;
-		_scaleMode	= SDL_SCALEMODE_NEAREST;
+
+		_view.pixelW 			= (int)size.width;
+		_view.pixelH			= (int)size.height;
+		_view.view.size.width	= -1;
+		_view.view.size.height 	= -1;
+		_view.scale.x			= 1.f;
+		_view.scale.y			= 1.f;
+		_view.logicalScale.x	= 1.f;
+		_view.logicalScale.y	= 1.f;
+		_view.currentScale.x	= 1.f;
+		_view.currentScale.x	= 1.f;
+
+		_colour.r				= 1.f;
+		_colour.g				= 1.f;
+		_colour.b				= 1.f;
+		_colour.a				= 1.f;
+
+		_blendMode				= SDL_ISPIXELFORMAT_ALPHA(format)
+								? SDL_BLENDMODE_BLEND
+								: SDL_BLENDMODE_NONE;
+		_scaleMode				= SDL_SCALEMODE_LINEAR;
+
+		_colourspace	 		= AZGetDefaultColorspaceForFormat(format);
+		NSDictionary *info 	 	= renderer.properties;
+		NSNumber *forcingCS		= info[AZRendererTextureColourspace];
+		if (forcingCS)
+			_colourspace 		= (SDL_Colorspace)forcingCS.integerValue;
+
+		_sdrWhitePoint			= AZGetSurfaceSDRWhitePoint(_colourspace);
+		NSNumber *forcingWP		= info[AZRendererTextureWhitepoint];
+		if (forcingWP)
+			_sdrWhitePoint		= forcingWP.floatValue;
+
+		_hdrHeadroom			= AZGetSurfaceHDRHeadroom(_colourspace);
+		NSNumber *forcingHR		= info[AZRendererTextureHeadroom];
+		if (forcingHR)
+			_hdrHeadroom		= forcingHR.floatValue;
 
 		/*********************************************************************\
 		|* Get the GPU device from the renderer
@@ -58,6 +96,7 @@
 			SDL_Log("Pixel format 0x%x is not supported", format);
 			self = nil;
 			}
+		_format = fmt;
 
 		/*********************************************************************\
 		|* Create the GPU texture resource
@@ -186,5 +225,14 @@
 	SDL_ReleaseGPUTexture(_gpu, self.texture);
 	}
 
+
+/*****************************************************************************\
+|* Return a pointer to the local texture's view-state. This is the renderer's
+|* view of the texture
+\*****************************************************************************/
+- (AZViewState *) view
+	{
+	return &_view;
+	}
 
 @end

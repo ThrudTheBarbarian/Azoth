@@ -138,4 +138,12 @@ extern BOOL SDL_SetGPUAllowedFramesInFlight
     );
 
 
+/*****************************************************************************\
+|* These are (seemingly) private code within the SDL framework. The code is
+|* directly pulled, and renamed AZ... for SDL_...
+\*****************************************************************************/
+SDL_Colorspace AZGetDefaultColorspaceForFormat(SDL_PixelFormat format);
+float AZGetSurfaceSDRWhitePoint(SDL_Colorspace cs);
+float AZGetSurfaceHDRHeadroom(SDL_Colorspace cs);
+
 #endif /* AZ3dUtils_h */

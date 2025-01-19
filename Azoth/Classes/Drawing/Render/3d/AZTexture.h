@@ -4,8 +4,9 @@
 //
 //  Created by Simon Gornall on 1/14/25.
 //
-// Only support RGBA8888
+// Only support BGRA8888
 
+#import <Azoth/AZTypes.h>
 #import <Foundation/Foundation.h>
 #import <SDL3/SDL.h>
 #import <SDL3/SDL_gpu.h>
@@ -15,6 +16,9 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol AZRenderer;
 
 @interface AZTexture : NSObject
+	{
+	AZViewState _view;
+	}
 
 /*****************************************************************************\
 |* Initialisation
@@ -43,6 +47,12 @@ NS_ASSUME_NONNULL_BEGIN
 + (SDL_GPUTextureFormat) textureFormatFor:(SDL_PixelFormat)format;
 
 /*****************************************************************************\
+|* Return a pointer to the local texture's view-state. This is the renderer's
+|* view of the texture
+\*****************************************************************************/
+- (AZViewState *) view;
+
+/*****************************************************************************\
 |* Properties
 \*****************************************************************************/
 
@@ -66,6 +76,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 // The white point for this texture
 @property(assign, nonatomic) float								sdrWhitePoint;
+
+// The HDR headroom for this texture
+@property(assign, nonatomic) float								hdrHeadroom;
 
 // How to scale this texture
 @property(assign, nonatomic) SDL_ScaleMode						scaleMode;

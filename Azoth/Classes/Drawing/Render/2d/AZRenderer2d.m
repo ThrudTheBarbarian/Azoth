@@ -139,7 +139,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
 - (NSInteger) createTextureOfSize:(NSSize)size
 	{
 	SDL_Texture *texture = SDL_CreateTexture(_renderer,
-											 SDL_PIXELFORMAT_RGBA8888,
+											 SDL_PIXELFORMAT_BGRA8888,
 											 SDL_TEXTUREACCESS_TARGET,
 											 (int)size.width,
 											 (int)size.height);

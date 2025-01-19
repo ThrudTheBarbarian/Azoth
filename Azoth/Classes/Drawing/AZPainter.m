@@ -1837,7 +1837,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		return (-1);
 
 	// Create array of points
-	SDL_FPoint points[num+1];
+	NSPoint points[num+1];
 	int nn = num + 1;
 
 	for (int i=0; i<num; i++)
@@ -1849,7 +1849,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	points[num].y = pts[0].y;
 
 	// Draw
-	return [_renderer render:nn lines:points];
+	return [_renderer renderLines:points count:nn];
 	}
 
 - (int) polygonWith:(int)num x:(int *)vx y:(int *)vy
@@ -1866,7 +1866,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		return (-1);
 
 	// Create array of points
-	SDL_FPoint points[num+1];
+	NSPoint points[num+1];
 	int nn = num + 1;
 
 	for (int i=0; i<num; i++)
@@ -1878,7 +1878,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	points[num].y = vy[0];
 
 	// Draw
-	return [_renderer render:nn lines:points];
+	return [_renderer renderLines:points count:nn];
 	}
 
 /*****************************************************************************\
@@ -2910,7 +2910,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	if (!_usingAntiAliasing)
 		{
 		// Create array of points
-		SDL_FPoint points[num+1];
+		NSPoint points[num+1];
 		int nn = num + 1;
 
 		for (int i=0; i<num; i++)
@@ -2921,7 +2921,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		points[num].x = vx[0];
 		points[num].y = vy[0];
 
-		return [_renderer render:nn lines:points];
+		return [_renderer renderLines:points count:nn];
 		}
 
 	// Pointer setup

@@ -12,10 +12,14 @@ NSString *const AZRendererHdrEnabled		= @"AZ:RendererHdrEnabled";
 NSString *const AZRendererHdrHeadroom		= @"AZ:RendererHdrHeadroom";
 NSString *const AZRendererRenderer			= @"AZ:RendererRenderer";
 NSString *const AZRendererMaxTextureSize 	= @"AZ:MaxTextureSize";
+NSString *const AZRendererTextureColourspace = @"AZ:TextureColourspace";
+NSString *const AZRendererTextureHeadroom 	= @"AZ:TextureHeadroom";
+NSString *const AZRendererTextureWhitepoint = @"AZ:TextureWhitepoint";
 NSString *const AZRendererValid 			= @"AZ:RendererValid";
 NSString *const AZRendererVSync 			= @"AZ:RendererVsync";
 NSString *const AZRendererWhitePoint		= @"AZ:RendererWhitePoint";
 NSString *const AZRendererWindow 			= @"AZ:RendererWindow";
+
 
 
 

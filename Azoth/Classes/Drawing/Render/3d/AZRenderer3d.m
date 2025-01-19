@@ -30,20 +30,6 @@
 |* Typedefs, enums etc.
 \*****************************************************************************/
 
-typedef struct
-	{
-	int pixelW;						// Pixels wide
-	int pixelH;						// Pixels high
-	NSRect view;					// Where to render to
-	NSRect pixelView;				// Where to render to, in pixels
-	NSRect clip;					// The clipping rect within viewport
-	NSRect pixelClip;				// The clipping rect, in pixels
-	BOOL doClip;					// Whether clipping is enabled
-	NSPoint scale;					// Scaling factor
-	NSPoint logicalScale;			// Logical scaling factor (!)
-	NSPoint logicalOffset;			// Logical offset in x,y
-	NSPoint currentScale;			// Just logicalScale * scale
-	} AZViewState;
 
 
 typedef struct GPU_ShaderUniformData
@@ -83,9 +69,6 @@ typedef struct AZRenderData
         SDL_GPUSwapchainComposition composition;
         SDL_GPUPresentMode presentMode;
 		} swapchain;
-
-
-
     AZSampler *samplers[2][2];
 	} AZRenderData;
 
@@ -247,6 +230,9 @@ NSMutableDictionary<NSNumber *, AZTexture *> * 				textures;
 // The lock surrounding the command pool
 @property(strong, nonatomic) NSLock *						poolLock;
 
+// The lock surrounding the target texture
+@property(strong, nonatomic) NSLock *						targetLock;
+
 // The pool of render commands that we draw from
 @property(strong, nonatomic)
 NSMutableArray<AZRenderCommand *> *							commandPool;
@@ -343,13 +329,14 @@ static SDL_SpinLock 	_textureLock;
 		/*********************************************************************\
 		|* Default draw colour is white
 		\*********************************************************************/
-		_colour = AZColour.red;
+		_colour = AZColour.white;
 
 		/*********************************************************************\
 		|* Default render target is the screen, no logical presentation
 		\*********************************************************************/
 		_target 			= nil;
 		_logicalPresentMode	= SDL_LOGICAL_PRESENTATION_DISABLED;
+		_targetLock			= [NSLock new];
 
 		/*********************************************************************\
 		|* We use line-drawing by default for rendering lines
@@ -675,10 +662,17 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
-- (int)blitFrom:(NSInteger)texture src:(NSRect)srcRect dst:(NSRect)dstRect
+/*****************************************************************************\
+|* Perform a blit operation
+\*****************************************************************************/
+- (int)blitFrom:(NSInteger)textureId src:(NSRect)srcRect dst:(NSRect)dstRect
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return 0;
+	AZTexture *texture = _textures[@(textureId)];
+	if (texture)
+		return [self _renderTexture:texture src:srcRect dst:dstRect];
+
+	SDL_Log("Cannot find texture %d to blit from", (int)textureId);
+	return -1;
 	}
 
 
@@ -705,52 +699,7 @@ static SDL_SpinLock 	_textureLock;
 \*****************************************************************************/
 - (BOOL)clear
 	{
-	/*************************************************************************\
-	|* Fetch a command buffer
-	\*************************************************************************/
-	SDL_GPUCommandBuffer* cmds = SDL_AcquireGPUCommandBuffer(_gpu);
-
-	/*************************************************************************\
-	|* Either use the target texture, or the screen if no target currently set
-	\*************************************************************************/
-	SDL_GPUTexture *texture = nil;
-	if (_target)
-		texture = _target.texture;
-	else
-		{
-		if (!SDL_WaitAndAcquireGPUSwapchainTexture(cmds, 	// Command buffer
-												   _sdl,   	// window
-												   &texture,// storage
-												   NULL, 	// width, if need
-												   NULL))	// height, if need
-			{
-			SDL_Log("WaitAndAcquireGPUSwapchainTexture failed: %s", SDL_GetError());
-			return NO;
-			}
-		}
-
-	/*************************************************************************\
-	|* Make sure we have a texture and enqueue a command to clear it
-	\*************************************************************************/
-	if (texture)
-		{
-		SDL_GPUColorTargetInfo info = { 0 };
-		info.texture 		= texture;
-		info.clear_color 	= self.clearColour.sdlColour;
-		info.load_op 		= SDL_GPU_LOADOP_CLEAR;
-		info.store_op 		= SDL_GPU_STOREOP_STORE;
-
-		SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(cmds, &info, 1, NULL);
-		SDL_EndGPURenderPass(pass);
-		return YES;
-		}
-
-	NSString *msg = [NSString stringWithFormat:@"Cannot clear %@ %@",
-					(_target == nil) ? @"screen" : @"texture",
-					 (_target == nil) ? @"" : _target.index];
-
-	SDL_Log("%s", msg.UTF8String);
-	return NO;
+	return [self _queueCmdClear];
 	}
 
 
@@ -779,7 +728,7 @@ static SDL_SpinLock 	_textureLock;
 
 
 /*****************************************************************************\
-|* Create a texture of a given size. We assume RGBA8888 format for the
+|* Create a texture of a given size. We assume BGRA8888 format for the
 |* texture. This needs to:
 |*
 |*  - Allocate a texture-id for the new texture
@@ -801,7 +750,7 @@ static SDL_SpinLock 	_textureLock;
 								   | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE;
 
 	return [self createTextureOfSize:size
-							  format:SDL_PIXELFORMAT_RGBA32
+							  format:SDL_PIXELFORMAT_BGRA32
 						   withFlags:flags];
 	}
 
@@ -852,6 +801,8 @@ static SDL_SpinLock 	_textureLock;
 									  size:size
 									 format:format
 									 usage:flags];
+	[self _updatePixelViewport:tex.view];
+	[self _updatePixelClipRect:tex.view];
 
 	/*************************************************************************\
 	|* If we have a valid texture resource, then store it
@@ -904,7 +855,7 @@ static SDL_SpinLock 	_textureLock;
 
 
 /*****************************************************************************\
-|* Create a texture from an existing surface. We assume RGBA8888 format for the
+|* Create a texture from an existing surface. We assume BGRA8888 format for the
 |* surface. This needs to:
 |*
 |*  - Allocate a texture-id for the new texture
@@ -945,7 +896,7 @@ static SDL_SpinLock 	_textureLock;
 	uint32_t* cpuPtr = SDL_MapGPUTransferBuffer(_gpu, upload, NO);
 
 	/*************************************************************************\
-	|* Copy the data from the RGBA8888 surface to the texture
+	|* Copy the data from the BGRA8888 surface to the texture
 	\*************************************************************************/
 	memcpy(cpuPtr, surface->pixels, surface->w * surface->h * 4);
 
@@ -966,8 +917,11 @@ static SDL_SpinLock 	_textureLock;
 	AZTexture *tex = [AZTexture textureFor:self
 								 withIndex:tId
 									  size:size
-									format:SDL_PIXELFORMAT_RGBA32
+									format:SDL_PIXELFORMAT_BGRA32
 									 usage:flags];
+
+	[self _updatePixelViewport:tex.view];
+	[self _updatePixelClipRect:tex.view];
 
 	/*************************************************************************\
 	|* If we have a valid texture resource, then store it
@@ -1054,7 +1008,7 @@ static SDL_SpinLock 	_textureLock;
 	AZTexture *target = _textures[@(refId)];
 	if (target)
 		{
-		_target = target;
+		[self _setRenderTarget:target];
 		return YES;
 		}
 	return NO;
@@ -1107,14 +1061,6 @@ static SDL_SpinLock 	_textureLock;
 	if (texture)
 		[_textures removeObjectForKey:@(refId)];
 	}
-
-
-- (int)render:(int)num lines:(nonnull struct SDL_FPoint *)pts
-	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return 0;
-	}
-
 
 /*****************************************************************************\
 |* Render a filled rectangle
@@ -1172,45 +1118,94 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
+/*****************************************************************************\
+|* Draw a line
+\*****************************************************************************/
 - (int)renderLineFrom:(NSPoint)p1 to:(NSPoint)p2
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return 0;
+	NSPoint pts[2] = {p1, p2};
+	return [self _renderLines:pts count:2];
 	}
 
 
+/*****************************************************************************\
+|* Draw a line
+\*****************************************************************************/
 - (int)renderLineFromX:(int)x1 y:(int)y1 toX:(int)x2 y:(int)y2
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return 0;
+	return [self renderLineFrom:NSMakePoint(x1,y1) to:NSMakePoint(x2,y2)];
+	}
 
+/*****************************************************************************\
+|* Draw lines
+\*****************************************************************************/
+- (int)renderLines:(NSPoint *)pts count:(int)count
+	{
+	return [self _renderLines:pts count:count];
 	}
 
 
+/*****************************************************************************\
+|* Draw a point
+\*****************************************************************************/
 - (int)renderPointAt:(NSPoint)p
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return 0;
+	return [self _renderPoints:&p count:1];
 	}
 
 
+/*****************************************************************************\
+|* Draw point
+\*****************************************************************************/
+- (int)renderPoints:(NSPoint *)pts count:(int)count
+	{
+	return [self _renderPoints:pts count:count];
+	}
+
+
+/*****************************************************************************\
+|* Draw a point
+\*****************************************************************************/
 - (int)renderPointAtX:(int)x y:(int)y
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return 0;
+	NSPoint p = (NSPoint){x,y};
+	return [self _renderPoints:&p count:1];
 	}
 
-
+/*****************************************************************************\
+|* Draw a rectangle
+\*****************************************************************************/
 - (int)renderRect:(NSRect)r
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return 0;
+    NSPoint points[5];
+
+    // If 'rect' == NSZeroRect, then outline the whole surface
+	if (NSEqualRects(r, NSZeroRect))
+		r = [self viewportSize];
+
+    points[0].x = NSMinX(r);
+    points[0].y = NSMinY(r);
+    points[1].x = NSMaxX(r) - 1;
+    points[1].y = NSMinY(r);
+    points[2].x = NSMaxX(r) - 1;
+    points[2].y = NSMaxY(r) - 1;
+    points[3].x = NSMinX(r);
+    points[3].y = NSMaxY(r) - 1;
+    points[4].x = NSMinX(r);
+    points[4].y = NSMinY(r);
+	return [self renderLines:points count:5];
 	}
 
 
+/*****************************************************************************\
+|* Return the renderer scale
+\*****************************************************************************/
 - (void)renderScaleX:(nonnull float *)xs y:(nonnull float *)ys
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
+	if (xs)
+		*xs = _view->currentScale.x;
+	if (ys)
+		*ys = _view->currentScale.y;
 	}
 
 
@@ -1221,6 +1216,9 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
+/*****************************************************************************\
+|* Return the renderer name
+\*****************************************************************************/
 - (nonnull NSString *)rendererName
 	{
 	return [NSString stringWithFormat:@"%s", SDL_GetGPUDeviceDriver(_gpu)];
@@ -1280,6 +1278,9 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
+/*****************************************************************************\
+|* Set the draw colour using bytes
+\*****************************************************************************/
 - (int)setDrawColourToRed:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
 	{
 	_colour = [AZColour colourWithByteR:r g:g b:b a:a];
@@ -1294,10 +1295,23 @@ static SDL_SpinLock 	_textureLock;
 
 
 
+/*****************************************************************************\
+|* Set the blend mode on a texture
+\*****************************************************************************/
 - (int)setTexture:(NSInteger)refId blendMode:(SDL_BlendMode)blendMode
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return 0;
+    if (blendMode == SDL_BLENDMODE_INVALID)
+        return SDL_InvalidParamError("invalid blendMode");
+
+    if (![self _isSupportedBlendMode:blendMode])
+        return SDL_Unsupported();
+
+	AZTexture *texture = _textures[@(refId)];
+	if (texture == nil)
+		return SDL_InvalidParamError("unknown texture");
+
+    texture.blendMode = blendMode;
+    return YES;
 	}
 
 
@@ -1309,6 +1323,9 @@ static SDL_SpinLock 	_textureLock;
 
 
 // SDL_SetRenderViewport
+/*****************************************************************************\
+|* Set the viewport
+\*****************************************************************************/
 - (BOOL)setViewport:(NSRect)rect
 	{
 	if (!NSEqualRects(rect, NSZeroRect))
@@ -1325,6 +1342,9 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 // SDL_SetRenderClipRect
+/*****************************************************************************\
+|* Set the clipRect
+\*****************************************************************************/
 - (BOOL) setClipRect:(NSRect)rect
 	{
 	BOOL isZero = NSEqualRects(rect, NSZeroRect);
@@ -1343,6 +1363,9 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 // SDL_SetRenderScale
+/*****************************************************************************\
+|* Set the rendering scale x,y
+\*****************************************************************************/
 - (BOOL) setScaleX:(float)sx y:(float)sy
 	{
     bool result = true;
@@ -1365,46 +1388,6 @@ static SDL_SpinLock 	_textureLock;
     return result;
 	}
 
-/*****************************************************************************\
-|* Render any letterboxes around the logical view
-\*****************************************************************************/
-// SDL_RenderLogicalBorders
-- (void) _renderLogicalBorders
-	{
-    NSRect dst = _logicalDstRect;
-
-    if (dst.origin.x > 0.f || dst.origin.y > 0.f)
-		{
-        SDL_BlendMode savedBlend 	= _blendModeValue;
-		AZColour *savedColour 		= _colour.copy;
-
-		[self setBlendMode:SDL_BLENDMODE_NONE];
-		_colour = AZColour.black;
-
-        if (dst.origin.x > 0.f)
-			{
-			NSRect r = NSMakeRect(0.f, 0.f, NSMinX(dst), _view->pixelH);
-			[self renderFilledRect:r];
-
-            r.origin.x 		= NSMaxX(dst);
-            r.size.width	= _view->pixelW - r.origin.x;
-			[self renderFilledRect:r];
-			}
-
-        if (dst.origin.y > 0.f)
-			{
-			NSRect r = NSMakeRect(0.f, 0.f, _view->pixelW, dst.origin.y);
-			[self renderFilledRect:r];
-
-			r.origin.y 		= NSMaxY(dst);
-			r.size.height	= _view->pixelH - r.origin.y;
-			[self renderFilledRect:r];
-			}
-
-		[self setBlendMode:savedBlend];
-		_colour = savedColour;
-		}
-	}
 
 - (nullable struct SDL_Surface *)surfaceFor:(NSInteger)refId
 	{
@@ -1448,7 +1431,7 @@ static SDL_SpinLock 	_textureLock;
 \*****************************************************************************/
 - (void)unlockFocus
 	{
-	_target = nil;
+	[self _setRenderTarget:nil];
 	}
 
 
@@ -2343,6 +2326,113 @@ float AZsRGBfromLinear(float v)
 // MARK: Rendering
 
 /*****************************************************************************\
+|* Render a texture
+\*****************************************************************************/
+- (BOOL) _renderTexture:(AZTexture *)texture src:(NSRect)src dst:(NSRect)dst
+	{
+    const float sx = _view->currentScale.x;
+    const float sy = _view->currentScale.y;
+
+	float xy[8];
+	const int xyStride 		= 2 * sizeof(float);
+
+	float uv[8];
+	const int uvStride 		= 2 * sizeof(float);
+
+	const int numVertices 	= 4;
+    const int *indices 		= _rectIndexOrder;
+	const int numIndices 	= 6;
+	const int sizeIndices 	= 4;
+
+		float minu = src.origin.x / texture.size.width;
+		float minv = src.origin.y / texture.size.height;
+        float maxu = NSMaxX(src)  / texture.size.width;
+        float maxv = NSMaxY(src)  / texture.size.height;
+
+        float minx = NSMinX(dst);
+        float miny = NSMinY(dst);
+        float maxx = NSMaxX(dst);
+        float maxy = NSMaxY(dst);
+
+        uv[0] = minu;
+        uv[1] = minv;
+        uv[2] = maxu;
+        uv[3] = minv;
+        uv[4] = maxu;
+        uv[5] = maxv;
+        uv[6] = minu;
+        uv[7] = maxv;
+
+        xy[0] = minx;
+        xy[1] = miny;
+        xy[2] = maxx;
+        xy[3] = miny;
+        xy[4] = maxx;
+        xy[5] = maxy;
+        xy[6] = minx;
+        xy[7] = maxy;
+
+		SDL_FColor colour = texture.colour;
+		return [self _queueCmdGeometryWithTexture:texture
+											   xy:xy
+										 xyStride:xyStride
+										   colour:&colour
+										  colourStride:0
+											   uv:uv
+										 uvStride:uvStride
+									  numVertices:numVertices
+										  indices:indices
+									   numIndices:numIndices
+									  sizeIndices:sizeIndices
+										   scaleX:sx
+										   scaleY:sy
+									  addressMode:AZTextureAddressClamp];
+	}
+
+/*****************************************************************************\
+|* Set the render target to a texture (if specified) or to the window (if
+|* the texture is nil)
+\*****************************************************************************/
+- (BOOL) _setRenderTarget:(nullable AZTexture *)texture
+	{
+    if (texture)
+        if ((texture.flags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) == 0)
+            return SDL_SetError("Texture not created with "
+								"SDL_GPU_TEXTUREUSAGE_COLOR_TARGET");
+
+    if (texture == _target)
+		{
+        // Nothing to do!
+        return YES;
+		}
+
+	// time to send everything to the GPU!
+	[self _flushRenderCommands];
+
+	[_targetLock lock];
+
+    _target = texture;
+		if (texture)
+			_view = [texture view];
+		else
+			_view = &_mainView;
+
+		[self _updateColourScale];
+
+		_state.renderTarget = texture;
+	[_targetLock unlock];
+
+	if (![self _queueCmdSetViewport])
+		return NO;
+
+	if (![self _queueCmdSetClipRect])
+		return NO;
+
+    // All set!
+    return YES;
+	}
+
+/*****************************************************************************\
 |* Draw primitives
 \*****************************************************************************/
 - (void) _pushUniformsFor:(AZRenderCommand *)cmd
@@ -2754,6 +2844,496 @@ float AZsRGBfromLinear(float v)
 	return SDL_SetGPUAllowedFramesInFlight(_gpu, number);
 	}
 
+/*****************************************************************************\
+|* Render any letterboxes around the logical view
+\*****************************************************************************/
+// SDL_RenderLogicalBorders
+- (void) _renderLogicalBorders
+	{
+    NSRect dst = _logicalDstRect;
+
+    if (dst.origin.x > 0.f || dst.origin.y > 0.f)
+		{
+        SDL_BlendMode savedBlend 	= _blendModeValue;
+		AZColour *savedColour 		= _colour.copy;
+
+		[self setBlendMode:SDL_BLENDMODE_NONE];
+		_colour = AZColour.black;
+
+        if (dst.origin.x > 0.f)
+			{
+			NSRect r = NSMakeRect(0.f, 0.f, NSMinX(dst), _view->pixelH);
+			[self renderFilledRect:r];
+
+            r.origin.x 		= NSMaxX(dst);
+            r.size.width	= _view->pixelW - r.origin.x;
+			[self renderFilledRect:r];
+			}
+
+        if (dst.origin.y > 0.f)
+			{
+			NSRect r = NSMakeRect(0.f, 0.f, _view->pixelW, dst.origin.y);
+			[self renderFilledRect:r];
+
+			r.origin.y 		= NSMaxY(dst);
+			r.size.height	= _view->pixelH - r.origin.y;
+			[self renderFilledRect:r];
+			}
+
+		[self setBlendMode:savedBlend];
+		_colour = savedColour;
+		}
+	}
+
+// MARK: Line and point drawing
+
+
+/*****************************************************************************\
+|* Top level entry point for point drawing
+\*****************************************************************************/
+- (BOOL) _renderPoints:(NSPoint *)points count:(int)count
+	{
+    if (!points)
+        return SDL_InvalidParamError("SDL_RenderPoints(): nil points");
+
+    if (count < 1)
+        return YES;
+
+    if ((_view->currentScale.x != 1.0f) || (_view->currentScale.y != 1.0f))
+        return [self _renderRectsFromPoints:points count:count];
+
+    return [self _queueCmdDrawPoints:points count:count];
+	}
+
+
+#define ADD_TRIANGLE(i1, i2, i3)        \
+    *ptrIndices++ = curIndex + (i1);    \
+    *ptrIndices++ = curIndex + (i2);    \
+    *ptrIndices++ = curIndex + (i3);    \
+    numIndices += 3;
+
+/*****************************************************************************\
+|* Top level entry point for line drawing
+\*****************************************************************************/
+- (BOOL) _renderLines:(const NSPoint *)points count:(int)count
+	{
+    BOOL result = YES;
+
+	/*************************************************************************\
+	|* Quick sanity checks
+	\*************************************************************************/
+    if (!points)
+        return SDL_InvalidParamError("SDL_RenderLines(): nil points");
+
+    if (count < 2)
+        return YES;
+
+
+	/*************************************************************************\
+	|* Are we doing logical presentation ?
+	\*************************************************************************/
+	BOOL logical   = (_logicalPresentMode != SDL_LOGICAL_PRESENTATION_DISABLED);
+    BOOL islogical = (logical && (_view == &_mainView));
+	BOOL isGeom	   = (_lineMethod == AZRenderLineMethodGeometry);
+
+    if (islogical || isGeom)
+		{
+        BOOL isStack1, isStack2;
+        const float sx 	= _view->currentScale.x;
+        const float sy 	= _view->currentScale.y;
+        float *xy 		= AZSmallAlloc(float, 4 * 2 * count, &isStack1);
+
+        int countIndices 	= (4) * 3 * (count - 1) + (2) * 3 * (count);
+        int *indices 		= AZSmallAlloc(int, countIndices, &isStack2);
+
+        if (xy && indices)
+			{
+            float *ptrXY 			= xy;
+            int *ptrIndices 		= indices;
+            const int xyStride 		= 2 * sizeof(float);
+            int numVertices 		= 4 * count;
+            int numIndices 			= 0;
+            const int sizeIndices 	= 4;
+            int curIndex 			= -4;
+            const int isLooping 	= (points[0].x == points[count - 1].x) &&
+									   (points[0].y == points[count - 1].y);
+
+            NSPoint p; // previous point
+            p.x = p.y = 0.0f;
+
+            //       p            q
+			//
+            //       0----1------ 4----5
+            //       | \  |``\    | \  |
+            //       |  \ |   ` `\|  \ |
+            //       3----2-------7----6
+            //
+
+            for (int i = 0; i < count; ++i)
+				{
+				// current point
+                NSPoint q = points[i];
+
+                q.x *= sx;
+                q.y *= sy;
+
+                *ptrXY++ = q.x;
+                *ptrXY++ = q.y;
+                *ptrXY++ = q.x + sx;
+                *ptrXY++ = q.y;
+                *ptrXY++ = q.x + sx;
+                *ptrXY++ = q.y + sy;
+                *ptrXY++ = q.x;
+                *ptrXY++ = q.y + sy;
+
+                // closed polyline, don´t draw twice the point
+                if (i || isLooping == 0)
+					{
+                    ADD_TRIANGLE(4, 5, 6)
+                    ADD_TRIANGLE(4, 6, 7)
+					}
+
+                // first point only, no segment
+                if (i == 0)
+					{
+                    p = q;
+                    curIndex += 4;
+                    continue;
+					}
+
+                // draw segment
+                if (p.y == q.y)
+					{
+                    if (p.x < q.x)
+						{
+                        ADD_TRIANGLE(1, 4, 7)
+                        ADD_TRIANGLE(1, 7, 2)
+						}
+					else
+						{
+                        ADD_TRIANGLE(5, 0, 3)
+                        ADD_TRIANGLE(5, 3, 6)
+						}
+					}
+				else if (p.x == q.x)
+					{
+                    if (p.y < q.y)
+						{
+                        ADD_TRIANGLE(2, 5, 4)
+                        ADD_TRIANGLE(2, 4, 3)
+						}
+					else
+						{
+                        ADD_TRIANGLE(6, 1, 0)
+                        ADD_TRIANGLE(6, 0, 7)
+						}
+					}
+				else
+					{
+                    if (p.y < q.y)
+						{
+                        if (p.x < q.x)
+							{
+                            ADD_TRIANGLE(1, 5, 4)
+                            ADD_TRIANGLE(1, 4, 2)
+                            ADD_TRIANGLE(2, 4, 7)
+                            ADD_TRIANGLE(2, 7, 3)
+							}
+						else
+							{
+                            ADD_TRIANGLE(4, 0, 5)
+                            ADD_TRIANGLE(5, 0, 3)
+                            ADD_TRIANGLE(5, 3, 6)
+                            ADD_TRIANGLE(6, 3, 2)
+							}
+						}
+					else
+						{
+                        if (p.x < q.x)
+							{
+                            ADD_TRIANGLE(0, 4, 7)
+                            ADD_TRIANGLE(0, 7, 1)
+                            ADD_TRIANGLE(1, 7, 6)
+                            ADD_TRIANGLE(1, 6, 2)
+							}
+						else
+							{
+                            ADD_TRIANGLE(6, 5, 1)
+                            ADD_TRIANGLE(6, 1, 0)
+                            ADD_TRIANGLE(7, 6, 0)
+                            ADD_TRIANGLE(7, 0, 3)
+							}
+						}
+					}
+
+                p = q;
+                curIndex += 4;
+				}
+
+			SDL_FColor colour = _colour.sdlColour;
+			result = [self _queueCmdGeometryWithTexture:nil
+													 xy:xy
+											   xyStride:xyStride
+												 colour:&colour
+												  colourStride:0
+													 uv:NULL
+											   uvStride:0
+											numVertices:numVertices
+												indices:indices
+											 numIndices:numIndices
+											sizeIndices:sizeIndices
+												 scaleX:1.f
+												 scaleY:1.f
+											addressMode:AZTextureAddressClamp];
+
+			}
+
+		AZSmallFree(xy, isStack1);
+		AZSmallFree(indices, isStack2);
+		}
+	else if (_lineMethod == AZRenderLineMethodPoints)
+		result = [self _renderLinesAsRects:points count:count];
+    else if (_view->scale.x != 1.0f || _view->scale.y != 1.0f)
+		// we checked for logical scale elsewhere.
+		result = [self _renderLinesAsRects:points count:count];
+    else
+		result = [self _queueCmdDrawLines:points count:count];
+
+    return result;
+}
+
+/*****************************************************************************\
+|* Render a set of points using rects
+\*****************************************************************************/
+- (BOOL) _renderRectsFromPoints:(NSPoint *)points count:(int)count
+	{
+    if (count < 1)
+        return YES;
+
+
+    BOOL isStack;
+    NSRect *rects = AZSmallAlloc(NSRect, count, &isStack);
+    if (!rects)
+        return NO;
+
+    const float sx = _view->currentScale.x;
+    const float sy = _view->currentScale.y;
+    for (int i = 0; i < count; ++i)
+		{
+        rects[i].origin.x 		= points[i].x * sx;
+        rects[i].origin.y 		= points[i].y * sy;
+        rects[i].size.width 	= sx;
+        rects[i].size.height 	= sy;
+		}
+
+	BOOL result = [self _queueCmdFilledRects:rects count:count];
+
+    AZSmallFree(rects, isStack);
+
+    return result;
+	}
+
+/*****************************************************************************\
+|* Render a line using the Bresenham algorithm
+\*****************************************************************************/
+- (BOOL) _renderLineFromX:(int)x1
+						y:(int)y1
+					  toX:(int)x2
+						y:(int)y2
+				 drawLast:(BOOL)drawLast
+	{
+    BOOL result = YES;
+
+    const int MAX_PIXELS = SDL_max(_view->pixelW, _view->pixelH) * 4;
+
+    // the backend might clip this further to the clipping rect, but we
+    // just want a basic safety against generating millions of points for
+    // massive lines.
+    SDL_Rect viewport;
+    NSRect view = _view->pixelView;
+    viewport.x = 0;
+    viewport.y = 0;
+	viewport.w = view.size.width;
+	viewport.h = view.size.height;
+
+    if (!SDL_GetRectAndLineIntersection(&viewport, &x1, &y1, &x2, &y2))
+        return YES;
+
+    int numPixels;
+    int d, dinc1, dinc2;
+    int xinc1, xinc2;
+    int yinc1, yinc2;
+
+    int dx = SDL_abs(x2 - x1);
+    int dy = SDL_abs(y2 - y1);
+
+    if (dx >= dy)
+		{
+        numPixels = dx + 1;
+        d = (2 * dy) - dx;
+        dinc1 = dy * 2;
+        dinc2 = (dy - dx) * 2;
+        xinc1 = 1;
+        xinc2 = 1;
+        yinc1 = 0;
+        yinc2 = 1;
+		}
+	else
+		{
+        numPixels = dy + 1;
+        d = (2 * dx) - dy;
+        dinc1 = dx * 2;
+        dinc2 = (dx - dy) * 2;
+        xinc1 = 0;
+        xinc2 = 1;
+        yinc1 = 1;
+        yinc2 = 1;
+		}
+
+    if (x1 > x2)
+		{
+        xinc1 = -xinc1;
+        xinc2 = -xinc2;
+		}
+
+    if (y1 > y2)
+		{
+        yinc1 = -yinc1;
+        yinc2 = -yinc2;
+		}
+
+    int x = x1;
+    int y = y1;
+
+    if (!drawLast)
+        --numPixels;
+
+
+    if (numPixels > MAX_PIXELS)
+        return SDL_SetError("Line too long (tried to draw %d pixels, max %d)",
+							numPixels, MAX_PIXELS);
+
+
+    BOOL isStack;
+    NSPoint *points = AZSmallAlloc(NSPoint, numPixels, &isStack);
+    if (!points)
+        return NO;
+
+    for (int i = 0; i < numPixels; ++i)
+		{
+        points[i].x = (float)x;
+        points[i].y = (float)y;
+
+        if (d < 0)
+			{
+            d += dinc1;
+            x += xinc1;
+            y += yinc1;
+			}
+		else
+			{
+            d += dinc2;
+            x += xinc2;
+            y += yinc2;
+			}
+		}
+
+    if ((_view->currentScale.x != 1.0f) || (_view->currentScale.y != 1.0f))
+		result = [self _renderRectsFromPoints:points count:numPixels];
+    else
+		result = [self _queueCmdDrawPoints:points count:numPixels];
+
+    AZSmallFree(points, isStack);
+    return result;
+	}
+
+/*****************************************************************************\
+|* Render a line with rectangles
+\*****************************************************************************/
+- (BOOL) _renderLinesAsRects:(const NSPoint *)points count:(int)count
+	{
+    const float sx 		= _view->currentScale.x;
+    const float sy 		= _view->currentScale.y;
+    BOOL result 		= YES;
+    BOOL drewLine 		= NO;
+    BOOL drawLast 		= NO;
+    int nRects 			= 0;
+
+	BOOL isStack;
+	NSRect *rects = AZSmallAlloc(NSRect, count - 1, &isStack);
+    if (!rects)
+        return NO;
+
+
+    for (int i = 0; i < count - 1; ++i)
+		{
+		// Check for degenerate cases
+        BOOL sameX = (points[i].x == points[i + 1].x);
+        bool sameY = (points[i].y == points[i + 1].y);
+
+        if (i == (count - 2))
+			{
+			BOOL xMatch = (points[i + 1].x != points[0].x);
+			BOOL yMatch = (points[i + 1].y != points[0].y);
+            if (!drewLine || xMatch || yMatch)
+                drawLast = YES;
+			}
+		else
+			{
+            if (sameX && sameY)
+                continue;
+			}
+
+		// Vertical line
+        if (sameX)
+			{
+            const float minY = SDL_min(points[i].y, points[i + 1].y);
+            const float maxY = SDL_max(points[i].y, points[i + 1].y);
+
+            NSRect *rect = &rects[nRects++];
+            rect->origin.x 		= points[i].x * sx;
+            rect->origin.y 		= minY * sy;
+            rect->size.width 	= sx;
+			rect->size.height 	= (maxY - minY + drawLast) * sy;
+            if (!drawLast && (points[i + 1].y < points[i].y))
+                rect->origin.y += sy;
+			}
+
+		// Horizontal line
+        else if (sameY)
+			{
+            const float minX = SDL_min(points[i].x, points[i + 1].x);
+            const float maxX = SDL_max(points[i].x, points[i + 1].x);
+
+            NSRect *rect = &rects[nRects++];
+            rect->origin.x 		= minX * sx;
+            rect->origin.y 		= points[i].y * sy;
+            rect->size.width 	= (maxX - minX + drawLast) * sx;
+            rect->size.height	= sy;
+            if (!drawLast && points[i + 1].x < points[i].x)
+                rect->origin.x += sx;
+			}
+
+		// General line, use Bresenham
+        else
+			result &= [self _renderLineFromX:(int)SDL_roundf(points[i].x)
+										   y:(int)SDL_roundf(points[i].y)
+										 toX:(int)SDL_roundf(points[i + 1].x)
+										   y:(int)SDL_roundf(points[i + 1].y)
+									drawLast:drawLast];
+        drewLine = YES;
+		}
+
+    if (nRects)
+		result &= [self _queueCmdFilledRects:rects count:nRects];
+
+
+    AZSmallFree(rects, isStack);
+    return result;
+	}
+
+
+
 // MARK: Queueing of commands
 
 /*****************************************************************************\
@@ -2836,6 +3416,22 @@ float AZsRGBfromLinear(float v)
         }
     }
     return cmd;
+	}
+
+/*****************************************************************************\
+|* Enqueue a clear command
+\*****************************************************************************/
+- (BOOL) _queueCmdClear
+	{
+    AZRenderCommand *cmd = [self _allocateCommand];
+    if (!cmd)
+        return NO;
+
+	cmd.command 	= AZRenderCmdClear;
+    cmd.first 		= 0;
+	cmd.colourScale = _colourScale;
+	cmd.colour 		= _clearColour.sdlColour;
+    return true;
 	}
 
 /*****************************************************************************\
@@ -2927,6 +3523,76 @@ float AZsRGBfromLinear(float v)
 	}
 
 /*****************************************************************************\
+|* Draw points as a queue'd command
+\*****************************************************************************/
+- (BOOL) _queueCmdDrawPoints:(const NSPoint *)points count:(const int)count
+	{
+	AZRenderCommand *cmd = nil;
+
+    BOOL result = NO;
+	cmd 		= [self _prepQueueCommandDrawOfType:AZRenderCmdDrawPoints
+											texture:NULL];
+    if (cmd)
+		{
+		int sz		 	= 2 * sizeof(float);
+		NSInteger first	= 0;
+		float *verts 	= (float *) [self _allocateVerticesOfSize:count * sz
+													withAlignment:0
+														 atOffset:&first];
+		if (!verts)
+			cmd.command = AZRenderCmdNoOp;
+		else
+			{
+			cmd.count = count;
+			cmd.first = first;
+
+			for (int i = 0; i < count; i++)
+				{
+				*(verts++) = 0.5f + points[i].x;
+				*(verts++) = 0.5f + points[i].y;
+				}
+			result = YES;
+			}
+		}
+    return result;
+	}
+
+/*****************************************************************************\
+|* Draw lines as a queue'd command
+\*****************************************************************************/
+- (BOOL) _queueCmdDrawLines:(const NSPoint *)points count:(const int)count
+	{
+	AZRenderCommand *cmd = nil;
+
+    BOOL result = NO;
+	cmd 		= [self _prepQueueCommandDrawOfType:AZRenderCmdDrawLines
+											texture:NULL];
+    if (cmd)
+		{
+		int sz		 	= 2 * sizeof(float);
+		NSInteger first	= 0;
+		float *verts 	= (float *) [self _allocateVerticesOfSize:count * sz
+													withAlignment:0
+														 atOffset:&first];
+		if (!verts)
+			cmd.command = AZRenderCmdNoOp;
+		else
+			{
+			cmd.count = count;
+			cmd.first = first;
+
+			for (int i = 0; i < count; i++)
+				{
+				*(verts++) = 0.5f + points[i].x;
+				*(verts++) = 0.5f + points[i].y;
+				}
+			result = YES;
+			}
+		}
+    return result;
+	}
+
+/*****************************************************************************\
 |* Fill rectangles as a queue'd command
 \*****************************************************************************/
 - (BOOL) _queueCmdFilledRects:(NSRect *)rects count:(int)count
@@ -3008,6 +3674,53 @@ float AZsRGBfromLinear(float v)
     return result;
 	}
 
+/*****************************************************************************\
+|* Construct a command to queue geometry
+\*****************************************************************************/
+- (BOOL) _queueCmdGeometryWithTexture:(nullable AZTexture *)texture
+								   xy:(const float *)xy
+						     xyStride:(int)xyStride
+							   colour:(SDL_FColor*)colour
+					     colourStride:(int)colourStride
+								   uv:(nullable const float *)uv
+						     uvStride:(int)uvStride
+						  numVertices:(int)numVertices
+							  indices:(const void *)indices
+						   numIndices:(int)numIndices
+						  sizeIndices:(int)sizeIndices
+							   scaleX:(float)scaleX
+							   scaleY:(float)scaleY
+						  addressMode:(AZTextureAddressMode)addressMode
+	{
+	BOOL result = NO;
+	AZRenderCommand *cmd = [self _prepQueueCommandDrawOfType:AZRenderCmdGeometry
+													 texture:texture];
+    if (cmd)
+		{
+		cmd.addressMode = addressMode;
+			result = [self _queueGeometryWith:cmd
+									  texture:texture
+										   xy:xy
+									 xyStride:xyStride
+									   colour:colour
+								 colourStride:colourStride
+										   uv:uv
+									 uvStride:uvStride
+								  numVertices:numVertices
+									  indices:indices
+								   numIndices:numIndices
+								  sizeIndices:sizeIndices
+									   scaleX:scaleX
+									   scaleY:scaleY];
+        if (!result)
+            cmd.command = AZRenderCmdNoOp;
+		}
+    return result;
+	}
+
+/*****************************************************************************\
+|* Render geometry as a queue'd command
+\*****************************************************************************/
 - (BOOL) _queueGeometryWith:(AZRenderCommand *)cmd
 					texture:(nullable AZTexture *)texture
 						 xy:(const float *)xy
@@ -3127,12 +3840,5 @@ float AZsRGBfromLinear(float v)
 
     return ((Uint8 *)_vertexData) + aligned;
 	}
-
-
-
-
-
-
-
 
 @end

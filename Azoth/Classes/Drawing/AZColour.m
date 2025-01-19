@@ -823,7 +823,7 @@ static NSMutableDictionary * _usedColours = nil;
 	}
 
 /*****************************************************************************\
-|* return as a uint32_t RGBA, useful for textures
+|* return as a uint32_t BGRA, useful for textures
 \*****************************************************************************/
 - (uint32_t) value32
 	{

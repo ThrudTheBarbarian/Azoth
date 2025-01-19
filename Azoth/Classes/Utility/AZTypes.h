@@ -442,6 +442,21 @@ typedef struct
 	int z;			// Thread count in Z
 	} AZThreadSize;
 
+typedef struct
+	{
+	int pixelW;						// Pixels wide
+	int pixelH;						// Pixels high
+	NSRect view;					// Where to render to
+	NSRect pixelView;				// Where to render to, in pixels
+	NSRect clip;					// The clipping rect within viewport
+	NSRect pixelClip;				// The clipping rect, in pixels
+	BOOL doClip;					// Whether clipping is enabled
+	NSPoint scale;					// Scaling factor
+	NSPoint logicalScale;			// Logical scaling factor (!)
+	NSPoint logicalOffset;			// Logical offset in x,y
+	NSPoint currentScale;			// Just logicalScale * scale
+	} AZViewState;
+
 /*****************************************************************************\
 |* Vsync options
 \*****************************************************************************/
