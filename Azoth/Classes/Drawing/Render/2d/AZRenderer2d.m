@@ -33,6 +33,9 @@ NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
 // The 2D renderer that we represent
 @property(assign, nonatomic) SDL_Renderer *							renderer;
 
+// The clear colour
+@property(strong, nonatomic) AZColour *								clearColour;
+
 @end
 
 @implementation AZRenderer2d
@@ -111,7 +114,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
 |* Create an SDL_Texture from parameters
 \*****************************************************************************/
 - (NSInteger) createTextureOfSize:(NSSize)size
-							format:(int)format
+							format:(SDL_PixelFormat)format
 						 withFlags:(int)flags
 	{
 	SDL_Texture *texture = SDL_CreateTexture(_renderer,
@@ -395,7 +398,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
 /*****************************************************************************\
 |* Set the blend mode
 \*****************************************************************************/
-- (int ) setBlendMode:(uint32_t)blendMode
+- (BOOL) setBlendMode:(uint32_t)blendMode
 	{
 	return SDL_SetRenderDrawBlendMode(_renderer, blendMode);
 	}
@@ -534,10 +537,11 @@ NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
 /*****************************************************************************\
 |* Set the clip
 \*****************************************************************************/
-- (void) setClip:(NSRect)clipRect
+- (BOOL) setClip:(NSRect)clipRect
 	{
 	SDL_Rect clip = SDL_RECT(clipRect);
 	SDL_SetRenderClipRect(_renderer, &clip);
+	return YES;
 	}
 
 - (void) unsetClip
@@ -558,12 +562,12 @@ NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
 /*****************************************************************************\
 |* Set the drawing colour
 \*****************************************************************************/
-- (int) setDrawColour:(AZColour *)colour
+- (void) setDrawColour:(AZColour *)colour
 	{
-	return SDL_SetRenderDrawColor(_renderer, colour.R,
-											 colour.G,
-											 colour.B,
-											 colour.A);
+	SDL_SetRenderDrawColor(_renderer, colour.R,
+									  colour.G,
+									  colour.B,
+									  colour.A);
 	}
 
 /*****************************************************************************\
@@ -584,7 +588,15 @@ NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
 \*****************************************************************************/
 - (BOOL) clear
 	{
-	return SDL_RenderClear(_renderer);
+	uint8_t a,r,g,b;
+	SDL_GetRenderDrawColor(_renderer, &r, &g, &b, &a);
+	SDL_SetRenderDrawColor(_renderer, _clearColour.R,
+									  _clearColour.G,
+									  _clearColour.B,
+									  _clearColour.A);
+	BOOL ok = SDL_RenderClear(_renderer);
+	SDL_SetRenderDrawColor(_renderer, r, g,b , a);
+	return ok;
 	}
 
 
@@ -723,10 +735,68 @@ NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
 	}
 
 
+/*****************************************************************************\
+|* Return the window
+\*****************************************************************************/
 - (nonnull AZWindow *)window
 	{
 	return _window;
 	}
+
+/*****************************************************************************\
+|* Return an empty dictionary because this class uses the renderer for its
+|* properties
+\*****************************************************************************/
+- (nonnull NSDictionary *)properties
+	{
+	return NSDictionary.new;
+	}
+
+
+/*****************************************************************************\
+|* Render a bunch of lines
+\*****************************************************************************/
+- (int)renderLines:(nonnull NSPoint *)pts count:(int)count
+	{
+	BOOL isStack;
+	SDL_FPoint *points = AZSmallAlloc(SDL_FPoint, count, &isStack);
+	for (int i=0; i<count; i++)
+		{
+		points[i].x = pts[i].x;
+		points[i].y = pts[i].y;
+		}
+	SDL_RenderLines(_renderer, points, count);
+	AZSmallFree(points, isStack);
+	return YES;
+	}
+
+
+/*****************************************************************************\
+|* Render a bunch of points
+\*****************************************************************************/
+- (int)renderPoints:(nonnull NSPoint *)pts count:(int)count
+	{
+	BOOL isStack;
+	SDL_FPoint *points = AZSmallAlloc(SDL_FPoint, count, &isStack);
+	for (int i=0; i<count; i++)
+		{
+		points[i].x = pts[i].x;
+		points[i].y = pts[i].y;
+		}
+	SDL_RenderPoints(_renderer, points, count);
+	AZSmallFree(points, isStack);
+	return YES;
+	}
+
+
+/*****************************************************************************\
+|* Set the clear-colour
+\*****************************************************************************/
+- (void)setClearColour:(nonnull AZColour *)colour
+	{
+	_clearColour = colour.copy;
+	}
+
 
 
 

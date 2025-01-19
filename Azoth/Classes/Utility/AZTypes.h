@@ -573,4 +573,21 @@ extern void _AZUnimplementedMethod(SEL selector,
 #  warning "Unknown platform!"
 #endif
 
+
+/*****************************************************************************\
+|* Complicated logging
+\*****************************************************************************/
+#ifdef AZ_COMPLEX_LOG
+#  define AZ_LOG_DECLARE(var,title) 											\
+     NSMutableString *var = [NSMutableString stringWithString:title];
+#  define AZ_LOG_APPEND(var, fmt, ...)											\
+	[var appendFormat:fmt __VA_OPT__(,) __VA_ARGS__]
+#  define AZ_LOG_SHOW(var)														\
+    NSLog(@"%@", var);
+#else
+#  define AZ_LOG_DECLARE(var,title)
+#  define AZ_LOG_APPEND(var, fmt, ...)
+#  define AZ_LOG_SHOW(var)
+#endif
+
 #endif // ! __AZTypes_header__

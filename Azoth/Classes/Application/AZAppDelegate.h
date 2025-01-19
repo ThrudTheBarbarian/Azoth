@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <SDL3/SDL.h>
 
 @class AZView;
 @class AZWindow;
@@ -28,6 +29,9 @@ NS_ASSUME_NONNULL_BEGIN
 // Called halfway through setup, before fonts are created, so the
 // delegate can change them etc.
 - (void) applicationWillLaunch:(NSNotification *)notification;
+
+// Called to replace the standard next-frame if it exists
+- (SDL_AppResult) delegateFrame:(void *)appState;
 
 @required
 /*****************************************************************************\

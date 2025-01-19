@@ -75,6 +75,23 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 	}
 
 /*****************************************************************************\
+|* Initialisation: Create an image by referencing a texture
+\*****************************************************************************/
++ (AZImage *) imageWithTexture:(NSInteger)textureId
+	{
+	id<AZRenderer>azr	= AZRenderer.renderer;
+	NSRect r			= [azr boundsOfTexture:textureId];
+	if (!NSEqualRects(r, NSZeroRect))
+		{
+		AZImage *image 	= AZImage.new;
+		image.srcRect 	= r;
+		image.texture = textureId;
+		return image;
+		}
+	return nil;
+	}
+
+/*****************************************************************************\
 |* Initialisation: Load an image from the current bundle's Resources/ directory
 \*****************************************************************************/
 + (AZImage *) imageNamed:(NSString *)name
@@ -169,6 +186,14 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 	{
 	return (int) _srcRect.size.height;
 	}
+
+/*****************************************************************************\
+|* Return the image size and position within its parent texture
+\*****************************************************************************/
+- (NSRect) bounds
+	{
+	return _srcRect;
+	}
 	
 /*****************************************************************************\
 |* Lock focus on the image, which internally creates the AZPainter that will
@@ -239,6 +264,9 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 		}
 	else
 		SDL_Log("Couldn't get a surface for the save operation to %s", path);
+
+	if (!ok)
+		SDL_Log("Received error %s", SDL_GetError());
 	return ok;
 	}
 

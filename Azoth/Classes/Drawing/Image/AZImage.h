@@ -74,6 +74,11 @@ typedef BOOL (^AZImageDrawingHandler)(NSRect dstRect, AZPainter *painter) ;
 			clearBeforeDraw:(BOOL)clear;
 
 /*****************************************************************************\
+|* Initialisation: Create an image by referencing a texture
+\*****************************************************************************/
++ (AZImage *) imageWithTexture:(NSInteger)textureId;
+
+/*****************************************************************************\
 |* Force a draw of an on-demand image;
 \*****************************************************************************/
 - (BOOL) draw;
@@ -103,6 +108,11 @@ typedef BOOL (^AZImageDrawingHandler)(NSRect dstRect, AZPainter *painter) ;
 	   inFormat:(AZImageFormat)format
 	withQuality:(int)quality;
 
+
+/*****************************************************************************\
+|* Return the image size and position within its parent texture
+\*****************************************************************************/
+- (NSRect) bounds;
 
 /*****************************************************************************\
 |* Properties

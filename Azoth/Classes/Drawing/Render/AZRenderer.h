@@ -149,7 +149,7 @@ NS_ASSUME_NONNULL_BEGIN
 |* Get/Set/Unset the clip
 \*****************************************************************************/
 - (NSRect) clipRect;
-- (void) setClip:(NSRect)clipRect;
+- (BOOL) setClip:(NSRect)clipRect;
 - (void) unsetClip;
 - (BOOL) clipEnabled;
 
@@ -186,9 +186,14 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Get/Set the drawing colour
 \*****************************************************************************/
-- (int) setDrawColour:(AZColour *)colour;
+- (void) setDrawColour:(AZColour *)colour;
 - (int) setDrawColourToRed:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
 - (void) drawColourR:(uint8_t*)r g:(uint8_t*)g b:(uint8_t*)b a:(uint8_t*)a;
+
+/*****************************************************************************\
+|* Get/Set the clearing colour
+\*****************************************************************************/
+- (void) setClearColour:(AZColour *)colour;
 
 /*****************************************************************************\
 |* Present the rendering

@@ -43,7 +43,7 @@
 	return self;
 	}
 
-+ (AZTextPainter *) painterWithRenderer:(AZRenderer *)renderer
++ (AZTextPainter *) painterWithRenderer:(id<AZRenderer>)renderer
 	{
 	return [[AZTextPainter alloc] initWithRenderer:renderer];
 	}

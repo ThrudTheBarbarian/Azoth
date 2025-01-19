@@ -7,6 +7,8 @@
 
 #import <SDL3/SDL.h>
 
+//#define AZ_COMPLEX_LOG
+
 #import "AZ3dUtils.h"
 #import "AZColour.h"
 #import "AZColourTarget.h"
@@ -141,6 +143,15 @@ typedef struct AZRenderData
                          SDL_BLENDFACTOR_ZERO, 								\
                          SDL_BLENDFACTOR_ONE, 								\
                          SDL_BLENDOPERATION_ADD)
+
+//static AZThreadSize AZMakeThreadSize(int x, int y, int z)
+//	{
+//	AZThreadSize azts;
+//	azts.x = x;
+//	azts.y = y;
+//	azts.z = z;
+//	return azts;
+//	};
 
 
 /*****************************************************************************\
@@ -506,7 +517,7 @@ static SDL_SpinLock 	_textureLock;
 								  mode);
 
 	/*************************************************************************\
-    |* Create the compute pipeline
+    |* Create the compute pipeline (AZMakeThreadSize commented out at top)
     \*************************************************************************/
 //	_computePipe = [AZComputePipeline pipelineNamed:@"sprite.comp"
 //								   storageBuffersRO:1
@@ -690,7 +701,9 @@ static SDL_SpinLock 	_textureLock;
 
 - (NSRect)boundsOfTexture:(NSInteger)refId
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
+	AZTexture *texture = _textures[@(refId)];
+	if (texture)
+		return NSMakeRect(0,0,texture.size.width, texture.size.height);
 	return NSZeroRect;
 	}
 
@@ -702,28 +715,48 @@ static SDL_SpinLock 	_textureLock;
 	return [self _queueCmdClear];
 	}
 
+/*****************************************************************************\
+|* Set the clearing colour
+\*****************************************************************************/
+- (void) setClearColour:(AZColour *)colour
+	{
+	_clearColour = colour.copy;
+	}
 
+
+/*****************************************************************************\
+|* Determine if the clip is enabled
+\*****************************************************************************/
 - (BOOL)clipEnabled
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
+	if (_view)
+		return _view->doClip;
 	return NO;
 	}
 
 
+/*****************************************************************************\
+|* Return the actual clip-rect if enabled
+\*****************************************************************************/
 - (NSRect)clipRect
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
+	if (_view && _view->doClip)
+		return _view->clip;
 	return NSZeroRect;
 	}
 
 
+/*****************************************************************************\
+|* Convert render co-ords to window ones. This is a NOP in the 3d renderer
+\*****************************************************************************/
 - (BOOL)convertRx:(float)rx
 			   ry:(float)ry
 			   to:(nonnull float *)wx
 			   wy:(nonnull float *)wy
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return NO;
+	*wx = rx;
+	*wy=  ry;
+	return YES;
 	}
 
 
@@ -984,18 +1017,30 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
+/*****************************************************************************\
+|* Return the current draw colour value as uint8_t's
+\*****************************************************************************/
 - (void)drawColourR:(nonnull uint8_t *)r
 				  g:(nonnull uint8_t *)g
 				  b:(nonnull uint8_t *)b
 				  a:(nonnull uint8_t *)a
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
+	*r = _colour.R;
+	*g = _colour.G;
+	*b = _colour.B;
+	*a = _colour.A;
 	}
 
 
+/*****************************************************************************\
+|* Return the height of a given texture. Returns 0 if the texture cannot be
+|* found
+\*****************************************************************************/
 - (float)heightOfTexture:(NSInteger)refId
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
+	AZTexture *texture = _textures[@(refId)];
+	if (texture)
+		return (int)texture.size.height;
 	return 0;
 	}
 
@@ -1038,17 +1083,23 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
+/*****************************************************************************\
+|* Return the current presentation mode
+\*****************************************************************************/
 - (int)presentationMode
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return 0;
+	return _logicalPresentMode;
 	}
 
 
+/*****************************************************************************\
+|* Return the current presentation size
+\*****************************************************************************/
 - (NSSize)presentationSize
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return NSZeroSize;
+	if (_logicalPresentMode == SDL_LOGICAL_PRESENTATION_DISABLED)
+		return _view->view.size;
+	return _logicalSize;
 	}
 
 
@@ -1237,10 +1288,36 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
-- (NSRect)safeAreaForRendering
+/*****************************************************************************\
+|* Return the safe area for rendering into
+\*****************************************************************************/
+- (NSRect) safeAreaForRendering
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return NSZeroRect;
+    if (_target || !_window)
+        // The entire viewport is safe for rendering
+        return [self _getRenderViewport];
+
+	// Get the window safe rect
+	SDL_Rect safeSDL;
+	if (!SDL_GetWindowSafeArea(_window.window, &safeSDL))
+		return NSZeroRect;
+
+
+	// Convert the coordinates into the render space
+	NSRect safe = NS_RECT(safeSDL);
+	NSPoint min = safe.origin;
+	NSPoint max = NSMakePoint(NSMaxX(safe), NSMaxY(safe));
+	min = [self _renderCoordinatesFromWindow:min];
+	max = [self _renderCoordinatesFromWindow:max];
+
+	NSRect r = NSMakeRect(SDL_ceilf(min.x),
+						  SDL_ceilf(min.y),
+						  SDL_ceilf(max.x - min.x),
+						  SDL_ceilf(max.y - min.y));
+
+	// Clip with the viewport
+	NSRect viewport = [self _getRenderViewport];
+	return NSIntersectionRect(r, viewport);
 	}
 
 
@@ -1260,21 +1337,12 @@ static SDL_SpinLock 	_textureLock;
 	return YES;
 	}
 
-
-- (void) setClip:(NSRect)clipRect
-	{
-	// FIXME: no need for the indirection
-	[self setClipRect:clipRect];
-	}
-
-
 /*****************************************************************************\
 |* Set the draw colour
 \*****************************************************************************/
-- (int)setDrawColour:(nonnull AZColour *)colour
+- (void) setDrawColour:(nonnull AZColour *)colour
 	{
 	_colour = colour;
-	return YES;
 	}
 
 
@@ -1341,11 +1409,35 @@ static SDL_SpinLock 	_textureLock;
     return [self _queueCmdSetViewport];
 	}
 
+// SDL_GetRenderViewport
+/*****************************************************************************\
+|* Get the viewport
+\*****************************************************************************/
+- (NSRect) _getRenderViewport
+	{
+    NSRect rect;
+
+	const AZViewState *view = _view;
+	rect.origin.x = view->view.origin.x;
+	rect.origin.y = view->view.origin.y;
+	if (view->view.size.width >= 0)
+		rect.size.width = view->view.size.width;
+	else
+		rect.size.width = SDL_ceilf(view->pixelW / view->currentScale.x);
+
+	if (view->view.size.height >= 0)
+		rect.size.height = view->view.size.height;
+	else
+		rect.size.height = SDL_ceilf(view->pixelH / view->currentScale.y);
+
+    return rect;
+	}
+
 // SDL_SetRenderClipRect
 /*****************************************************************************\
 |* Set the clipRect
 \*****************************************************************************/
-- (BOOL) setClipRect:(NSRect)rect
+- (BOOL) setClip:(NSRect)rect
 	{
 	BOOL isZero = NSEqualRects(rect, NSZeroRect);
     if ((!isZero) && (NSWidth(rect) >= 0) && (NSHeight(rect) >= 0))
@@ -1391,8 +1483,94 @@ static SDL_SpinLock 	_textureLock;
 
 - (nullable struct SDL_Surface *)surfaceFor:(NSInteger)refId
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return NULL;
+		return [self surfaceFor:refId inRect:NSZeroRect];
+	}
+
+- (nullable struct SDL_Surface *)surfaceFor:(NSInteger)refId inRect:(NSRect)rect
+	{
+	SDL_GPUFence *fence;
+
+	AZTexture *texture = _textures[@(refId)];
+	if (texture == nil)
+		return NULL;
+
+	if (NSEqualRects(rect, NSZeroRect))
+		rect.size = texture.size;
+
+	SDL_PixelFormat pixFmt 	= [AZTexture pixelFormatFor:texture.format];
+    Uint32 bpp 				= SDL_BYTESPERPIXEL(pixFmt);
+	int W 					= NSWidth(rect);
+	int H 					= NSHeight(rect);
+
+    size_t rowSize, imgSize;
+	BOOL wBig = SDL_size_mul_check_overflow(W, bpp, &rowSize);
+	BOOL hBig = SDL_size_mul_check_overflow(H, rowSize, &imgSize);
+    if ((!wBig) || (!hBig))
+		{
+        SDL_SetError("read size overflow");
+        return NULL;
+		}
+
+    SDL_Surface *surface = SDL_CreateSurface(W, H, pixFmt);
+    if (!surface)
+        return NULL;
+
+    SDL_GPUTransferBufferCreateInfo tbci;
+    SDL_zero(tbci);
+    tbci.size = (Uint32)imgSize;
+    tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD;
+
+    SDL_GPUTransferBuffer *tbuf = SDL_CreateGPUTransferBuffer(_gpu, &tbci);
+    if (!tbuf)
+        return NULL;
+
+
+    SDL_GPUCopyPass *pass = SDL_BeginGPUCopyPass(_state.commandBuffer);
+
+    SDL_GPUTextureRegion src;
+    SDL_zero(src);
+	src.texture = texture.texture;
+    src.x = NSMinX(rect);
+    src.y = NSMinY(rect);
+    src.w = W;
+    src.h = H;
+    src.d = 1;
+
+    SDL_GPUTextureTransferInfo dst;
+    SDL_zero(dst);
+    dst.transfer_buffer = tbuf;
+    dst.rows_per_layer =H;
+    dst.pixels_per_row = W;
+
+    SDL_DownloadFromGPUTexture(pass, &src, &dst);
+    SDL_EndGPUCopyPass(pass);
+
+    fence = SDL_SubmitGPUCommandBufferAndAcquireFence(_state.commandBuffer);
+    SDL_WaitForGPUFences(_gpu, YES, &fence, 1);
+    SDL_ReleaseGPUFence(_gpu, fence);
+    _state.commandBuffer = SDL_AcquireGPUCommandBuffer(_gpu);
+
+    void *mapped = SDL_MapGPUTransferBuffer(_gpu, tbuf, NO);
+
+    if ((size_t)surface->pitch == rowSize)
+        SDL_memcpy(surface->pixels, mapped, imgSize);
+    else
+		{
+        Uint8 *input = mapped;
+        Uint8 *output = surface->pixels;
+
+        for (int row = 0; row < H; ++row)
+			{
+            SDL_memcpy(output, input, rowSize);
+            output += surface->pitch;
+            input += rowSize;
+			}
+		}
+
+    SDL_UnmapGPUTransferBuffer(_gpu, tbuf);
+    SDL_ReleaseGPUTransferBuffer(_gpu, tbuf);
+
+    return surface;
 	}
 
 
@@ -1605,6 +1783,33 @@ static SDL_SpinLock 	_textureLock;
 
 
 // MARK: Private methods
+
+/*****************************************************************************\
+|* Convert from window co-ords to render ones
+\*****************************************************************************/
+- (NSPoint) _renderCoordinatesFromWindow:(NSPoint)w
+	{
+	NSPoint r;
+
+    // Convert from window coordinates to pixels within the window
+    r.x = w.x * _dpiScale.x;
+    r.y = w.y * _dpiScale.y;
+
+    // Convert from pixels within the window to pixels within the view
+	if (_logicalPresentMode != SDL_LOGICAL_PRESENTATION_DISABLED)
+		{
+		const NSRect src = _logicalSrcRect;
+		const NSRect dst = _logicalDstRect;
+		r.x = ((r.x - NSMinX(dst)) * NSWidth(src)) / NSWidth(dst);
+		r.y = ((r.y - NSMinY(dst)) * NSHeight(src)) / NSHeight(dst);
+		}
+
+	const AZViewState *view = &_mainView;
+	r.x = (r.x / view->scale.x) - view->view.origin.x;
+	r.y = (r.y / view->scale.y) - view->view.origin.y;
+
+	return r;
+	}
 
 /*****************************************************************************\
 |* Set the viewpoint and scissor (clip)
@@ -1933,7 +2138,7 @@ static SDL_SpinLock 	_textureLock;
 - (AZRenderLineMethod) _renderLineMethod
 	{
     const char *hint = SDL_GetHint(SDL_HINT_RENDER_LINE_METHOD);
-    int method 		 = (hint) ? SDL_atoi(hint) : 0;
+    int method 		 = (hint) ? SDL_atoi(hint) : AZRenderLineMethodLines;
 
     switch (method)
 		{
@@ -2243,7 +2448,7 @@ static SDL_SpinLock 	_textureLock;
 
 		[self setViewport:NSZeroRect];
         if (doClip)
-			[self setClipRect:NSZeroRect];
+			[self setClip:NSZeroRect];
 		[self setScaleX:1.f y:1.f];
 
         // draw the borders.
@@ -2255,7 +2460,7 @@ static SDL_SpinLock 	_textureLock;
 		[self setViewport:origViewport];
 
         if (doClip)
- 			[self setClipRect:origClip];
+ 			[self setClip:origClip];
 
 		[self setScaleX:sx y:sy];
 
@@ -2333,6 +2538,8 @@ float AZsRGBfromLinear(float v)
 	NSRect full = NSMakeRect(0,0,texture.size.width, texture.size.height);
 	src			= NSIntersectionRect(src, full);
 
+	if (NSEqualRects(src, NSZeroRect))
+		src = full;
 	if (NSEqualRects(dst, NSZeroRect))
 		dst = full;
 		
@@ -2416,8 +2623,8 @@ float AZsRGBfromLinear(float v)
 	[self _flushRenderCommands];
 
 	[_targetLock lock];
-
-    _target = texture;
+		{
+		_target = texture;
 		if (texture)
 			_view = [texture view];
 		else
@@ -2426,6 +2633,7 @@ float AZsRGBfromLinear(float v)
 		[self _updateColourScale];
 
 		_state.renderTarget = texture;
+		}
 	[_targetLock unlock];
 
 	if (![self _queueCmdSetViewport])
@@ -3361,6 +3569,7 @@ float AZsRGBfromLinear(float v)
 	if (cmd)
 		[_commandQ addObject:cmd];
 
+	[cmd zero];
 	[_poolLock unlock];
 	return cmd;
 	}
@@ -3761,6 +3970,7 @@ float AZsRGBfromLinear(float v)
     cmd.count 	= count;
     sizeIndices = indices ? sizeIndices : 0;
 
+	AZ_LOG_DECLARE(info, @"Blit vertices:\n");
     for (int i = 0; i < count; i++)
 		{
         int j;
@@ -3786,6 +3996,9 @@ float AZsRGBfromLinear(float v)
 
         *(verts++) 	= xyPtr[0] * scaleX;
         *(verts++) 	= xyPtr[1] * scaleY;
+        AZ_LOG_APPEND(info, @"(x=%.2f, y=%.2f)",
+					xyPtr[0] * scaleX,
+					xyPtr[1] * scaleY);
 
         colourVal 	= *(SDL_FColor *)((char *)colour + j * colourStride);
         if (convertColour)
@@ -3795,14 +4008,26 @@ float AZsRGBfromLinear(float v)
         *(verts++) = colourVal.g * colourScale;
         *(verts++) = colourVal.b * colourScale;
         *(verts++) = colourVal.a;
+		AZ_LOG_APPEND(info, @" (rgba=%.2f,%.2f,%.2f,%.2f)",
+			colourVal.r * colourScale,
+			colourVal.g * colourScale,
+			colourVal.b * colourScale,
+			colourVal.a);
 
         if (texture)
 			{
             float *uvPtr = (float *)((char *)uv + j * uvStride);
 			*(verts++) = uvPtr[0] * texture.size.width;
             *(verts++) = uvPtr[1] * texture.size.height;
+
+			AZ_LOG_APPEND(info, @" (u=%.2f, v=%.2f)",
+				uvPtr[0] * texture.size.width,
+				uvPtr[1] * texture.size.height);
 			}
+		AZ_LOG_APPEND(info, @"\n");
 		}
+	AZ_LOG_SHOW(info);
+
 	return YES;
 	}
 

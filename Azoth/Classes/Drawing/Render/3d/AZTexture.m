@@ -49,7 +49,7 @@
 		_view.logicalScale.x	= 1.f;
 		_view.logicalScale.y	= 1.f;
 		_view.currentScale.x	= 1.f;
-		_view.currentScale.x	= 1.f;
+		_view.currentScale.y	= 1.f;
 
 		_colour.r				= 1.f;
 		_colour.g				= 1.f;

@@ -13,16 +13,6 @@
 #import <SDL3/SDL.h>
 
 @class AZShader;
-
-
-static AZThreadSize AZMakeThreadSize(int x, int y, int z)
-	{
-	AZThreadSize azts;
-	azts.x = x;
-	azts.y = y;
-	azts.z = z;
-	return azts;
-	};
 	
 /*****************************************************************************\
 |* Shader utilities
