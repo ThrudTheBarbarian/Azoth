@@ -100,7 +100,7 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 	/*************************************************************************\
     |* Create the text renderer for any textboxes
     \*************************************************************************/
-	self.textEngine = TTF_CreateRendererTextEngine(azr.renderer);
+	self.textEngine = azr.textEngine;
 
 	/*************************************************************************\
 	|* Get the texture atlases for the UI etc. and put them into a GPU texture

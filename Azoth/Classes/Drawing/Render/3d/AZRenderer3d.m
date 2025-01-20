@@ -6,6 +6,7 @@
 //
 
 #import <SDL3/SDL.h>
+#import <SDL3_ttf/SDL_ttf.h>
 
 //#define AZ_COMPLEX_LOG
 
@@ -423,6 +424,14 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 /*****************************************************************************\
+|* The type of the renderer
+\*****************************************************************************/
+- (AZRendererType) rendererType
+	{
+	return AZRendererType3d;
+	}
+
+/*****************************************************************************\
 |* Create a window with a given size, title, flags that is compatible with
 |* this type of renderer
 \*****************************************************************************/
@@ -671,17 +680,160 @@ static SDL_SpinLock 	_textureLock;
 	return _gpu;
 	}
 
+/*****************************************************************************\
+|* Do a 9-way tiled blit to stretch a texture without stretching the borders
+\*****************************************************************************/
 - (int)blit9WayFrom:(NSInteger)textureId
-				src:(NSRect)srcRect
+				src:(NSRect)src
 			  scale:(float)scale
 			   left:(float)left
 			  right:(float)right
 			    top:(float)top
 			 bottom:(float)bottom
-				dst:(NSRect)dstRect
+				dst:(NSRect)dst
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return 0;
+	AZTexture *texture = _textures[@(textureId)];
+	if (texture == nil)
+		return NO;
+
+	/*************************************************************************\
+	|* Figure out what to do if NSZeroRect is passed for src/dst
+	\*************************************************************************/
+    if (NSEqualRects(src, NSZeroRect))
+		src = NSMakeRect(0, 0, texture.size.width, texture.size.height);
+
+	if (NSEqualRects(dst, NSZeroRect))
+		dst = [self viewportSize];
+
+	/*************************************************************************\
+	|* Work out the destination offsets
+	\*************************************************************************/
+    float dstLeft, dstRight, dstTop, dstBottom;
+    if (scale <= 0.f || scale == 1.f)
+		{
+        dstLeft 	= SDL_ceilf(left);
+        dstRight 	= SDL_ceilf(right);
+        dstTop 		= SDL_ceilf(top);
+        dstBottom 	= SDL_ceilf(bottom);
+		}
+	else
+		{
+        dstLeft 	= SDL_ceilf(left * scale);
+        dstRight 	= SDL_ceilf(right * scale);
+        dstTop 		= SDL_ceilf(top * scale);
+        dstBottom 	= SDL_ceilf(bottom * scale);
+		}
+
+	/*************************************************************************\
+	|* Shortcuts to prevent multiple calls
+	\*************************************************************************/
+	float srcX 	= NSMinX(src);
+	float srcY 	= NSMinY(src);
+	float srcW	= NSWidth(src);
+	float srcH  = NSHeight(src);
+
+	float dstX 	= NSMinX(dst);
+	float dstY 	= NSMinY(dst);
+	float dstW	= NSWidth(dst);
+	float dstH  = NSHeight(dst);
+
+	/*************************************************************************\
+	|* Do the center
+	\*************************************************************************/
+	NSRect currSrc = NSMakeRect(srcX + left,
+								srcY + top,
+								srcW - left -right,
+								srcH - top - bottom);
+	NSRect currDst = NSMakeRect(dstX + dstLeft,
+								dstY + dstTop,
+								dstW - dstLeft - dstRight,
+								dstH - dstTop - dstBottom);
+	if (![self _renderTexture:texture src:currSrc dst:currDst])
+		return NO;
+
+	/*************************************************************************\
+	|* Top left corner
+	\*************************************************************************/
+	currSrc = NSMakeRect(srcX, srcY, left, top);
+	currDst = NSMakeRect(dstX, dstY, dstLeft, dstTop);
+	if (![self _renderTexture:texture src:currSrc dst:currDst])
+		return NO;
+
+ 	/*************************************************************************\
+	|* Top right corner
+	\*************************************************************************/
+	currSrc.origin.x = srcX + srcW - right;
+	currSrc.size.width = right;
+	currDst.origin.x = dstX +dstW - dstRight;
+	currDst.size.width = dstRight;
+	if (![self _renderTexture:texture src:currSrc dst:currDst])
+		return NO;
+
+ 	/*************************************************************************\
+	|* Bottom right corner
+	\*************************************************************************/
+	currSrc.origin.y = srcY + srcH - bottom;
+	currDst.origin.y = dstY + dstH - dstBottom;
+	currDst.size.height = dstBottom;
+	if (![self _renderTexture:texture src:currSrc dst:currDst])
+		return NO;
+
+ 	/*************************************************************************\
+	|* Bottom left corner
+	\*************************************************************************/
+	currSrc.origin.x = srcX;
+	currSrc.size.width = left;
+	currDst.origin.x = dstX;
+	currDst.size.width = dstLeft;
+	if (![self _renderTexture:texture src:currSrc dst:currDst])
+		return NO;
+
+ 	/*************************************************************************\
+	|* Left side
+	\*************************************************************************/
+	currSrc.origin.y = srcY + top;
+	currSrc.size.height = srcH - top - bottom;
+	currDst.origin.y = dstY + dstTop;
+	currDst.size.height = dstH - dstTop - dstBottom;
+	if (![self _renderTexture:texture src:currSrc dst:currDst])
+		return NO;
+
+ 	/*************************************************************************\
+	|* Right side
+	\*************************************************************************/
+	currSrc.origin.x = srcX + srcW - right;
+	currSrc.size.width = right;
+	currDst.origin.x = dstX + dstW - dstRight;
+	currDst.size.width = dstRight;
+	if (![self _renderTexture:texture src:currSrc dst:currDst])
+		return NO;
+
+ 	/*************************************************************************\
+	|* Top side
+	\*************************************************************************/
+	currSrc = NSMakeRect(srcX + left, srcY, srcW - left - right, top);
+	currDst = NSMakeRect(dstX + dstLeft, dstY, dstW - dstLeft - dstRight, dstTop);
+	if (![self _renderTexture:texture src:currSrc dst:currDst])
+		return NO;
+
+ 	/*************************************************************************\
+	|* Bottom side
+	\*************************************************************************/
+	currSrc.origin.y = srcY + srcH - bottom;
+	currDst.origin.y = dstY + dstH - dstBottom;
+	currDst.size.height = dstBottom;
+	if (![self _renderTexture:texture src:currSrc dst:currDst])
+		return NO;
+
+    return YES;
+	}
+
+/*****************************************************************************\
+|* The text engine for this renderer
+\*****************************************************************************/
+- (TTF_TextEngine *) textEngine
+	{
+	return TTF_CreateGPUTextEngine(_gpu);
 	}
 
 
@@ -699,18 +851,168 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
+/*****************************************************************************\
+|* Perform a blit operation with rotation
+\*****************************************************************************/
 - (int)blitFrom:(NSInteger)textureId
-			src:(NSRect)srcRect
-			dst:(NSRect)dstRect
-		  angle:(NSInteger)degrees
-		 center:(NSPoint)p
+			src:(NSRect)src
+			dst:(NSRect)dst
+		  angle:(NSInteger)angle
+		 center:(NSPoint)centre
 		   flip:(AZFlipMode)flip
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return 0;
+	AZTexture *texture = _textures[@(textureId)];
+	if (texture == nil)
+		return NO;
+
+    if (flip == AZFlipNone && ((angle % 360) == 0))
+		// fast path when we don't need rotation or flipping
+		return [self blitFrom:textureId src:src dst:dst];
+
+	NSRect realSrc = NSMakeRect(0,0,texture.size.width, texture.size.height);
+	BOOL srcIsZero = (NSEqualRects(src, NSZeroRect));
+    if (!srcIsZero)
+		{
+		NSRect intersection = NSIntersectionRect(src, realSrc);
+		if (NSEqualRects(intersection, NSZeroRect))
+            return YES;
+		realSrc = intersection;
+        }
+
+    // We don't intersect the dstrect with the viewport as RenderCopy does
+    // because of potential rotation clipping issues... TODO: should we?
+	if (NSEqualRects(dst, NSZeroRect))
+		dst = [self viewportSize];
+
+	float srcX 	= NSMinX(src);
+	float srcY 	= NSMinY(src);
+	float srcW	= NSWidth(src);
+	float srcH  = NSHeight(src);
+
+	float dstX 	= NSMinX(dst);
+	float dstY 	= NSMinY(dst);
+	float dstW	= NSWidth(dst);
+	float dstH  = NSHeight(dst);
+
+	float texW	= texture.size.width;
+	float texH 	= texture.size.height;
+
+	NSPoint realCentre;
+	BOOL centreIsZero = (NSEqualPoints(centre, NSZeroPoint));
+	if (!centreIsZero)
+        realCentre = centre;
+    else
+		{
+        realCentre.x = NSWidth(dst)  / 2.f;
+        realCentre.y = NSHeight(dst) / 2.f;
+		}
+
+    texture.lastCommandGen = _cmdGeneration;
+
+    const float sx = _view->currentScale.x;
+    const float sy = _view->currentScale.y;
+
+	float xy[8];
+	const int xyStride 		= 2 * sizeof(float);
+
+	float uv[8];
+	const int uvStride 		= 2 * sizeof(float);
+
+	const int numVertices 	= 4;
+    const int *indices 		= _rectIndexOrder;
+	const int numIndices 	= 6;
+	const int sizeIndices 	= 4;
+
+	float minu 		= srcX / texW;
+	float minv 		= srcY / texH;
+	float maxu 		= (srcX + srcW) / texW;
+	float maxv 		= (srcY + srcH) / texH;
+
+	float cx 		= realCentre.x + dstX;
+	float cy 		= realCentre.y + dstY;
+
+	float minx, maxx;
+	if (flip & AZFlipHorizontal)
+		{
+		minx = dstX + dstW;
+		maxx = dstX;
+		}
+	else
+		{
+		minx = dstX;
+		maxx = dstX + dstW;
+		}
+
+	float miny, maxy;
+	if (flip & AZFlipVertical)
+		{
+		miny = dstY + dstH;
+		maxy = dstY;
+		}
+	else
+		{
+		miny = dstY;
+		maxy = dstY + dstH;
+		}
+
+	uv[0] = minu;
+	uv[1] = minv;
+	uv[2] = maxu;
+	uv[3] = minv;
+	uv[4] = maxu;
+	uv[5] = maxv;
+	uv[6] = minu;
+	uv[7] = maxv;
+
+	// apply rotation with 2x2 matrix ( c -s )
+	//                                ( s  c )
+	const float radians = (float)((SDL_PI_D * angle) / 180.f);
+	const float s 		= SDL_sinf(radians);
+	const float c 		= SDL_cosf(radians);
+
+	float s_minx = s * (minx - cx);
+	float s_miny = s * (miny - cy);
+	float s_maxx = s * (maxx - cx);
+	float s_maxy = s * (maxy - cy);
+	float c_minx = c * (minx - cx);
+	float c_miny = c * (miny - cy);
+	float c_maxx = c * (maxx - cx);
+	float c_maxy = c * (maxy - cy);
+
+	// (minx, miny)
+	xy[0] = (c_minx - s_miny) + cx;
+	xy[1] = (s_minx + c_miny) + cy;
+	// (maxx, miny)
+	xy[2] = (c_maxx - s_miny) + cx;
+	xy[3] = (s_maxx + c_miny) + cy;
+	// (maxx, maxy)
+	xy[4] = (c_maxx - s_maxy) + cx;
+	xy[5] = (s_maxx + c_maxy) + cy;
+	// (minx, maxy)
+	xy[6] = (c_minx - s_maxy) + cx;
+	xy[7] = (s_minx + c_maxy) + cy;
+
+	SDL_FColor colour = texture.colour;
+	return [self _queueCmdGeometryWithTexture:texture
+										   xy:xy
+									 xyStride:xyStride
+									   colour:&colour
+									  colourStride:0
+										   uv:uv
+									 uvStride:uvStride
+								  numVertices:numVertices
+									  indices:indices
+								   numIndices:numIndices
+								  sizeIndices:sizeIndices
+									   scaleX:sx
+									   scaleY:sy
+								  addressMode:AZTextureAddressClamp];
 	}
 
 
+/*****************************************************************************\
+|* Return the bounds of a given texture
+\*****************************************************************************/
 - (NSRect)boundsOfTexture:(NSInteger)refId
 	{
 	AZTexture *texture = _textures[@(refId)];
@@ -1053,6 +1355,18 @@ static SDL_SpinLock 	_textureLock;
 	AZTexture *texture = _textures[@(refId)];
 	if (texture)
 		return (int)texture.size.height;
+	return 0;
+	}
+
+/*****************************************************************************\
+|* Return the width of a given texture. Returns 0 if the texture cannot be
+|* found
+\*****************************************************************************/
+- (float)widthOfTexture:(NSInteger)refId
+	{
+	AZTexture *texture = _textures[@(refId)];
+	if (texture)
+		return (int)texture.size.width;
 	return 0;
 	}
 
@@ -1622,27 +1936,210 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
+/*****************************************************************************\
+|* Get the blend mode from a texture
+\*****************************************************************************/
 - (int)texture:(NSInteger)refId blendMode:(nonnull SDL_BlendMode *)blendMode
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return 0;
+	AZTexture *texture = _textures[@(refId)];
+	if (texture)
+		{
+		if (blendMode)
+			*blendMode = texture.blendMode;
+		return YES;
+		}
+
+	if (blendMode)
+		*blendMode = SDL_BLENDMODE_INVALID;
+	return NO;
 	}
 
 
+/*****************************************************************************\
+|* Tile a texture across the current target at unity scale
+\*****************************************************************************/
 - (int)tileFrom:(NSInteger)textureId src:(NSRect)srcRect dst:(NSRect)dstRect
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return 0;
+	return [self tileFrom:textureId src:srcRect scale:1.f dst:dstRect];
 	}
 
 
+/*****************************************************************************\
+|* Tile a texture across the current target
+\*****************************************************************************/
 - (int)tileFrom:(NSInteger)textureId
-			src:(NSRect)srcRect
+			src:(NSRect)src
 		  scale:(float)scale
-		    dst:(NSRect)dstRect
+		    dst:(NSRect)dst
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return 0;
+	AZTexture *texture = _textures[@(textureId)];
+	if (texture == nil)
+		return NO;
+
+    if (scale <= 0.0f)
+        return SDL_InvalidParamError("scale");
+
+	NSRect realSrc = NSMakeRect(0, 0, texture.size.width, texture.size.height);
+	BOOL srcIsZero = (NSEqualRects(src, NSZeroRect));
+	if (!srcIsZero)
+		{
+		NSRect intersection = NSIntersectionRect(src, realSrc);
+		if (NSEqualRects(intersection, NSZeroRect))
+            return YES;
+		realSrc = intersection;
+        }
+
+
+	if (NSEqualRects(dst, NSZeroRect))
+		dst = [self viewportSize];
+
+    texture.lastCommandGen = _cmdGeneration;
+
+    // See if we can use geometry with repeating texture coordinates
+	BOOL atOrigin 	= NSEqualPoints(realSrc.origin, NSZeroPoint);
+	BOOL fullExtent	= NSEqualSizes(realSrc.size, texture.size);
+    if (srcIsZero || (atOrigin && fullExtent))
+		return [self _tileWrappedFrom:texture src:realSrc scale:scale dst:dst];
+	return [self _tileIterated:texture src:realSrc scale:scale dst:dst];
+	}
+
+/*****************************************************************************\
+|* Internal method to tile a texture using iteration.
+\*****************************************************************************/
+- (int) _tileIterated:(AZTexture *)texture
+				  src:(NSRect)src
+				scale:(float)scale
+				  dst:(NSRect)dst
+	{
+	float srcW			= NSWidth(src);
+	float srcH			= NSHeight(src);
+    float tileW		 	= srcW * scale;
+    float tileH 		= srcH * scale;
+
+    float floatCols;
+    float todoW 		= SDL_modff(NSWidth(dst) / tileW, &floatCols);
+    float floatRows;
+    float todoH 		= SDL_modff(NSHeight(dst) / tileH, &floatRows);
+
+    float todoSrcW 		= todoW * srcW;
+    float todoSrcH 		= todoH * srcH;
+
+    float todoDstW 		= todoW * tileW;
+    float todoDstH 		= todoH * tileH;
+
+	int rows 			= (int)floatRows;
+    int cols 			= (int)floatCols;
+
+    NSRect currSrc 		= src;
+	NSRect currDst 		= NSMakeRect(0, dst.origin.y, tileW, tileH);
+    for (int y = 0; y < rows; ++y)
+		{
+        currDst.origin.x = dst.origin.x;
+        for (int x = 0; x < cols; ++x)
+			{
+			if (![self _renderTexture:texture src:currSrc dst:currDst])
+                return NO;
+            currDst.origin.x += currDst.size.width;
+			}
+        if (todoDstW > 0.0f)
+			{
+            currSrc.size.width = todoSrcW;
+            currDst.size.width = todoDstW;
+			if (![self _renderTexture:texture src:currSrc dst:currDst])
+                return NO;
+			currSrc.size.width = src.size.width;
+            currDst.size.width = tileW;
+			}
+		currDst.origin.y += currDst.size.height;
+		}
+
+    if (todoDstH > 0.0f)
+		{
+        currSrc.size.height = todoSrcH;
+        currDst.size.height = todoDstH;
+        currDst.origin.x = dst.origin.x;
+        for (int x = 0; x < cols; ++x)
+			{
+			if (![self _renderTexture:texture src:currSrc dst:currDst])
+                return NO;
+
+            currDst.origin.x += currDst.size.width;
+			}
+
+			if (todoDstW > 0.0f)
+				{
+				currSrc.size.width = todoSrcW;
+				currDst.size.width = todoDstW;
+				if (![self _renderTexture:texture src:currSrc dst:currDst])
+					return NO;
+			}
+		}
+    return true;
+	}
+
+/*****************************************************************************\
+|* Internal method to tile a texture using geometry. This can't be used unless
+|* the entire texture is being tiled
+\*****************************************************************************/
+- (int) _tileWrappedFrom:(AZTexture *)texture
+					 src:(NSRect)src
+				   scale:(float)scale
+					 dst:(NSRect)dst
+	{
+	float xy[8];
+	const int xyStride 		= 2 * sizeof(float);
+
+	float uv[8];
+	const int uvStride 		= 2 * sizeof(float);
+
+	const int numVertices 	= 4;
+    const int *indices 		= _rectIndexOrder;
+	const int numIndices 	= 6;
+	const int sizeIndices 	= 4;
+
+	float minu = 0.f;
+	float minv = 0.f;
+	float maxu = NSWidth(dst)  / (NSWidth(src) * scale);
+	float maxv = NSHeight(dst) / (NSHeight(src) * scale);
+
+	float minx = NSMinX(dst);
+	float miny = NSMinY(dst);
+	float maxx = NSMaxX(dst);
+	float maxy = NSMaxY(dst);
+
+    uv[0] = minu;
+    uv[1] = minv;
+    uv[2] = maxu;
+    uv[3] = minv;
+    uv[4] = maxu;
+    uv[5] = maxv;
+    uv[6] = minu;
+    uv[7] = maxv;
+
+    xy[0] = minx;
+    xy[1] = miny;
+    xy[2] = maxx;
+    xy[3] = miny;
+    xy[4] = maxx;
+    xy[5] = maxy;
+    xy[6] = minx;
+    xy[7] = maxy;
+
+	SDL_FColor colour = texture.colour;
+	return [self _queueCmdGeometryWithTexture:texture
+										   xy:xy
+									 xyStride:xyStride
+									   colour:&colour
+									  colourStride:0
+										   uv:uv
+									 uvStride:uvStride
+								  numVertices:numVertices
+									  indices:indices
+								   numIndices:numIndices
+								  sizeIndices:sizeIndices
+									   scaleX:_view->currentScale.x
+									   scaleY:_view->currentScale.y
+								  addressMode:AZTextureAddressWrap];
 	}
 
 
@@ -1655,24 +2152,23 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
+/*****************************************************************************\
+|* Unset the clip, setting to NSZeroRect also handles the boolean logic
+\*****************************************************************************/
 - (void)unsetClip
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
+	[self setClip:NSZeroRect];
 	}
 
 
+/*****************************************************************************\
+|* Return the renderer viewport
+\*****************************************************************************/
 - (NSRect)viewport
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return NSZeroRect;
+	return [self _getRenderViewport];
 	}
 
-
-- (float)widthOfTexture:(NSInteger)refId
-	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return 0;
-	}
 
 
 /*****************************************************************************\
@@ -2175,14 +2671,14 @@ static SDL_SpinLock 	_textureLock;
 		 SDL_GPU_SAMPLERMIPMAPMODE_LINEAR,
 		 0 },
 
-		{AZTextureAddressClamp,
+		{AZTextureAddressWrap,
 		 SDL_SCALEMODE_NEAREST,
 		 SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
 		 SDL_GPU_FILTER_NEAREST,
 		 SDL_GPU_SAMPLERMIPMAPMODE_NEAREST,
 		 0 },
 
-		{AZTextureAddressClamp,
+		{AZTextureAddressWrap,
 		 SDL_SCALEMODE_LINEAR,
 		 SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
 		 SDL_GPU_FILTER_LINEAR,
@@ -3110,7 +3606,6 @@ float AZsRGBfromLinear(float v)
 				AZTexture *thistexture 				= cmd.texture;
 				SDL_BlendMode thisblend 			= cmd.blendMode;
 				const AZRenderCommandType thisType 	= cmd.command;
-				AZRenderCommand *finalcmd 			= cmd;
 				AZRenderCommand *nextcmd 			= (cmdId == last)
 													? nil
 													: _commandQ[cmdId+1];;
@@ -3134,13 +3629,10 @@ float AZsRGBfromLinear(float v)
 						// different texture/blendmode copy up next.
 						break;
 
-					else
-						{
-						// we can combine copy operations here.
-						// Mark this one as the furthest okay command.
-						finalcmd = nextcmd;
-						count += (Uint32)nextcmd.count;
-						}
+
+					// we can combine copy operations here.
+					// Mark this one as the furthest okay command.
+					count += (Uint32)nextcmd.count;
 					cmdId ++;
 					nextcmd = (cmdId == last) ? nil : _commandQ[cmdId+1];
 					}
@@ -4104,7 +4596,7 @@ float AZsRGBfromLinear(float v)
     cmd.count 	= count;
     sizeIndices = indices ? sizeIndices : 0;
 
-	AZ_LOG_DECLARE(info, @"Blit vertices:\n");
+	AZ_LOG_DECLARE(info, @"_queueGeometry vertices:\n");
     for (int i = 0; i < count; i++)
 		{
         int j;

@@ -93,6 +93,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Which kind of fragment shader
 @property(assign, nonatomic) AZFragmentShaderID 				shader;
+
+// Last command generation that we used this texture
+@property(assign, nonatomic) NSInteger		 					lastCommandGen;
 @end
 
 NS_ASSUME_NONNULL_END

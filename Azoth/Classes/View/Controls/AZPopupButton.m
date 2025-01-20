@@ -207,7 +207,7 @@ static float 		_uiS[STATE_NUM];		// bottom-border for 9-way
 			|* Create 9-way tileable textures for the button, so we can fill
 			|* in the background of any-size button
 			\*****************************************************************/
-			W = left  + mid  + right;
+			W = left  + mid*3 + right;
 			H = NSHeight(bL[i]);
 
 			_ui[i] = [azr createTextureOfSize:NSMakeSize(W, H)];
@@ -218,11 +218,13 @@ static float 		_uiS[STATE_NUM];		// bottom-border for 9-way
 			[azr lockFocusOn:_ui[i]];
 			[azr blitFrom:S src:bL[i] dst:NSMakeRect(0 ,0, left, H)];
 			[azr blitFrom:S src:bC[i] dst:NSMakeRect(left, 0, mid, H)];
-			[azr blitFrom:S src:bR[i] dst:NSMakeRect(left+mid, 0, right, H)];
+			[azr blitFrom:S src:bC[i] dst:NSMakeRect(left+1, 0, mid, H)];
+			[azr blitFrom:S src:bC[i] dst:NSMakeRect(left+2, 0, mid, H)];
+			[azr blitFrom:S src:bR[i] dst:NSMakeRect(left+mid+2, 0, right, H)];
 			[azr unlockFocus];
 
 			_uiRect 	= NSMakeRect(0, 0, W, H);
-			_uiW[i]		= left;// left;
+			_uiW[i]		= left+1;// left;
 			_uiN[i]		= 5;
 			_uiE[i]		= right+1;//left + mid+mid;
 			_uiS[i]		= 5;

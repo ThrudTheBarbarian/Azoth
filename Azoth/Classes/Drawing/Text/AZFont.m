@@ -652,9 +652,9 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 
 	BOOL ok = (data_surface != NULL);
 
-//	if (!IMG_SavePNG(data_surface, "/tmp/letters.png"))
-//		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't save surface %s",
-//					 SDL_GetError());
+	if (!IMG_SavePNG(data_surface, "/tmp/letters.png"))
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't save surface %s",
+					 SDL_GetError());
 
 	if (ok)
 		{

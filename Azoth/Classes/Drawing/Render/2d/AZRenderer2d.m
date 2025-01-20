@@ -74,6 +74,14 @@ NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
 	return azr;
 	}
 
+/*****************************************************************************\
+|* The type of the renderer
+\*****************************************************************************/
+- (AZRendererType) rendererType
+	{
+	return AZRendererType2d;
+	}
+
 
 /*****************************************************************************\
 |* Get a texture-id
@@ -474,6 +482,14 @@ NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
 	return YES;
 	}
 
+
+/*****************************************************************************\
+|* The text engine for this renderer
+\*****************************************************************************/
+- (TTF_TextEngine *) textEngine
+	{
+	return TTF_CreateRendererTextEngine(_renderer);
+	}
 
 /*****************************************************************************\
 |* Presentation...

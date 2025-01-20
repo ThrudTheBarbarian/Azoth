@@ -8,6 +8,7 @@
 #import <Azoth/AZTypes.h>
 #import <Foundation/Foundation.h>
 #import <SDL3/SDL.h>
+#import <SDL3_ttf/SDL_ttf.h>
 
 @class AZColour;
 @class AZWindow;
@@ -247,6 +248,16 @@ NS_ASSUME_NONNULL_BEGIN
 |* The name of the renderer
 \*****************************************************************************/
 - (NSString *) rendererName;
+
+/*****************************************************************************\
+|* The type of the renderer
+\*****************************************************************************/
+- (AZRendererType) rendererType;
+
+/*****************************************************************************\
+|* The text engine for this renderer
+\*****************************************************************************/
+- (TTF_TextEngine *) textEngine;
 
 /*****************************************************************************\
 |* Key/value pairs - like SDL's properties, but hey, we have dictionaries...

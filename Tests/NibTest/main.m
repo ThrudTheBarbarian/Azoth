@@ -27,6 +27,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 	AZApp.delegate		= [AppDelegate new];
 	AZApp.initialFrame	= NSMakeRect(50, 50, 1280, 960);
 	AZApp.windowFlags	= SDL_WINDOW_RESIZABLE;
+	AZApp.rendererType	= AZRendererType3d;
 	*appstate			= (__bridge void *)(AZApp);
 
 	[AZApp startWithArgc:argc argv:argv];
