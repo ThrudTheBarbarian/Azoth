@@ -2759,7 +2759,16 @@ static SDL_SpinLock 	_textureLock;
 
     if (_state.scissorEnabled)
 		{
-        SDL_SetGPUScissor(_state.renderPass, &_state.scissor);
+		// Make sure the scissor doesn't extend beyond the bounds of the
+		// current renderpass. Metal gets upset about that
+		NSRect all 	= (_target == nil)
+					? [self _getRenderViewport]
+					: NSMakeRect(0,0,_target.size.width, _target.size.height);
+		NSRect clip	= NS_RECT(_state.scissor);
+		clip		= NSIntersectionRect(all, clip);
+
+		SDL_Rect scissor = SDL_RECT(clip);
+        SDL_SetGPUScissor(_state.renderPass, &scissor);
         _state.scissorWasEnabled = YES;
 		}
 	else if (_state.scissorWasEnabled)
@@ -3142,8 +3151,8 @@ static SDL_SpinLock 	_textureLock;
 	{
     if (_logicalPresentMode == SDL_LOGICAL_PRESENTATION_DISABLED)
 		{
-        _mainView.logicalOffset.x = _mainView.logicalOffset.y = 0.0f;
-        _mainView.logicalScale.x  = _mainView.logicalScale.y  = 1.0f;
+        _mainView.logicalOffset.x = _mainView.logicalOffset.y = 0.f;
+        _mainView.logicalScale.x  = _mainView.logicalScale.y  = 1.f;
 
         // skip the multiplications against 1.0f.
         _mainView.currentScale.x  = _mainView.scale.x;
