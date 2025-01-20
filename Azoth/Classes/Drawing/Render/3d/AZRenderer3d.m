@@ -288,6 +288,15 @@ SDL_RendererLogicalPresentation								logicalPresentMode;
 
 // Allowed texture formats
 @property(strong, nonatomic) NSMutableSet<NSNumber*> *		textureFormats;
+
+// Whether to simulate vsync
+@property(assign, nonatomic) BOOL							simulateVsync;
+
+// Simulated vsync interval
+@property(assign, nonatomic) Uint64							vsyncIntervalNanos;
+
+// Last time we present'd
+@property(assign, nonatomic) Uint64							vsyncLastPresent;
 @end
 
 
@@ -380,11 +389,6 @@ static SDL_SpinLock 	_textureLock;
 		_vertexData			= NULL;
 		_vertexDataSize		= 0;
 		_vertexDataInUse	= 0;
-
-		/*********************************************************************\
-		|* Default value for forcing a vsync-based presentation mode
-		\*********************************************************************/
-		_useVsyncForPresent	= NO;
 		}
 	return self;
 	}
@@ -554,7 +558,9 @@ static SDL_SpinLock 	_textureLock;
 	/*************************************************************************\
     |* ... and choose how to handle -present
     \*************************************************************************/
-	[self _choosePresentationMode:&(_renderData.swapchain.presentMode)];
+	BOOL vsync = ((NSNumber*)_properties[AZRendererVSync]).boolValue;
+	[self _choosePresentationMode:&(_renderData.swapchain.presentMode)
+							vsync:vsync];
 
 	/*************************************************************************\
     |* ... and the swapchain parameters
@@ -590,6 +596,12 @@ static SDL_SpinLock 	_textureLock;
 		[self _createBackBufferOfSize:NSMakeSize(w,h) format:pFmt];
 	else
 		SDL_Log("Cannot convert swapchain format - got 0x%x", fmt);
+
+
+	/*************************************************************************\
+	|* Calculate a good delay to use for the vsync simulation, just in case
+	\*************************************************************************/
+	[self _calculateSimulatedVSyncInterval];
 
 	return YES;
 	}
@@ -1345,7 +1357,6 @@ static SDL_SpinLock 	_textureLock;
 	_colour = colour;
 	}
 
-
 /*****************************************************************************\
 |* Set the draw colour using bytes
 \*****************************************************************************/
@@ -1356,9 +1367,15 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
-- (void)setPresentationSize:(NSSize)size mode:(NSInteger)mode
+/*****************************************************************************\
+|* Set the logical presentation size
+\*****************************************************************************/
+- (void)setPresentationSize:(NSSize)size
+					   mode:(SDL_RendererLogicalPresentation)mode
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
+	[self setLogicalPresentationWidth:size.width
+							   height:size.height
+								 mode:mode];
 	}
 
 
@@ -1383,10 +1400,22 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
+/*****************************************************************************\
+|* Set the "mod" colour on a texture
+\*****************************************************************************/
 - (int)setTexture:(NSInteger)texId modR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
-	return 0;
+	AZTexture *texture = _textures[@(texId)];
+	if (texture)
+		{
+		SDL_FColor colour = texture.colour;
+		colour.r = r / 255.f;
+		colour.g = g / 255.f;
+		colour.b = b / 255.f;
+		texture.colour = colour;
+		return YES;
+		}
+	return NO;
 	}
 
 
@@ -1481,11 +1510,19 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
+/*****************************************************************************\
+|* Return a surface (which needs to be released by the caller) version of
+|* the indicated texture
+\*****************************************************************************/
 - (nullable struct SDL_Surface *)surfaceFor:(NSInteger)refId
 	{
-		return [self surfaceFor:refId inRect:NSZeroRect];
+	return [self surfaceFor:refId inRect:NSZeroRect];
 	}
 
+/*****************************************************************************\
+|* Return a surface (which needs to be released by the caller) version of
+|* the indicated texture, limited to a given rectangle
+\*****************************************************************************/
 - (nullable struct SDL_Surface *)surfaceFor:(NSInteger)refId inRect:(NSRect)rect
 	{
 	SDL_GPUFence *fence;
@@ -1573,10 +1610,15 @@ static SDL_SpinLock 	_textureLock;
     return surface;
 	}
 
-
-- (void)syncToVsync:(BOOL)yn
+/*****************************************************************************\
+|* Synchronise to vsync, simulated via sleeping
+\*****************************************************************************/
+- (void)syncToVsync:(BOOL)vsync
 	{
-	NSLog(@"%@:%@ not implemented", self, NSStringFromSelector(_cmd));
+    if (![self _setVSync:vsync])
+		_simulateVsync = vsync;
+
+	_properties[AZRendererVSync] = @(vsync);
 	}
 
 
@@ -1784,6 +1826,97 @@ static SDL_SpinLock 	_textureLock;
 
 // MARK: Private methods
 
+
+/*****************************************************************************\
+|* Sleep for a while to simulate a vsync
+\*****************************************************************************/
+- (void) _simulateVSync
+	{
+    Uint64  elapsed;
+    const Uint64 interval = _vsyncIntervalNanos;
+    if (!interval)
+        // We can't do sub-ns delay, so just return here
+        return;
+
+
+    Uint64 now = SDL_GetTicksNS();
+    elapsed = (now - _vsyncLastPresent);
+    if (elapsed < interval)
+		{
+        Uint64 duration = (interval - elapsed);
+        SDL_DelayPrecise(duration);
+        now = SDL_GetTicksNS();
+		}
+
+    elapsed = (now - _vsyncLastPresent);
+    if (!_vsyncLastPresent || elapsed > SDL_MS_TO_NS(1000))
+        // It's been too long, reset the presentation timeline
+        _vsyncLastPresent = now;
+	else
+        _vsyncLastPresent += (elapsed / interval) * interval;
+    }
+
+
+
+/*****************************************************************************\
+|* Calculate a good vsync interval
+\*****************************************************************************/
+- (void) _calculateSimulatedVSyncInterval
+	{
+    SDL_DisplayID displayID = SDL_GetDisplayForWindow(_window.window);
+    if (displayID == 0)
+        displayID = SDL_GetPrimaryDisplay();
+
+    const SDL_DisplayMode *mode = SDL_GetDesktopDisplayMode(displayID);
+
+	int numerator 	= -1;
+	int denominator	= -1;
+	if (mode)
+		{
+		BOOL haveNumerator 		= (mode->refresh_rate_numerator > 0);
+		BOOL haveDenominator	= (mode->refresh_rate_denominator > 0);
+
+		if (haveNumerator && haveDenominator)
+			{
+			numerator = mode->refresh_rate_numerator;
+			denominator = mode->refresh_rate_denominator;
+			}
+		}
+
+	if ((numerator <= 0) || (denominator <= 0))
+		{
+        // Pick a good default refresh rate
+        numerator 	= 60;
+        denominator = 1;
+		}
+    // Flip numerator and denominator to change from framerate to interval
+    _vsyncIntervalNanos = (SDL_NS_PER_SECOND * denominator) / numerator;
+	}
+
+/*****************************************************************************\
+|* Attempt to set vsync mode
+\*****************************************************************************/
+- (BOOL) _setVSync:(BOOL)vsync
+	{
+    SDL_GPUPresentMode mode = SDL_GPU_PRESENTMODE_VSYNC;
+
+	[self _choosePresentationMode:&mode vsync:vsync];
+
+    if (mode != _renderData.swapchain.presentMode)
+		{
+        if (SDL_SetGPUSwapchainParameters(_gpu,
+										  _window.window,
+										  _renderData.swapchain.composition,
+										  mode))
+			{
+            _renderData.swapchain.presentMode = mode;
+			return YES;
+			}
+		return NO;
+		}
+    return YES;
+	}
+
 /*****************************************************************************\
 |* Convert from window co-ords to render ones
 \*****************************************************************************/
@@ -1946,10 +2079,11 @@ static SDL_SpinLock 	_textureLock;
 |* Create the samplers
 \*****************************************************************************/
 - (void) _choosePresentationMode:(out SDL_GPUPresentMode*)presentMode
+						   vsync:(BOOL)vsync
 	{
     SDL_GPUPresentMode mode;
 
-    if (!_useVsyncForPresent)
+    if (!vsync)
 		{
         mode = SDL_GPU_PRESENTMODE_MAILBOX;
 

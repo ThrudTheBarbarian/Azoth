@@ -66,6 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(strong, nonatomic, readonly) NSNumber *				index;
 
 // The colour associated with this texture
+// (the 'mod' colour)
 @property(assign, nonatomic) SDL_FColor 						colour;
 
 // The blend-mode for this texture

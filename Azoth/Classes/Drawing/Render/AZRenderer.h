@@ -170,7 +170,8 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 - (NSSize) presentationSize;
 - (int) presentationMode;
-- (void) setPresentationSize:(NSSize)size mode:(NSInteger)mode;
+- (void)setPresentationSize:(NSSize)size
+					   mode:(SDL_RendererLogicalPresentation)mode;
 
 
 /*****************************************************************************\

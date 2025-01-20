@@ -61,9 +61,6 @@ SDL_GPUTextureFormat 										swapchainFormat;
 
 // The colourspace used for screen display
 @property(assign, nonatomic) SDL_Colorspace					outputColourspace;
-
-// Force vsync for the render-presentation-mode
-@property(assign, nonatomic) BOOL							useVsyncForPresent;
 @end
 
 NS_ASSUME_NONNULL_END
