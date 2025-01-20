@@ -141,6 +141,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (int) setTexture:(NSInteger)texId modR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b;
 
 /*****************************************************************************\
+|* Set the "mod" alpha on a texture
+\*****************************************************************************/
+- (int)setTexture:(NSInteger)texId modAlpha:(uint8_t)a;
+
+/*****************************************************************************\
 |* Return some info about a given texture, by id
 \*****************************************************************************/
 - (float) widthOfTexture:(NSInteger)refId;

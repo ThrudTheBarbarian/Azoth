@@ -135,5 +135,6 @@ extern BOOL SDL_SetGPUAllowedFramesInFlight
 SDL_Colorspace AZGetDefaultColorspaceForFormat(SDL_PixelFormat format);
 float AZGetSurfaceSDRWhitePoint(SDL_Colorspace cs);
 float AZGetSurfaceHDRHeadroom(SDL_Colorspace cs);
+void AZDetectPalette(const SDL_Palette *pal, BOOL *isOpaque, BOOL *hasAlpha);
 
 #endif /* AZ3dUtils_h */

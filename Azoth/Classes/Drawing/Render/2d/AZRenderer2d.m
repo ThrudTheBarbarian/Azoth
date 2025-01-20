@@ -442,6 +442,17 @@ NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
 	}
 
 
+- (int)setTexture:(NSInteger)texId modAlpha:(uint8_t)a
+	{
+	SDL_Texture *texture = [self _textureFor:texId];
+	if (texture)
+		return SDL_SetTextureAlphaMod(texture, a);
+	SDL_Log("Cannot find texture %d to set alpha-mod on", (int)texId);
+	return -1;
+	}
+
+
+
 /*****************************************************************************\
 |* Return some info about a given texture, by id
 \*****************************************************************************/

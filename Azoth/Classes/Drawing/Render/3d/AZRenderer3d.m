@@ -288,7 +288,7 @@ SDL_RendererLogicalPresentation								logicalPresentMode;
 @property(strong, nonatomic) NSMutableDictionary *			properties;
 
 // Allowed texture formats
-@property(strong, nonatomic) NSMutableSet<NSNumber*> *		textureFormats;
+@property(strong, nonatomic) NSMutableArray<NSNumber*> *	textureFormats;
 
 // Whether to simulate vsync
 @property(assign, nonatomic) BOOL							simulateVsync;
@@ -331,7 +331,7 @@ static SDL_SpinLock 	_textureLock;
 		/*********************************************************************\
 		|* Set up which texture formats we support
 		\*********************************************************************/
-		_textureFormats	= NSMutableSet.new;
+		_textureFormats	= NSMutableArray.new;
 		[_textureFormats addObject:@(SDL_PIXELFORMAT_RGBA32)];
 		[_textureFormats addObject:@(SDL_PIXELFORMAT_BGRA32)];
 		[_textureFormats addObject:@(SDL_PIXELFORMAT_RGBX32)];
@@ -1075,16 +1075,7 @@ static SDL_SpinLock 	_textureLock;
 
 
 /*****************************************************************************\
-|* Create a texture of a given size. We assume BGRA8888 format for the
-|* texture. This needs to:
-|*
-|*  - Allocate a texture-id for the new texture
-|*  - create a transfer buffer and map it so the CPU can see it
-|*  - fill the transfer buffer with the current clear-colour
-|*  - create a GPU texture of the same size
-|*  - start a copy pass and upload the data to the texture
-|*  - finish the copy pass and return the texture-id to the caller
-|*
+|* Create a texture of a given size.
 \*****************************************************************************/
 - (NSInteger)createTextureOfSize:(NSSize)size
 	{
@@ -1102,97 +1093,70 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 
+/*****************************************************************************\
+|* Create a texture using size, format, access-flags.
+\*****************************************************************************/
 - (NSInteger)createTextureOfSize:(NSSize)size
 						  format:(SDL_PixelFormat)format
 					   withFlags:(int)flags
 	{
+	NSMutableDictionary *props = NSMutableDictionary.new;
+	props[AZRendererCreateWidth] = @(size.width);
+	props[AZRendererCreateHeight] = @(size.height);
+	props[AZRendererCreateFormat] = @(format);
+	props[AZRendererCreateAccess] = @(flags);
+
+	return [self createTextureWithProperties:props];
+	}
+
+/*****************************************************************************\
+|* Create a texture using the given properties.
+\*****************************************************************************/
+- (NSInteger) createTextureWithProperties:(NSMutableDictionary *)props
+	{
+	NSNumber *pWidth 	= props[AZRendererCreateWidth];
+	NSNumber *pHeight 	= props[AZRendererCreateHeight];
+	NSNumber *pFlags	= props[AZRendererCreateAccess];
+	NSNumber *pFormat	= props[AZRendererCreateFormat];
+	if ((!pWidth) || (!pHeight) || (!pFlags) || (!pFormat))
+		{
+		SDL_Log("Insufficient properties to create texture");
+		return -1;
+		}
+
+	NSSize size 			= NSMakeSize(pWidth.intValue, pHeight.intValue);
+	int flags				= pFlags.intValue;
+	SDL_PixelFormat format 	= (SDL_PixelFormat)pFormat.intValue;
+
 	/*************************************************************************\
 	|* Get a new unique texture id
 	\*************************************************************************/
 	NSNumber *tId = self.nextTextureId;
-
-	/*************************************************************************\
-	|* Create a transfer buffer of the correct size
-	\*************************************************************************/
-	SDL_GPUTransferBuffer *upload = [self _uploadBufferOfSize:size];
-	if (upload == NULL)
-		{
-		SDL_Log("Cannot obtain GPU upload buffer of size %dx%d",
-				(int)size.width, (int)size.height);
-		return -1;
-		}
-
-	/*************************************************************************\
-	|* Map the buffer
-	\*************************************************************************/
-	uint32_t* cpuPtr = SDL_MapGPUTransferBuffer(_gpu, upload, NO);
-
-	/*************************************************************************\
-	|* Clear the buffer
-	\*************************************************************************/
-	uint32_t colour  	= _clearColour.value32;
-	uint32_t *pixel  	= cpuPtr;
-	NSInteger num  		= size.width * size.height;
-
-	for (NSInteger i=0; i<num; i++)
-		*pixel++ = colour;
-
-	/*************************************************************************\
-	|* Unmap the buffer
-	\*************************************************************************/
-	SDL_UnmapGPUTransferBuffer(_gpu, upload);
-
 
 	AZTexture *tex = [AZTexture textureFor:self
 								 withIndex:tId
 									  size:size
 									 format:format
 									 usage:flags];
-	[self _updatePixelViewport:tex.view];
-	[self _updatePixelClipRect:tex.view];
 
 	/*************************************************************************\
-	|* If we have a valid texture resource, then store it
+	|* If we have a valid texture resource, then initialise and store it
 	\*************************************************************************/
 	if (tex)
+		{
 		_textures[tId] = tex;
+		[self _updatePixelViewport:tex.view];
+		[self _updatePixelClipRect:tex.view];
+
+		NSInteger currentFocus = [self currentFocus];
+		[self lockFocusOn:tId.integerValue];
+		[self clear];
+		[self restoreFocus:currentFocus];
+
+		tex.properties = props;
+		}
 	else
 		tId = @(-1);
-
-	/*************************************************************************\
-	|* Create a copy pass to upload the cleared data to the texture
-	\*************************************************************************/
-	if (tId.integerValue > 0)
-		{
-		SDL_GPUCommandBuffer* cmds 	= SDL_AcquireGPUCommandBuffer(_gpu);
-		SDL_GPUCopyPass* pass 		= SDL_BeginGPUCopyPass(cmds);
-		SDL_GPUTextureTransferInfo info =
-			{
-			.transfer_buffer = upload,
-			.offset = 0,
-			// Zeroes out the rest
-			};
-		SDL_GPUTextureRegion region =
-			{
-			.texture = tex.texture,
-			.w  	 = (int)tex.size.width,
-			.h  	 = (int)tex.size.height,
-			.d    	 = 1
-			};
-
-		SDL_UploadToGPUTexture(pass, &info, &region, NO);
-
-		/*********************************************************************\
-		|* Tell the GPU that's all we're copying, and to go ahead and start
-		\*********************************************************************/
-		SDL_EndGPUCopyPass(pass);
-		SDL_SubmitGPUCommandBuffer(cmds);
-		}
-
-	/*************************************************************************\
-	|* Housekeeping
-	\*************************************************************************/
-	SDL_ReleaseGPUTransferBuffer(_gpu, upload);
 
 	/*************************************************************************\
 	|* Return the reference to the texture in the local map
@@ -1200,124 +1164,323 @@ static SDL_SpinLock 	_textureLock;
 	return tId.integerValue;
 	}
 
-
 /*****************************************************************************\
-|* Create a texture from an existing surface. We assume BGRA8888 format for the
-|* surface. This needs to:
-|*
-|*  - Allocate a texture-id for the new texture
-|*  - create a transfer buffer and map it so the CPU can see it
-|*  - fill the transfer buffer with the texture data
-|*  - create a GPU texture of the same size
-|*  - start a copy pass and upload the data to the texture
-|*  - finish the copy pass and return the texture-id to the caller
-|*
+|* Create a texture from a surface
 \*****************************************************************************/
 - (NSInteger)createTextureWithSurface:(nonnull struct SDL_Surface *)surface
 	{
-	SDL_GPUTextureFormat format = [AZTexture textureFormatFor:surface->format];
-    if (format == SDL_GPU_TEXTUREFORMAT_INVALID)
-        return SDL_SetError("Texture format %s not supported by 3d Renderer",
-                            SDL_GetPixelFormatName(surface->format));
-
-	/*************************************************************************\
-	|* Get a new unique texture id
-	\*************************************************************************/
-	NSNumber *tId = self.nextTextureId;
-
-	/*************************************************************************\
-	|* Create a transfer buffer of the correct size
-	\*************************************************************************/
-	NSSize size = NSMakeSize(surface->w, surface->h);
-	SDL_GPUTransferBuffer *upload = [self _uploadBufferOfSize:size];
-	if (upload == NULL)
+    if (!surface)
 		{
-		SDL_Log("Cannot obtain GPU upload buffer of size %dx%d",
-				(int)size.width, (int)size.height);
+        SDL_InvalidParamError("-createTextureWithSurface: surface");
 		return -1;
 		}
 
 	/*************************************************************************\
-	|* Map the buffer
+	|* Determine if we need an alpha channel or not
 	\*************************************************************************/
-	uint32_t* cpuPtr = SDL_MapGPUTransferBuffer(_gpu, upload, NO);
+	BOOL isPixel		= SDL_ISPIXELFORMAT_ALPHA(surface->format);
+	BOOL hasColourKey	= SDL_SurfaceHasColorKey(surface);
+    BOOL needAlpha 		=  isPixel || hasColourKey;
 
-	/*************************************************************************\
-	|* Copy the data from the BGRA8888 surface to the texture
-	\*************************************************************************/
-	memcpy(cpuPtr, surface->pixels, surface->w * surface->h * 4);
-
-
-	/*************************************************************************\
-	|* Unmap the buffer
-	\*************************************************************************/
-	SDL_UnmapGPUTransferBuffer(_gpu, upload);
-
-	/*************************************************************************\
-	|* Create the GPU texture
-	\*************************************************************************/
-	SDL_GPUTextureUsageFlags flags = SDL_GPU_TEXTUREUSAGE_SAMPLER
-								   | SDL_GPU_TEXTUREUSAGE_COLOR_TARGET
-								   | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ
-								   | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE;
-
-	AZTexture *tex = [AZTexture textureFor:self
-								 withIndex:tId
-									  size:size
-									format:SDL_PIXELFORMAT_BGRA32
-									 usage:flags];
-
-	[self _updatePixelViewport:tex.view];
-	[self _updatePixelClipRect:tex.view];
-
-	/*************************************************************************\
-	|* If we have a valid texture resource, then store it
-	\*************************************************************************/
-	if (tex)
-		_textures[tId] = tex;
-	else
-		tId = @(-1);
-
-	/*************************************************************************\
-	|* Create a copy pass to upload the cleared data to the texture
-	\*************************************************************************/
-	if (tId.integerValue > 0)
+    // If Palette contains alpha values, promotes to alpha format
+    SDL_Palette *palette = SDL_GetSurfacePalette(surface);
+    if (palette)
 		{
-		SDL_GPUCommandBuffer* cmds 	= SDL_AcquireGPUCommandBuffer(_gpu);
-		SDL_GPUCopyPass* pass 		= SDL_BeginGPUCopyPass(cmds);
-		SDL_GPUTextureTransferInfo info =
-			{
-			.transfer_buffer = upload,
-			.offset = 0,
-			// Zeroes out the rest
-			};
-		SDL_GPUTextureRegion region =
-			{
-			.texture = tex.texture,
-			.w  	 = (int)tex.size.width,
-			.h  	 = (int)tex.size.height,
-			.d    	 = 1
-			};
-
-		SDL_UploadToGPUTexture(pass, &info, &region, NO);
-
-		/*********************************************************************\
-		|* Tell the GPU that's all we're copying, and to go ahead and start
-		\*********************************************************************/
-		SDL_EndGPUCopyPass(pass);
-		SDL_SubmitGPUCommandBuffer(cmds);
+        bool isOpaque, hasAlphaChannel;
+        AZDetectPalette(palette, &isOpaque, &hasAlphaChannel);
+        if (!isOpaque)
+            needAlpha = true;
 		}
 
-	/*************************************************************************\
-	|* Housekeeping
+ 	/*************************************************************************\
+	|* Try to have the best pixel format for the texture
+	|* - No alpha, but a colorkey => promote to alpha
 	\*************************************************************************/
-	SDL_ReleaseGPUTransferBuffer(_gpu, upload);
+    SDL_PixelFormat format 				= SDL_PIXELFORMAT_UNKNOWN;
+    if ((!isPixel) && hasColourKey)
+		{
+        if (surface->format == SDL_PIXELFORMAT_XRGB8888)
+			{
+            for (NSInteger i = 0; i < _textureFormats.count; ++i)
+				{
+                if (_textureFormats[i].intValue == SDL_PIXELFORMAT_ARGB8888)
+					{
+                    format = SDL_PIXELFORMAT_ARGB8888;
+                    break;
+					}
+				}
+			}
+		else if (surface->format == SDL_PIXELFORMAT_XBGR8888)
+			{
+            for (NSInteger i = 0; i < _textureFormats.count; ++i)
+				{
+                if (_textureFormats[i].intValue == SDL_PIXELFORMAT_ABGR8888)
+					{
+                    format = SDL_PIXELFORMAT_ABGR8888;
+                    break;
+					}
+				}
+			}
+		}
+	else
+        // Exact match would be fine
+		for (NSInteger i = 0; i < _textureFormats.count; ++i)
+            if (_textureFormats[i].intValue == surface->format)
+				{
+                format = surface->format;
+                break;
+				}
+
+
+ 	/*************************************************************************\
+	|* Try to have the best pixel format for the texture
+	|* - Look for 10-bit pixel formats if needed
+	\*************************************************************************/
+	BOOL is10bit = SDL_ISPIXELFORMAT_10BIT(surface->format);
+    if ((format == SDL_PIXELFORMAT_UNKNOWN) && is10bit)
+		for (NSInteger i = 0; i < _textureFormats.count; ++i)
+			if (SDL_ISPIXELFORMAT_10BIT(_textureFormats[i].intValue))
+				{
+                format = _textureFormats[i].intValue;
+                break;
+				}
+
+ 	/*************************************************************************\
+	|* Try to have the best pixel format for the texture
+	|* - Look for floating point pixel formats if needed
+	\*************************************************************************/
+	BOOL isFloat = is10bit || SDL_ISPIXELFORMAT_FLOAT(surface->format);
+    if ((format == SDL_PIXELFORMAT_UNKNOWN) && isFloat)
+		for (NSInteger i = 0; i < _textureFormats.count; ++i)
+            if (SDL_ISPIXELFORMAT_FLOAT(_textureFormats[i].intValue))
+				{
+                format = _textureFormats[i].intValue;
+                break;
+				}
+
+ 	/*************************************************************************\
+	|* Try to have the best pixel format for the texture
+	|* - Fallback, choose a valid pixel format
+	\*************************************************************************/
+    if (format == SDL_PIXELFORMAT_UNKNOWN)
+		{
+        format = _textureFormats[0].intValue;
+		for (NSInteger i = 0; i < _textureFormats.count; ++i)
+			{
+			BOOL is4cc = SDL_ISPIXELFORMAT_FOURCC(_textureFormats[i].intValue);
+			BOOL alpha = SDL_ISPIXELFORMAT_ALPHA(_textureFormats[i].intValue);
+			if ((!is4cc) && (alpha == needAlpha))
+				{
+                format = _textureFormats[i].intValue;
+                break;
+				}
+			}
+		}
+
+ 	/*************************************************************************\
+	|* Figure out the colourspace
+	\*************************************************************************/
+	SDL_Colorspace texCs	= SDL_COLORSPACE_UNKNOWN;
+    SDL_Colorspace cs 		= SDL_GetSurfaceColorspace(surface);
+	BOOL isLinear 			= (cs == SDL_COLORSPACE_SRGB_LINEAR);
+	BOOL pq = (SDL_COLORSPACETRANSFER(cs) == SDL_TRANSFER_CHARACTERISTICS_PQ);
+
+    if (isLinear || pq)
+        {
+        if (SDL_ISPIXELFORMAT_FLOAT(format))
+            texCs = SDL_COLORSPACE_SRGB_LINEAR;
+        else if (SDL_ISPIXELFORMAT_10BIT(format))
+            texCs = SDL_COLORSPACE_HDR10;
+        else
+            texCs = SDL_COLORSPACE_SRGB;
+		}
+
+	NSMutableDictionary *props = NSMutableDictionary.new;
+	props[AZRendererCreateColourspace] = @(texCs);
+
+	if (cs == texCs)
+		{
+		float whitepoint = AZGetSurfaceHDRHeadroom(cs);
+		props[AZRendererCreateWhitePoint] = @(whitepoint);
+		}
+	float headroom = AZGetSurfaceSDRWhitePoint(cs);
+	props[AZRendererCreateHeadroom] = @(headroom);
+	props[AZRendererCreateFormat] = @(format);
+
+	int access = SDL_TEXTUREACCESS_STREAMING | SDL_TEXTUREACCESS_TARGET;
+	props[AZRendererCreateAccess] = @(access);
+
+	props[AZRendererCreateWidth] = @(surface->w);
+	props[AZRendererCreateHeight] = @(surface->h);
+
+	NSInteger tId = [self createTextureWithProperties:props];
+	if (tId > 0)
+		{
+		if (![self _updateTexture:tId inRect:NSZeroRect FromSurface:surface])
+			{
+			[self releaseTexture:tId];
+			SDL_Log("Can't update the texture from the surface");
+			return -1;
+			}
+		}
 
 	/*************************************************************************\
 	|* Return the reference to the texture in the local map
 	\*************************************************************************/
-	return tId.integerValue;
+	return tId;
 	}
+
+/*****************************************************************************\
+|* Propagate the surface characteristics to a texture
+\*****************************************************************************/
+- (BOOL) _updateTexture:(NSInteger)textureId
+				 inRect:(NSRect)rect
+			FromSurface:(SDL_Surface *)surface
+	{
+	/*************************************************************************\
+	|* Sanity checks...
+	\*************************************************************************/
+	AZTexture *texture = _textures[@(textureId)];
+    if (texture == nil || surface == NULL)
+        return NO;
+
+	NSDictionary *texProps = texture.properties;
+	if (texProps == nil)
+		return NO;
+
+    SDL_PropertiesID surfaceProps = SDL_GetSurfaceProperties(surface);
+    if (surfaceProps == 0)
+        return NO;
+
+	if (NSEqualRects(rect, NSZeroRect))
+		rect = NSMakeRect(0, 0, surface->w, surface->h);
+
+	/*************************************************************************\
+	|* Get some values from the properties
+	\*************************************************************************/
+	NSNumber *pFormat	 		= (NSNumber*)texProps[AZRendererCreateFormat];
+	SDL_PixelFormat texFormat 	= (SDL_PixelFormat)pFormat.intValue;
+
+//	NSNumber *pAccess			= (NSNumber *)texProps[AZRendererCreateAccess];
+//	SDL_TextureAccess access	= (SDL_TextureAccess)pAccess.intValue;
+
+	/*************************************************************************\
+	|* Check the colourspace
+	\*************************************************************************/
+    SDL_Colorspace cs			= SDL_GetSurfaceColorspace(surface);
+    SDL_Colorspace textureCS 	= cs;
+	BOOL isLinear 				= (cs == SDL_COLORSPACE_SRGB_LINEAR);
+	BOOL pq = (SDL_COLORSPACETRANSFER(cs) == SDL_TRANSFER_CHARACTERISTICS_PQ);
+
+    if (isLinear || pq)
+		{
+        if (SDL_ISPIXELFORMAT_FLOAT(texFormat))
+            textureCS = SDL_COLORSPACE_SRGB_LINEAR;
+        else if (SDL_ISPIXELFORMAT_10BIT(texFormat))
+            textureCS = SDL_COLORSPACE_HDR10;
+        else
+            textureCS = SDL_COLORSPACE_SRGB;
+        }
+
+	/*************************************************************************\
+	|* Check if we need intermediate conversion
+	\*************************************************************************/
+    BOOL directUpdate;
+    if ((texFormat == surface->format) && (textureCS == cs))
+		{
+		BOOL hasKey= SDL_SurfaceHasColorKey(surface);
+        if (SDL_ISPIXELFORMAT_ALPHA(surface->format) && hasKey)
+			{
+            // Surface and Renderer formats are identical.
+			// Intermediate conversion is needed to convert color key
+			// to alpha (SDL_ConvertColorkeyToAlpha()).
+			directUpdate = NO;
+			}
+		else
+			{
+            // Update Texture directly
+			directUpdate = YES;
+			}
+		}
+	else
+		{
+        // Surface and Renderer formats are different, it needs an
+        // intermediate conversion.
+        directUpdate = NO;
+		}
+
+	/*************************************************************************\
+	|* Do it directly...
+	\*************************************************************************/
+    if (directUpdate)
+		{
+        if (SDL_MUSTLOCK(surface))
+			{
+            SDL_LockSurface(surface);
+			[self _updateTexture:texture
+						  inRect:rect
+						  pixels:surface->pixels
+						   pitch:surface->pitch];
+            SDL_UnlockSurface(surface);
+			}
+		else
+			{
+			[self _updateTexture:texture
+						  inRect:rect
+						  pixels:surface->pixels
+						   pitch:surface->pitch];
+			}
+		}
+
+	/*************************************************************************\
+	|* ... or indirectly...
+	\*************************************************************************/
+	else
+		{
+        // Set up a destination surface for the texture update
+		SDL_Surface * temp = SDL_ConvertSurfaceAndColorspace(surface,
+															 texFormat,
+															 NULL,
+															 textureCS,
+															 surfaceProps);
+        if (temp)
+			{
+			[self _updateTexture:texture
+						  inRect:NSZeroRect
+						  pixels:temp->pixels
+						   pitch:temp->pitch];
+            SDL_DestroySurface(temp);
+			}
+		else
+            return NO;
+		}
+
+
+	/*************************************************************************\
+	|* Transfer the mod-values and set the blendmode
+	\*************************************************************************/
+	Uint8 r, g, b, a;
+	SDL_GetSurfaceColorMod(surface, &r, &g, &b);
+	SDL_GetSurfaceAlphaMod(surface, &a);
+	[self setTexture:textureId modR:r g:g b:b];
+	[self setTexture:textureId modAlpha:a];
+
+
+	if (SDL_SurfaceHasColorKey(surface))
+		{
+		// We converted to a texture with alpha format
+		[self setTexture:textureId blendMode:SDL_BLENDMODE_BLEND];
+		}
+	else
+		{
+		SDL_BlendMode blendMode;
+		SDL_GetSurfaceBlendMode(surface, &blendMode);
+		[self setTexture:textureId blendMode:blendMode];
+        }
+
+    return YES;
+	}
+
 
 
 /*****************************************************************************\
@@ -1328,6 +1491,137 @@ static SDL_SpinLock 	_textureLock;
 	if (_target)
 		return _target.index.integerValue;
 	return -1;
+	}
+
+/*****************************************************************************\
+|* Update the data within a texture to the passed-in data
+\*****************************************************************************/
+- (BOOL) _updateTexture:(AZTexture *)texture
+				 inRect:(NSRect)rect
+				 pixels:(const void *)pixels
+				  pitch:(int)pitch
+	{
+	/*************************************************************************\
+	|* Sanity checks...
+	\*************************************************************************/
+    if (!pixels)
+        return SDL_InvalidParamError("pixels");
+
+    if (!pitch)
+        return SDL_InvalidParamError("pitch");
+
+	/*************************************************************************\
+	|* Get the right rect
+	\*************************************************************************/
+	NSRect realRect = NSMakeRect(0, 0, texture.size.width, texture.size.height);
+	if (!NSEqualRects(rect, NSZeroRect))
+		{
+		rect = NSIntersectionRect(rect, realRect);
+		if (NSEqualRects(rect, NSZeroRect))
+			return YES;
+        }
+	else
+		rect = realRect;
+		
+	if ((realRect.size.width == 0) || (realRect.size.height == 0))
+        return YES; // nothing to do.
+
+	if (![self _flushRenderCommandsIfNeededForTexture:texture])
+		return NO;
+
+	/*************************************************************************\
+	|* Figure out the data transfer sizes and check for overflow
+	\*************************************************************************/
+	SDL_PixelFormat fmt		= [AZTexture pixelFormatFor:texture.format];
+	const Uint32 texturebpp = SDL_BYTESPERPIXEL(fmt);
+    int rectH 				= NSHeight(rect);
+    int rectW 				= NSWidth(rect);
+
+    size_t rowSize, dataSize;
+	BOOL ok = SDL_size_mul_check_overflow(rectW, texturebpp, &rowSize);
+	if (!ok)
+		return SDL_SetError("update size width overflow");
+	ok = SDL_size_mul_check_overflow(rectH, rowSize, &dataSize);
+ 	if (!ok)
+		return SDL_SetError("update size height overflow");
+
+	/*************************************************************************\
+	|* Create the transfer buffer
+	\*************************************************************************/
+    SDL_GPUTransferBufferCreateInfo tbci;
+    SDL_zero(tbci);
+    tbci.size = (Uint32)dataSize;
+    tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+
+    SDL_GPUTransferBuffer *tbuf = SDL_CreateGPUTransferBuffer(_gpu, &tbci);
+    if (tbuf == NULL)
+        return SDL_SetError("cannot create transfer buffer");
+
+	/*************************************************************************\
+	|* Map the transfer buffer and copy data
+	\*************************************************************************/
+    Uint8 *output = SDL_MapGPUTransferBuffer(_gpu, tbuf, false);
+
+    if ((size_t)pitch == rowSize)
+        SDL_memcpy(output, pixels, dataSize);
+    else
+		{
+        // FIXME is negative pitch supposed to work? If not, maybe
+        // use SDL_GPUTextureTransferInfo::pixels_per_row instead of this
+        const Uint8 *input = pixels;
+
+        for (int i = 0; i < rectH; ++i)
+			{
+            SDL_memcpy(output, input, rowSize);
+            output += rowSize;
+            input += pitch;
+			}
+		}
+    SDL_UnmapGPUTransferBuffer(_gpu, tbuf);
+
+	/*************************************************************************\
+	|* Use a copy-pass to upload
+	\*************************************************************************/
+    SDL_GPUCommandBuffer *cbuf = _state.commandBuffer;
+    SDL_GPUCopyPass *cpass = SDL_BeginGPUCopyPass(cbuf);
+
+    SDL_GPUTextureTransferInfo tex_src;
+    SDL_zero(tex_src);
+    tex_src.transfer_buffer = tbuf;
+    tex_src.rows_per_layer = rectH;
+    tex_src.pixels_per_row = rectW;
+
+    SDL_GPUTextureRegion tex_dst;
+    SDL_zero(tex_dst);
+    tex_dst.texture = texture.texture;
+    tex_dst.x = NSMinX(rect);
+    tex_dst.y = NSMinY(rect);
+    tex_dst.w = rectW;
+    tex_dst.h = rectH;
+    tex_dst.d = 1;
+
+	/*************************************************************************\
+	|* Housekeeping
+	\*************************************************************************/
+    SDL_UploadToGPUTexture(cpass, &tex_src, &tex_dst, NO);
+    SDL_EndGPUCopyPass(cpass);
+    SDL_ReleaseGPUTransferBuffer(_gpu, tbuf);
+
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Flush the GPU command buffer if we're about to change the texture that is
+|* already in use in the commandbuffer
+\*****************************************************************************/
+- (BOOL) _flushRenderCommandsIfNeededForTexture:(AZTexture *)texture
+	{
+	if (texture.lastCommandGen == _cmdGeneration)
+        // the current command queue depends on this texture,
+        // flush the queue now before it changes
+		return [self _flushRenderCommands];
+
+    return YES;
 	}
 
 
@@ -1726,6 +2020,22 @@ static SDL_SpinLock 	_textureLock;
 		colour.r = r / 255.f;
 		colour.g = g / 255.f;
 		colour.b = b / 255.f;
+		texture.colour = colour;
+		return YES;
+		}
+	return NO;
+	}
+
+/*****************************************************************************\
+|* Set the "mod" alpha on a texture
+\*****************************************************************************/
+- (int)setTexture:(NSInteger)texId modAlpha:(uint8_t)a
+	{
+	AZTexture *texture = _textures[@(texId)];
+	if (texture)
+		{
+		SDL_FColor colour = texture.colour;
+		colour.a = a / 255.f;
 		texture.colour = colour;
 		return YES;
 		}
@@ -2480,7 +2790,8 @@ static SDL_SpinLock 	_textureLock;
 
     // *** FIXME ***
     // This is busted. We should be able to know which load op to use.
-    // LOAD is incorrect behavior most of the time, unless we had to break a render pass.
+    // LOAD is incorrect behavior most of the time, unless we had to break
+    //  a render pass.
     // -cosmonaut
     _state.colourAttachment.load_op = SDL_GPU_LOADOP_LOAD;
     _state.scissorWasEnabled 		= NO;
@@ -3115,9 +3426,9 @@ static SDL_SpinLock 	_textureLock;
 	else
         colourspace = _outputColourspace;
 
-    if (colourspace == SDL_COLORSPACE_SRGB_LINEAR) {
+    if (colourspace == SDL_COLORSPACE_SRGB_LINEAR)
         return YES;
-    }
+
     return NO;
 	}
 
@@ -3214,6 +3525,8 @@ float AZsRGBfromLinear(float v)
 	xy[5] = maxy;
 	xy[6] = minx;
 	xy[7] = maxy;
+
+	texture.lastCommandGen = _cmdGeneration;
 
 	SDL_FColor colour = texture.colour;
 	return [self _queueCmdGeometryWithTexture:texture

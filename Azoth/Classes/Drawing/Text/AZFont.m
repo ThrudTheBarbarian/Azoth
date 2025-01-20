@@ -25,12 +25,12 @@
 \*****************************************************************************/
 typedef struct TargetState
 	{
-	NSRect 			clip;			// clipping rectangle
-	NSRect 			viewport;		// viewport (!)
-	NSSize 			lSize;			// logical size
-	NSInteger		lMode;			// logical mode
-	bool			clipEnabled;	// are we clipping
-	AZScale			scale;			// scaling factors
+	NSRect 								clip;			// clipping rectangle
+	NSRect 								viewport;		// viewport (!)
+	NSSize 								lSize;			// logical size
+	SDL_RendererLogicalPresentation		lMode;			// logical mode
+	bool								clipEnabled;	// are we clipping
+	AZScale								scale;			// scaling factors
 	} TargetState;
 
 static void _preserveTargetState(TargetState *state, id<AZRenderer> azr)

@@ -13,6 +13,13 @@
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSString * const AZRendererColourspace;
+extern NSString * const AZRendererCreateAccess;
+extern NSString * const AZRendererCreateColourspace;
+extern NSString * const AZRendererCreateFormat;
+extern NSString * const AZRendererCreateHeadroom;
+extern NSString * const AZRendererCreateHeight;
+extern NSString * const AZRendererCreateWhitePoint;
+extern NSString * const AZRendererCreateWidth;
 extern NSString * const AZRendererHdrEnabled;
 extern NSString * const AZRendererHdrHeadroom;
 extern NSString * const AZRendererMaxTextureSize;

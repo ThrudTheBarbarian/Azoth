@@ -63,7 +63,7 @@
 	/*************************************************************************\
 	|* Create a popup for the alignment options
 	\*************************************************************************/
-	frame 				 = NSMakeRect(300, 66, 150, 25);
+	frame 				 = NSMakeRect(300, 76, 150, 25);
 	AZPopupButton *align = [AZPopupButton buttonWithFrame:frame pullsDown:YES];
 	[align addItemsWithTitles:@[@"Top Left", @"Top Middle", @"Top Right",
 							    @"Left", @"Center", @"Right",
@@ -76,7 +76,7 @@
 	/*************************************************************************\
 	|* Create a popup for the frame style
 	\*************************************************************************/
-	frame 				 = NSMakeRect(300, 116, 150, 25);
+	frame 				 = NSMakeRect(300, 136, 150, 25);
 	AZPopupButton *style = [AZPopupButton buttonWithFrame:frame pullsDown:YES];
 	[style addItemsWithTitles:@[@"None", @"Photo", @"Gray Bezel",
 							    @"Groove", @"Button"]];
@@ -88,7 +88,7 @@
 	/*************************************************************************\
 	|* Create a popup for the image
 	\*************************************************************************/
-	frame 				 = NSMakeRect(300, 166, 150, 25);
+	frame 				 = NSMakeRect(300, 196, 150, 25);
 	AZPopupButton *image = [AZPopupButton buttonWithFrame:frame pullsDown:YES];
 	[image addItemsWithTitles:@[@"Small", @"Medium", @"Large"]];
 	[image.itemArray[0] setTitle:@"Image..."];

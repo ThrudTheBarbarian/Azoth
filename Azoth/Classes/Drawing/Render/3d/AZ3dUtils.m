@@ -84,3 +84,48 @@ float AZGetSurfaceHDRHeadroom(SDL_Colorspace cs)
 
     return 0.f;
 	}
+
+void AZDetectPalette(const SDL_Palette *pal, BOOL *isOpaque, BOOL *hasAlpha)
+	{
+	BOOL allOpaque = YES;
+	for (int i = 0; i < pal->ncolors; i++)
+		{
+		Uint8 alphaValue = pal->colors[i].a;
+		if (alphaValue != SDL_ALPHA_OPAQUE)
+			{
+			allOpaque = NO;
+			break;
+			}
+		}
+
+	if (allOpaque)
+		{
+		// Palette is opaque, with an alpha channel
+		*isOpaque 	= YES;
+		*hasAlpha 	= YES;
+		return;
+		}
+
+	BOOL allTransparent = YES;
+	for (int i = 0; i < pal->ncolors; i++)
+		{
+		Uint8 alphaValue = pal->colors[i].a;
+		if (alphaValue != SDL_ALPHA_TRANSPARENT)
+			{
+			allTransparent = NO;
+			break;
+			}
+		}
+
+	if (allTransparent)
+		{
+		// Palette is opaque, without an alpha channel
+		*isOpaque = YES;
+		*hasAlpha = NO;
+		return;
+		}
+
+    // Palette has alpha values
+    *isOpaque = NO;
+    *hasAlpha = YES;
+	}

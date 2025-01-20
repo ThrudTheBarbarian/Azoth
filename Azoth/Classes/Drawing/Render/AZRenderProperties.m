@@ -8,6 +8,13 @@
 #import "AZRenderProperties.h"
 
 NSString *const AZRendererColourspace		= @"AZ:RendererColourspace";
+NSString *const AZRendererCreateAccess		= @"AZ:RendererCreateAccess";
+NSString *const AZRendererCreateColourspace	= @"AZ:RendererCreateColourspace";
+NSString *const AZRendererCreateFormat		= @"AZ:RendererCreateFormat";
+NSString *const AZRendererCreateHeadroom	= @"AZ:RendererCreateHeadroom";
+NSString *const AZRendererCreateHeight		= @"AZ:RendererCreateHeight";
+NSString *const AZRendererCreateWhitePoint	= @"AZ:RendererCreateWhitepoint";
+NSString *const AZRendererCreateWidth		= @"AZ:RendererCreateWidth";
 NSString *const AZRendererHdrEnabled		= @"AZ:RendererHdrEnabled";
 NSString *const AZRendererHdrHeadroom		= @"AZ:RendererHdrHeadroom";
 NSString *const AZRendererRenderer			= @"AZ:RendererRenderer";
