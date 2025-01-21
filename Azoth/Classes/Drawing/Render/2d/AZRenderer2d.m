@@ -372,6 +372,41 @@ NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
 	}
 
 /*****************************************************************************\
+|* Perform a blit operation with an affine transform:
+|*
+|* srcRect: the source rectangle or NSZeroRect for the entire texture
+|* origin : point where top-left should be mapped to, or NSZeroPoint for the
+|*          destination texture's origin
+|* right  : point where top-right should be mapped to, or NSZeroPoint for the
+|*          destination texture's top-right
+|* down   : point where bottom-left should be mapped to, or NSZeroPoint for the
+|*          destination texture's bottom-left
+\*****************************************************************************/
+- (BOOL) blitFrom:(NSInteger)textureId
+			  src:(NSRect)srcRect
+		   origin:(NSPoint)origin
+			right:(NSPoint)right
+			 down:(NSPoint)down
+	{
+	SDL_Texture *texture = [self _textureFor:textureId];
+	if (texture)
+		{
+		SDL_FRect src 		= SDL_FRECT(srcRect);
+		SDL_FPoint Origin 	= SDL_FPOINT(origin);
+		SDL_FPoint Right  	= SDL_FPOINT(right);
+		SDL_FPoint Down		= SDL_FPOINT(down);
+
+		return SDL_RenderTextureAffine(_renderer,
+									   texture,
+									   IS_ZERORECT(srcRect) ? NULL : &src,
+									   IS_ZEROPOINT(origin) ? NULL : &Origin,
+									   IS_ZEROPOINT(right)  ? NULL : &Right,
+									   IS_ZEROPOINT(down)   ? NULL : &Down);
+		}
+	return NO;
+	}
+
+/*****************************************************************************\
 |* Perform a 9-way tiled blit operation
 \*****************************************************************************/
 - (int) blit9WayFrom:(NSInteger)textureId

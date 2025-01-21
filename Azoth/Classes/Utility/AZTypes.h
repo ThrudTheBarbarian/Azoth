@@ -485,7 +485,9 @@ enum
 	NSMakeRect(sdlrect.x, sdlrect.y, sdlrect.w, sdlrect.h)
 
 #define IS_ZERORECT(x)	NSEqualRects((x),NSZeroRect)
+#define IS_ZEROPOINT(x)	NSEqualPoints((x),NSZeroPoint)
 
+#define SDL_FPOINT(p) (SDL_FPoint){p.x, p.y}
 
 /*****************************************************************************\
 |* Used for putting an object reference into a dictionary as a key. Then it's

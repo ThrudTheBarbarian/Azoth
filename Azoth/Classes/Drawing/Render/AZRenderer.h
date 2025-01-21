@@ -109,6 +109,23 @@ NS_ASSUME_NONNULL_BEGIN
 			flip:(AZFlipMode)flip;		// Flip-action on texture
 
 /*****************************************************************************\
+|* Perform a blit operation with an affine transform:
+|*
+|* srcRect: the source rectangle or NSZeroRect for the entire texture
+|* origin : point where top-left should be mapped to, or NSZeroPoint for the
+|*          destination texture's origin
+|* right  : point where top-right should be mapped to, or NSZeroPoint for the
+|*          destination texture's top-right
+|* down   : point where bottom-left should be mapped to, or NSZeroPoint for the
+|*          destination texture's bottom-left
+\*****************************************************************************/
+- (BOOL) blitFrom:(NSInteger)textureId
+			  src:(NSRect)src
+		   origin:(NSPoint)origin
+			right:(NSPoint)right
+			 down:(NSPoint)down;
+
+/*****************************************************************************\
 |* Perform a 9-way tiled blit operation
 \*****************************************************************************/
 - (int) blit9WayFrom:(NSInteger)textureId

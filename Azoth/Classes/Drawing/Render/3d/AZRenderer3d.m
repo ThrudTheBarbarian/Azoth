@@ -1009,6 +1009,171 @@ static SDL_SpinLock 	_textureLock;
 								  addressMode:AZTextureAddressClamp];
 	}
 
+/*****************************************************************************\
+|* Perform a blit operation with an affine transform:
+|*
+|* srcRect: the source rectangle or NSZeroRect for the entire texture
+|* origin : point where top-left should be mapped to, or NSZeroPoint for the
+|*          destination texture's origin
+|* right  : point where top-right should be mapped to, or NSZeroPoint for the
+|*          destination texture's top-right
+|* down   : point where bottom-left should be mapped to, or NSZeroPoint for the
+|*          destination texture's bottom-left
+\*****************************************************************************/
+- (BOOL) blitFrom:(NSInteger)textureId
+			  src:(NSRect)src
+		   origin:(NSPoint)origin
+			right:(NSPoint)right
+			 down:(NSPoint)down
+	{
+	/*************************************************************************\
+	|* Get the texture from the identifier
+	\*************************************************************************/
+	AZTexture *texture = _textures[@(textureId)];
+	if (texture == nil)
+		return NO;
+
+	/*************************************************************************\
+	|* Make sure we either clip to the texture's rect, or set src to be the
+	|* texture rect if it was passed in as NSZeroRect
+	\*************************************************************************/
+	NSRect realSrc = NSMakeRect(0,0,texture.size.width, texture.size.height);
+	if (!NSEqualRects(src,NSZeroRect))
+		{
+		src = NSIntersectionRect(src, realSrc);
+		if (NSEqualRects(src, NSZeroRect))
+            return YES;
+        }
+	else
+		src = realSrc;
+
+	/*************************************************************************\
+	|* Make sure we either clip to the texture's rect, or set src to be the
+	|* texture rect if it was passed in as NSZeroRect
+	\*************************************************************************/
+	NSRect dst = [self viewportSize];
+    texture.lastCommandGen = _cmdGeneration;
+
+	float srcX 	= NSMinX(src);
+	float srcY 	= NSMinY(src);
+	float srcW	= NSWidth(src);
+	float srcH  = NSHeight(src);
+
+	float texW	= texture.size.width;
+	float texH 	= texture.size.height;
+
+	float dstX 	= NSMinX(dst);
+	float dstY 	= NSMinY(dst);
+	float dstW	= NSWidth(dst);
+	float dstH  = NSHeight(dst);
+
+    const float sx = _view->currentScale.x;
+    const float sy = _view->currentScale.y;
+
+
+	float xy[8];
+	const int xyStride 		= 2 * sizeof(float);
+
+	float uv[8];
+	const int uvStride 		= 2 * sizeof(float);
+
+	const int numVertices 	= 4;
+    const int *indices 		= _rectIndexOrder;
+	const int numIndices 	= 6;
+	const int sizeIndices 	= 4;
+
+
+	/*************************************************************************\
+	|* Figure out the texture co-ords
+	\*************************************************************************/
+	float minu 		= srcX / texW;
+	float minv 		= srcY / texH;
+	float maxu 		= (srcX + srcW) / texW;
+	float maxv 		= (srcY + srcH) / texH;
+
+	uv[0] = minu;
+	uv[1] = minv;
+	uv[2] = maxu;
+	uv[3] = minv;
+	uv[4] = maxu;
+	uv[5] = maxv;
+	uv[6] = minu;
+	uv[7] = maxv;
+
+	/*************************************************************************\
+	|* Figure out the spatial co-ords
+	\*************************************************************************/
+	// (minx, miny)
+	BOOL haveOrigin = !NSEqualPoints(origin, NSZeroPoint);
+	if (haveOrigin)
+		{
+		xy[0] = origin.x;
+		xy[1] = origin.y;
+		}
+	else
+		{
+		xy[0] = dstX;
+		xy[1] = dstY;
+		}
+
+	// (maxx, miny)
+	BOOL haveRight = !NSEqualPoints(right, NSZeroPoint);
+	if (haveRight)
+		{
+		xy[2] = right.x;
+		xy[3] = right.y;
+		}
+	else
+		{
+		xy[2] = dstX + dstW;
+		xy[3] = dstY;
+		}
+
+	// (minx, maxy)
+	BOOL haveDown = !NSEqualPoints(down, NSZeroPoint);
+	if (haveDown)
+		{
+		xy[6] = down.x;
+		xy[7] = down.y;
+		}
+	else
+		{
+		xy[6] = dstX;
+		xy[7] = dstY + dstH;
+		}
+
+	// (maxx, maxy)
+	if (haveOrigin || haveRight || haveDown)
+		{
+		xy[4] = xy[2] + xy[6] - xy[0];
+		xy[5] = xy[3] + xy[7] - xy[1];
+		}
+	else
+		{
+		xy[4] = dstX + dstW;
+		xy[5] = dstY + dstH;
+		}
+
+
+	/*************************************************************************\
+	|* Call...
+	\*************************************************************************/
+	SDL_FColor colour = texture.colour;
+	return [self _queueCmdGeometryWithTexture:texture
+										   xy:xy
+									 xyStride:xyStride
+									   colour:&colour
+									  colourStride:0
+										   uv:uv
+									 uvStride:uvStride
+								  numVertices:numVertices
+									  indices:indices
+								   numIndices:numIndices
+								  sizeIndices:sizeIndices
+									   scaleX:sx
+									   scaleY:sy
+								  addressMode:AZTextureAddressClamp];
+	}
 
 /*****************************************************************************\
 |* Return the bounds of a given texture
