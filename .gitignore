@@ -12,6 +12,9 @@ xcuserdata/
 # Shaders are generated
 Azoth/Resources/Shaders/
 
+# CMake
+build/*
+
 ## App packaging
 *.ipa
 *.dSYM.zip
