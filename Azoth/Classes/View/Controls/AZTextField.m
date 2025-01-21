@@ -21,6 +21,8 @@
 #import "AZWindow.h"
 #import "AZZib.h"
 
+#define XOFF 		2
+#define YOFF		(-2)
 enum
 	{
 	STATE_SN = 0,				// Square bezel
@@ -259,6 +261,7 @@ static float _dh[STATE_NUM];
 		[_blinkTimer invalidate];
 		_blinkTimer = nil;
 		self.showCursor = NO;
+		self.state = AZControlStateNormal;
 		[self setNeedsDisplay:YES];
 		}
 	return YES;
@@ -501,6 +504,9 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (int) textIndexForX:(int)x
 	{
+	if (x < 0)
+		return 0;
+
 	int index 			= -1;
 	NSInteger numChars 	= self.stringValue.length;
 	AZFont *font 		= AZApp.controlFont;
@@ -510,12 +516,17 @@ static float _dh[STATE_NUM];
 		{
 		unichar c 			= [self.stringValue characterAtIndex:i];
 		AZGlyphData *info 	= [font glyphDataFor:c];
-		if ((x >= offset) && (x < offset + info.rect.size.width))
+		if ((x >= offset) && (x <= offset + info.rect.size.width))
 			{
 			index = (int)i;
 			break;
 			}
 		offset += info.rect.size.width;
+		}
+	if (index < 0)
+		{
+		if (x > offset)
+			index = (int) numChars;
 		}
 	return index;
 	}
@@ -526,8 +537,12 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (NSRect) highlightedRectFrom:(int)from to:(int)to
 	{
-	NSRect rect			= NSZeroRect;
-	AZFont *font 		= AZApp.controlFont;
+	NSRect rect	 = NSZeroRect;
+	AZFont *font = AZApp.controlFont;
+	int len		 = (int) self.stringValue.length;
+
+	from = (from < 0) ? 0 : (from > len-1) ? len - 1 : from;
+	to   = (to   < 0) ? 0 : (to   > len-1) ? len - 1 : to;
 
 	for (int i=0; i<=to; i++)
 		{
@@ -535,12 +550,14 @@ static float _dh[STATE_NUM];
 		AZGlyphData *info 		= [font glyphDataFor:c];
 		if (i<from)
 			rect.origin.x  	   += info.rect.size.width;
-		else if (i<to)
+		else if (i<=to)
 			rect.size.width    += info.rect.size.width;
 
 		int h = info.rect.size.height;
 		rect.size.height = (h > rect.size.height) ? h : rect.size.height;
 		}
+	rect.origin.x += _origArea.origin.x + XOFF;
+	rect.origin.y += font.descent;
 	return rect;
 	}
 
@@ -550,6 +567,9 @@ static float _dh[STATE_NUM];
 - (NSRect) rectAt:(int)index of:(NSString *)text
 	{
 	int max = (int) [self.stringValue length] -1;
+	if (max < 0)
+		return NSZeroRect;
+
 	int to  = index+1 < max ? index+1 : max;
 	return [self highlightedRectFrom:index to:to];
 	}
@@ -565,7 +585,6 @@ static float _dh[STATE_NUM];
 	NSPoint p = [self convertPoint:e.locationInWindow fromView:nil];
 
     // Set the cursor position
-    TTF_SubString substring;
 	int textX = (int)SDL_roundf(p.x - _editArea.origin.x);
 	int index = [self textIndexForX:textX];
 	[self _editSetCursorPosition:index];
@@ -779,7 +798,7 @@ static float _dh[STATE_NUM];
 - (void) _editDrawText:(NSString *)text atX:(int)x y:(int)y
 		   withPainter:(AZPainter *)P
 	{
-	[P textAtX:x+2 y:y-2 text:text];
+	[P textAtX:x+XOFF y:y+YOFF text:text];
 	if ((!self.editable) && self.state != AZControlStateNormal)
 		{
 		[P textAtX:x+2 y:y-2 text:text];
@@ -796,7 +815,6 @@ static float _dh[STATE_NUM];
 	[azr setBlendMode:SDL_BLENDMODE_BLEND];
 	[azr setDrawColour:AZColour.black];
 
-	TTF_Font *font	= AZApp.controlFont.ttfFont;
     float x 		= _editArea.origin.x;
     float y 		= _editArea.origin.y;
 
@@ -815,6 +833,7 @@ static float _dh[STATE_NUM];
     int marker, length;
     if ([self _editGetHighlightExtentsFrom:&marker withLength:&length])
 		{
+		NSLog(@"draw,len = %d,%d", marker, length);
 		[azr setBlendMode:SDL_BLENDMODE_BLEND_PREMULTIPLIED];
 		NSRect toDraw = [self highlightedRectFrom:marker to:marker+length];
         if (toDraw.size.width > 0)
@@ -843,8 +862,10 @@ static float _dh[STATE_NUM];
 
     // Calculate the cursor rect
 	NSString *sub 	= [self.stringValue substringToIndex:_cursor];
-	int cx			= [AZApp.controlFont textWidthFor:sub];
-	_cursorRect 	= NSMakeRect(cx, 0, 1, self.bounds.size.height);
+	int cx			= [AZApp.controlFont textWidthFor:sub]
+					+ _editArea.origin.x;
+	_cursorRect 	= NSMakeRect(cx, _editArea.origin.y-1,
+								 1, _editArea.size.height);
 	}
 
 // MARK: Selection
@@ -961,6 +982,8 @@ static float _dh[STATE_NUM];
 	while (cx - cumulativeWidth > maxX)
 		{
 		NSRect first = [self rectAt:0 of:copy];
+		if (first.size.width == 0)
+			break;
 		cumulativeWidth += first.size.width;
 		copy = [copy substringFromIndex:1];
 		}
@@ -1043,40 +1066,6 @@ static float _dh[STATE_NUM];
         _cursor --;
 		[self _editEnsureCursorVisible];
 		}
-	}
-
-/*****************************************************************************\
-|* Convert the text input area and cursor into window coordinates
-\*****************************************************************************/
-- (void) _editUpdateTextInputArea
-	{
-	id<AZRenderer> azr	= AZRenderer.renderer;
-
-    SDL_FPoint window_edit_rect_min;
-    SDL_FPoint window_edit_rect_max;
-    SDL_FPoint window_cursor;
-
-	if (![azr convertRx:_editArea.origin.x
-					 ry:_editArea.origin.y
-					 to:&window_edit_rect_min.x
-					 wy:&window_edit_rect_min.y]
-	||  ![azr convertRx:_editArea.origin.x + _editArea.size.width
-					 ry:_editArea.origin.y + _editArea.size.height
-					 to:&window_edit_rect_max.x
-					 wy:&window_edit_rect_max.y]
-	||  ![azr convertRx:_cursorRect.origin.x
-					 ry:_cursorRect.origin.y
-					 to:&window_cursor.x
-					 wy:&window_cursor.y])
-		return;
-
-    SDL_Rect rect;
-    rect.x = (int)SDL_roundf(window_edit_rect_min.x);
-    rect.y = (int)SDL_roundf(window_edit_rect_min.y);
-    rect.w = (int)SDL_roundf(window_edit_rect_max.x - window_edit_rect_min.x);
-    rect.h = (int)SDL_roundf(window_edit_rect_max.y - window_edit_rect_min.y);
-    int cursor_offset = (int)SDL_roundf(window_cursor.x - window_edit_rect_min.x);
-	SDL_SetTextInputArea((__bridge SDL_Window *)(self.window), &rect, cursor_offset);
 	}
 
 /*****************************************************************************\
@@ -1177,7 +1166,7 @@ static float _dh[STATE_NUM];
 		}
 	else
 		{
-		if (_cursor < self.stringValue.length -1)
+		if (_cursor < self.stringValue.length)
 			[self _editSetCursorPosition:_cursor + 1];
 		}
 	}
@@ -1212,6 +1201,8 @@ static float _dh[STATE_NUM];
 	{
 	if ([self _editDeleteHighlight])
         return;
+	if (_cursor == (int)self.stringValue.length)
+		return;
 
 	NSString *pre = [self.stringValue substringToIndex:_cursor];
 	NSString *pst = [self.stringValue substringFromIndex:_cursor+1];
