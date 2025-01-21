@@ -1,21 +1,21 @@
 //
-//  AZTextField.m
+//  OLDAZTextField.m
 //  Azoth
 //
 //  Created by Simon Gornall on 12/16/24.
 //
 
 #import <SDL3/SDL.h>
+#import <SDL3_ttf/SDL_ttf.h>
 
 #import "AZApplication.h"
 #import "AZColour.h"
 #import "AZEvent.h"
 #import "AZFont.h"
-#import "AZGlyphData.h"
 #import "AZNotifications.h"
 #import "AZPainter.h"
 #import "AZRenderer.h"
-#import "AZTextField.h"
+#import "OLDAZTextField.h"
 #import "AZTextPainter.h"
 #import "AZTypes.h"
 #import "AZWindow.h"
@@ -53,19 +53,31 @@ static float _dy[STATE_NUM];
 static float _dw[STATE_NUM];
 static float _dh[STATE_NUM];
 
-@interface AZTextField()
+@interface OLDAZTextField()
+@property(assign, nonatomic)	TTF_Text *				text;
 
 // Cursor support
 @property(assign, nonatomic)	int						cursor;
 @property(assign, nonatomic) 	int						cursorLength;
 @property(assign, nonatomic)	uint64_t				lastCursorChange;
 @property(assign, nonatomic)	BOOL					showCursor;
-@property(assign, nonatomic)	NSRect					cursorRect;
+@property(assign, nonatomic)	SDL_FRect				cursorRect;
 
 // Highlight support
 @property(assign, nonatomic)	BOOL					highlighting;
 @property(assign, nonatomic)	int						highlightFrom;
 @property(assign, nonatomic)	int						highlightTo;
+
+// IME composition
+@property(assign, nonatomic)	int						compositionStart;
+@property(assign, nonatomic)	int						compositionLength;
+@property(assign, nonatomic)	int						compositionCursor;
+@property(assign, nonatomic)	int						compositionCursorLength;
+
+// IME candidates
+@property(assign, nonatomic)	TTF_Text *				candidates;
+@property(assign, nonatomic)	int						selectedCandidateStart;
+@property(assign, nonatomic)	int						selectedCandidateLength;
 
 // For window rendering
 @property(assign, nonatomic) 	NSRect					editArea;
@@ -75,7 +87,7 @@ static float _dh[STATE_NUM];
 @property(strong, nonatomic) 	NSTimer *				blinkTimer;
 @end
 
-@implementation AZTextField
+@implementation OLDAZTextField
 
 /*****************************************************************************\
 |* Initialisation
@@ -148,9 +160,6 @@ static float _dh[STATE_NUM];
 	return self;
 	}
 
-/*****************************************************************************\
-|* Read in rectangles defining the backgrounds
-\*****************************************************************************/
 - (void) _initialiseRects
 	{
 
@@ -196,13 +205,16 @@ static float _dh[STATE_NUM];
 		self.stringValue 			= @"";
 		self.textColour				= AZColour.black;
 		self.editable				= YES;
+		//NSRect r 					= NSInsetRect(self.bounds, 6, 0);
+		//r.origin.y	  			   += 6;
+		//self.editArea 				= r;
 		}
 	return YES;
 	}
 
-+ (AZTextField *) textfieldWithFrame:(NSRect)frame
++ (OLDAZTextField *) textfieldWithFrame:(NSRect)frame
 	{
-	return [[AZTextField alloc] initWithFrame:frame];
+	return [[OLDAZTextField alloc] initWithFrame:frame];
 	}
 
 // MARK: Responder interactions
@@ -225,6 +237,10 @@ static float _dh[STATE_NUM];
 		{
 		self.state = AZControlStateHighlighted;
 		SDL_StartTextInput(self.window.window);
+		TTF_SetTextColor(_text, _textColour.R,
+								_textColour.G,
+								_textColour.B,
+								_textColour.A);
 
 		_blinkTimer = [NSTimer scheduledTimerWithTimeInterval:0.5
 													  repeats:YES
@@ -280,13 +296,26 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (void) setStringValue:(NSString *)stringValue
 	{
-	[super setStringValue:stringValue];
-	[self setNeedsDisplay:YES];
+	if (_text)
+		{
+		[self _editSetCursorPosition:0];
+		[self _editDeleteToEnd];
+		[self _editInsert:stringValue.UTF8String];
+		[self setNeedsDisplay:YES];
+		}
 	}
 
 - (void) setObjectValue:(NSObject *)objectValue
 	{
 	return [self setStringValue:objectValue.description];
+	}
+
+/*****************************************************************************\
+|* Likewise, return the string from the TTF_Text
+\*****************************************************************************/
+- (NSString *)stringValue
+	{
+	return [NSString stringWithUTF8String:_text->text];
 	}
 
 /*****************************************************************************\
@@ -299,8 +328,8 @@ static float _dh[STATE_NUM];
 	AZColour *colour = _textColour;
 	if ((!self.editable) && self.state == AZControlStateHighlighted)
 		colour = AZColour.selectedControl;
-	[painter setTextColour:colour];
 
+	TTF_SetTextColor(_text, colour.R, colour.G, colour.B, colour.A);
 	if (!self.editable)
 		[self _drawAsLabelWithRect:dirtyRect andPainter:painter];
 	else if (_type == TextFieldSquare)
@@ -495,64 +524,6 @@ static float _dh[STATE_NUM];
 		}
 	}
 
-/*****************************************************************************\
-|* Find the character index of a point in the string, using the glyph sizes.
-|* This currently only does x, since it's a textfield...
-\*****************************************************************************/
-- (int) textIndexForX:(int)x
-	{
-	int index 			= -1;
-	NSInteger numChars 	= self.stringValue.length;
-	AZFont *font 		= AZApp.controlFont;
-	int offset 			= 0;
-
-	for (NSInteger i=0; i<numChars; i++)
-		{
-		unichar c 			= [self.stringValue characterAtIndex:i];
-		AZGlyphData *info 	= [font glyphDataFor:c];
-		if ((x >= offset) && (x < offset + info.rect.size.width))
-			{
-			index = (int)i;
-			break;
-			}
-		offset += info.rect.size.width;
-		}
-	return index;
-	}
-
-
-/*****************************************************************************\
-|* Find the rectangle that contains the characters from 'from' to 'to'
-\*****************************************************************************/
-- (NSRect) highlightedRectFrom:(int)from to:(int)to
-	{
-	NSRect rect			= NSZeroRect;
-	AZFont *font 		= AZApp.controlFont;
-
-	for (int i=0; i<=to; i++)
-		{
-		unichar c 				= [self.stringValue characterAtIndex:i];
-		AZGlyphData *info 		= [font glyphDataFor:c];
-		if (i<from)
-			rect.origin.x  	   += info.rect.size.width;
-		else if (i<to)
-			rect.size.width    += info.rect.size.width;
-
-		int h = info.rect.size.height;
-		rect.size.height = (h > rect.size.height) ? h : rect.size.height;
-		}
-	return rect;
-	}
-
-/*****************************************************************************\
-|* Find the rectangle that contains the character at 'index'
-\*****************************************************************************/
-- (NSRect) rectAt:(int)index of:(NSString *)text
-	{
-	int max = (int) [self.stringValue length] -1;
-	int to  = index+1 < max ? index+1 : max;
-	return [self highlightedRectFrom:index to:to];
-	}
 
 // MARK: Events
 
@@ -567,7 +538,16 @@ static float _dh[STATE_NUM];
     // Set the cursor position
     TTF_SubString substring;
 	int textX = (int)SDL_roundf(p.x - _editArea.origin.x);
-	int index = [self textIndexForX:textX];
+    int textY = (int)SDL_roundf(p.y - _editArea.origin.y);
+
+    if (!TTF_GetTextSubStringForPoint(_text, textX, textY, &substring))
+		{
+        SDL_Log("Couldn't get cursor location: %s\n", SDL_GetError());
+        return false;
+		}
+
+ 	TTF_Font *font = AZApp.controlFont.ttfFont;
+	int index = [self _editGetCursorTextIndexFor:font at:textX in:&substring];
 	[self _editSetCursorPosition:index];
 
     _highlighting 	= YES;
@@ -588,8 +568,17 @@ static float _dh[STATE_NUM];
     // Set the highlight position
 	NSPoint p = [self convertPoint:e.locationInWindow fromView:nil];
 
+	TTF_SubString substring;
 	int textX = (int)SDL_roundf(p.x - _editArea.origin.x);
-    int index = [self textIndexForX:textX];
+    int textY = (int)SDL_roundf(p.y - _editArea.origin.y);
+    if (!TTF_GetTextSubStringForPoint(_text, textX, textY, &substring))
+		{
+        SDL_Log("Couldn't get cursor location: %s\n", SDL_GetError());
+        return false;
+		}
+
+ 	TTF_Font *font = AZApp.controlFont.ttfFont;
+	int index = [self _editGetCursorTextIndexFor:font at:textX in:&substring];
 	[self _editSetCursorPosition:index];
 	[self _editEnsureCursorVisible];
 
@@ -717,7 +706,7 @@ static float _dh[STATE_NUM];
 	{
 	if (self.enabled)
 		{
-		[self _editInsert:[NSString stringWithUTF8String:e->text]];
+		[self _editInsert:e->text];
 		return YES;
 		}
 	return NO;
@@ -730,6 +719,7 @@ static float _dh[STATE_NUM];
 	{
 	if (self.enabled)
 		{
+		[self _editHandleComposition:e];
 		return YES;
 		}
 	return NO;
@@ -742,6 +732,8 @@ static float _dh[STATE_NUM];
 	{
 	if (self.enabled)
 		{
+		[self _editClearCandidates];
+		[self _editSaveCandidates:e];
 		return YES;
 		}
 	return NO;
@@ -769,21 +761,21 @@ static float _dh[STATE_NUM];
 		id<AZRenderer> azr	= AZRenderer.renderer;
 		[azr setBlendMode:SDL_BLENDMODE_BLEND];
 		[azr setDrawColourToRed:0 g:0 b:0 a:0xff];
-		[azr renderFilledRect:_cursorRect];
+		[azr renderFilledRect:NS_RECT(_cursorRect)];
 		}
 	}
 
 /*****************************************************************************\
 |* Draw the actual text itself
 \*****************************************************************************/
-- (void) _editDrawText:(NSString *)text atX:(int)x y:(int)y
+- (void) _editDrawText:(TTF_Text *)text atX:(int)x y:(int)y
 		   withPainter:(AZPainter *)P
 	{
-	[P textAtX:x+2 y:y-2 text:text];
+    TTF_DrawRendererText(text, x+2, y-2);
 	if ((!self.editable) && self.state != AZControlStateNormal)
 		{
-		[P textAtX:x+2 y:y-2 text:text];
-		[P textAtX:x+2 y:y-2 text:text];
+		TTF_DrawRendererText(text, x+2, y-2);
+		TTF_DrawRendererText(text, x+2, y-2);
 		}
 	}
 
@@ -800,11 +792,13 @@ static float _dh[STATE_NUM];
     float x 		= _editArea.origin.x;
     float y 		= _editArea.origin.y;
 
+	//[P rectangleWithRect:_editArea colour:AZColour.redColour];
+
 	NSRect existing 	= azr.clipRect;
 	NSRect nsClip       = NSIntersectionRect(existing, _origArea);
 	[azr setClip:nsClip];
 
-	[self _editDrawText:self.stringValue atX:x y:y withPainter:P];
+	[self _editDrawText:_text atX:x y:y withPainter:P];
 
 	if ((existing.size.width > 0) && (existing.size.height > 0))
 		[azr setClip:existing];
@@ -816,35 +810,57 @@ static float _dh[STATE_NUM];
     if ([self _editGetHighlightExtentsFrom:&marker withLength:&length])
 		{
 		[azr setBlendMode:SDL_BLENDMODE_BLEND_PREMULTIPLIED];
-		NSRect toDraw = [self highlightedRectFrom:marker to:marker+length];
-        if (toDraw.size.width > 0)
+        TTF_SubString **highlights =
+					TTF_GetTextSubStringsForRange(_text, marker, length, NULL);
+        if (highlights)
 			{
+            int i;
 			[azr setDrawColourToRed:0 g:0 b:0xff a:0x10];
-			[azr renderFilledRect:toDraw];
-//            for (i = 0; highlights[i]; ++i)
-//				{
-//                SDL_FRect rect;
-//                SDL_RectToFRect(&highlights[i]->rect, &rect);
-//                rect.x += x;
-//                rect.y += y;
-//				rect.h += 2;
-//				
-//                int maxH  = self.bounds.size.height
-//						  - _bTM[0].size.height
-//						  - _bBM[0].size.height;
-//                rect.h    = (rect.h > maxH) ? maxH : rect.h;
-//
-//				[azr renderFilledRect:NS_RECT(rect)];
-//				}
-//            SDL_free(highlights);
+            for (i = 0; highlights[i]; ++i)
+				{
+                SDL_FRect rect;
+                SDL_RectToFRect(&highlights[i]->rect, &rect);
+                rect.x += x;
+                rect.y += y;
+				rect.h += 2;
+				
+                int maxH  = self.bounds.size.height
+						  - _bTM[0].size.height
+						  - _bBM[0].size.height;
+                rect.h    = (rect.h > maxH) ? maxH : rect.h;
+
+				[azr renderFilledRect:NS_RECT(rect)];
+				}
+            SDL_free(highlights);
 			}
 		}
 
 
-    // Calculate the cursor rect
-	NSString *sub 	= [self.stringValue substringToIndex:_cursor];
-	int cx			= [AZApp.controlFont textWidthFor:sub];
-	_cursorRect 	= NSMakeRect(cx, 0, 1, self.bounds.size.height);
+    // Calculate the cursor rect, used for positioning candidates
+	TTF_SubString cursor;
+	if (TTF_GetTextSubString(_text, _cursor, &cursor))
+		{
+		SDL_FRect cursor_rect;
+		SDL_RectToFRect(&cursor.rect, &cursor_rect);
+
+		if (TTF_GetFontDirection(font) == TTF_DIRECTION_RTL)
+			cursor_rect.x += cursor.rect.w;
+
+            cursor_rect.x += _editArea.origin.x;
+            cursor_rect.y += _editArea.origin.y;
+            cursor_rect.w = 1.f;
+
+            SDL_copyp(&_cursorRect, &cursor_rect);
+
+            [self _editUpdateTextInputArea];
+        }
+
+	if (_compositionLength > 0)
+		[self _editDrawComposition];
+
+	if (_candidates)
+		[self _editDrawCandidatesWithPainter:P];
+
 	}
 
 // MARK: Selection
@@ -889,6 +905,15 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (BOOL) _editCreate
 	{
+	AZApplication *app = AZApp;
+
+	_text	= TTF_CreateText(app.textEngine, app.controlFont.ttfFont, NULL, 0);
+	if (_text == nil)
+		{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+				"Cannot create TTF text renderer!");
+		return NO;
+		}
 	_highlightFrom = -1;
 	_highlightTo = -1;
 
@@ -904,6 +929,9 @@ static float _dh[STATE_NUM];
 	_editArea = NSMakeRect(X,Y,W,H);
 		 //NSInsetRect(self.bounds, 4, 2);
 	_origArea = _editArea;
+
+	// We support rendering the composition and candidates
+    SDL_SetHint(SDL_HINT_IME_IMPLEMENTED_UI, "composition,candidates");
 
 	return YES;
 	}
@@ -921,18 +949,22 @@ static float _dh[STATE_NUM];
 /*****************************************************************************\
 |* Insert text
 \*****************************************************************************/
-- (void) _editInsert:(NSString *)text
+- (void) _editInsert:(const char *)text
 	{
 	if (!text)
 		return;
 
 	[self _editDeleteHighlight];
 
-	NSString *pre = [self.stringValue substringToIndex:_cursor];
-	NSString *pst = [self.stringValue substringFromIndex:_cursor];
-	self.stringValue = [NSString stringWithFormat:@"%@%@%@", pre, text, pst];
+    if (_compositionLength > 0)
+		{
+        TTF_DeleteTextString(_text, _compositionStart, _compositionLength);
+        _compositionLength = 0;
+		}
 
-	[self _editSetCursorPosition:(int)(_cursor + text.length)];
+    size_t length = SDL_strlen(text);
+    TTF_InsertTextString(_text, _cursor, text, length);
+    [self _editSetCursorPosition:(int)(_cursor + length)];
 	[self _editEnsureCursorVisible];
 
 	[self setNeedsDisplay:YES];
@@ -944,27 +976,29 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (void) _editEnsureCursorVisible
 	{
-	if (_origArea.size.width == 0)
-		return;
-
-	NSString *copy = self.stringValue.copy;
-	NSRect fromCursor = [self rectAt:_cursor of:copy];
-
-	// If the cursor would go off the screen to the right, push the
-	// editArea off to the left to compensate
-	int cx = fromCursor.size.width + fromCursor.origin.x;
-	int cumulativeWidth = 0;
-	int maxX = _origArea.size.width
-			- _bCL[0].size.width
-			- _bCR[0].size.width;
-
-	while (cx - cumulativeWidth > maxX)
+	TTF_SubString cursor;
+	if (_text->text != NULL)
 		{
-		NSRect first = [self rectAt:0 of:copy];
-		cumulativeWidth += first.size.width;
-		copy = [copy substringFromIndex:1];
+		if (TTF_GetTextSubString(_text, _cursor, &cursor))
+			{
+			// If the cursor would go off the screen to the right, push the
+			// editArea off to the left to compensate
+			int cx = cursor.rect.w + cursor.rect.x;
+			int cumulativeWidth = 0;
+			int maxX = _origArea.size.width
+					- _bCL[0].size.width
+					- _bCR[0].size.width;
+			TTF_SubString prefix, next;
+			TTF_GetTextSubString(_text, 0, &prefix);
+			while (cx - cumulativeWidth > maxX)
+				{
+				cumulativeWidth += prefix.rect.w;
+				TTF_GetNextTextSubString(_text, &prefix, &next);
+				prefix = next;
+				}
+			_editArea.origin.x = _origArea.origin.x - cumulativeWidth;
+			}
 		}
-	_editArea.origin.x = _origArea.origin.x - cumulativeWidth;
 	}
 
 /*****************************************************************************\
@@ -972,12 +1006,13 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (BOOL) _editDeleteHighlight
 	{
+    if (!_text->text)
+        return NO;
+
 	int marker, length;
     if ([self _editGetHighlightExtentsFrom:&marker withLength:&length])
 		{
-		NSString *pre = [self.stringValue substringToIndex:marker];
-		NSString *pst = [self.stringValue substringFromIndex:marker+length];
-		self.stringValue = [NSString stringWithFormat:@"%@%@", pre, pst];
+        TTF_DeleteTextString(_text, marker, length);
         [self _editSetCursorPosition:marker];
         _highlightFrom 	= -1;
         _highlightTo 	= -1;
@@ -992,6 +1027,16 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (void) _editSetCursorPosition:(int)position
 	{
+    if (_compositionLength > 0)
+		{
+        // Don't let the cursor be moved into the composition
+        if (position >= _compositionStart
+        &&  position <= (_compositionStart + _compositionLength))
+            return;
+
+        [self _editCancelComposition];
+		}
+
     _cursor = position;
 	[self _editEnsureCursorVisible];
 	}
@@ -1002,20 +1047,41 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (BOOL) _editGetHighlightExtentsFrom:(int *)marker withLength:(int *)length
 	{
-	if (_highlightFrom >= 0 && _highlightTo >= 0)
-		{
-		int marker1 = SDL_min(_highlightFrom, _highlightTo);
-		int marker2 = SDL_max(_highlightFrom, _highlightTo);
-		if (marker2 > marker1)
+		if (_highlightFrom >= 0 && _highlightTo >= 0)
 			{
-			*marker = marker1;
-			*length = marker2 - marker1;
-			return YES;
+			int marker1 = SDL_min(_highlightFrom, _highlightTo);
+			int marker2 = SDL_max(_highlightFrom, _highlightTo);
+			if (marker2 > marker1)
+				{
+				*marker = marker1;
+				*length = marker2 - marker1;
+				return YES;
+				}
 			}
-		}
     return NO;
 	}
 
+
+/*****************************************************************************\
+|* Cancel the composition
+\*****************************************************************************/
+- (void) _editCancelComposition
+	{
+    [self _editResetComposition];
+	SDL_ClearComposition(self.window.window);
+	}
+
+
+/*****************************************************************************\
+|* Reset the composition
+\*****************************************************************************/
+- (void) _editResetComposition
+	{
+    _compositionStart 			= 0;
+    _compositionLength 			= 0;
+    _compositionCursor 			= 0;
+    _compositionCursorLength 	= 0;
+	}
 
 /*****************************************************************************\
 |* Backspace to the beginning of the textfield
@@ -1023,7 +1089,7 @@ static float _dh[STATE_NUM];
 - (void) _editBackspaceToBeginning
 	{
     // Delete to the beginning of the string
-	self.stringValue = @"";
+    TTF_DeleteTextString(_text, 0, _cursor);
 	[self _editSetCursorPosition:0];
 	}
 
@@ -1032,15 +1098,20 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (void) _editBackspace
 	{
+    if (!_text->text)
+        return;
+
 	if ([self _editDeleteHighlight])
 		return;
 
     if (_cursor > 0)
 		{
-		NSString *pre = [self.stringValue substringToIndex:_cursor-1];
-		NSString *pst = [self.stringValue substringFromIndex:_cursor];
-		self.stringValue = [NSString stringWithFormat:@"%@%@", pre, pst];
-        _cursor --;
+        const char *start 	= &(_text->text[_cursor]);
+        const char *next 	= start;
+        SDL_StepBackUTF8(_text->text, &next);
+        int length = (int)(uintptr_t)(start - next);
+        TTF_DeleteTextString(_text, _cursor - length, length);
+        _cursor -= length;
 		[self _editEnsureCursorVisible];
 		}
 	}
@@ -1064,8 +1135,8 @@ static float _dh[STATE_NUM];
 					 ry:_editArea.origin.y + _editArea.size.height
 					 to:&window_edit_rect_max.x
 					 wy:&window_edit_rect_max.y]
-	||  ![azr convertRx:_cursorRect.origin.x
-					 ry:_cursorRect.origin.y
+	||  ![azr convertRx:_cursorRect.x
+					 ry:_cursorRect.y
 					 to:&window_cursor.x
 					 wy:&window_cursor.y])
 		return;
@@ -1084,8 +1155,11 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (void) _editSelectAll
 	{
+    if (_text->text == NULL)
+        return;
+
 	_highlightFrom = 0;
-	_highlightTo = (int)[self.stringValue length] -1;
+	_highlightTo = (int)SDL_strlen(_text->text);
 	}
 
 /*****************************************************************************\
@@ -1093,15 +1167,23 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (void) _editCopy
 	{
+    if (_text->text == NULL)
+        return;
+
     int marker, length;
 	if ([self _editGetHighlightExtentsFrom:&marker withLength:&length])
         {
-		NSRange where = NSMakeRange(marker, length);
-		NSString *sub = [self.stringValue substringWithRange:where];
-		SDL_SetClipboardText(sub.UTF8String);
+        char *temp = (char *)SDL_malloc(length + 1);
+        if (temp)
+			{
+            SDL_memcpy(temp, &(_text->text[marker]), length);
+            temp[length] = '\0';
+            SDL_SetClipboardText(temp);
+            SDL_free(temp);
+			}
 		}
 	else
-		SDL_SetClipboardText(self.stringValue.UTF8String);
+        SDL_SetClipboardText(_text->text);
 	}
 
 /*****************************************************************************\
@@ -1110,7 +1192,7 @@ static float _dh[STATE_NUM];
 - (void) _editPaste
 	{
     const char *text = SDL_GetClipboardText();
-	[self _editInsert:[NSString stringWithUTF8String:text]];
+	[self _editInsert:text];
 	}
 
 /*****************************************************************************\
@@ -1118,26 +1200,29 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (void) _editCut
 	{
+    if (_text->text == NULL)
+        return;
+
     int marker, length;
 	if ([self _editGetHighlightExtentsFrom:&marker withLength:&length])
         {
-		NSRange where 	= NSMakeRange(marker, length);
-		NSString *what 	= [self.stringValue substringWithRange:where];
-		NSString *pre 	= [self.stringValue substringToIndex:marker];
-		NSString *pst 	= [self.stringValue substringFromIndex:marker+length];
-
-		self.stringValue = [NSString stringWithFormat:@"%@%@", pre,pst];
-        SDL_SetClipboardText(what.UTF8String);
-
+        char *temp = (char *)SDL_malloc(length + 1);
+        if (temp)
+			{
+            SDL_memcpy(temp, &(_text->text[marker]), length);
+            temp[length] = '\0';
+            SDL_SetClipboardText(temp);
+            SDL_free(temp);
+			}
+        TTF_DeleteTextString(_text, marker, length);
 		[self _editSetCursorPosition:marker];
         _highlightFrom 	= -1;
         _highlightTo 	= -1;
 		}
 	else
         {
-        SDL_SetClipboardText(self.stringValue.UTF8String);
-		self.stringValue = @"";
-		[self _editSetCursorPosition:0];
+        SDL_SetClipboardText(_text->text);
+        TTF_DeleteTextString(_text, 0, -1);
         }
 	}
 
@@ -1146,7 +1231,12 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (void) _moveCursorToStartOfLine
 	{
-	[self _editSetCursorPosition:0];
+    TTF_SubString substring;
+    if (TTF_GetTextSubString(_text, _cursor, &substring)
+    &&  TTF_GetTextSubStringForLine(_text, substring.line_index, &substring))
+		{
+		[self _editSetCursorPosition:substring.offset];
+		}
 	}
 
 /*****************************************************************************\
@@ -1154,7 +1244,11 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (void) _moveCursorLeft
 	{
-	[self _moveCursorIndex:-1];
+	TTF_Font *font = AZApp.controlFont.ttfFont;
+    if (TTF_GetFontDirection(font) == TTF_DIRECTION_RTL)
+		[self _moveCursorIndex:1];
+    else
+		[self _moveCursorIndex:-1];
 	}
 
 /*****************************************************************************\
@@ -1162,7 +1256,11 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (void) _moveCursorRight
 	{
-	[self _moveCursorIndex:1];
+	TTF_Font *font = AZApp.controlFont.ttfFont;
+    if (TTF_GetFontDirection(font) == TTF_DIRECTION_RTL)
+		[self _moveCursorIndex:-1];
+    else
+		[self _moveCursorIndex:1];
     }
 
 /*****************************************************************************\
@@ -1170,15 +1268,22 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (void) _moveCursorIndex:(int)direction
 	{
+    TTF_SubString substring;
+
     if (direction < 0)
 		{
-		if (_cursor > 0)
-			[self _editSetCursorPosition:_cursor - 1];
+        if (TTF_GetTextSubString(_text, _cursor - 1, &substring))
+			[self _editSetCursorPosition:substring.offset];
 		}
 	else
 		{
-		if (_cursor < self.stringValue.length -1)
-			[self _editSetCursorPosition:_cursor + 1];
+        if (TTF_GetTextSubString(_text,
+								 _cursor,
+								 &substring)
+        &&  TTF_GetTextSubString(_text,
+								 substring.offset + SDL_max(substring.length, 1),
+								 &substring))
+			[self _editSetCursorPosition:substring.offset];
 		}
 	}
 
@@ -1187,7 +1292,10 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (void) _moveCursorToEndOfLine
 	{
-	[self _editSetCursorPosition:(int)self.stringValue.length -1];
+    TTF_SubString substring;
+    if (TTF_GetTextSubString(_text, _cursor, &substring)
+	&&  TTF_GetTextSubStringForLine(_text, substring.line_index, &substring))
+		[self _editSetCursorPosition:substring.offset + substring.length];
 	}
 
 /*****************************************************************************\
@@ -1195,13 +1303,7 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (void) _editDeleteToEnd
 	{
-	if (_cursor > 0)
-		{
-		NSString *pre 		= [self.stringValue substringToIndex:_cursor];
-		self.stringValue 	= pre;
-		}
-	else
-		self.stringValue = @"";
+    TTF_DeleteTextString(_text, _cursor, -1);
 	}
 
 
@@ -1210,13 +1312,307 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (void) _editDelete
 	{
+    if (_text->text == NULL)
+        return;
+
 	if ([self _editDeleteHighlight])
         return;
 
-	NSString *pre = [self.stringValue substringToIndex:_cursor];
-	NSString *pst = [self.stringValue substringFromIndex:_cursor+1];
-	self.stringValue = [NSString stringWithFormat:@"%@%@", pre, pst];
+    const char *start 	= &(_text->text[_cursor]);
+    const char *next 	= start;
+    size_t length 		= SDL_strlen(next);
+    SDL_StepUTF8(&next, &length);
+    length = (next - start);
+    TTF_DeleteTextString(_text, _cursor, (int)length);
 	}
+
+/*****************************************************************************\
+|* Return the byte count for a UTF8 string
+\*****************************************************************************/
+static int UTF8ByteLength(const char *text, int num_codepoints)
+	{
+    const char *start = text;
+    while (num_codepoints > 0)
+		{
+        Uint32 ch = SDL_StepUTF8(&text, NULL);
+        if (ch == 0)
+            break;
+
+        --num_codepoints;
+		}
+    return (int)(uintptr_t)(text - start);
+	}
+
+/*****************************************************************************\
+|* Handle compositional text
+\*****************************************************************************/
+- (void) _editHandleComposition:(SDL_TextEditingEvent *)e
+	{
+	[self _editDeleteHighlight];
+
+    if (_compositionLength > 0)
+		{
+        TTF_DeleteTextString(_text, _compositionStart, _compositionLength);
+		[self _editResetComposition];
+		}
+
+	int length = (int)SDL_strlen(e->text);
+    if (length > 0)
+		{
+        _compositionStart 	= _cursor;
+        _compositionLength 	= length;
+        TTF_InsertTextString(_text, _compositionStart, e->text, _compositionLength);
+        if (e->start > 0 || e->length > 0)
+			{
+            _compositionCursor = UTF8ByteLength(
+								&(_text->text[_compositionStart]), e->start);
+            _compositionCursorLength = UTF8ByteLength(
+					&(_text->text[_compositionStart + _compositionCursor]),
+					e->length);
+			}
+		else
+			{
+            _compositionCursor = length;
+            _compositionCursorLength = 0;
+			}
+		}
+	}
+
+/*****************************************************************************\
+|* Clear the compositional candidates
+\*****************************************************************************/
+- (void) _editClearCandidates
+	{
+    if (_candidates)
+		{
+        TTF_DestroyText(_candidates);
+        _candidates = NULL;
+		}
+    _selectedCandidateStart 	= 0;
+    _selectedCandidateLength 	= 0;
+	}
+
+/*****************************************************************************\
+|* Save the compositional candidates for display/selection
+\*****************************************************************************/
+- (void) _editSaveCandidates:(SDL_Event *)e
+	{
+	[self _editClearCandidates];
+
+    BOOL horizontal 		= e->edit_candidates.horizontal;
+    int numCandidates 		= e->edit_candidates.num_candidates;
+    int selectedCandidate 	= e->edit_candidates.selected_candidate;
+
+    // Calculate the length of the candidates text
+    size_t length = 0;
+    for (int i = 0; i < numCandidates; ++i)
+		{
+        if (horizontal)
+			{
+            if (i > 0)
+                ++length;
+			}
+
+        length += SDL_strlen(e->edit_candidates.candidates[i]);
+
+        if (!horizontal)
+            length ++;
+		}
+    if (length == 0)
+        return;
+
+    ++length; // For null terminator
+
+    char *candidateText = (char *)SDL_malloc(length);
+    if (!candidateText)
+        return;
+
+
+    char *dst = candidateText;
+    for (int i = 0; i < numCandidates; ++i)
+		{
+        if (horizontal)
+			{
+            if (i > 0)
+                *dst++ = ' ';
+			}
+
+        int length = (int)SDL_strlen(e->edit_candidates.candidates[i]);
+        if (i == selectedCandidate)
+			{
+            _selectedCandidateStart  = (int)(uintptr_t)(dst - candidateText);
+            _selectedCandidateLength = length;
+			}
+        SDL_memcpy(dst, e->edit_candidates.candidates[i], length);
+        dst += length;
+
+        if (!horizontal)
+            *dst++ = '\n';
+		}
+    *dst = '\0';
+
+	TTF_Font *font = AZApp.controlFont.ttfFont;
+    _candidates = TTF_CreateText(TTF_GetTextEngine(_text), font, candidateText, 0);
+    SDL_free(candidateText);
+
+    if (_candidates)
+		{
+        float r, g, b, a;
+        TTF_GetTextColorFloat(_text, &r, &g, &b, &a);
+        TTF_SetTextColorFloat(_candidates, r, g, b, a);
+		}
+	else
+		[self _editClearCandidates];
+	}
+
+/*****************************************************************************\
+|* Draw the composition
+\*****************************************************************************/
+- (void) _editDrawComposition
+	{
+    // Draw an underline under the composed text
+	id<AZRenderer> azr			= AZRenderer.renderer;
+	TTF_Font *font 				= AZApp.controlFont.ttfFont;
+	TTF_SubString **substrings	= NULL;
+
+    int fontHeight = TTF_GetFontHeight(font);
+    substrings = TTF_GetTextSubStringsForRange(_text, _compositionStart,
+											   _compositionLength, NULL);
+    if (substrings)
+		{
+        for (int i = 0; substrings[i]; ++i)
+			{
+            SDL_FRect rect;
+            SDL_RectToFRect(&substrings[i]->rect, &rect);
+			rect.x += _editArea.origin.x;
+            rect.y += _editArea.origin.y + fontHeight;
+            rect.h  = 1.0f;
+			[azr renderFilledRect:NS_RECT(rect)];
+			}
+        SDL_free(substrings);
+		}
+
+    // Thicken the underline under the active clause in the composed text
+    if (_compositionCursorLength > 0)
+		{
+        substrings = TTF_GetTextSubStringsForRange(
+							_text,
+							_compositionStart + _compositionCursor,
+							_compositionCursorLength,
+							NULL);
+        if (substrings)
+			{
+            for (int i = 0; substrings[i]; ++i)
+				{
+                SDL_FRect rect;
+                SDL_RectToFRect(&substrings[i]->rect, &rect);
+                rect.x += _editArea.origin.x;
+				rect.y += _editArea.origin.y + fontHeight -1;
+                rect.h = 1.0f;
+				[azr renderFilledRect:NS_RECT(rect)];
+				}
+            SDL_free(substrings);
+			}
+		}
+	}
+
+/*****************************************************************************\
+|* Draw the composition candidates
+\*****************************************************************************/
+- (void) _editDrawCandidatesWithPainter:(AZPainter *)P
+	{
+	id<AZRenderer> azr	= AZRenderer.renderer;
+ 	TTF_Font *font 		= AZApp.controlFont.ttfFont;
+
+	SDL_Rect safe_rect;
+    SDL_FRect candidates_rect;
+    int candidates_w;
+    int candidates_h;
+    float x, y;
+
+    // Position the candidate window
+    TTF_SubString cursor;
+    int offset = _compositionStart;
+    if (_compositionCursorLength > 0)
+        // Place the candidates at the active clause
+        offset += _compositionCursor;
+
+    if (!TTF_GetTextSubString(_text, offset, &cursor))
+        return;
+
+	safe_rect = SDL_RECT(azr.safeAreaForRendering);
+    TTF_GetTextSize(_candidates, &candidates_w, &candidates_h);
+    candidates_rect.x = _editArea.origin.x + cursor.rect.x;
+    candidates_rect.y = _editArea.origin.y + cursor.rect.y + cursor.rect.h + 2.0f;
+    candidates_rect.w = 1.0f + 2.0f + candidates_w + 2.0f + 1.0f;
+    candidates_rect.h = 1.0f + 2.0f + candidates_h + 2.0f + 1.0f;
+    if ((candidates_rect.x + candidates_rect.w) > safe_rect.w)
+		{
+        candidates_rect.x = (safe_rect.w - candidates_rect.w);
+        if (candidates_rect.x < 0.0f)
+            candidates_rect.x = 0.0f;
+		}
+
+    // Draw the candidate background
+	[azr setDrawColourToRed:0xaa g:0xaa b:0xaa a:0xff];
+	[azr renderFilledRect:NS_RECT(candidates_rect)];
+	[azr setDrawColourToRed:0x00 g:0x00 b:0x00 a:0xff];
+	[azr renderRect:NS_RECT(candidates_rect)];
+
+    // Draw the candidates
+    x = candidates_rect.x + 3.0f;
+    y = candidates_rect.y + 3.0f;
+	[self _editDrawText:_candidates atX:x y:y withPainter:P];
+
+    // Underline the selected candidate
+    if (_selectedCandidateLength > 0)
+		{
+		TTF_SubString **substrings	= NULL;
+		int fontHeight 				= TTF_GetFontHeight(font);
+
+        substrings = TTF_GetTextSubStringsForRange(_candidates,
+												   _selectedCandidateStart,
+												   _selectedCandidateLength,
+												   NULL);
+        if (substrings)
+			{
+            for (int i = 0; substrings[i]; ++i)
+				{
+                SDL_FRect rect;
+                SDL_RectToFRect(&substrings[i]->rect, &rect);
+                rect.x += x;
+                rect.y += (y + fontHeight);
+                rect.h = 1.0f;
+				[azr renderFilledRect:NS_RECT(rect)];
+				}
+            SDL_free(substrings);
+			}
+		}
+	}
+
+/*****************************************************************************\
+|* Find the text position for a given mouse position
+\*****************************************************************************/
+- (int) _editGetCursorTextIndexFor:(TTF_Font *)font
+								at:(int)x
+								in:(TTF_SubString *)substring
+	{
+    if (substring->flags & (TTF_SUBSTRING_LINE_END | TTF_SUBSTRING_TEXT_END))
+        return substring->offset;
+
+    bool roundDown;
+    if (TTF_GetFontDirection(font) == TTF_DIRECTION_RTL)
+        roundDown = (x > (substring->rect.x + substring->rect.w / 2));
+    else
+        roundDown = (x < (substring->rect.x + substring->rect.w / 2));
+
+    if (roundDown)
+        // Start the cursor before the selected text
+        return substring->offset;
+	else
+        // Place the cursor after the selected text
+        return substring->offset + substring->length;
+    }
 
 
 @end

@@ -667,7 +667,7 @@ typedef struct
 		|* Create 9-way tileable textures for the whole frame, so we can fill
 		|* in the background of any-size button
 		\*********************************************************************/
-		W = left  + mid  + right;
+		W = left  + mid  + right + 2;
 		H = NSHeight(_cL[i]);
 
 		NSInteger tmp = [azr createTextureOfSize:NSMakeSize(W, H)];
@@ -678,7 +678,9 @@ typedef struct
 		[azr lockFocusOn:tmp];
 		[azr blitFrom:S src:_cL[i] dst:NSMakeRect(0 ,0, left, H)];
 		[azr blitFrom:S src:_cC[i] dst:NSMakeRect(left, 0, mid, H)];
-		[azr blitFrom:S src:_cR[i] dst:NSMakeRect(left+mid, 0, right, H)];
+		[azr blitFrom:S src:_cC[i] dst:NSMakeRect(left+1, 0, mid, H)];
+		[azr blitFrom:S src:_cC[i] dst:NSMakeRect(left+2, 0, mid, H)];
+		[azr blitFrom:S src:_cR[i] dst:NSMakeRect(left+mid+2, 0, right, H)];
 		[azr unlockFocus];
 
 		/*********************************************************************\
@@ -696,7 +698,7 @@ typedef struct
 		[azr blit9WayFrom:tmp
 					  src:NSMakeRect(0,0,W,H)
 					scale:1.f
-					 left:left
+					 left:left+1
 					right:right+1
 					  top:5.f
 				   bottom:5.f
