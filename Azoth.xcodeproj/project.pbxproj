@@ -249,6 +249,13 @@
 			remoteGlobalIDString = F41BC6512D0A61BA00E61EDD;
 			remoteInfo = Azoth;
 		};
+		F4C296F92D405704003432CA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F41BC6492D0A61BA00E61EDD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F4C296F52D4055D2003432CA;
+			remoteInfo = ShaderCompilation;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -439,6 +446,22 @@
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		F41BC6572D0A61BA00E61EDD /* Exceptions for "Azoth" folder in "Azoth" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Resources/ShaderSource/colour.frag,
+				Resources/ShaderSource/colour.frag.spv,
+				Resources/ShaderSource/linepoint.vert,
+				Resources/ShaderSource/linepoint.vert.spv,
+				Resources/ShaderSource/Makefile,
+				Resources/ShaderSource/test.dxil,
+				Resources/ShaderSource/texture_rgb.frag,
+				Resources/ShaderSource/texture_rgb.frag.spv,
+				Resources/ShaderSource/texture_rgba.frag,
+				Resources/ShaderSource/texture_rgba.frag.spv,
+				Resources/ShaderSource/tri_color.vert,
+				Resources/ShaderSource/tri_color.vert.spv,
+				Resources/ShaderSource/tri_texture.vert,
+				Resources/ShaderSource/tri_texture.vert.spv,
+			);
 			publicHeaders = (
 				Azoth.h,
 				Classes/Application/AZAppDelegate.h,
@@ -529,6 +552,7 @@
 				AZCollectionView/CVItemViewController.h,
 				AZCollectionView/CVItemViewController.m,
 				AZCollectionView/item.xib,
+				AZCollectionView/item.zib,
 				AZCollectionView/main.m,
 				AZDemo/AppDelegate.h,
 				AZDemo/AppDelegate.m,
@@ -573,6 +597,7 @@
 				NibTest/Assets.xcassets,
 				NibTest/main.m,
 				NibTest/NibView.m,
+				NibTest/Resources/main.zib,
 				NibTest/view.xib,
 			);
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
@@ -654,6 +679,7 @@
 		F4B3BF462D264E46000C343A /* Exceptions for "Documentation" folder in "Azoth" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				"glsl-to-hlsl.md",
 				Sources/BCCollectionView.md,
 				Sources/Cocotron.md,
 				Sources/SDL2_gfxPrimitives.md,
@@ -986,6 +1012,25 @@
 		};
 /* End PBXHeadersBuildPhase section */
 
+/* Begin PBXLegacyTarget section */
+		F4C296F52D4055D2003432CA /* ShaderCompilation */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "$(ACTION)";
+			buildConfigurationList = F4C296F62D4055D2003432CA /* Build configuration list for PBXLegacyTarget "ShaderCompilation" */;
+			buildPhases = (
+			);
+			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = $PROJECT_DIR/Azoth/Resources/ShaderSource;
+			dependencies = (
+			);
+			name = ShaderCompilation;
+			packageProductDependencies = (
+			);
+			passBuildSettingsInEnvironment = 1;
+			productName = ShaderCompilation;
+		};
+/* End PBXLegacyTarget section */
+
 /* Begin PBXNativeTarget section */
 		F41BC6512D0A61BA00E61EDD /* Azoth */ = {
 			isa = PBXNativeTarget;
@@ -994,12 +1039,12 @@
 				F41BC64D2D0A61BA00E61EDD /* Headers */,
 				F41BC64E2D0A61BA00E61EDD /* Sources */,
 				F41BC64F2D0A61BA00E61EDD /* Frameworks */,
-				F47AB70A2D36C5E200501720 /* Compile Shaders */,
 				F41BC6502D0A61BA00E61EDD /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				F4C296FA2D405704003432CA /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				F41BC6542D0A61BA00E61EDD /* Azoth */,
@@ -1285,6 +1330,9 @@
 					F4BD83792D318D990041034B = {
 						CreatedOnToolsVersion = 16.1;
 					};
+					F4C296F52D4055D2003432CA = {
+						CreatedOnToolsVersion = 16.1;
+					};
 				};
 			};
 			buildConfigurationList = F41BC64C2D0A61BA00E61EDD /* Build configuration list for PBXProject "Azoth" */;
@@ -1314,6 +1362,7 @@
 				F4BD83532D309AB80041034B /* AzothTests */,
 				F4BD83792D318D990041034B /* AZDragAndDrop */,
 				F47AB7382D381F2A00501720 /* GpuTest */,
+				F4C296F52D4055D2003432CA /* ShaderCompilation */,
 			);
 		};
 /* End PBXProject section */
@@ -1397,40 +1446,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		F47AB70A2D36C5E200501720 /* Compile Shaders */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"",
-			);
-			inputPaths = (
-				"$(SRCROOT)/Azoth/Resources/ShaderSource/sprite.comp.hlsl",
-				"$(SRCROOT)/Azoth/Resources/ShaderSource/sprite.vert.hlsl",
-				"$(SRCROOT)/Azoth/Resources/ShaderSource/sprite.frag.hlsl",
-			);
-			name = "Compile Shaders";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(SRCROOT)/Azoth/Resources/Shaders/metal/sprite.comp.msl",
-				"$(SRCROOT)/Azoth/Resources/Shaders/vulcan/sprite.comp.spv",
-				"$(SRCROOT)/Azoth/Resources/Shaders/directx/sprite.comp.dxil",
-				"$(SRCROOT)/Azoth/Resources/Shaders/metal/sprite.vert.msl",
-				"$(SRCROOT)/Azoth/Resources/Shaders/vulcan/sprite.vert.spv",
-				"$(SRCROOT)/Azoth/Resources/Shaders/directx/sprite.vert.dxil",
-				"$(SRCROOT)/Azoth/Resources/Shaders/metal/sprite.frag.msl",
-				"$(SRCROOT)/Azoth/Resources/Shaders/vulcan/sprite.frag.spv",
-				"$(SRCROOT)/Azoth/Resources/Shaders/directx/sprite.frag.dxil",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n: $((i=0))\nwhile [ $i -lt \"$SCRIPT_INPUT_FILE_COUNT\" ]\ndo\n    eval fileIn=\"\\$SCRIPT_INPUT_FILE_${i}\"\n\tshaderDir=\"`echo $fileIn | sed 's/\\/ShaderSource.*//g'`/Shaders\"\n\tshaderStem=`basename $fileIn | sed 's/\\./ /g' | awk '{print $1 \".\" $2}'`\n\n\t$HOME/bin/shadercross \"$fileIn\" -o \"$shaderDir/metal/$shaderStem.msl\"\n\t$HOME/bin/shadercross \"$fileIn\" -o \"$shaderDir/vulcan/$shaderStem.spv\"\n\t$HOME/bin/shadercross \"$fileIn\" -o \"$shaderDir/directx/$shaderStem.dxil\"\n        \t\n    : $((i=i+1))\ndone\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		F41BC64E2D0A61BA00E61EDD /* Sources */ = {
@@ -1579,6 +1594,11 @@
 			isa = PBXTargetDependency;
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
 			targetProxy = F4BD83592D309AB80041034B /* PBXContainerItemProxy */;
+		};
+		F4C296FA2D405704003432CA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F4C296F52D4055D2003432CA /* ShaderCompilation */;
+			targetProxy = F4C296F92D405704003432CA /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2330,6 +2350,31 @@
 			};
 			name = Release;
 		};
+		F4C296F72D4055D2003432CA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEBUGGING_SYMBOLS = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F4C296F82D4055D2003432CA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2455,6 +2500,15 @@
 			buildConfigurations = (
 				F4BD83882D318D990041034B /* Debug */,
 				F4BD83892D318D990041034B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F4C296F62D4055D2003432CA /* Build configuration list for PBXLegacyTarget "ShaderCompilation" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F4C296F72D4055D2003432CA /* Debug */,
+				F4C296F82D4055D2003432CA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -18,6 +18,8 @@ DST_VULCAN	= ../Shaders/vulcan/
 DST_DX		= ../Shaders/directx/
 DX_FILES	= $(addprefix $(DST_DX), $(SPIRV:.spv=.dxil))
 
+SHADERCROSS = $(HOME)/bin/shadercross
+GLSLC 		= /usr/local/bin/glslc
 
 all: vulcan metal directx
 
@@ -36,19 +38,19 @@ clean:
 # Pattern rules for the different types of file
 
 %.vert.spv: %.vert
-	glslc -fshader-stage=vert $<  -o $@
+	$(GLSLC) -fshader-stage=vert $<  -o $@
 
 %.frag.spv: %.frag
-	glslc -fshader-stage=frag $<  -o $@
+	$(GLSLC) -fshader-stage=frag $<  -o $@
 
 %.comp.spv: %.comp
-	glslc -fshader-stage=comp $<  -o $@
+	$(GLSLC) -fshader-stage=comp $<  -o $@
 
 ../Shaders/metal/%.msl: %.spv
-	shadercross $< -o $@
+	$(SHADERCROSS) $< -o $@
 
 ../Shaders/directx/%.dxil: %.spv
-	shadercross $< -o $@
+	$(SHADERCROSS) $< -o $@
 	
 
 .SUFFIXES: .vert .spv .msl .dxil
