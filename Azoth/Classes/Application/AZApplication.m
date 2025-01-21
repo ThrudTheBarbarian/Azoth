@@ -28,6 +28,7 @@
 #import "NSBundle+ZIB.h"
 
 NSString * const kTextureType	= @"texture";
+NSString * const kDefaultTitle	= @"Window title";
 
 NSString * const kUiMap			= @"ui";
 NSString * const kIconsMap		= @"icons";
@@ -67,7 +68,7 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 		_bin 				= [NSMutableArray new];
 		_eventSinks			= [NSMutableArray new];
 		_atlantes			= [NSMutableDictionary new];
-		_windowTitle		= @"Window title";
+		_windowTitle		= kDefaultTitle;
 		_rendererType	 	= AZRendererType2d;
 		_windowFlags		= 0;
 		}
@@ -266,6 +267,8 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 			self.viability = SDL_APP_FAILURE;
 			}
 		}
+	if (![self.windowTitle isEqualToString:kDefaultTitle])
+		_window.title = self.windowTitle;
 
 	/*************************************************************************\
     |* Let the delegate know that we've now launched

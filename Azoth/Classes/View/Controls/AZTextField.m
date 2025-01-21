@@ -833,29 +833,12 @@ static float _dh[STATE_NUM];
     int marker, length;
     if ([self _editGetHighlightExtentsFrom:&marker withLength:&length])
 		{
-		NSLog(@"draw,len = %d,%d", marker, length);
 		[azr setBlendMode:SDL_BLENDMODE_BLEND_PREMULTIPLIED];
 		NSRect toDraw = [self highlightedRectFrom:marker to:marker+length];
         if (toDraw.size.width > 0)
 			{
 			[azr setDrawColourToRed:0 g:0 b:0xff a:0x10];
 			[azr renderFilledRect:toDraw];
-//            for (i = 0; highlights[i]; ++i)
-//				{
-//                SDL_FRect rect;
-//                SDL_RectToFRect(&highlights[i]->rect, &rect);
-//                rect.x += x;
-//                rect.y += y;
-//				rect.h += 2;
-//				
-//                int maxH  = self.bounds.size.height
-//						  - _bTM[0].size.height
-//						  - _bBM[0].size.height;
-//                rect.h    = (rect.h > maxH) ? maxH : rect.h;
-//
-//				[azr renderFilledRect:NS_RECT(rect)];
-//				}
-//            SDL_free(highlights);
 			}
 		}
 
