@@ -1,2 +1,0 @@
-# Hashes of file build rules.
-fc9a830578025179baaa9c1b1a9d642a Azoth/Azoth.h

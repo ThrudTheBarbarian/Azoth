@@ -1,3 +1,0 @@
-/Users/simon/SDL3_Freya/Azoth/build/CMakeFiles/Azoth.dir
-/Users/simon/SDL3_Freya/Azoth/build/CMakeFiles/edit_cache.dir
-/Users/simon/SDL3_Freya/Azoth/build/CMakeFiles/rebuild_cache.dir
