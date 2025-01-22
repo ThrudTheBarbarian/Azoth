@@ -522,13 +522,15 @@
 	_frame=frame;
 
 	// Not implemented yet, but note for later
-	//[_window invalidateCursorRectsForView:self]; // this also invalidates tracking areas
+	// this also invalidates tracking areas
+	//[_window invalidateCursorRectsForView:self];
 
    if (_autoresizesSubviews)
 		[self resizeSubviewsWithOldSize:old];
 
 	// Invalidate the visible rect
 	[self _invalidateTransforms];
+	[self setNeedsDisplay:YES];
 
 	// If the current backing texture is smaller than the new size, then
 	// install a new backing texture to match
