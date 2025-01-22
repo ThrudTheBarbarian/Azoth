@@ -114,7 +114,7 @@
 	NSDictionary *view = win[@"view"];
 	if (view)
 		{
-		NSDictionary *viewInfo = [self _createView:view withKey:@"view"];
+		NSDictionary *viewInfo = [self _createView:view withKey:@"contentView"];
 		if (viewInfo.count > 0)
 			window[@"view"] = viewInfo;
 		}
@@ -136,6 +136,7 @@
 	dispatch_once(&onceToken,
 		^{
 		map = @{
+			@"contentView" 			: @"AZWindowContentView",
 			@"customView" 			: @"AZView",
 			@"view" 				: @"AZView",
 			@"button"				: @"AZButton",
@@ -147,7 +148,8 @@
 			@"clipView"				: @"AZClipView",
 			@"tableView"			: @"AZTableView",
 			@"outlineView"			: @"AZOutlineView",
-			@"splitView"			: @"AZSplitView"
+			@"splitView"			: @"AZSplitView",
+			@"collectionView"		: @"AZCollectionView"
 			};
 		});
 
