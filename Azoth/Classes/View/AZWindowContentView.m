@@ -54,6 +54,7 @@
 - (void) _commonWindowContentViewInit
 	{
 	self.backgroundColour 	= AZColour.grey95;
+	self.autoresizingMask	= AZViewWidthSizable | AZViewHeightSizable;
 	_drag  					= nil;
 	}
 
