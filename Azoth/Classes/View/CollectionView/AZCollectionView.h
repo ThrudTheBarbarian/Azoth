@@ -158,6 +158,12 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 - (void)softReloadDataWithCompletionBlock:(nullable dispatch_block_t)block;
 
+/*****************************************************************************\
+|* Set the "datasource". There is no real datasource, it's just helpful to
+|* have the key available in case its set in IB. Any set on the datasource
+|* will actually set the delegate
+\*****************************************************************************/
+- (void) setDataSource:(id<AZCollectionViewDelegate>)datasource;
 
 /*****************************************************************************\
 |* Properties

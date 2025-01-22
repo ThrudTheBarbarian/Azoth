@@ -139,6 +139,17 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 	}
 
 /*****************************************************************************\
+|* Set the "dataSource". There is no real datasource, it's just helpful to
+|* have the key available in case its set in IB. Any set on the datasource
+|* will actually set the delegate
+\*****************************************************************************/
+- (void) setDataSource:(id<AZCollectionViewDelegate>)datasource
+	{
+	_delegate = datasource;
+	}
+
+
+/*****************************************************************************\
 |* KVO handling
 \*****************************************************************************/
 - (void) observeValueForKeyPath:(NSString *)keyPath
