@@ -458,8 +458,6 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
         NSObject *child = [src outlineView:self child:i ofItem:item];
 		[toRemove removeObject:TO_KEY(child)];
 
-		//NSLog(@"got child %@ for row %d, level %d",
-		//      child, (int)_numberOfCachedRows, (int)level);
 		_rowToItem[@(_numberOfCachedRows)] = child;
 		NSString *key = TO_KEY(child);
 

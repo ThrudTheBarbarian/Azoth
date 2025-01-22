@@ -726,7 +726,6 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 
 				[self setNeedsDisplay:YES];
 				changed = YES;
-				// NSLog(@"NSTableView row %d for redraw.", i);
 				}
 			}
 

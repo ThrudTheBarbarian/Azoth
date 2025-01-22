@@ -755,7 +755,6 @@ static float _rowHeightAtIndex(AZTableView *self, NSInteger index)
 
 				[self setNeedsDisplay:YES];
 				changed = YES;
-				// NSLog(@"NSTableView row %d for redraw.", i);
 				}
 			}
 
@@ -1734,8 +1733,6 @@ static float _rowHeightAtIndex(AZTableView *self, NSInteger index)
 		[self setNeedsDisplay:YES];
 		return YES;
 		}
-
-    // NSLog(@"click in col %d row %d", _clickedColumn, _clickedRow);
 
 	/*************************************************************************\
 	|* single click behavior

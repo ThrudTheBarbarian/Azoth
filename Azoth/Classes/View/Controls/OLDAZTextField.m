@@ -938,15 +938,6 @@ static float _dh[STATE_NUM];
 
 
 /*****************************************************************************\
-|* Called on a view when it resizes
-\*****************************************************************************/
-//- (void) didResizeFrom:(NSRect)oldFrame
-//	{
-//	NSLog(@"did resize from %@ to %@", NSStringFromRect(oldFrame),
-//		NSStringFromRect(self.frame));
-//	}
-
-/*****************************************************************************\
 |* Insert text
 \*****************************************************************************/
 - (void) _editInsert:(const char *)text

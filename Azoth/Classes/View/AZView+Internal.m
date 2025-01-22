@@ -48,9 +48,6 @@
 	NSRect global 	= [self visibleRect];
 	global			= [self convertRect:global toView:nil];
 
-//	if (e.type == AZLeftMouseDown)
-//		NSLog(@"click!");
-
 	BOOL done 	= NO;
 	for (AZView *subview in self.subviews)
 		{
