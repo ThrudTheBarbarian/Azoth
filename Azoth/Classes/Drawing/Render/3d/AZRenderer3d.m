@@ -2932,6 +2932,10 @@ static SDL_SpinLock 	_textureLock;
 		NSRect clip	= NS_RECT(_state.scissor);
 		clip		= NSIntersectionRect(all, clip);
 
+		NSRect back	= NSZeroRect;
+		back.size 	= _backbuffer.size;
+		clip 		= NSIntersectionRect(clip, back);
+
 		SDL_Rect scissor = SDL_RECT(clip);
         SDL_SetGPUScissor(_state.renderPass, &scissor);
         _state.scissorWasEnabled = YES;
@@ -2954,10 +2958,11 @@ static SDL_SpinLock 	_textureLock;
 - (SDL_GPURenderPass *) _restartRenderPass
 	{
     if (_state.renderPass)
-        SDL_EndGPURenderPass(_state.renderPass);
+		{
+		SDL_EndGPURenderPass(_state.renderPass);
+		}
 
-
-    _state.renderPass = SDL_BeginGPURenderPass(_state.commandBuffer,
+	_state.renderPass = SDL_BeginGPURenderPass(_state.commandBuffer,
 											   &_state.colourAttachment,
 											   1,
 											   NULL);
@@ -3053,6 +3058,8 @@ static SDL_SpinLock 	_textureLock;
 	if (!_backbuffer)
         return NO;
 
+	[self _updateMainViewDimensions];
+	[self _updatePixelClipRect:&_mainView];
     return YES;
 	}
 
@@ -3908,6 +3915,7 @@ float AZsRGBfromLinear(float v)
         SDL_BlitGPUTexture(_state.commandBuffer, &blitInfo);
 
         SDL_SubmitGPUCommandBuffer(_state.commandBuffer);
+	    _state.commandBuffer = SDL_AcquireGPUCommandBuffer(_gpu);
 
 		BOOL diffW = (swapW != (Uint32) _backbuffer.size.width);
 		BOOL diffH = (swapH != (Uint32) _backbuffer.size.height);
@@ -3925,10 +3933,11 @@ float AZsRGBfromLinear(float v)
 			}
 		}
 	else
+		{
         SDL_SubmitGPUCommandBuffer(_state.commandBuffer);
+	    _state.commandBuffer = SDL_AcquireGPUCommandBuffer(_gpu);
+		}
 
-
-    _state.commandBuffer = SDL_AcquireGPUCommandBuffer(_gpu);
     return YES;
 	}
 
