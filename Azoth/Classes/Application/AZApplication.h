@@ -57,6 +57,18 @@ struct TTF_TextEngine;
 
 
 /*****************************************************************************\
+|* Fetch a font with a given spec, but also cache it so that future requests
+|* can return the same object
+\*****************************************************************************/
+- (nullable AZFont *) fontWithStyle:(AZFontStyle)style;
+
+/*****************************************************************************\
+|* Fetch the system font with a given size, but also cache it so that future
+|* requests can return the same object
+\*****************************************************************************/
+- (nullable AZFont *) systemFontWithSize:(int)points;
+
+/*****************************************************************************\
 |* Application service: dispose of things after renderPresent called. Useful
 |* when the renderer has to hang onto a resource in order to process something
 \*****************************************************************************/

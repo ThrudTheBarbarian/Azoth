@@ -27,6 +27,8 @@
 #import "AZWindowContentView.h"
 #import "NSBundle+ZIB.h"
 
+#define FONT_KEY(x) [NSString stringWithFormat:@"%@:%d:%d",x.name,x.size,x.style]
+
 NSString * const kTextureType	= @"texture";
 
 NSString * const kUiMap			= @"ui";
@@ -53,6 +55,10 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 // A list of objects in the ZIB that we loaded
 @property(strong, nonatomic) NSMutableArray<NSObject *> *		zibObjects;
 
+// A map of a fontstyle-to-font, so we can cache the
+// fonts and hand out the same object
+@property(strong, nonatomic)
+NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 @end
 
 @implementation AZApplication
@@ -67,6 +73,7 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 		_bin 				= [NSMutableArray new];
 		_eventSinks			= [NSMutableArray new];
 		_atlantes			= [NSMutableDictionary new];
+		_knownFonts			= [NSMutableDictionary new];
 		_windowTitle		= @"Window title";
 		_rendererType	 	= AZRendererType2d;
 		_windowFlags		= 0;
@@ -116,7 +123,7 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 	|* Load the system font after notifying the delegate, so it has a
 	|* chance to change the system font path
 	\*************************************************************************/
-	self.systemFont = [AZFont systemFontWithsize:_systemFontInfo.size];
+	self.systemFont = [self systemFontWithSize:_systemFontInfo.size];
 	if (!_systemFont)
 		{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -133,7 +140,7 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 		.name 	= AZApp.systemFontInfo.name,
 		.style 	= AZFONT_MEDIUM
 		};
-	_controlFont = [AZFont fontWithStyle:style];
+	_controlFont = [self fontWithStyle:style];
 	if (!_controlFont)
 		{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -150,7 +157,7 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 		.name 	= AZApp.systemFontInfo.name,
 		.style 	= AZFONT_BOLD
 		};
-	_boldControlFont = [AZFont fontWithStyle:bstyle];
+	_boldControlFont = [self fontWithStyle:bstyle];
 	if (!_boldControlFont)
 		{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -304,6 +311,40 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 		rect.size.height	= ((NSNumber *)info[@"h"]).floatValue;
 		}
 	return rect;
+	}
+
+
+/*****************************************************************************\
+|* Fetch a font with a given spec, but also cache it so that future requests
+|* can return the same object
+\*****************************************************************************/
+- (nullable AZFont *) fontWithStyle:(AZFontStyle)style
+	{
+	NSString *key 	= FONT_KEY(style);
+	AZFont *font	= _knownFonts[key];
+	if (font == nil)
+		{
+		font = [AZFont fontWithStyle:style];
+		if (font)
+			_knownFonts[key] = font;
+		}
+
+	return font;
+	}
+
+/*****************************************************************************\
+|* Fetch the system font with a given size, but also cache it so that future
+|* requests can return the same object
+\*****************************************************************************/
+- (nullable AZFont *) systemFontWithSize:(int)points
+	{
+	AZFontStyle style =
+		{
+		.size = points,
+		.name = self.systemFontInfo.name,
+		.style = AZFONT_MEDIUM
+		};
+	return [self fontWithStyle:style];
 	}
 
 /*****************************************************************************\

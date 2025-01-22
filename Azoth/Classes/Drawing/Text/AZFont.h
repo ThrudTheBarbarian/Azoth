@@ -29,7 +29,7 @@ struct TTF_Font;
 + (AZFont *) font;
 + (nullable AZFont *) fontWithStyle:(AZFontStyle)style;
 + (nullable AZFont *) fontWithName:(NSString *)name size:(int)points;
-+ (nullable AZFont *) systemFontWithsize:(int)points;
++ (nullable AZFont *) systemFontWithSize:(int)points;
 
 /*****************************************************************************\
 |* Load a font

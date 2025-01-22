@@ -108,7 +108,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 	return nil;
 	}
 
-+ (nullable AZFont *) systemFontWithsize:(int)points
++ (nullable AZFont *) systemFontWithSize:(int)points
 	{
 	AZFont *font = [[AZFont alloc] init];
 	AZFontStyle style =
