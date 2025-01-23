@@ -39,11 +39,11 @@ static NSString * const kH				= @"height";
 	if ([self[kFlexibleMaxX] isEqualToString:@"YES"])
 		resizeMask |= AZViewMaxXMargin;
 	if ([self[kFlexibleMinY] isEqualToString:@"YES"])
-		resizeMask |= AZViewMinYMargin;
+		resizeMask |= AZViewMaxYMargin;
 	if ([self[kHeightSizable] isEqualToString:@"YES"])
 		resizeMask |= AZViewHeightSizable;
 	if ([self[kFlexibleMaxY] isEqualToString:@"YES"])
-		resizeMask |= AZViewMaxYMargin;
+		resizeMask |= AZViewMinYMargin;
 
 	return resizeMask;
 	}
