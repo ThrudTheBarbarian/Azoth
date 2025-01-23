@@ -285,6 +285,8 @@ static float _dh[STATE_NUM];
 	{
 	[super setStringValue:stringValue];
 	[self setNeedsDisplay:YES];
+    if (self.continuous)
+        [self sendAction:self.action to:self.target];
 	}
 
 - (void) setObjectValue:(NSObject *)objectValue
