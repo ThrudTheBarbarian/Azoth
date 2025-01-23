@@ -119,7 +119,6 @@
 	{
 	if (_bg >= 0)
 		{
-		NSLog(@"class %@ releasing texture %d", self.class, (int)_bg);
 		[AZRenderer.renderer releaseTexture:_bg];
 		_bg = -1;
 		}
