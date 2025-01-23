@@ -91,6 +91,11 @@ struct TTF_TextEngine;
 - (NSArray<NSString *> *) systemSymbolNames;
 
 /*****************************************************************************\
+|* Show an alert dialogue box
+\*****************************************************************************/
+- (void) alert:(NSString *)msg ofType:(AZAlertType)type;
+
+/*****************************************************************************\
 |* Run a modal dialogue-box. This will take over the display until the app
 |* calls -dismissModalView
 \*****************************************************************************/

@@ -503,6 +503,7 @@
 				Classes/Utility/AZObject.h,
 				Classes/Utility/AZTransform.h,
 				Classes/Utility/AZTypes.h,
+				Classes/View/AZAlertView.h,
 				Classes/View/AZImageView.h,
 				Classes/View/AZSplitView.h,
 				Classes/View/AZView.h,

@@ -68,6 +68,15 @@ enum {
 
 
 /*****************************************************************************\
+|* Which type of alert do we support
+\*****************************************************************************/
+typedef enum
+    {
+    AZAlertTypeWarning          = 0,
+    AZAlertTypeError
+    } AZAlertType;
+    
+/*****************************************************************************\
 |* Drag and drop styles. NB: Drag and drop not yet supported. These are just
 |* the constants
 \*****************************************************************************/

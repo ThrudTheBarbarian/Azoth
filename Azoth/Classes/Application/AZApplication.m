@@ -352,6 +352,20 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 	}
 
 /*****************************************************************************\
+|* Create a view and run it as a modal alert
+\*****************************************************************************/
+- (void) alert:(NSString *)lines ofType:(AZAlertType)type
+    {
+	AZWindowContentView *cv = self.window.contentView;
+    AZAlertView *view 		= [AZAlertView withMessage:lines ofType:type];
+	NSRect f 				= view.bounds;
+	f.origin.x 				= (cv.frame.size.width - f.size.width) / 2.f;
+	f.origin.y 				= (cv.frame.size.height - f.size.height) / 2.f;
+	[view setFrame:f];
+	[cv addSubview:view before:nil];
+    }
+
+/*****************************************************************************\
 |* Run a modal dialogue-box. This will take over the display until the app
 |* calls -dismissModalView
 \*****************************************************************************/

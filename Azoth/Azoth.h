@@ -19,6 +19,7 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <SDL3/SDL.h>
 
 #import <Azoth/AZ3dUtils.h>
+#import <Azoth/AZAlertView.h>
 #import <Azoth/AZApplication.h>
 #import <Azoth/AZAppDelegate.h>
 #import <Azoth/AZButton.h>
