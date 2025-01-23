@@ -546,7 +546,10 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 |* Die gracefully
 \*****************************************************************************/
 - (void) terminateBecause:(SDL_AppResult)reason withAppState:(void *)state
-	{}
+	{
+	if ([_delegate respondsToSelector:@selector(applicationWillTerminate)])
+		[_delegate applicationWillTerminate];
+	}
 
 
 /*****************************************************************************\

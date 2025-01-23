@@ -33,6 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 // Called to replace the standard next-frame if it exists
 - (SDL_AppResult) delegateFrame:(void *)appState;
 
+// Called when the application is about to quit
+- (void) applicationWillTerminate;
+
 @required
 /*****************************************************************************\
 |* All AppDelegates need to be KVC-compliant for the following properties
