@@ -931,6 +931,8 @@ static float _dh[STATE_NUM];
 	[self _editEnsureCursorVisible];
 
 	[self setNeedsDisplay:YES];
+    if (self.continuous)
+        [self sendAction:self.action to:self.target];
 	}
 
 
@@ -1022,6 +1024,8 @@ static float _dh[STATE_NUM];
     // Delete to the beginning of the string
 	self.stringValue = @"";
 	[self _editSetCursorPosition:0];
+    if (self.continuous)
+        [self sendAction:self.action to:self.target];
 	}
 
 /*****************************************************************************\
@@ -1039,6 +1043,8 @@ static float _dh[STATE_NUM];
 		self.stringValue = [NSString stringWithFormat:@"%@%@", pre, pst];
         _cursor --;
 		[self _editEnsureCursorVisible];
+        if (self.continuous)
+            [self sendAction:self.action to:self.target];
 		}
 	}
 
@@ -1102,6 +1108,8 @@ static float _dh[STATE_NUM];
 		self.stringValue = @"";
 		[self _editSetCursorPosition:0];
         }
+    if (self.continuous)
+        [self sendAction:self.action to:self.target];
 	}
 
 /*****************************************************************************\
@@ -1165,6 +1173,8 @@ static float _dh[STATE_NUM];
 		}
 	else
 		self.stringValue = @"";
+    if (self.continuous)
+        [self sendAction:self.action to:self.target];
 	}
 
 
@@ -1181,6 +1191,8 @@ static float _dh[STATE_NUM];
 	NSString *pre = [self.stringValue substringToIndex:_cursor];
 	NSString *pst = [self.stringValue substringFromIndex:_cursor+1];
 	self.stringValue = [NSString stringWithFormat:@"%@%@", pre, pst];
+    if (self.continuous)
+        [self sendAction:self.action to:self.target];
 	}
 
 

@@ -31,6 +31,7 @@ NSString * const kZibClosable		= @"closable";
 NSString * const kZibColumns		= @"columns";
 NSString * const kZibConnect		= @"connect";
 NSString * const kZibContentRect	= @"contentRect";
+NSString * const kZibContinuous		= @"continuous";
 NSString * const kZibDestination	= @"destination";
 NSString * const kZibEditable		= @"editable";
 NSString * const kZibFrame			= @"frame";
@@ -336,7 +337,7 @@ NSString * const kZibWindow			= @"window";
 		|* If we have any connections, store them for later
 		\********************************************************************/
 		if (view && viewInfo[kZibConnect])
-			_connect[TO_KEY(view)] = info[kZibConnect];
+			_connect[TO_KEY(view)] = viewInfo[kZibConnect];
 
 		// Add the view to the top-level objects we return back
 		if (view)

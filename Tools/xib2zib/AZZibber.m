@@ -302,6 +302,7 @@
 	{
 	NSDictionary *cellInfo = vi[@"textFieldCell"];
 	[self _xfer:@"editable" in:cellInfo as:@"editable" in:view];
+	[self _xfer:@"continuous" in:cellInfo as:@"continuous" in:view];
 	[self _xfer:@"selectable" in:cellInfo as:@"selectable" in:view];
 	[self _xfer:@"drawsBackground" in:cellInfo as:@"drawsBackground" in:view];
 	[self _xfer:@"title" in:cellInfo as:@"title" in:view];

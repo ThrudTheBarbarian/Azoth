@@ -8,6 +8,7 @@
 #import <SDL3/SDL.h>
 
 #import "AZControl.h"
+#import "AZZib.h"
 
 @implementation AZControl
 
@@ -37,7 +38,9 @@
 		self.stringValue 	= @"";
 		self.state		 	= AZControlStateNormal;
 		_enabled			= YES;
-		_continuous			= NO;
+
+		_continuous			=  ([info[kZibContinuous] isEqualToString:@"YES"])
+							? YES : NO;
 		}
 	return self;
 	}

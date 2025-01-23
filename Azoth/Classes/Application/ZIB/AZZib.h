@@ -17,6 +17,7 @@ extern NSString * const kZibClosable;
 extern NSString * const kZibColumns;
 extern NSString * const kZibConnect;
 extern NSString * const kZibContentRect;
+extern NSString * const kZibContinuous;
 extern NSString * const kZibDestination;
 extern NSString * const kZibEditable;
 extern NSString * const kZibFrame;
