@@ -24,6 +24,7 @@ struct TTF_TextEngine;
 @class AZEventSink;
 @class AZFont;
 @class AZMenu;
+@class AZView;
 @class AZWindow;
 
 @protocol AZAppDelegate;
@@ -88,6 +89,17 @@ struct TTF_TextEngine;
 |* Return a list of system symbol names for the named images
 \*****************************************************************************/
 - (NSArray<NSString *> *) systemSymbolNames;
+
+/*****************************************************************************\
+|* Run a modal dialogue-box. This will take over the display until the app
+|* calls -dismissModalView
+\*****************************************************************************/
+- (void) runModalForView:(AZView *)view;
+
+/*****************************************************************************\
+|* Dismiss a modal view previously started with -runModalForView:
+\*****************************************************************************/
+- (void) dismissModalView;
 
 // MARK: Event sinks
 

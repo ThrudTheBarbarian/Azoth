@@ -108,8 +108,21 @@
 \*****************************************************************************/
 - (void) dealloc
 	{
+	[self purge];
+	}
+
+/*****************************************************************************\
+|* Purge the texture. Shouldn't be needed but sometimes the dealloc() doesn't
+|* seem to be called even if retainCount == 0
+\*****************************************************************************/
+- (void) purge
+	{
 	if (_bg >= 0)
+		{
+		NSLog(@"class %@ releasing texture %d", self.class, (int)_bg);
 		[AZRenderer.renderer releaseTexture:_bg];
+		_bg = -1;
+		}
 	}
 
 // MARK: Event manipulation

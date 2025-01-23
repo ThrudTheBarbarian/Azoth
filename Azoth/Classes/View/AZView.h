@@ -120,6 +120,12 @@ struct SDL_Mutex;
 + (AZView *) viewWithFrame:(NSRect)frame;
 
 /*****************************************************************************\
+|* Purge the texture. Shouldn't be needed but sometimes the dealloc() doesn't
+|* seem to be called even if retainCount == 0
+\*****************************************************************************/
+- (void) purge;
+
+/*****************************************************************************\
 |* Configuration via dictionary. This is called by the NIB loader, but is a
 |* valid way to create the view
 \*****************************************************************************/

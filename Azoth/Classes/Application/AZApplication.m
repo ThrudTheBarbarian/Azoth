@@ -17,6 +17,7 @@
 #import "AZFont.h"
 #import "AZGeometry.h"
 #import "AZIconAtlas.h"
+#import "AZModalShieldView.h"
 #import "AZNotifications.h"
 #import "AZObject.h"
 #import "AZRenderer.h"
@@ -59,6 +60,9 @@ NSMutableDictionary<NSString *, AZIconAtlas *> * 				atlantes;
 // fonts and hand out the same object
 @property(strong, nonatomic)
 NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
+
+// A view to cover the rest of the view and shade it
+@property(strong, nonatomic, nullable) AZView *					modalShield;
 @end
 
 @implementation AZApplication
@@ -345,6 +349,39 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 		.style = AZFONT_MEDIUM
 		};
 	return [self fontWithStyle:style];
+	}
+
+/*****************************************************************************\
+|* Run a modal dialogue-box. This will take over the display until the app
+|* calls -dismissModalView
+\*****************************************************************************/
+- (void) runModalForView:(AZView *)view
+	{
+	AZWindowContentView *cv = self.window.contentView;
+	_modalShield = [[AZModalShieldView alloc] initWithFrame:cv.frame];
+	[cv addSubview:_modalShield before:nil];
+
+	NSRect f = view.bounds;
+	f.origin.x = (cv.frame.size.width - f.size.width) / 2.f;
+	f.origin.y = (cv.frame.size.height - f.size.height) / 2.f;
+	[view setFrame:f];
+	[view setIsOpaque:YES];
+	[view setBackgroundColour:AZColour.controlBackground];
+	[_modalShield addSubview:view];
+	}
+
+/*****************************************************************************\
+|* Dismiss a modal view
+\*****************************************************************************/
+- (void) dismissModalView
+	{
+	for (AZView *view in _modalShield.subviews)
+		[view removeFromSuperview];
+	[_modalShield removeFromSuperview];
+
+	// A bit of a kludge here, not sure why -dealloc isn't being called but
+	// we really want to remove that texture we installed for the modal mode
+	[_modalShield purge];
 	}
 
 /*****************************************************************************\
