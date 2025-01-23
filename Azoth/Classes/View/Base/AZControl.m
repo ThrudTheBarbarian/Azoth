@@ -7,6 +7,7 @@
 
 #import <SDL3/SDL.h>
 
+#import "AZApplication.h"
 #import "AZControl.h"
 #import "AZZib.h"
 
@@ -23,6 +24,7 @@
 		self.state		 	= AZControlStateNormal;
 		_enabled			= YES;
 		_continuous			= NO;
+		_font				= AZApp.controlFont;
 		}
 	return self;
 	}
@@ -38,6 +40,7 @@
 		self.stringValue 	= @"";
 		self.state		 	= AZControlStateNormal;
 		_enabled			= YES;
+		_font				= AZApp.controlFont;
 
 		_continuous			=  ([info[kZibContinuous] isEqualToString:@"YES"])
 							? YES : NO;

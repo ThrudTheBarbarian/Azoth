@@ -26,6 +26,9 @@ typedef enum
 - (instancetype) initWithFrame:(NSRect)frame;
 + (AZButton *) buttonWithFrame:(NSRect)frame;
 + (AZButton *) buttonWithText:(NSString *)text at:(NSPoint)p;
++ (AZButton *) buttonWithText:(NSString *)text
+						   at:(NSPoint)p
+					 withFont:(AZFont *)font;
 
 @property(assign, nonatomic) AZButtonType						type;
 @property(assign, nonatomic) AZCellImagePosition				imagePosition;

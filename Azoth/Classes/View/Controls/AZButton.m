@@ -79,10 +79,18 @@ static dispatch_once_t _rectToken;
 
 + (AZButton *) buttonWithText:(NSString *)text at:(NSPoint)p
 	{
-	int width  			= [AZApp.controlFont textWidthFor:text]
+	return [self buttonWithText:text at:p withFont:AZApp.controlFont];
+	}
+
++ (AZButton *) buttonWithText:(NSString *)text
+						   at:(NSPoint)p
+					 withFont:(AZFont *)font
+	{
+	int width  			= [font textWidthFor:text]
 						+ BUTTON_LEADING + BUTTON_TRAILING;
 	NSRect frame		= NSMakeRect(p.x, p.y, width, BUTTON_HEIGHT);
 	AZButton *button	= [[AZButton alloc] initWithFrame:frame];
+	button.font			= font;
 	button.stringValue	= text;
 	return button;
 	}
@@ -223,6 +231,7 @@ static dispatch_once_t _rectToken;
 
 	[azr setBlendMode:SDL_BLENDMODE_BLEND];
 	NSRect box = NSInsetRect(bounds, 0, 2);
+	[painter setFont:self.font];
 	[painter textInBox:box text:self.stringValue];
 	}
 
@@ -254,11 +263,11 @@ static dispatch_once_t _rectToken;
 	else
 		[painter setTextColour:AZColour.black];
 
-	AZFont *font	= AZApp.controlFont;
-	int y			= H/2-font.baseline/2;
-	int textW		= [font textWidthFor:self.stringValue];
+	int y			= H/2 - self.font.baseline/2;
+	int textW		= [self.font textWidthFor:self.stringValue];
 	int x			= rhs ? NSMaxX(dst) - textW - 5 : NSMaxX(dst) + 5;
 
+	[painter setFont:self.font];
 	[painter textAtX:x y:y text:self.stringValue];
 	}
 

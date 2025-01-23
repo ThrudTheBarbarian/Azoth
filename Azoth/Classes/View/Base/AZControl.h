@@ -11,6 +11,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class AZFont;
+
 @interface AZControl : AZView
 /*****************************************************************************\
 |* Initialisation
@@ -39,6 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(copy, nonatomic) NSString *							stringValue;
 @property(assign, nonatomic) double								doubleValue;
 @property(assign, nonatomic) BOOL								continuous;
+
+@property(strong, nonatomic) AZFont *							font;
 @end
 
 NS_ASSUME_NONNULL_END

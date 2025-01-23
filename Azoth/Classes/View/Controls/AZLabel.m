@@ -40,12 +40,20 @@
 
 + (AZLabel *) labelWithText:(NSString *)text at:(NSPoint)p
 	{
-	AZFont *font		= AZApp.controlFont;
+	return [self labelWithText:text at:p withFont:AZApp.controlFont];
+	}
+
++ (AZLabel *) labelWithText:(NSString *)text
+						 at:(NSPoint)p
+				   withFont:(AZFont *)font
+	{
 	int width  			= [font textWidthFor:text];
 	NSRect frame		= NSMakeRect(p.x, p.y, width, font.height);
 	AZLabel *label		= [[AZLabel alloc] initWithFrame:frame];
 	label.stringValue	= text;
+	label.font			= font;
 	return label;
+
 	}
 
 /*****************************************************************************\
@@ -84,6 +92,7 @@
 	[painter setTextAlignment:_alignment];
 
 	NSRect box = NSInsetRect(self.bounds, 0, 2);
+	[painter setFont:self.font];
 	[painter textInBox:box text:self.stringValue];
 	}
 

@@ -10,6 +10,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class AZFont;
+
 @interface AZLabel : AZControl
 
 /*****************************************************************************\
@@ -17,6 +19,9 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 + (AZLabel *) labelWithFrame:(NSRect)frame;
 + (AZLabel *) labelWithText:(NSString *)text at:(NSPoint)p;
++ (AZLabel *) labelWithText:(NSString *)text
+						 at:(NSPoint)p
+				   withFont:(AZFont *)font;
 
 
 
