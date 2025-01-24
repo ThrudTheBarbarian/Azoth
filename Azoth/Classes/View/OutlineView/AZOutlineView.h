@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Return the number of children for a given item
 - (NSInteger)outlineView:(AZOutlineView *)ov
-  numberOfChildrenOfItem:(NSObject *)item;
+  numberOfChildrenOfItem:(nullable NSObject *)item;
 
 // Tell the outline view whether an item is expandable
 - (BOOL)outlineView:(AZOutlineView *)ov isItemExpandable:(NSObject *)item;
@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 // Get the specified child item of a given item
 - (NSObject *) outlineView:(AZOutlineView *)ov
 					 child:(NSInteger)index
-					ofItem:(id)item;
+					ofItem:(nullable NSObject *)item;
 @end
 
 /*****************************************************************************\
@@ -58,7 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (float) outlineView:(AZOutlineView *)ov
 		  widthOfView:(AZView *)view
 	   forTableColumn:(AZTableColumn *)column
-			   byItem:(NSObject *)item;
+			   byItem:(nullable NSObject *)item;
 
 @end
 
