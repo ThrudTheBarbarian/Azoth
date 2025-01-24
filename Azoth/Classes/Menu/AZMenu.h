@@ -45,9 +45,18 @@ struct AZMenuSize;
 /*****************************************************************************\
 |* Creates a new menu item and adds it to the end of the menu
 \*****************************************************************************/
-- (AZMenuItem *) addItemWithTitle:(NSString *) string
-                           action:(nullable SEL) selector
-                    keyEquivalent:(NSString *) charCode;
+- (AZMenuItem *) addItemWithTitle:(NSString *)title
+                           action:(nullable SEL)selector
+                    keyEquivalent:(NSString *)charCode;
+
+/*****************************************************************************\
+|* Creates a new menu item and adds it to the end of the menu, also assigning
+|* a tag so the menu can be easily recognised later
+\*****************************************************************************/
+- (AZMenuItem *) addItemWithTitle:(NSString *)title
+                           action:(nullable SEL)selector
+                    keyEquivalent:(NSString *)charCode
+							  tag:(NSInteger)tag;
 
 /*****************************************************************************\
 |* Adds a menu item to the end of the menu
@@ -193,10 +202,17 @@ struct AZMenuSize;
 \*****************************************************************************/
 - (void) submenuAction:(id) sender;
 
+/*****************************************************************************\
+|* Show a popup menu and run it, waiting for a click either on the menu or
+|* off it (to dismiss). The first item will be under the mouse
+\*****************************************************************************/
+- (void) popUpMenuAtLocation:(NSPoint) location
+                      inView:(AZView *) view
+					thenCall:(MenuDoneBlock)callback;
 
 /*****************************************************************************\
 |* Show a popup menu and run it, waiting for a click either on the menu or
-|* off it (to dismiss)
+|* off it (to dismiss). The indiciated item will be under the mouse
 \*****************************************************************************/
 - (void) popUpMenuPositioningItem:(AZMenuItem *) item
                        atLocation:(NSPoint) location

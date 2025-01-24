@@ -155,6 +155,22 @@
 	}
 
 /*****************************************************************************\
+|* Creates a new menu item and adds it to the end of the menu
+\*****************************************************************************/
+- (AZMenuItem *) addItemWithTitle:(NSString *)title
+                           action:(nullable SEL)selector
+                    keyEquivalent:(NSString *)charCode
+							  tag:(NSInteger)tag;
+	{
+	AZMenuItem *item = [AZMenuItem itemWithTitle:title
+										  action:selector
+								   keyEquivalent:charCode];
+	[item setTag:tag];
+	[self addItem:item];
+	return item;
+	}
+
+/*****************************************************************************\
 |* Removes a menu item from the menu
 \*****************************************************************************/
 - (void) removeItem:(AZMenuItem *) item
@@ -495,6 +511,20 @@
 
 
 // Show a popup menu and run it
+
+/*****************************************************************************\
+|* Show a popup menu and run it, waiting for a click either on the menu or
+|* off it (to dismiss)
+\*****************************************************************************/
+- (void) popUpMenuAtLocation:(NSPoint) location
+                      inView:(AZView *) view
+					thenCall:(MenuDoneBlock)callback
+	{
+	return [self popUpMenuPositioningItem:[self itemAtIndex:0]
+							   atLocation:location
+								   inView:view
+								 thenCall:callback];
+	}
 
 /*****************************************************************************\
 |* Show a popup menu and run it, waiting for a click either on the menu or
