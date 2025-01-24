@@ -59,6 +59,13 @@ struct AZMenuSize;
 							  tag:(NSInteger)tag;
 
 /*****************************************************************************\
+|* Creates a new menu item and adds it to the end of the menu, also assigning
+|* a tag so the menu can be easily recognised later. This one doesn't allow
+|* for keyboard shortcuts or actions, really useful in popup menus
+\*****************************************************************************/
+- (AZMenuItem *) addItemWithTitle:(NSString *)title tag:(NSInteger)tag;
+
+/*****************************************************************************\
 |* Adds a menu item to the end of the menu
 \*****************************************************************************/
 - (int) widthForString:(NSString *)text;
