@@ -248,6 +248,8 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 \*****************************************************************************/
 - (void)expandItem:(id)item expandChildren:(BOOL)expandChildren
 	{
+	NSMutableArray *items = [self _selectedItems];
+
 	if ([self _delayResizeButExpandItem:item expandChildren:expandChildren])
 		{
 		[self noteNumberOfRowsChanged];
@@ -258,6 +260,9 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 			if ([_outlineColumn width] < [_outlineColumn minWidth])
 				[_outlineColumn setWidth:[_outlineColumn minWidth]];
 			}
+
+		NSIndexSet *selection = [self _selectionFromItems:items];
+		[self selectRowIndexes:selection byExtendingSelection:NO];
 		[self setNeedsDisplay:YES];
 		}
 	}
@@ -269,12 +274,44 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 
 
 /*****************************************************************************\
+|* Get a list of items which are the current selection
+\*****************************************************************************/
+- (NSMutableArray *) _selectedItems
+	{
+	NSIndexSet * selectedRows = [self selectedRowIndexes];
+	NSMutableArray *items = [NSMutableArray new];
+	NSInteger index = selectedRows.firstIndex;
+	while (index != NSNotFound)
+		{
+		[items addObject:[self itemAtRow:index]];
+		index = [selectedRows indexGreaterThanIndex:index];
+		}
+	return items;
+	}
+
+/*****************************************************************************\
+|* Create an indexset for items
+\*****************************************************************************/
+- (NSIndexSet *) _selectionFromItems:(NSArray *)items
+	{
+	NSMutableIndexSet *set = NSMutableIndexSet.new;
+	for (NSObject *item in items)
+		{
+		NSInteger row = [self rowForItem:item];
+		[set addIndex:row];
+		}
+	return set;
+	}
+
+/*****************************************************************************\
 |* Collapse an item, optionally collapsing the children too
 \*****************************************************************************/
 - (void)collapseItem:(NSObject *)item collapseChildren:(BOOL)collapseChildren
 	{
     BOOL collapseThisItem 			= YES;
 	NSNotificationCenter *nc		= NSNotificationCenter.defaultCenter;
+
+	NSMutableArray *items 			= [self _selectedItems];
 
 	DELEGATE(dlg);
     if ([dlg respondsToSelector:@selector(outlineView:shouldCollapseItem:)])
@@ -312,7 +349,13 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
     if (_autoresizeOutline)
 		[self _tightenUpColumn:_outlineColumn];
 
-    [self setNeedsDisplay:YES];
+	if (collapseThisItem)
+		{
+		NSIndexSet *selection = [self _selectionFromItems:items];
+		[self selectRowIndexes:selection byExtendingSelection:NO];
+		}
+		
+	[self setNeedsDisplay:YES];
 	}
 
 - (void)collapseItem:(NSObject *)item
