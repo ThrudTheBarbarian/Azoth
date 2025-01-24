@@ -58,6 +58,7 @@ static NSRect	_rB;
 		self.isOpaque			= YES;
 		self.disclose 			= NSZeroRect;
 		self.preferredWidth		= frame.size.width - DISCLOSURE_WIDTH;
+		self.autoresizingMask	= AZViewWidthSizable;
 		}
 	return self;
 	}
