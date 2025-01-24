@@ -170,6 +170,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 
 	_tableColumns 				= [NSMutableArray  new];
 	self.backgroundColour 		= AZColour.controlBackground;
+	self.isOpaque				= YES;
 	_gridColour 				= AZColour.grid;
 	_gridStyleMask 				= AZTableViewSolidGridLineMask;
 	_alternateRowColours 		= NO;

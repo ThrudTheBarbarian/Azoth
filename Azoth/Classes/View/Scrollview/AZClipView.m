@@ -57,7 +57,7 @@
 \*****************************************************************************/
 - (void) _commonClipViewInit
 	{
-	self.backgroundColour 	= AZColour.control;
+	self.backgroundColour 	= AZColour.controlBackground;
 	self.drawsBackground 	= YES;
 	}
 

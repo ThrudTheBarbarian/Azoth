@@ -97,15 +97,18 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 \*****************************************************************************/
 - (void) _commonOutlineInit
 	{
-	_rowToItem			= [NSMutableDictionary new];
-	_itemToRow			= [NSMutableDictionary new];
-	_itemToParent		= [NSMutableDictionary new];
-	_itemToLevel		= [NSMutableDictionary new];
-	_itemToState		= [NSMutableDictionary new];
-	_itemToNumChildren	= [NSMutableDictionary new];
+	_rowToItem				= [NSMutableDictionary new];
+	_itemToRow				= [NSMutableDictionary new];
+	_itemToParent			= [NSMutableDictionary new];
+	_itemToLevel			= [NSMutableDictionary new];
+	_itemToState			= [NSMutableDictionary new];
+	_itemToNumChildren		= [NSMutableDictionary new];
 
-	_indentPerLevel		= 10;
-	_autoresizeOutline	= YES;
+	_indentPerLevel			= 10;
+	_autoresizeOutline		= YES;
+
+	self.backgroundColour 	= AZColour.controlBackground;
+	self.isOpaque			= YES;
 
 	[self _invalidateRowCache];
 	}
