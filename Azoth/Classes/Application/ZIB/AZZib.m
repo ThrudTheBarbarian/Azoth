@@ -62,6 +62,7 @@ NSString * const kZibSelector		= @"selector";
 NSString * const kZibState			= @"state";
 NSString * const kZibStyle			= @"style";
 NSString * const kZibSubviews  		= @"subviews";
+NSString * const kZibTag			= @"tag";
 NSString * const kZibTarget			= @"target";
 NSString * const kZibTextColour		= @"textColour";
 NSString * const kZibTitle			= @"title";

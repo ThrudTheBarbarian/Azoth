@@ -132,7 +132,7 @@
 	{
 	[_items addObject:newItem];
 	newItem.menu = self;
-	if (_highlightedItem == nil)
+	if ((_highlightedItem == nil) && (_items.count > 1))
 		_highlightedItem = newItem;
 
 	int w = [self widthForString:newItem.title];
@@ -556,6 +556,12 @@
 	[self runMenuFor:item at:p inView:view then:^(BOOL menuClicked) {
 		[self.menuView removeFromSuperview];
 		self.menuView = nil;
+		for (AZMenuItem *item in self.items)
+			if (item.state == AZControlStateValueOn)
+				{
+				self->_highlightedItem = item;
+				break;
+				}
 		callback(menuClicked);
 		}];
 	}

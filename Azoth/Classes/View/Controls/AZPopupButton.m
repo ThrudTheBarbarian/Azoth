@@ -79,13 +79,17 @@ static float 		_uiS[STATE_NUM];		// bottom-border for 9-way
 
 		int idx = 0;
 		int selected = -1;
+		int nextTag = 1;
 		NSString *selectedId	= info[kZibSelect];
 		for (NSDictionary *item in items)
 			{
 			[_menu addItemWithTitle:item[kZibTitle]
 							 action:nil
 					  keyEquivalent:@""];
-			[[_menu lastItem] setTag:idx];
+			NSString *tagInfo = item[kZibTag];
+			int tag = (tagInfo) ? tagInfo.intValue : nextTag;
+			[[_menu lastItem] setTag:tag];
+			nextTag = tag+1;
 			if ([item[kZibId] isEqualToString:selectedId])
 				selected = idx;
 			idx ++;

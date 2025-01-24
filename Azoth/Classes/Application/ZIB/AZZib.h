@@ -48,6 +48,7 @@ extern NSString * const kZibSelector;
 extern NSString * const kZibState;
 extern NSString * const kZibStyle;
 extern NSString * const kZibSubviews;
+extern NSString * const kZibTag;
 extern NSString * const kZibTarget;
 extern NSString * const kZibTextColour;
 extern NSString * const kZibTitle;
