@@ -196,13 +196,13 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 \*****************************************************************************/
 - (BOOL) rightMouseDown:(AZEvent *)e
 	{
-	SEL rightDown = SELECTOR(@"outlineView:rightClickAtRow:item:");
+	SEL rightDown = SELECTOR(@"outlineView:rightClickAt:row:item:");
 	if ([self.delegate respondsToSelector:rightDown])
 		{
 		NSPoint at 		= [self convertPoint:e.locationInWindow fromView:nil];
 		NSInteger row	= [self rowAtPoint:at];
 		NSObject *item	= [self itemAtRow:row];
-		[self.delegate outlineView:self rightClickAtRow:row item:item];
+		[self.delegate outlineView:self rightClickAt:at row:row item:item];
 		}
 	return YES;
 	}

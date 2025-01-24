@@ -60,9 +60,11 @@ NS_ASSUME_NONNULL_BEGIN
 	   forTableColumn:(AZTableColumn *)column
 			   byItem:(nullable NSObject *)item;
 
-// We got a right-click on the outline view
+// We got a right-click on the outline view. Co-ords are in the
+// view co-ordinate space
 - (void) outlineView:(AZOutlineView *)ov
-	 rightClickAtRow:(NSInteger)row
+		rightClickAt:(NSPoint)at
+				 row:(NSInteger)row
 	            item:(nullable NSObject *)item;
 @end
 
