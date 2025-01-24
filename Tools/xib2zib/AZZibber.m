@@ -89,7 +89,8 @@
 	NSDictionary *win = [_info valueForKeyPath:@"document.objects.window"];
 	if (win == nil)
 		{
-		NSLog(@"Can't find the main window");
+		if (_isMainWindow)
+			NSLog(@"Can't find the main window");
 		return;
 		}
 

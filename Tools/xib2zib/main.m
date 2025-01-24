@@ -47,6 +47,8 @@ int main(int argc, const char * argv[])
 			}
 			
 		NSString *path = ap.remainingArgs.firstObject;
+		NSString *file = [path.lastPathComponent stringByDeletingPathExtension];
+		BOOL isMain	   = [file.lowercaseString isEqualToString:@"main"];
 
 		NSFileManager *fm = NSFileManager.defaultManager;
 		if ([fm fileExistsAtPath:path])
@@ -62,6 +64,7 @@ int main(int argc, const char * argv[])
 				printf("source:\n%s", parsed.description.UTF8String);
 
 			AZZibber *zibber = [AZZibber zibberWithDictionary:parsed];
+			zibber.isMainWindow = isMain;
 			[zibber process];
 
 			if (result)

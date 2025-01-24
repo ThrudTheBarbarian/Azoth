@@ -32,6 +32,8 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 - (void) save:(NSString *)path;
 
+
+@property(assign, nonatomic) BOOL							isMainWindow;
 @end
 
 NS_ASSUME_NONNULL_END
