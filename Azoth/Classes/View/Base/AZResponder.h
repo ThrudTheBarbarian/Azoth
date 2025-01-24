@@ -72,6 +72,16 @@ struct SDL_TextInputEvent;
 - (BOOL) mouseWheeled:(AZEvent *)e;
 
 /*****************************************************************************\
+|* Right mouse-button-down event, return YES if we consume the event
+\*****************************************************************************/
+- (BOOL) rightMouseDown:(AZEvent *)e;
+
+/*****************************************************************************\
+|* Right mouse-button-up event, return YES if we consume the event
+\*****************************************************************************/
+- (BOOL) rightMouseUp:(AZEvent *)e;
+
+/*****************************************************************************\
 |* Key event handling. This copes with composition as well as simple key
 |* presses. See AZTextField for details of how to use
 \*****************************************************************************/

@@ -60,6 +60,10 @@ NS_ASSUME_NONNULL_BEGIN
 	   forTableColumn:(AZTableColumn *)column
 			   byItem:(nullable NSObject *)item;
 
+// We got a right-click on the outline view
+- (void) outlineView:(AZOutlineView *)ov
+	 rightClickAtRow:(NSInteger)row
+	            item:(nullable NSObject *)item;
 @end
 
 /*****************************************************************************\

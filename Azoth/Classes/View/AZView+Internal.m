@@ -91,6 +91,15 @@
 						dragView = nil;
 						break;
 
+					case AZRightMouseDown:
+						done = [self rightMouseDown:e];
+						break;
+
+					case AZRightMouseUp:
+						done = [self rightMouseUp:e];
+						dragView = nil;
+						break;
+
 					case AZMouseMoved:
 						// If we're no longer pressing the button, we might
 						// have dragged out of window and released it. Zero out

@@ -9,12 +9,14 @@
 
 #import "AZButton.h"
 #import "AZColour.h"
+#import "AZEvent.h"
 #import "AZNotifications.h"
 #import "AZPainter.h"
 #import "AZObject.h"
 #import "AZOutlineItemView.h"
 #import "AZOutlineView.h"
 #import "AZTableColumn.h"
+#import "AZTableView+Private.h"
 #import "AZTypes.h"
 
 #define ROWHEIGHT		(25.f)
@@ -187,6 +189,22 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 	if (_outlineColumn == nil)
 		_outlineColumn = column;
 	[super addTableColumn:column];
+	}
+
+/*****************************************************************************\
+|* The mouse button was clicked
+\*****************************************************************************/
+- (BOOL) rightMouseDown:(AZEvent *)e
+	{
+	SEL rightDown = SELECTOR(@"outlineView:rightClickAtRow:item:");
+	if ([self.delegate respondsToSelector:rightDown])
+		{
+		NSPoint at 		= [self convertPoint:e.locationInWindow fromView:nil];
+		NSInteger row	= [self rowAtPoint:at];
+		NSObject *item	= [self itemAtRow:row];
+		[self.delegate outlineView:self rightClickAtRow:row item:item];
+		}
+	return YES;
 	}
 
 // MARK: View management
