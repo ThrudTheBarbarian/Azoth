@@ -211,10 +211,16 @@ static dispatch_once_t _rectToken;
 	id<AZRenderer> azr	= AZRenderer.renderer;
 	NSInteger ui		= [AZApp textureFor:kUiMap];
 
-	[azr setBlendMode:SDL_BLENDMODE_ADD];
+	if (self.state == AZControlStateDisabled)
+		[azr setTexture:ui modAlpha:0x40];
+
+	[azr setBlendMode:SDL_BLENDMODE_BLEND];
 	[azr blitFrom:ui src:srcL dst:dstL];
 	[azr tileFrom:ui src:srcC dst:dstC];
 	[azr blitFrom:ui src:srcR dst:dstR];
+
+	if (self.state == AZControlStateDisabled)
+		[azr setTexture:ui modAlpha:0xff];
 
 	[painter setTextAlignment:AZTextAlignmentCenter];
 
