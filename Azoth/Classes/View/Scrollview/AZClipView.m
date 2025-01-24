@@ -167,6 +167,15 @@
 	return [self bounds].origin;
 	}
 
+/*****************************************************************************\
+|* The mouse button was clicked
+\*****************************************************************************/
+- (BOOL) rightMouseDown:(AZEvent *)e
+	{
+	if ([_documentView respondsToSelector:@selector(rightMouseDown:)])
+		return [_documentView rightMouseDown:e];
+	return NO;
+	}
 // MARK: Private methods
 
 /*****************************************************************************\
