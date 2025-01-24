@@ -25,6 +25,7 @@
 |* Constant strings, only really used here, but...
 \*****************************************************************************/
 NSString * const kZibAction	  		= @"action";
+NSString * const kZibAlignment 		= @"alignment";
 NSString * const kZibCircular		= @"circular";
 NSString * const kZibClassname		= @"class";
 NSString * const kZibClosable		= @"closable";

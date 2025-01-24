@@ -67,6 +67,13 @@
 		[self _commonLabelInit];
 		self.stringValue 		= [info AZStringWithKey:kZibTitle
 											  orDefault:@"Label"];
+		NSString *align = info[kZibAlignment];
+		if ([align isEqualToString:@"right"])
+			_alignment = AZTextAlignmentRight;
+		else if ([align isEqualToString:@"center"])
+			_alignment = AZTextAlignmentCenter;
+		else
+			_alignment = AZTextAlignmentLeft;
 		}
 	return self;
 	}

@@ -11,6 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSString * const kZibAction;
+extern NSString * const kZibAlignment;
 extern NSString * const kZibCircular;
 extern NSString * const kZibClassname;
 extern NSString * const kZibClosable;
