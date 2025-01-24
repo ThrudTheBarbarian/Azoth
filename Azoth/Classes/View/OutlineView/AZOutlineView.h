@@ -61,9 +61,12 @@ NS_ASSUME_NONNULL_BEGIN
 			   byItem:(nullable NSObject *)item;
 
 // We got a right-click on the outline view. Co-ords are in the
-// view co-ordinate space
+// view co-ordinate space. Note that the 'view' might be the parent
+// AZClipView, if the click is outside the outlineview itself, but
+// inside the screen-bounds of the clipview
 - (void) outlineView:(AZOutlineView *)ov
 		rightClickAt:(NSPoint)at
+			  inView:(AZView *)view
 				 row:(NSInteger)row
 	            item:(nullable NSObject *)item;
 @end

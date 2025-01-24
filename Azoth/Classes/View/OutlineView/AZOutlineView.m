@@ -196,13 +196,33 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 \*****************************************************************************/
 - (BOOL) rightMouseDown:(AZEvent *)e
 	{
-	SEL rightDown = SELECTOR(@"outlineView:rightClickAt:row:item:");
+	SEL rightDown = SELECTOR(@"outlineView:rightClickAt:inView:row:item:");
 	if ([self.delegate respondsToSelector:rightDown])
 		{
+		AZView *view	= self;
 		NSPoint at 		= [self convertPoint:e.locationInWindow fromView:nil];
+
+		// The point will be invalid if the click happens outside of the
+		// bounds of the outlineview, but inside the bounds of its parent
+		// clipview, so attempt to recover in this case.
+		BOOL pointValid = NO;
+		if ((at.x > 0) && (at.x < self.bounds.size.width))
+			if ((at.y > 0) && (at.y < self.bounds.size.height))
+				pointValid = YES;
+		if (!pointValid)
+			{
+			[self rebuildTransforms];
+			at = [self.superview convertPoint:e.locationInWindow fromView:nil];
+			view = self.superview;
+			}
+			
 		NSInteger row	= [self rowAtPoint:at];
 		NSObject *item	= [self itemAtRow:row];
-		[self.delegate outlineView:self rightClickAt:at row:row item:item];
+		[self.delegate outlineView:self
+					  rightClickAt:at
+							inView:view
+							   row:row
+							  item:item];
 		}
 	return YES;
 	}
