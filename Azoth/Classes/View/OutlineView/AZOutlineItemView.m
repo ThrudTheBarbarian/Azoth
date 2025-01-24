@@ -55,6 +55,7 @@ static NSRect	_rB;
 		self.hostedView			= view;
 		[self addSubview:view];
 		self.backgroundColour 	= AZColour.clear;
+		self.isOpaque			= YES;
 		self.disclose 			= NSZeroRect;
 		self.preferredWidth		= frame.size.width - DISCLOSURE_WIDTH;
 		}
@@ -90,6 +91,8 @@ static NSRect	_rB;
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
+	[super drawInRect:dirtyRect withPainter:painter];
+
 	id<AZRenderer> azr	= AZRenderer.renderer;
 	NSInteger ui		= [AZApp textureFor:kUiMap];
 
@@ -110,7 +113,7 @@ static NSRect	_rB;
 					   bh - _rT.size.height - _rB.size.height};
 
 		NSRect dB	= {bx,
-					   dM.size.height,
+					   bh - _rB.size.height,
 					   bw,
 					   _rB.size.height};
 
