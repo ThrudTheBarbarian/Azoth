@@ -258,6 +258,12 @@ struct SDL_Mutex;
 \*****************************************************************************/
 - (NSRect) convertRect:(NSRect)r toView:(nullable AZView *)otherView;
 
+/*****************************************************************************\
+|* Not normally necessary, but allow a forced rebuild of the transforms to
+|* and from the window co-ordinate space
+\*****************************************************************************/
+- (void) rebuildTransforms;
+
 
 // MARK: Drag and drop
 

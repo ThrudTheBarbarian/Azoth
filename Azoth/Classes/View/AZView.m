@@ -282,6 +282,12 @@
 	return _transformToWindow;
 	}
 
+- (void) rebuildTransforms
+	{
+	[self _invalidateTransforms];
+	_buildTransformsIfNeeded(self);
+	}
+
 /*****************************************************************************\
 |* Set the window for a view, recursively
 \*****************************************************************************/
