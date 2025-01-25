@@ -566,8 +566,7 @@
 - (void) resizeSubviewsWithOldSize:(NSSize)size
 	{
 	for (AZView *subview in self.subviews)
-		if ([subview resizeWithOldSuperviewSize:size])
-			[subview resizeSubviewsWithOldSize:subview.frame.size];
+		[subview resizeWithOldSuperviewSize:size];
 	}
 
 - (BOOL) resizeWithOldSuperviewSize:(NSSize)size
@@ -655,12 +654,11 @@
 	if (!NSEqualRects(frame, _frame))
 		{
 		NSRect oldFrame	= _frame;
-		_frame 		 	= frame;
-		_bounds.size 	= _frame.size;
+		self.frame = frame;
 		[self _installBackingTexture];
 		[self didResizeFrom:oldFrame];
 		}
-		
+
 	[self setNeedsDisplay:YES];
 	return YES;
 	}

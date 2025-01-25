@@ -58,7 +58,7 @@
 		}
 	return self;
 	}
-	
+
 /*****************************************************************************\
 |* Common initialisation between -withFrame and -withDictionary
 \*****************************************************************************/
@@ -212,7 +212,7 @@
 /*****************************************************************************\
 |* Override the resize to manage our subviews
 \*****************************************************************************/
--(void)resizeSubviewsWithOldSize:(NSSize)oldSize
+-(void)resizeWithOldSuperviewSize:(NSSize)oldSize
 	{
 	NSSize  size	= self.bounds.size;
 
@@ -229,10 +229,8 @@
 	if ([_delegate respondsToSelector:method])
 		[_delegate splitView:self resizeSubviewsWithOldSize:oldSize];
 	else
-		{
 		// Apple docs say just call adjustSubviews
 		[self adjustSubviews];
-		}
 	}
 
 // MARK: Events
@@ -591,7 +589,7 @@ static float _constrainTo(float value, float min, float max)
         }
 
     float delta = totalWidthAfter / totalWidthBefore;
-    
+
     NSRect  frame = self.bounds;
     for (NSInteger i = 0; i < count; i++)
 		{
@@ -618,7 +616,6 @@ static float _constrainTo(float value, float min, float max)
 	{
     // Set all the subview widths to the bounds width of the split view
     float width = NSWidth(self.bounds);
-
     NSInteger count = self.subviews.count;
 
     // We've got to figure out how much the delta is between the old and new
