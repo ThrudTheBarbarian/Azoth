@@ -569,99 +569,196 @@
 		[subview resizeWithOldSuperviewSize:size];
 	}
 
-- (BOOL) resizeWithOldSuperviewSize:(NSSize)size
+- (BOOL) resizeWithOldSuperviewSize:(NSSize)oldSize
 	{
-	if (self.autoresizingMask == AZViewNotSizable)
-		return NO;
+	NSRect superFrame 	= _superview.frame;
+	NSRect frame		= self.frame;
+	BOOL originChanged	= NO;
+	BOOL sizeChanged	= NO;
 
-	int dx = self.superview.frame.size.width  - size.width;
-	int dy = self.superview.frame.size.height - size.height;
-
-	BOOL left 	= (self.autoresizingMask & AZViewMinXMargin);
-	BOOL center	= (self.autoresizingMask & AZViewWidthSizable);
-	BOOL right	= (self.autoresizingMask & AZViewMaxXMargin);
-
-	NSRect frame = self.frame;
-
-	// Distribute the gains fairly, so see how many LCR areas can change
-	int count 	= (left ? 1 : 0) + (center ? 1 : 0)  + (right ? 1 : 0);
-	int done  	= 0;
-	if (count > 0)
+	if(_autoresizingMask & AZViewMinXMargin)
 		{
-		int ddx = dx/count;
-		if (left)
+		if (_autoresizingMask & AZViewWidthSizable)
 			{
-			frame.origin.x += ddx;
-			done ++;
-			dx -= ddx;
+			if (_autoresizingMask & AZViewMaxXMargin)
+				{
+				frame.origin.x   += ((superFrame.size.width - oldSize.width)/3);
+				frame.size.width += ((superFrame.size.width - oldSize.width)/3);
+				}
+			else
+				{
+				frame.origin.x 	 += ((superFrame.size.width - oldSize.width)/2);
+				frame.size.width += ((superFrame.size.width - oldSize.width)/2);
+				}
+			originChanged	= YES;
+			sizeChanged		= YES;
 			}
-		int delta = (done == count) ? dx : ddx;
-
-		if (center)
+		else if(_autoresizingMask & AZViewMaxXMargin)
 			{
-			frame.size.width += delta;
-			done ++;
-			dx -= delta;
+			frame.origin.x += ((superFrame.size.width - oldSize.width)/2);
+			originChanged 	= YES;
 			}
-		delta = (done == count) ? dx : ddx;
-
-		if (right)
-			dx -= delta;
-
-		if (dx != 0)
-			SDL_Log("Error in width resizing calculation (dx=%d,%s%s%s)",
-					dx, (left ? "L" : "-"), (center ? "C" : "-"),
-					(right ? "R" : "-"));
+		else
+			{
+			frame.origin.x += superFrame.size.width - oldSize.width;
+			originChanged	= YES;
+			}
+		}
+   else if (_autoresizingMask & AZViewWidthSizable)
+		{
+		if (_autoresizingMask & AZViewMaxXMargin)
+			frame.size.width += ((superFrame.size.width - oldSize.width)/2);
+		else
+			frame.size.width += superFrame.size.width - oldSize.width;
+		sizeChanged=YES;
+		}
+	else if (_autoresizingMask & AZViewMaxXMargin)
+		{
+		// don't move or resize
 		}
 
-	// Same story for the TCB areas
-	BOOL top 	= (self.autoresizingMask & AZViewMaxYMargin);
-	center		= (self.autoresizingMask & AZViewHeightSizable);
-	BOOL bottom	= (self.autoresizingMask & AZViewMinYMargin);
 
-	count 		= (top ? 1 : 0) + (center ? 1 : 0)  + (bottom ? 1 : 0);
-	done  		= 0;
-
-	if (count > 0)
+	if (_autoresizingMask & AZViewMinYMargin)
 		{
-		int ddy = dy/count;
-		if (bottom)
+		if (_autoresizingMask & AZViewHeightSizable)
 			{
-			frame.origin.y += ddy;
-			done ++;
-			dy -= ddy;
+			if (_autoresizingMask & AZViewMaxYMargin)
+				{
+				frame.origin.y    += ((superFrame.size.height - oldSize.height)/3);
+				frame.size.height += ((superFrame.size.height - oldSize.height)/3);
+				}
+			else
+				{
+				frame.origin.y    += ((superFrame.size.height - oldSize.height)/2);
+				frame.size.height += ((superFrame.size.height - oldSize.height)/2);
+				}
+			originChanged=YES;
+			sizeChanged=YES;
 			}
-		int delta = (done == count-1) ? dy : ddy;
-
-		if (center)
+		else if (_autoresizingMask& AZViewMaxYMargin)
 			{
-			frame.size.height += delta;
-			done ++;
-			dy -= delta;
+			frame.origin.y += ((superFrame.size.height - oldSize.height)/2);
+			originChanged=YES;
 			}
-		delta = (done == count-1) ? dy : ddy;
-
-		if (top)
-			dy -= delta;
-
-		if (dy != 0)
-			SDL_Log("Error in height resizing calculation (dy=%d,%s%s%s)",
-					dy, (top ? "T" : "-"), (center ? "C" : "-"),
-					(bottom ? "B" : "-"));
+		else
+			{
+			frame.origin.y+=superFrame.size.height - oldSize.height;
+			originChanged=YES;
+			}
+		}
+	else if (_autoresizingMask & AZViewHeightSizable)
+		{
+		if (_autoresizingMask & AZViewMaxYMargin)
+			frame.size.height += ((superFrame.size.height - oldSize.height)/2);
+		else
+			frame.size.height += superFrame.size.height - oldSize.height;
+		sizeChanged=YES;
 		}
 
-	// Finally, set the frame
-	if (!NSEqualRects(frame, _frame))
+	if(originChanged || sizeChanged)
 		{
-		NSRect oldFrame	= _frame;
-		self.frame = frame;
-		[self _installBackingTexture];
-		[self didResizeFrom:oldFrame];
+		[self setFrame:frame];
+		return YES;
 		}
-
-	[self setNeedsDisplay:YES];
-	return YES;
+	return NO;
 	}
+
+//- (BOOL) resizeWithOldSuperviewSize:(NSSize)size
+//	{
+//	if (self.autoresizingMask == AZViewNotSizable)
+//		return NO;
+//
+//if (size.width == 968)
+//	NSLog(@"size");
+//
+//	int dx = self.superview.frame.size.width  - size.width;
+//	int dy = self.superview.frame.size.height - size.height;
+//
+//	BOOL left 	= (self.autoresizingMask & AZViewMinXMargin);
+//	BOOL hcenter	= (self.autoresizingMask & AZViewWidthSizable);
+//	BOOL right	= (self.autoresizingMask & AZViewMaxXMargin);
+//
+//	NSRect frame = self.frame;
+//
+//	// Distribute the gains fairly, so see how many LCR areas can change
+//	int count 	= (left ? 1 : 0) + (hcenter ? 1 : 0)  + (right ? 1 : 0);
+//	int done  	= 0;
+//	if (count > 0)
+//		{
+//		int ddx = dx/count;
+//		if (left)
+//			{
+//			frame.origin.x += ddx;
+//			done ++;
+//			dx -= ddx;
+//			}
+//		int delta = (done == count) ? dx : ddx;
+//
+//		if (hcenter)
+//			{
+//			frame.size.width += delta;
+//			done ++;
+//			dx -= delta;
+//			}
+//		delta = (done == count) ? dx : ddx;
+//
+//		if (right)
+//			dx -= delta;
+//
+//		if (dx != 0)
+//			SDL_Log("Error in width resizing calculation (dx=%d,%s%s%s)",
+//					dx, (left ? "L" : "-"), (hcenter ? "C" : "-"),
+//					(right ? "R" : "-"));
+//		}
+//
+//	// Same story for the TCB areas
+//	BOOL top 	= (self.autoresizingMask & AZViewMaxYMargin);
+//	BOOL vcenter= (self.autoresizingMask & AZViewHeightSizable);
+//	BOOL bottom	= (self.autoresizingMask & AZViewMinYMargin);
+//
+//	count 		= (top ? 1 : 0) + (vcenter ? 1 : 0)  + (bottom ? 1 : 0);
+//	done  		= 0;
+//
+//	if (count > 0)
+//		{
+//		int ddy = dy/count;
+//		if (bottom)
+//			{
+//			frame.origin.y += ddy;
+//			done ++;
+//			dy -= ddy;
+//			}
+//		int delta = (done == count-1) ? dy : ddy;
+//
+//		if (vcenter)
+//			{
+//			frame.size.height += delta;
+//			done ++;
+//			dy -= delta;
+//			}
+//		delta = (done == count-1) ? dy : ddy;
+//
+//		if (top)
+//			dy -= delta;
+//
+//		if (dy != 0)
+//			SDL_Log("Error in height resizing calculation (dy=%d,%s%s%s)",
+//					dy, (top ? "T" : "-"), (vcenter ? "C" : "-"),
+//					(bottom ? "B" : "-"));
+//		}
+//
+//	// Finally, set the frame
+//	if (!NSEqualRects(frame, _frame))
+//		{
+//		NSRect oldFrame	= _frame;
+//		self.frame = frame;
+//		[self _installBackingTexture];
+//		[self didResizeFrom:oldFrame];
+//		}
+//
+//	[self setNeedsDisplay:YES];
+//	return YES;
+//	}
 
 
 /*****************************************************************************\

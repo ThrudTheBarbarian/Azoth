@@ -212,7 +212,7 @@
 /*****************************************************************************\
 |* Override the resize to manage our subviews
 \*****************************************************************************/
--(void)resizeWithOldSuperviewSize:(NSSize)oldSize
+-(void)resizeSubviewsWithOldSize:(NSSize)oldSize
 	{
 	NSSize  size	= self.bounds.size;
 
@@ -525,7 +525,7 @@
         // Tell the view to redisplay otherwise there are drawing artifacts
         [subview1  setNeedsDisplay: YES];
 		}
-    [self adjustSubviews];
+
     [self setNeedsDisplay:YES];
 	}
 
