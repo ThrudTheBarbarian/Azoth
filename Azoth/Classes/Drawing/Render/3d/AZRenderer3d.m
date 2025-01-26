@@ -2942,12 +2942,16 @@ static SDL_SpinLock 	_textureLock;
 		}
 	else if (_state.scissorWasEnabled)
 		{
-        SDL_Rect r;
-        r.x = (int)_state.viewport.x;
-        r.y = (int)_state.viewport.y;
-        r.w = (int)_state.viewport.w;
-        r.h = (int)_state.viewport.h;
-        SDL_SetGPUScissor(_state.renderPass, &r);
+		NSRect all  = NS_RECT(_state.viewport);
+		NSRect clip	= NS_RECT(_state.scissor);
+		clip		= NSIntersectionRect(all, clip);
+
+		NSRect back	= NSZeroRect;
+		back.size 	= _backbuffer.size;
+		clip 		= NSIntersectionRect(clip, back);
+
+		SDL_Rect scissor = SDL_RECT(clip);
+		SDL_SetGPUScissor(_state.renderPass, &scissor);
         _state.scissorWasEnabled = NO;
 		}
 	}
