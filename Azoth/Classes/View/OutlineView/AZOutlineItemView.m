@@ -127,16 +127,16 @@ static NSRect	_rB;
 		{
 		NSRect src 			= _img[STATE_O];
 		_disclose 			= src;
-		_disclose.origin.x 	= _indent + 4;
-		_disclose.origin.y 	= (self.bounds.size.height - src.size.height)/2;
+		_disclose.origin.x 	= _indent + 2;
+		_disclose.origin.y 	= NSMidY(self.bounds) - NSMidY(src);
 		[azr blitFrom:ui src:src dst:_disclose];
 		}
 	else if (_hasChildren)
 		{
 		NSRect src 			= _img[STATE_C];
 		_disclose 			= src;
-		_disclose.origin.x 	= _indent + 4;
-		_disclose.origin.y 	= (self.bounds.size.height - src.size.height)/2 - 3;
+		_disclose.origin.x 	= _indent + 2;
+		_disclose.origin.y 	= NSMidY(self.bounds) - NSMidY(src);
 		[azr blitFrom:ui src:src dst:_disclose];
 		}
 
@@ -172,7 +172,7 @@ static NSRect	_rB;
 - (BOOL) mouseDown:(AZEvent *)e
 	{
 	NSPoint p = [self convertPoint:e.locationInWindow fromView:nil];
-	if (NSPointInRect(p, _disclose))
+	if (p.x <= NSMaxY(_disclose)+2)
 		_reason = AZOutlineViewItemDisclosed;
 	else
 		_reason = AZOutlineViewItemSelected;
