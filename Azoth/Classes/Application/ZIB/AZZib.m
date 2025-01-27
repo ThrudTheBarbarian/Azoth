@@ -44,6 +44,7 @@ NSString * const kZibHasHeaderView	= @"hasHeaderView";
 NSString * const kZibId				= @"id";
 NSString * const kZibIdentifier		= @"identifier";
 NSString * const kZibImageScaling	= @"imageScaling";
+NSString * const kZibInset			= @"inset";
 NSString * const kZibLabel			= @"label";
 NSString * const kZibMaxValue		= @"maxValue";
 NSString * const kZibMaxWidth		= @"maxWidth";

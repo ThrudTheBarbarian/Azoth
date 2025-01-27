@@ -26,6 +26,7 @@ extern NSString * const kZibFrameStyle;
 extern NSString * const kZibId;
 extern NSString * const kZibIdentifier;
 extern NSString * const kZibImageScaling;
+extern NSString * const kZibInset;
 extern NSString * const kZibHasHeaderView;
 extern NSString * const kZibHLineScroll;
 extern NSString * const kZibHPageScroll;

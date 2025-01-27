@@ -111,9 +111,15 @@ static dispatch_once_t _rectToken;
 		// really closer to 22. Set to 25 to match the default construction
 		// above
 		NSRect f = self.frame;
-		f.size.height = BUTTON_HEIGHT;
+
+		int inset = [info[kZibInset] intValue] + 1;
+		if (inset > 0)
+			f = NSInsetRect(f, inset, 0);
+
+		if (f.size.height > BUTTON_HEIGHT)
+			f.size.height = BUTTON_HEIGHT;
 		self.frame = f;
-		
+
 		if ([info[kZibType] isEqualToString:@"roundRect"])
 			self.type = ButtonTypeRounded;
 		else if ([info[kZibType] isEqualToString:@"check"])
@@ -269,7 +275,7 @@ static dispatch_once_t _rectToken;
 	else
 		[painter setTextColour:AZColour.black];
 
-	int y			= H/2 - self.font.baseline/2;
+	int y			= H/2 - self.font.baseline/2 - 2;
 	int textW		= [self.font textWidthFor:self.stringValue];
 	int x			= rhs ? NSMaxX(dst) - textW - 5 : NSMaxX(dst) + 5;
 
