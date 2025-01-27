@@ -9,6 +9,7 @@
 #import <SDL3_image/SDL_image.h>
 
 #import "AZApplication.h"
+#import "AZColour.h"
 #import "AZImage.h"
 #import "AZImageCache.h"
 #import "AZPainter.h"
@@ -447,12 +448,16 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 				SDL_Log("Cannot convert surface to texture in AZImage");
 			else
 				{
-
 				NSInteger currentFocus = azr.currentFocus;
 				[azr lockFocusOn:ic.textureId];
 
 				NSRect from = NSMakeRect(0,0,surface->w, surface->h);
 				_srcRect.size = from.size;
+
+				// First clear the rect within the image-cache
+				[azr setDrawColour:AZColour.clear];
+				[azr renderFilledRect:_srcRect];
+
 				[azr blitFrom:temp src:from dst:_srcRect];
 				[azr releaseTexture:temp];
 				[azr restoreFocus:currentFocus];
