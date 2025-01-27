@@ -79,6 +79,13 @@
                         <autoresizingMask key="autoresizingMask"/>
                     </tableHeaderView>
                 </scrollView>
+                <slider verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="xzD-Bo-X5j">
+                    <rect key="frame" x="65" y="66" width="96" height="28"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <sliderCell key="cell" state="on" alignment="left" maxValue="100" doubleValue="50" tickMarkPosition="above" sliderType="linear" id="RZ3-LD-FKb">
+                        <font key="font" size="12" name="Helvetica"/>
+                    </sliderCell>
+                </slider>
             </subviews>
             <point key="canvasLocation" x="41" y="154"/>
         </customView>

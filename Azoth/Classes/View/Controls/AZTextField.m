@@ -22,7 +22,7 @@
 #import "AZZib.h"
 
 #define XOFF 		2
-#define YOFF		(-2)
+#define YOFF		(-1)
 enum
 	{
 	STATE_SN = 0,				// Square bezel
@@ -813,11 +813,17 @@ static float _dh[STATE_NUM];
 - (void) _editDrawText:(NSString *)text atX:(int)x y:(int)y
 		   withPainter:(AZPainter *)P
 	{
+	if (self.state == AZControlStateDisabled)
+		[P setTextColour:AZColour.white];
+	else
+		[P setTextColour:AZColour.black];
+
+
 	[P textAtX:x+XOFF y:y+YOFF text:text];
 	if ((!self.editable) && self.state != AZControlStateNormal)
 		{
-		[P textAtX:x+2 y:y-2 text:text];
-		[P textAtX:x+2 y:y-2 text:text];
+		[P textAtX:x+XOFF y:y+YOFF text:text];
+		[P textAtX:x+XOFF y:y+YOFF text:text];
 		}
 	}
 
@@ -828,6 +834,7 @@ static float _dh[STATE_NUM];
 	{
 	id<AZRenderer> azr	= AZRenderer.renderer;
 	[azr setBlendMode:SDL_BLENDMODE_BLEND];
+
 	[azr setDrawColour:AZColour.black];
 
     float x 		= _editArea.origin.x;

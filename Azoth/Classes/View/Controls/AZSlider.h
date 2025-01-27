@@ -24,9 +24,18 @@ typedef enum
 - (instancetype) initWithFrame:(NSRect)frame;
 + (AZSlider *) sliderWithFrame:(NSRect)frame;
 
+// Linear or circular
 @property(assign, nonatomic) AZSliderType						type;
+
+// Maximum allowed value
 @property(assign, nonatomic) double								minValue;
+
+// Minimum allowed value
 @property(assign, nonatomic) double								maxValue;
+
+// Whether to show (and snap to) tick-marks
+@property(assign, nonatomic) int								tickCount;
+
 @end
 
 NS_ASSUME_NONNULL_END

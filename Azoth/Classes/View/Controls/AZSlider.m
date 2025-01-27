@@ -85,6 +85,8 @@ static NSRect	_knob[STATE_NUM];	// knobs
 
 		if ([info[kZibType] isEqualToString:kZibCircular])
 			self.type = SliderTypeCircular;
+
+		_tickCount = ((NSString *)(info[kZibTicks])).intValue;
 		}
 	return self;
 	}
@@ -104,7 +106,8 @@ static NSRect	_knob[STATE_NUM];	// knobs
 		self.doubleValue 		= 0.5;
 		self.minValue			= 0.0;
 		self.maxValue			= 1.0;
-
+		self.tickCount			= 0;
+		
 		NSRect frame			= self.frame;
 		_type		 			= frame.size.width > frame.size.height
 								? SliderTypeHorizontal
@@ -181,6 +184,7 @@ static NSRect	_knob[STATE_NUM];	// knobs
 		}
 	return NO;
 	}
+
 /*****************************************************************************\
 |* Handle a mouse up
 \*****************************************************************************/
@@ -205,6 +209,11 @@ static NSRect	_knob[STATE_NUM];	// knobs
 
 	if (p.x >= X + W)
 		p.x = X + W;
+
+	if (_tickCount > 0)
+		p.x =  [self _tickPositionForMousePosition:p.x
+											 start:_track.origin.x
+											length:_track.size.width];
 
 	self.doubleValue = ((p.x - X) / W)
 					 * (self.maxValue - self.minValue)
@@ -275,6 +284,26 @@ static NSRect	_knob[STATE_NUM];	// knobs
 
 
 /*****************************************************************************\
+|* Figure out which tick we are going to land on
+\*****************************************************************************/
+- (float) _tickPositionForMousePosition:(float)mx
+								  start:(float)X
+								 length:(float)W
+	{
+	float dT = W / (self.tickCount-1);
+
+	if (mx < X + dT/2)
+		return X;
+
+	if (mx > X + W - dT/2)
+		return X+W;
+
+	int ticks = (mx - X) / dT;
+	return X + dT * ticks;
+	}
+
+
+/*****************************************************************************\
 |* Draw the horizontal slider
 \*****************************************************************************/
 - (void) _drawHorizontalInRect:(NSRect)dirtyRect with:(AZPainter *)painter
@@ -316,6 +345,22 @@ static NSRect	_knob[STATE_NUM];	// knobs
 	[azr blitFrom:ui src:sL dst:dL];
 	[azr tileFrom:ui src:sM dst:_track];
 	[azr blitFrom:ui src:sR dst:dR];
+
+	[azr setBlendMode:SDL_BLENDMODE_NONE];
+	// Draw any ticks
+	if (_tickCount > 0)
+		{
+		float x 	= _track.origin.x-1;
+		float y 	= _track.origin.y;
+		float w		= _track.size.width;
+		float dT	= w / (_tickCount-1);
+
+		for (int i=0; i<_tickCount; i++)
+			{
+			[painter lineAtX:x y:y-6 toX:x y:y-2 colour:AZColour.grey37];
+			x += dT;
+			}
+		}
 
 	// Draw the knob
 	float range		= self.maxValue - self.minValue;
