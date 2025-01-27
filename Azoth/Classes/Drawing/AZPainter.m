@@ -782,7 +782,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	if (a != 255)
 		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
 	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
-	result |= [_renderer renderFilledRect:NSMakeRect(x, y, w+1, h+1)];
+	result |= [_renderer renderFilledRect:NSMakeRect(x, y, w, h)];
 	return result;
 	}
 
