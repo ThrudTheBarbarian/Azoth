@@ -477,6 +477,15 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 
 
 /*****************************************************************************\
+|* Set Frame and update the column width to prevent shortening on reload
+\*****************************************************************************/
+- (void) setFrame:(NSRect)frame
+	{
+	_outlineColumn.width = self.frame.size.width;
+	[super setFrame:frame];
+	}
+
+/*****************************************************************************\
 |* Find the frame of an item's view
 \*****************************************************************************/
 - (NSRect) frameOfViewAtColumn:(NSInteger)col row:(NSInteger)row
@@ -598,6 +607,8 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 		if (width > minWidth)
 			minWidth = width;
 		}
+	if (minWidth < self.bounds.size.width)
+		minWidth = self.bounds.size.width;
 
 	[column setMinWidth:minWidth];
 	}

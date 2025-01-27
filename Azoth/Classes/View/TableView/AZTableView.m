@@ -835,6 +835,9 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 
     headerSize.width = size.width;
 
+	if (size.width < self.frame.size.width)
+		size.width = self.frame.size.width;
+		
     [self setFrameSize:size];
     [_headerView setFrameSize:headerSize];
 
