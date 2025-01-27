@@ -52,6 +52,8 @@
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
+	[super drawInRect:dirtyRect withPainter:painter];
+
 	NSRect imgRect = self.bounds;
 
 	if (_frameStyle != AZImageFrameNone)
