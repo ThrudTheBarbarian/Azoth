@@ -283,7 +283,9 @@ NSMutableDictionary<NSString*, NSNumber*> *					itemToNumChildren;
 	NSInteger index = selectedRows.firstIndex;
 	while (index != NSNotFound)
 		{
-		[items addObject:[self itemAtRow:index]];
+		NSObject *candidate = [self itemAtRow:index];
+		if (candidate)
+			[items addObject:candidate];
 		index = [selectedRows indexGreaterThanIndex:index];
 		}
 	return items;
