@@ -10,6 +10,7 @@
 #import "AZImageView.h"
 #import "AZPainter.h"
 #import "AZRenderer.h"
+#import "AZZib.h"
 
 @implementation AZImageView
 
@@ -48,6 +49,60 @@
 
 
 /*****************************************************************************\
+|* Configuration via dictionary. This is called by the NIB loader, but is a
+|* valid way to create the view
+\*****************************************************************************/
+- (instancetype) initWithDictionary:(NSDictionary *)info;
+	{
+	if (self = [super initWithDictionary:info])
+		{
+		NSString *scaling = info[kZibImageScaling];
+		if ([scaling isEqualToString:@"proportionallyDown"])
+			_scaling = AZImageScaleProportionallyDown;
+		else if ([scaling isEqualToString:@"proportionallyUpOrDown"])
+			_scaling = AZImageScaleProportionallyUpOrDown;
+		else if ([scaling isEqualToString:@"axesIndependently"])
+			_scaling = AZImageScaleAxesIndependently;
+		else
+			_scaling = AZImageScaleNone;
+
+		NSString *frame = info[kZibFrameStyle];
+		if ([frame isEqualToString:@"grayBezel"])
+			_frameStyle = AZImageFrameGrayBezel;
+		else if ([frame isEqualToString:@"button"])
+			_frameStyle = AZImageFrameButton;
+		else if ([frame isEqualToString:@"groove"])
+			_frameStyle = AZImageFrameGroove;
+		else if ([frame isEqualToString:@"photo"])
+			_frameStyle = AZImageFramePhoto;
+		else
+			_frameStyle = AZImageFrameNone;
+
+		NSString *align = info[kZibAlignment];
+		if ([align isEqualToString:@"topLeft"])
+			_alignment = AZImageAlignTopLeft;
+		else if ([align isEqualToString:@"top"])
+			_alignment = AZImageAlignTop;
+		else if ([align isEqualToString:@"topRight"])
+			_alignment = AZImageAlignTopRight;
+		else if ([align isEqualToString:@"left"])
+			_alignment = AZImageAlignLeft;
+		else if ([align isEqualToString:@"right"])
+			_alignment = AZImageAlignRight;
+		else if ([align isEqualToString:@"bottomLeft"])
+			_alignment = AZImageAlignBottomLeft;
+		else if ([align isEqualToString:@"bottom"])
+			_alignment = AZImageAlignBottom;
+		else if ([align isEqualToString:@"bottomRight"])
+			_alignment = AZImageAlignBottomRight;
+		else
+			_alignment = AZImageAlignCenter;
+		}
+
+	return self;
+	}
+
+/*****************************************************************************\
 |* draw the image
 \*****************************************************************************/
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
@@ -59,21 +114,22 @@
 	if (_frameStyle != AZImageFrameNone)
 		imgRect = [self _calculateNewImageRectBasedOnFrame:painter];
 
-	switch (_scaling)
-		{
-		case AZImageScaleNone:
-			[self _drawUnscaledIn:imgRect withPainter:painter];
-			break;
-		case AZImageScaleAxesIndependently:
-			[self _drawToFitIn:imgRect withPainter:painter];
-			break;
-		case AZImageScaleProportionallyUpOrDown:
-			[self _drawScaledIn:imgRect withPainter:painter];
-			break;
-		case AZImageScaleProportionallyDown:
-			[self _drawDownscaledIn:imgRect withPainter:painter];
-			break;
-		}
+	if (_image)
+		switch (_scaling)
+			{
+			case AZImageScaleNone:
+				[self _drawUnscaledIn:imgRect withPainter:painter];
+				break;
+			case AZImageScaleAxesIndependently:
+				[self _drawToFitIn:imgRect withPainter:painter];
+				break;
+			case AZImageScaleProportionallyUpOrDown:
+				[self _drawScaledIn:imgRect withPainter:painter];
+				break;
+			case AZImageScaleProportionallyDown:
+				[self _drawDownscaledIn:imgRect withPainter:painter];
+				break;
+			}
 	}
 
 /*****************************************************************************\

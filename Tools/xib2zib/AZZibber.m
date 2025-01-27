@@ -150,7 +150,8 @@
 			@"tableView"			: @"AZTableView",
 			@"outlineView"			: @"AZOutlineView",
 			@"splitView"			: @"AZSplitView",
-			@"collectionView"		: @"AZCollectionView"
+			@"collectionView"		: @"AZCollectionView",
+			@"imageView"			: @"AZImageView"
 			};
 		});
 
@@ -231,7 +232,8 @@
 				@"scrollView"		: @"_handleScrollViewWithInfo:for:",
 				@"tableView"		: @"_handleTableViewWithInfo:for:",
 				@"outlineView"		: @"_handleOutlineViewWithInfo:for:",
-				@"splitView"		: @"_handleSplitViewWithInfo:for:"
+				@"splitView"		: @"_handleSplitViewWithInfo:for:",
+				@"imageView"		: @"_handleImageViewWithInfo:for:"
 				};
 		});
 
@@ -341,6 +343,18 @@
 		else
 			view[@"type"] = @"square";
 		}
+	}
+
+/*****************************************************************************\
+|* Called when this is an imageview-class.
+\*****************************************************************************/
+- (void) _handleImageViewWithInfo:(NSDictionary *)vi
+							  for:(NSMutableDictionary *)view
+	{
+	NSDictionary *cellInfo = vi[@"imageCell"];
+	[self _xfer:@"imageFrameStyle" in:cellInfo as:@"frameStyle" in:view];
+	[self _xfer:@"imageScaling" in:cellInfo as:@"imageScaling" in:view];
+	[self _xfer:@"imageAlignment" in:cellInfo as:@"alignment" in:view];
 	}
 
 /*****************************************************************************\
