@@ -980,7 +980,6 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 \*****************************************************************************/
 - (BOOL) mouseUp:(AZEvent *)e
 	{
-
   	_atDown    			= NSZeroPoint;
   	_atDragged 			= NSZeroPoint;
 	_isDragging			= NO;
@@ -1378,8 +1377,8 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
   
 	for (AZViewController *vc in _visibleGroupVCs.allValues)
 		[vc.view removeFromSuperview];
-	[_visibleVCs removeAllObjects];
-  
+	[_visibleGroupVCs removeAllObjects];
+
 	if (shouldEmptyCaches)
 		{
 		SEL visSel = SELECTOR(@"collectionView:VCNoLongerVisible:");
@@ -1388,6 +1387,16 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 			[vc.view removeFromSuperview];
 			if ([_delegate respondsToSelector:visSel])
 				[_delegate collectionView:self VCNoLongerVisible:vc];
+			}
+    
+		for (AZViewController *vc in _reusableVCs)
+			{
+			if (vc.view.superview)
+				{
+				[vc.view removeFromSuperview];
+				if ([_delegate respondsToSelector:visSel])
+					[_delegate collectionView:self VCNoLongerVisible:vc];
+				}
 			}
     
 		[_reusableVCs removeAllObjects];
