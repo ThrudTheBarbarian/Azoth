@@ -35,6 +35,7 @@ NSString * const kZibContentRect	= @"contentRect";
 NSString * const kZibContinuous		= @"continuous";
 NSString * const kZibDestination	= @"destination";
 NSString * const kZibEditable		= @"editable";
+NSString * const kZibEnabled		= @"enabled";
 NSString * const kZibFrame			= @"frame";
 NSString * const kZibFrameStyle		= @"frameStyle";
 NSString * const kZibHLineScroll	= @"dhLine";

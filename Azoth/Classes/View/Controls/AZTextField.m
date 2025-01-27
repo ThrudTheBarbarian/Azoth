@@ -138,6 +138,10 @@ static float _dh[STATE_NUM];
 		else
 			self.enabled = NO;
 
+
+		if ([info[kZibEnabled] isEqualToString:@"NO"])
+			self.state = AZControlStateDisabled;
+
 		if ([info[kZibType] isEqualToString:kZibRound])
 			self.type = TextFieldRounded;
 		else

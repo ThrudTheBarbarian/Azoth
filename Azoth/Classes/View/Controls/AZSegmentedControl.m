@@ -96,6 +96,9 @@ typedef struct
 		[self _commonSegmentedControlInit];
 		[self _renderTextures];
 
+		if ([info[kZibEnabled] isEqualToString:@"NO"])
+			self.state = AZControlStateDisabled;
+
 		// If we have any segments defined, add them in
 		NSArray *segments = info[kZibSegments];
 		if (segments)

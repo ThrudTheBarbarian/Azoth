@@ -73,6 +73,11 @@ static NSRect	_knob[STATE_NUM];	// knobs
 		self.maxValue 		= [info AZStringWithKey:kZibMaxValue
 									     orDefault:@"1.0"].doubleValue;
 
+		if ([info[kZibEnabled] isEqualToString:@"NO"])
+			self.state = AZControlStateDisabled;
+		else
+			self.state = AZControlStateNormal;
+			
 		if (self.doubleValue < self.minValue)
 			self.doubleValue = self.minValue;
 		if (self.doubleValue > self.maxValue)
@@ -80,8 +85,6 @@ static NSRect	_knob[STATE_NUM];	// knobs
 
 		if ([info[kZibType] isEqualToString:kZibCircular])
 			self.type = SliderTypeCircular;
-
-		self.enabled = YES;
 		}
 	return self;
 	}

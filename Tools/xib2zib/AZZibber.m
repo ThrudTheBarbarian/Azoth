@@ -244,6 +244,7 @@
 	[self _xfer:@"key" in:vi as:@"key" in:view];
 	[self _xfer:@"rect" in:vi as:@"rect" in:view];
 	[self _xfer:@"userLabel" in:vi as:@"label" in:view];
+	[self _xfer:@"enabled" in:vi as:@"enabled" in:view];
 
 	// Override the default class if we have a customClass set
 	NSString *class = vi[@"customClass"];
@@ -312,6 +313,7 @@
 	[self _xfer:@"title" in:cellInfo as:@"title" in:view];
 	[self _xfer:@"sendsActionOnEndEditing" in:cellInfo
 			 as:@"sendsActionOnEndEditing" in:view];
+	[self _xfer:@"enabled" in:cellInfo as:@"enabled" in:view];
 
 	NSArray *colours = nil;
 	id element = cellInfo[@"color"];
@@ -355,6 +357,7 @@
 	[self _xfer:@"imageFrameStyle" in:cellInfo as:@"frameStyle" in:view];
 	[self _xfer:@"imageScaling" in:cellInfo as:@"imageScaling" in:view];
 	[self _xfer:@"imageAlignment" in:cellInfo as:@"alignment" in:view];
+	[self _xfer:@"enabled" in:cellInfo as:@"enabled" in:view];
 	}
 
 /*****************************************************************************\
@@ -465,6 +468,7 @@
 	[self _xfer:@"maxValue" in:cellInfo as:@"maxValue" in:view];
 	[self _xfer:@"minValue" in:cellInfo as:@"minValue" in:view];
 	[self _xfer:@"sliderType" in:cellInfo as:@"type" in:view];
+	[self _xfer:@"enabled" in:cellInfo as:@"enabled" in:view];
 	}
 
 /*****************************************************************************\
@@ -480,6 +484,7 @@
 	[self _xfer:@"type" in:cellInfo as:@"type" in:view];
 	[self _xfer:@"state" in:cellInfo as:@"state" in:view];
 	[self _xfer:@"inset" in:cellInfo as:@"inset" in:view];
+	[self _xfer:@"enabled" in:cellInfo as:@"enabled" in:view];
 	}
 
 /*****************************************************************************\
@@ -497,6 +502,7 @@
 	[self _xfer:@"menu" in:cellInfo as:@"menu" in:view];
 	[self _xfer:@"selectedItem" in:cellInfo as:@"select" in:view];
 	[self _xfer:@"pullsDown" in:cellInfo as:@"pullsDown" in:view];
+	[self _xfer:@"enabled" in:cellInfo as:@"enabled" in:view];
 	}
 
 /*****************************************************************************\
@@ -509,6 +515,7 @@
 	[self _xfer:@"alignment" in:cellInfo as:@"align" in:view];
 	[self _xfer:@"menu" in:cellInfo as:@"menu" in:view];
 	[self _xfer:@"segments.segment" in:cellInfo as:@"segments" in:view];
+	[self _xfer:@"enabled" in:cellInfo as:@"enabled" in:view];
 	}
 
 /*****************************************************************************\

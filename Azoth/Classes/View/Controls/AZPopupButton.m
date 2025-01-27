@@ -95,6 +95,9 @@ static float 		_uiS[STATE_NUM];		// bottom-border for 9-way
 			idx ++;
 			}
 
+		if ([info[kZibEnabled] isEqualToString:@"NO"])
+			self.state = AZControlStateDisabled;
+
 		// If we have a selection, select it.
 		if (selected >= 0)
 			{

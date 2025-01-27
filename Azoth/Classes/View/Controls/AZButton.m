@@ -120,6 +120,9 @@ static dispatch_once_t _rectToken;
 			f.size.height = BUTTON_HEIGHT;
 		self.frame = f;
 
+		if ([info[kZibEnabled] isEqualToString:@"NO"])
+			self.state = AZControlStateDisabled;
+
 		if ([info[kZibType] isEqualToString:@"roundRect"])
 			self.type = ButtonTypeRounded;
 		else if ([info[kZibType] isEqualToString:@"check"])
