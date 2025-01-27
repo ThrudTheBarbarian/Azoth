@@ -165,7 +165,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	_oldFocus 				= [_renderer currentFocus];
 	_focusLocked			= YES;
 
-	[_renderer lockFocusOn:_texture];
+	if (![_renderer lockFocusOn:_texture])
+		SDL_Log("Failed to lock focus on texture %d for %s",
+				(int)_texture, self.class.description.UTF8String);
+
 	if (_view)
 		{
 		[_renderer setClip:_view.dirty];
