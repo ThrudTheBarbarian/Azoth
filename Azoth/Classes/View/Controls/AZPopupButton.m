@@ -263,7 +263,11 @@ static float 		_uiS[STATE_NUM];		// bottom-border for 9-way
 				  dst:self.bounds];
 
 	[azr setBlendMode:SDL_BLENDMODE_BLEND];
-	[painter setTextColour:AZColour.black];
+	if (self.state != AZControlStateDisabled)
+		[painter setTextColour:AZColour.black];
+	else
+		[painter setTextColour:AZColour.grey50];
+
 	NSRect box 		= NSInsetRect(bounds, 5, 2);
 	box.size.width 	= box.size.width + 5 - _uiE[state];
 
@@ -277,6 +281,9 @@ static float 		_uiS[STATE_NUM];		// bottom-border for 9-way
 
 - (BOOL) mouseDown:(AZEvent *)e
 	{
+	if (self.state == AZControlStateDisabled)
+		return NO;
+		
 	if (_menu.pullsDown)
 		_menu.renderFlags = AZMENU_RENDER_BOTTOM;
 	else

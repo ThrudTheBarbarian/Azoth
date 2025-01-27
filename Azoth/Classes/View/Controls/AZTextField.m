@@ -587,6 +587,9 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (BOOL) mouseDown:(AZEvent *)e
 	{
+	if (self.state == AZControlStateDisabled)
+		return NO;
+
 	[self.window makeFirstResponder:self];
 	NSPoint p = [self convertPoint:e.locationInWindow fromView:nil];
 
@@ -610,6 +613,9 @@ static float _dh[STATE_NUM];
 	if (!_highlighting)
 		return NO;
 
+	if (self.state == AZControlStateDisabled)
+		return NO;
+
     // Set the highlight position
 	NSPoint p = [self convertPoint:e.locationInWindow fromView:nil];
 
@@ -629,6 +635,9 @@ static float _dh[STATE_NUM];
 - (BOOL) mouseUp:(AZEvent *)e
 	{
 	if (!_highlighting)
+		return NO;
+
+	if (self.state == AZControlStateDisabled)
 		return NO;
 
     _highlighting 	= NO;
