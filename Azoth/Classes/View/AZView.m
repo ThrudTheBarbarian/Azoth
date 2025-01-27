@@ -402,6 +402,7 @@
 	{
 	AZView *superview = self.superview;
 	[superview _removeSubview:self];
+	self.superview = nil;
 	}
 
 /*****************************************************************************\
