@@ -1053,8 +1053,13 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 			AZDraggingItem *item = [AZDraggingItem itemWithPasteboardWriter:img];
 			item.image			 = img;
 			NSRect itemRect 	 = [_layoutManager rectOfItemAtIndex:idx];
-			itemRect.origin.x 	-= _offset.x;
-			itemRect.origin.y 	-= _offset.y;
+
+			NSPoint p 	= [self convertPoint:e.locationInWindow fromView:nil];
+			float x		= e.locationInWindow.x - p.x;
+			float y		= e.locationInWindow.y - p.y;
+
+			itemRect.origin.x 	+= x - _offset.x;
+			itemRect.origin.y 	+= y - _offset.y;
 			[item setDraggingFrame:itemRect];
 
 			[items addObject:item];
