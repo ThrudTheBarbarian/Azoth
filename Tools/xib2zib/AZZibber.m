@@ -470,6 +470,7 @@
 	[self _xfer:@"sliderType" in:cellInfo as:@"type" in:view];
 	[self _xfer:@"enabled" in:cellInfo as:@"enabled" in:view];
 	[self _xfer:@"numberOfTickMarks" in:cellInfo as:@"ticks" in:view];
+	[self _xfer:@"continuous" in:cellInfo as:@"continuous" in:view];
 	}
 
 /*****************************************************************************\
