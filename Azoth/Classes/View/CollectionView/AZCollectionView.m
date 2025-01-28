@@ -1009,37 +1009,30 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 \*****************************************************************************/
 - (void)initiateDraggingSessionWithEvent:(AZEvent *)e
 	{
-	id<AZPasteboardWriting> writer 			= nil;
 	NSMutableArray<AZDraggingItem *> *items = NSMutableArray.new;
+	AZDraggingItem *item					= nil;
 
-	SEL writeSel = SELECTOR(@"collectionView:writerForItem:");
-	if ([_delegate respondsToSelector:writeSel])
+	SEL imgSel = SELECTOR(@"collectionView:imageForItemAtIndex:");
+	if ([_delegate respondsToSelector:imgSel])
 		{
-		SEL imgSel = SELECTOR(@"collectionView:imageForItemAtIndex:");
-		if ([_delegate respondsToSelector:imgSel])
+		NSInteger index = _originalSelection.firstIndex;
+		while (index != NSNotFound)
 			{
-			NSInteger index = _originalSelection.firstIndex;
-			while (index != NSNotFound)
-				{
-				AZImage *img 		 = [_delegate collectionView:self
-											imageForItemAtIndex:index];
-				writer 				 = [_delegate collectionView:self
-											writerForItemAtIndex:index];
-				AZDraggingItem *item = [AZDraggingItem itemWithPasteboardWriter:img];
-				NSRect itemRect 	 = [_layoutManager rectOfItemAtIndex:index];
-				itemRect.origin.x 	-= _offset.x;
-				itemRect.origin.y 	-= _offset.y;
-				item.draggingFrame	 = itemRect;
-				item.image			 = img;
-				[items addObject:item];
-				index = [_originalSelection indexGreaterThanIndex:index];
-				}
-			}
-		else
-			{
-			SDL_Log("Collection view delegate responds to "
-				    "collectionView:writerForItem: but not "
-				    "collectionView:imageForItemAtIndex:");
+			AZImage *img		= [_delegate collectionView:self
+										imageForItemAtIndex:index];
+			item 				= [AZDraggingItem itemWithPasteboardWriter:img];
+			NSRect itemRect		= [_layoutManager rectOfItemAtIndex:index];
+			NSPoint p 			= [self convertPoint:e.locationInWindow
+											fromView:nil];
+			float x				= e.locationInWindow.x - p.x;
+			float y				= e.locationInWindow.y - p.y;
+
+			itemRect.origin.x  += x;
+			itemRect.origin.y  += y;
+			item.draggingFrame	= itemRect;
+			item.image			= img;
+			[items addObject:item];
+			index = [_originalSelection indexGreaterThanIndex:index];
 			}
 		}
 	else
@@ -1047,16 +1040,17 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 		NSInteger idx = _originalSelection.firstIndex;
 		while (idx != NSNotFound)
 			{
-			AZView *view 		 = [self viewControllerForItemAtIndex:idx].view;
-			AZImage *img 		 = view.backingImage;
-			img.identifier		 = [NSString stringWithFormat:@"%ld", (long)idx];
-			AZDraggingItem *item = [AZDraggingItem itemWithPasteboardWriter:img];
-			item.image			 = img;
-			NSRect itemRect 	 = [_layoutManager rectOfItemAtIndex:idx];
+			AZView *view		= [self viewControllerForItemAtIndex:idx].view;
+			AZImage *img		= view.backingImage;
+			img.identifier		= [NSString stringWithFormat:@"%ld", (long)idx];
+			item 				= [AZDraggingItem itemWithPasteboardWriter:img];
+			item.image			= img;
+			NSRect itemRect		= [_layoutManager rectOfItemAtIndex:idx];
 
-			NSPoint p 	= [self convertPoint:e.locationInWindow fromView:nil];
-			float x		= e.locationInWindow.x - p.x;
-			float y		= e.locationInWindow.y - p.y;
+			NSPoint p 			= [self convertPoint:e.locationInWindow
+											fromView:nil];
+			float x				= e.locationInWindow.x - p.x;
+			float y				= e.locationInWindow.y - p.y;
 
 			itemRect.origin.x 	+= x;
 			itemRect.origin.y 	+= y;
