@@ -23,9 +23,6 @@
 \*****************************************************************************/
 @interface AZImage()
 
-// The location within the texture that defines this image
-@property(assign, nonatomic) NSRect									srcRect;
-
 // The texture box we were initially allocted
 @property(assign, nonatomic) NSRect									texRect;
 

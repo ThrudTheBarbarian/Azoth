@@ -132,6 +132,15 @@ typedef BOOL (^AZImageDrawingHandler)(NSRect dstRect, AZPainter *painter) ;
 
 // Just useful in general
 @property(strong, nonatomic) NSString *							identifier;
+
+// The location within the texture that defines
+// this image. For large, standalone, images, this
+// will be the full extent of the image but for
+// images placed into a texture-atlas, the srcRect
+// tells us the exact co-ords of the image. This may
+// be necessary if you want to tile an image-texture
+// using the renderer, for example
+@property(assign, nonatomic) NSRect								srcRect;
 @end
 
 NS_ASSUME_NONNULL_END
