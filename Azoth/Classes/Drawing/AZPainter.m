@@ -785,7 +785,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	if (a != 255)
 		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
 	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
-	result |= [_renderer renderFilledRect:NSMakeRect(x, y, w, h)];
+	if (yn)
+		result |= [_renderer renderFilledRect:NSMakeRect(x, y, w, h)];
+	else
+		result |= [_renderer renderRect:NSMakeRect(x, y, w, h)];
 	return result;
 	}
 
@@ -947,16 +950,25 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	while (cx <= cy);
 
 	// Fill Inside
-	if (dx > 0 && dy > 0)
-		result |= [self rectangleAtX:x
-								   y:y+radius+1
-								   w:w
-								   h:h-radius*2
-							  filled:yn
-							   withR:r
-								   g:g
-								   b:b
-								   a:a];
+	if (yn)
+		{
+		if (dx > 0 && dy > 0)
+			result |= [self rectangleAtX:x
+									   y:y+radius+1
+									   w:w
+									   h:h-radius*2
+								  filled:yn
+								   withR:r
+									   g:g
+									   b:b
+									   a:a];
+		}
+	else
+		{
+		result |= [_renderer renderFilledRect:NSMakeRect(x,y,radius,h)];
+		result |= [_renderer renderFilledRect:NSMakeRect(x+w-radius,y,radius,h)];
+		}
+
 	return (result);
 	}
 
