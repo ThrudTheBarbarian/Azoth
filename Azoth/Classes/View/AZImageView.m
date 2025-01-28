@@ -8,9 +8,21 @@
 #import "AZColour.h"
 #import "AZImage.h"
 #import "AZImageView.h"
+#import "AZNotifications.h"
 #import "AZPainter.h"
 #import "AZRenderer.h"
 #import "AZZib.h"
+
+
+/*****************************************************************************\
+|* "Private" properties
+\*****************************************************************************/
+@interface AZImageView()
+
+// Whether the mouse is over us
+@property(assign, nonatomic) BOOL						mouseIsOver;
+
+@end
 
 @implementation AZImageView
 
@@ -130,7 +142,107 @@
 				[self _drawDownscaledIn:imgRect withPainter:painter];
 				break;
 			}
+
+	if (_mouseIsOver)
+		{
+		[painter rectangleWithRect:NSInsetRect(imgRect,2,2)
+							radius:2
+							filled:NO
+						    colour:AZColour.orange];
+		}
 	}
+
+// MARK: Drop target
+
+/*****************************************************************************\
+|* Set this to be a drop-target
+\*****************************************************************************/
+- (void) setDropTarget:(BOOL)dropTarget
+	{
+	_dropTarget = dropTarget;
+	if (_dropTarget)
+		[self registerForDraggedTypes:@[AZPasteboardTypeImage]];
+	}
+
+
+/*****************************************************************************\
+|* Dragging has exited this view
+\*****************************************************************************/
+- (void)draggingExited:(nonnull id<AZDraggingInfo>)sender
+	{
+	_mouseIsOver = NO;
+	[self setNeedsDisplay:YES];
+	}
+
+
+/*****************************************************************************\
+|* Dragging has lingered in this view, return what drop is now acceptable
+\*****************************************************************************/
+- (AZDragOperation)draggingUpdated:(nonnull id<AZDraggingInfo>)sender
+	{
+	_mouseIsOver = YES;
+	[self setNeedsDisplay:YES];
+	return [self isAcceptedDrop];
+	}
+
+
+/*****************************************************************************\
+|* Inform the sender if we want to be updated (other than exit/enter)
+\*****************************************************************************/
+- (BOOL)wantsPeriodicDraggingUpdates
+	{
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Decide whethere we accept this drop or not
+\*****************************************************************************/
+- (AZDragOperation) isAcceptedDrop
+	{
+	return _mouseIsOver ? AZDragOperationCopy : AZDragOperationNone;
+	}
+
+/*****************************************************************************\
+|* We got a mouse-release in an acceptable drop-target, prepare for the actual
+|* drop
+\*****************************************************************************/
+- (BOOL) prepareForDragOperation:(id<AZDraggingInfo>) sender
+	{
+	return YES;
+	}
+
+/*****************************************************************************\
+|* We got a mouse-release in an acceptable drop-target, prepare for the actual
+|* drop
+\*****************************************************************************/
+- (BOOL) performDragOperation:(id<AZDraggingInfo>) sender
+	{
+	AZPasteboard *pb = [AZPasteboard draggingPasteboard];
+	id plist		 = [pb propertyListForType:AZPasteboardTypeImage];
+
+	NSDictionary *info	= ([plist isKindOfClass:NSArray.class])
+						? ((NSArray *)plist).firstObject
+						: (NSDictionary *)plist;
+
+
+	NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
+	[nc postNotificationName:AZImageViewDidReceiveDropNotification
+					  object:self
+					userInfo:info];
+	return YES;
+	}
+
+/*****************************************************************************\
+|* Clean up after the drop
+\*****************************************************************************/
+- (void) concludeDragOperation:(id<AZDraggingInfo>)sender
+	{
+	_mouseIsOver = NO;
+	[self setNeedsDisplay:YES];
+	}
+
+
+// MARK: Properties
 
 /*****************************************************************************\
 |* Make sure we refresh the view if we change the scaling

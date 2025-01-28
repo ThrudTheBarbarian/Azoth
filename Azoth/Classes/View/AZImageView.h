@@ -45,6 +45,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Which type of scaling (default: AZImageScaleProportionallyDown)
 @property(assign, nonatomic) AZImageScaling							scaling;
+
+// Whether we should accept drops
+@property(assign, nonatomic) BOOL									dropTarget;
 @end
 
 NS_ASSUME_NONNULL_END
