@@ -1058,8 +1058,8 @@ NSMutableDictionary<NSNumber*,AZViewController*> *		visibleGroupVCs;
 			float x		= e.locationInWindow.x - p.x;
 			float y		= e.locationInWindow.y - p.y;
 
-			itemRect.origin.x 	+= x - _offset.x;
-			itemRect.origin.y 	+= y - _offset.y;
+			itemRect.origin.x 	+= x;
+			itemRect.origin.y 	+= y;
 			[item setDraggingFrame:itemRect];
 
 			[items addObject:item];
