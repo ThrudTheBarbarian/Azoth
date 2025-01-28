@@ -42,4 +42,6 @@ extern NSString *const AZOutlineViewColumnDidResizeNotification;
 extern NSString *const AZOutlineViewSelectionDidChangeNotification;
 extern NSString *const AZOutlineViewSelectionIsChangingNotification;
 
+extern NSString *const AZImageViewDidReceiveDropNotification;
+
 NS_ASSUME_NONNULL_END

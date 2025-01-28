@@ -39,3 +39,6 @@ NSString *const AZOutlineViewColumnDidResizeNotification	= @"AZ:OVColumnDidResiz
 
 NSString *const AZOutlineViewSelectionDidChangeNotification	= @"AZ:OVSelectionDidChange";
 NSString *const AZOutlineViewSelectionIsChangingNotification= @"AZ:OVSelectionChanging";
+
+NSString *const AZImageViewDidReceiveDropNotification		= @"AZ:dropInImageView";
+
