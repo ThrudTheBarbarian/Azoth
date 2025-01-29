@@ -6,12 +6,20 @@
 //
 
 #import "AZComputePipeline.h"
+#import "AZGPUBuffer.h"
 #import "AZRenderer.h"
+#import "AZSampler.h"
+#import "AZTexture.h"
 
 
 #define SHADER_PATH(base,dir,name,ext) [NSString stringWithFormat:			\
 										@"%@/Shaders/%@/%@.comp.%@",		\
 										base, dir, name, ext]
+
+#define kSampler			@"sampler"
+#define kTexture			@"texture"
+#define kMipLevel			@"mipLevel"
+#define kLayer				@"layer"
 
 /*****************************************************************************\
 |* "Private" properties
@@ -19,10 +27,46 @@
 @interface AZComputePipeline()
 
 // The name of the compute shader
-@property(strong, nonatomic) NSString *								name;
+@property(strong, nonatomic) NSString *							name;
 
 // The GPU device we were created with
-@property(assign, nonatomic) SDL_GPUDevice *						gpu;
+@property(assign, nonatomic) SDL_GPUDevice *					gpu;
+
+// The samplers to bind
+@property(assign, nonatomic)
+NSMutableArray<NSDictionary<NSString *,id> *> *					samplers;
+
+// The bindings for the samplers
+@property(assign, nonatomic)
+SDL_GPUTextureSamplerBinding *									sampBind;
+
+// The number of bindings we reserved
+@property(assign, nonatomic)int									numSampBind;
+
+
+// The output textures to bind
+@property(assign, nonatomic)
+NSMutableArray<NSDictionary<NSString*,id> *> *					outTex;
+
+// The bindings for the textures
+@property(assign, nonatomic)
+SDL_GPUStorageTextureReadWriteBinding *							outTexBind;
+
+// The number of bindings we reserved
+@property(assign, nonatomic)int									numOutTexBind;
+
+
+// The storage buffers to bind
+@property(assign, nonatomic)
+NSMutableArray<AZGPUBuffer *> *									outBuf;
+
+// The bindings for the textures
+@property(assign, nonatomic)
+SDL_GPUStorageBufferReadWriteBinding *							outBufBind;
+
+// The number of bindings we reserved
+@property(assign, nonatomic)int									numOutBufBind;
+
 @end
 
 @implementation AZComputePipeline
@@ -54,9 +98,90 @@
 	{
 	if (self = [super init])
 		{
-		_name = name;
+		_name 			= name;
+		_samplers 		= NSMutableArray.new;
+		_outTex 		= NSMutableArray.new;
+		_outBuf			= NSMutableArray.new;
+		_samplerSlot	= 0;
+		_uniformSlot	= 0;
+		_threads		= (AZThreadSize){8,8,1};
+		_jobs 			= (AZThreadSize){1,1,1};
 		}
 	return self;
+	}
+
+/*****************************************************************************\
+|* Cleanup
+\*****************************************************************************/
+- (void) dealloc
+	{
+	SAFELY_FREE(_outTexBind);
+	SAFELY_FREE(_outBufBind);
+	SAFELY_FREE(_sampBind);
+	[self reset];
+	if (_pipeline)
+		SDL_ReleaseGPUComputePipeline(_gpu, _pipeline);
+	}
+
+/*****************************************************************************\
+|* Add a sampler
+\*****************************************************************************/
+- (void) addSampler:(AZSampler *)sampler forTexture:(nonnull AZTexture *)texture
+	{
+	[_samplers addObject:@{
+					kSampler 	: sampler,
+					kTexture	: texture
+					}];
+	}
+
+/*****************************************************************************\
+|* Add an output texture
+\*****************************************************************************/
+- (void) addOutputTexture:(AZTexture *)texture
+	{
+	[self addOutputTexture:texture withMipLevel:0 andLayer:0];
+	}
+
+/*****************************************************************************\
+|* Add an output buffer
+\*****************************************************************************/
+- (void) addOutputBuffer:(AZGPUBuffer *)buffer
+	{
+	[_outBuf addObject:buffer];
+	}
+
+/*****************************************************************************\
+|* Add an output texture
+\*****************************************************************************/
+- (void) addOutputTexture:(AZTexture *)texture
+			 withMipLevel:(int)mipLevel
+ 				 andLayer:(int)layer
+
+	{
+	int jobsX = texture.size.width 	/ _threads.x;
+	int jobsY = texture.size.height	/ _threads.y;
+
+	if (jobsX > _jobs.x)
+		_jobs.x = jobsX;
+
+	if (jobsY > _jobs.y)
+		_jobs.y = jobsY;
+
+	[_outTex addObject:@{
+				kTexture 	: texture,
+				kLayer		: @(layer),
+				kMipLevel	: @(mipLevel)
+				}];
+	}
+
+/*****************************************************************************\
+|* Remove any previously-supplied bindings (samplers, output-textures,...)
+\*****************************************************************************/
+- (void) reset
+	{
+	[_outTex removeAllObjects];
+	[_samplers removeAllObjects];
+	[_outBuf removeAllObjects];
 	}
 
 /*****************************************************************************\
@@ -82,8 +207,7 @@
 
 	if (_pipeline == NULL)
 		{
-		SDL_Log("%s", "Cannot create compute pipeline for %s!",
-						_name.UTF8String);
+		SDL_Log("Cannot create compute pipeline for %s!", _name.UTF8String);
 		return NO;
 		}
 
@@ -157,6 +281,135 @@
 		_pipeline = SDL_CreateGPUComputePipeline(_gpu, &info);
 		}
 	return (_pipeline != NULL);
+	}
+
+
+/*****************************************************************************\
+|* Return the read-write texture binding info structures to the renderer
+\*****************************************************************************/
+- (nullable SDL_GPUStorageTextureReadWriteBinding *) textureReadWriteBindings
+	{
+	if (_outTex.count == 0)
+		return NULL;
+
+	if (_numOutTexBind < _outTex.count)
+		{
+		if (_outTexBind)
+			SAFELY_FREE(_outTexBind);
+
+		_numOutTexBind 	= (int) _outTex.count;
+		_outTexBind 	= (SDL_GPUStorageTextureReadWriteBinding *)
+							 calloc(_numOutTexBind,
+								sizeof(SDL_GPUStorageTextureReadWriteBinding));
+		}
+
+	for (NSInteger i=0; i<_outTex.count; i++)
+		{
+		AZTexture *texture 			= (AZTexture *)_outTex[i][kTexture];
+		SDL_GPUTextureUsageFlags f 	= texture.flags;
+
+		BOOL w	= f & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE;
+		BOOL rw = f & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE;
+		if (!(w | rw))
+			{
+			SDL_Log("Trying to bind a texture to a compute output with no flag");
+			return NULL;
+			}
+
+		SDL_GPUStorageTextureReadWriteBinding *bind = &(_outTexBind[i]);
+		bind->texture 	= texture.texture;
+		bind->mip_level	= ((NSNumber *) _outTex[i][kMipLevel]).intValue;
+		bind->layer		= ((NSNumber *) _outTex[i][kLayer]).intValue;
+		bind->cycle		= _cycle;
+		}
+	return _outTexBind;
+	}
+
+/*****************************************************************************\
+|* Return the count of read-write texture binding info structures
+\*****************************************************************************/
+- (uint32_t) numTextureReadWriteBindings
+	{
+	return (uint32_t) _outTex.count;
+	}
+
+
+/*****************************************************************************\
+|* Return the read-write storage binding info structures to the renderer
+\*****************************************************************************/
+- (nullable SDL_GPUStorageBufferReadWriteBinding *) bufferReadWriteBindings
+	{
+	if (_outBuf.count == 0)
+		return NULL;
+
+	if (_numOutBufBind < _outBuf.count)
+		{
+		if (_outBufBind)
+			SAFELY_FREE(_outBufBind);
+
+		_numOutBufBind 	= (int) _outBuf.count;
+		_outBufBind 	= (SDL_GPUStorageBufferReadWriteBinding *)
+							 calloc(_numOutBufBind,
+								sizeof(SDL_GPUStorageBufferReadWriteBinding));
+		}
+
+	for (NSInteger i=0; i<_outBuf.count; i++)
+		{
+		AZGPUBuffer *buffer 		= _outBuf[i];
+
+		SDL_GPUStorageBufferReadWriteBinding *bind = &(_outBufBind[i]);
+		bind->buffer 	= buffer.buffer;
+		bind->cycle		= _cycle;
+		}
+	return _outBufBind;
+	}
+
+/*****************************************************************************\
+|* Return the count of read-write buffer binding info structures
+\*****************************************************************************/
+- (uint32_t) numBufferReadWriteBindings
+	{
+	return (uint32_t) _outBuf.count;
+	}
+
+
+/*****************************************************************************\
+|* Return the sampler binding info structures to the renderer
+\*****************************************************************************/
+- (nullable SDL_GPUTextureSamplerBinding *) samplerBindings
+	{
+	if (_samplers.count == 0)
+		return NULL;
+
+	if (_numSampBind < _samplers.count)
+		{
+		if (_sampBind)
+			SAFELY_FREE(_sampBind);
+
+		_numSampBind 	= (int) _samplers.count;
+		_sampBind 		= (SDL_GPUTextureSamplerBinding *)
+							 calloc(_numSampBind,
+								sizeof(SDL_GPUTextureSamplerBinding));
+		}
+
+	for (NSInteger i=0; i<_samplers.count; i++)
+		{
+		AZTexture *texture 			= (AZTexture *)_samplers[i][kTexture];
+		AZSampler *sampler 			= (AZSampler *)_samplers[i][kSampler];
+
+		SDL_GPUTextureSamplerBinding *bind = &(_sampBind[i]);
+		bind->texture 	= texture.texture;
+		bind->sampler	= sampler.sampler;
+		}
+	return _sampBind;
+	}
+
+/*****************************************************************************\
+|* Return the count of read-write buffer binding info structures
+\*****************************************************************************/
+- (uint32_t) numSamplerBindings
+	{
+	return (uint32_t)_samplers.count;
 	}
 
 @end

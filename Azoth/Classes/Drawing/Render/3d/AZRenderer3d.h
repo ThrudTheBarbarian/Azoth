@@ -21,7 +21,7 @@ typedef enum
 NS_ASSUME_NONNULL_BEGIN
 
 @class AZColour;
-
+@class AZComputePipeline;
 
 @interface AZRenderer3d : NSObject <AZRenderer>
 
@@ -40,6 +40,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (SDL_BlendFactor) blendModeSrcAlphaFactor:(SDL_BlendMode)blendMode;
 - (SDL_BlendFactor) blendModeDstAlphaFactor:(SDL_BlendMode)blendMode;
 - (SDL_BlendOperation) blendModeAlphaOperation:(SDL_BlendMode)blendMode;
+
+/*****************************************************************************\
+|* Run a compute pipeline
+\*****************************************************************************/
+- (BOOL) dispatchComputePipeline:(AZComputePipeline *)pipeline
+				 withUniformData:(void *)data
+						ofLength:(uint32_t)length;
 
 /*****************************************************************************\
 |* Properties

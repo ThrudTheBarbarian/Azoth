@@ -6,6 +6,7 @@
 //
 // Only support BGRA8888
 
+#import <Azoth/AZ3dUtils.h>
 #import <Azoth/AZTypes.h>
 #import <Foundation/Foundation.h>
 #import <SDL3/SDL.h>

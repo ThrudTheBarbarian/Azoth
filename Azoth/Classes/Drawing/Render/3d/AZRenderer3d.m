@@ -298,6 +298,9 @@ SDL_RendererLogicalPresentation								logicalPresentMode;
 
 // Last time we present'd
 @property(assign, nonatomic) Uint64							vsyncLastPresent;
+
+// The current swapchain texture, or nil
+@property(assign, nonatomic, nullable) SDL_GPUTexture *		swapchain;
 @end
 
 
@@ -2780,6 +2783,72 @@ static SDL_SpinLock 	_textureLock;
     return (SDL_BlendOperation)(((Uint32)blendMode >> 16) & 0xF);
 	}
 
+// MARK: Compute
+
+
+/*****************************************************************************\
+|* Run a compute pipeline
+\*****************************************************************************/
+- (BOOL) dispatchComputePipeline:(AZComputePipeline *)pipeline
+				 withUniformData:(void *)data
+						ofLength:(uint32_t)length
+	{
+	static BOOL warnedOfNilSwapchain 	= NO;
+	BOOL ok 							= NO;
+
+	// Make sure there isn't a render-pass currently in operation
+	[self _flushRenderCommands];
+
+	// Create a new compute pass
+	SDL_GPUComputePass *pass = SDL_BeginGPUComputePass(
+		_state.commandBuffer,
+		pipeline.textureReadWriteBindings,
+		pipeline.numTextureReadWriteBindings,
+		pipeline.bufferReadWriteBindings,
+		pipeline.numBufferReadWriteBindings);
+
+	if (_swapchain != NULL)
+		{
+		warnedOfNilSwapchain = NO;
+		if (pass != NULL)
+			{
+			// Bind the pipeline itself
+			SDL_BindGPUComputePipeline(pass, pipeline.pipeline);
+
+			// Bind any samplers
+			SDL_BindGPUComputeSamplers(pass,
+									   pipeline.samplerSlot,
+									   pipeline.samplerBindings,
+									   pipeline.numSamplerBindings);
+
+			// Push the uniform data
+			SDL_PushGPUComputeUniformData(_state.commandBuffer,
+										  pipeline.uniformSlot,
+										  data,
+										  length);
+
+			SDL_DispatchGPUCompute(pass,
+								   pipeline.jobs.x,
+								   pipeline.jobs.y,
+								   pipeline.jobs.z);
+
+			SDL_EndGPUComputePass(pass);
+			ok = YES;
+			}
+		else
+			SDL_Log("Failed to create GPU compute pass: %s", SDL_GetError());
+		}
+	else if (!warnedOfNilSwapchain)
+		{
+		warnedOfNilSwapchain = YES;
+		SDL_Log("Not running GPU compute while swapchain is nil");
+		}
+
+	return ok;
+	}
+
+
+
 
 // MARK: Private methods
 
@@ -3873,12 +3942,11 @@ float AZsRGBfromLinear(float v)
 - (BOOL) _renderPresent
 	{
 	SDL_GPUTextureFormat fmt;
-    SDL_GPUTexture *swapchain;
     Uint32 swapW, swapH;
     BOOL result = SDL_WaitAndAcquireGPUSwapchainTexture(
 						_state.commandBuffer,
 						_window.window,
-						&swapchain,
+						&_swapchain,
 						&swapW,
 						&swapH);
 
@@ -3888,7 +3956,7 @@ float AZsRGBfromLinear(float v)
 					 SDL_GetError());
 
 
-    if (swapchain != NULL)
+    if (_swapchain != NULL)
 		{
         SDL_GPUBlitInfo blitInfo;
         SDL_zero(blitInfo);
@@ -3896,7 +3964,7 @@ float AZsRGBfromLinear(float v)
         blitInfo.source.texture 		= _backbuffer.texture;
         blitInfo.source.w 				= _backbuffer.size.width;
         blitInfo.source.h 				= _backbuffer.size.height;
-        blitInfo.destination.texture 	= swapchain;
+        blitInfo.destination.texture 	= _swapchain;
         blitInfo.destination.w 			= swapW;
         blitInfo.destination.h 			= swapH;
         blitInfo.load_op 				= SDL_GPU_LOADOP_DONT_CARE;
