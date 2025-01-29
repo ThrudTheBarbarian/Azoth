@@ -41,6 +41,7 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZFont.h>
 #import <Azoth/AZGeometry.h>
 #import <Azoth/AZGlyphData.h>
+#import <Azoth/AZGPUBuffer.h>
 #import <Azoth/AZImage.h>
 #import <Azoth/AZImageView.h>
 #import <Azoth/AZLabel.h>
@@ -58,6 +59,7 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZRenderer2d.h>
 #import <Azoth/AZRenderer3d.h>
 #import <Azoth/AZRenderPipeline.h>
+#import <Azoth/AZRenderProperties.h>
 #import <Azoth/AZResponder.h>
 #import <Azoth/AZRulerView.h>
 #import <Azoth/AZScroller.h>
