@@ -662,6 +662,14 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 /*****************************************************************************\
+|* And we can turn Images into textures
+\*****************************************************************************/
+- (nullable AZTexture *) textureForId:(NSInteger)refId
+	{
+	return _textures[@(refId)];
+	}
+
+/*****************************************************************************\
 |* Do a 9-way tiled blit to stretch a texture without stretching the borders
 \*****************************************************************************/
 - (int)blit9WayFrom:(NSInteger)textureId
@@ -816,7 +824,6 @@ static SDL_SpinLock 	_textureLock;
 	{
 	return TTF_CreateGPUTextEngine(_gpu);
 	}
-
 
 /*****************************************************************************\
 |* Perform a blit operation
@@ -2791,13 +2798,23 @@ static SDL_SpinLock 	_textureLock;
 	// Make sure there isn't a render-pass currently in operation
 	[self _flushRenderCommands];
 
+	int numBufs = pipeline.numBufferReadWriteBindings;
+	SDL_GPUStorageBufferReadWriteBinding sb[numBufs];
+	[pipeline populateBufferBindings:sb];
+
+	int numTex = pipeline.numTextureReadWriteBindings;
+	SDL_GPUStorageTextureReadWriteBinding st[numTex];
+	[pipeline populateTextureBindings:st];
+
+	int numSamp = pipeline.numSamplerBindings;
+	SDL_GPUTextureSamplerBinding samp[numSamp];
+	[pipeline populateSamplerBindings:samp];
+
 	// Create a new compute pass
 	SDL_GPUComputePass *pass = SDL_BeginGPUComputePass(
 		_state.commandBuffer,
-		pipeline.textureReadWriteBindings,
-		pipeline.numTextureReadWriteBindings,
-		pipeline.bufferReadWriteBindings,
-		pipeline.numBufferReadWriteBindings);
+		st, numTex,
+		sb, numBufs);
 
 	if (_swapchain != NULL)
 		{
@@ -2810,8 +2827,23 @@ static SDL_SpinLock 	_textureLock;
 			// Bind any samplers
 			SDL_BindGPUComputeSamplers(pass,
 									   pipeline.samplerSlot,
-									   pipeline.samplerBindings,
-									   pipeline.numSamplerBindings);
+									   samp,  numSamp);
+
+			// Bind any output buffers
+			SDL_GPUBuffer *buffers[numBufs];
+			for (int i=0; i<numBufs; i++)
+				buffers[i] = sb[i].buffer;
+			SDL_BindGPUComputeStorageBuffers(pass,
+											 pipeline.bufferSlot,
+											 buffers, numBufs);
+
+			// Bind any output textures
+			SDL_GPUTexture *textures[numTex];
+			for (int i=0; i<numTex; i++)
+				textures[i] = st[i].texture;
+			SDL_BindGPUComputeStorageTextures(pass,
+											  pipeline.textureSlot,
+											  textures, numTex);
 
 			// Push the uniform data
 			SDL_PushGPUComputeUniformData(_state.commandBuffer,

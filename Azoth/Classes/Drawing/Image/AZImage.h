@@ -12,6 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class AZPainter;
+@class AZTexture;
 
 /*****************************************************************************\
 |* Typedefs and enums
@@ -108,6 +109,11 @@ typedef BOOL (^AZImageDrawingHandler)(NSRect dstRect, AZPainter *painter) ;
 	   inFormat:(AZImageFormat)format
 	withQuality:(int)quality;
 
+
+/*****************************************************************************\
+|* Return an AZTexture object referencing this image's texture
+\*****************************************************************************/
+- (AZTexture *) asTexture;
 
 /*****************************************************************************\
 |* Return the image size and position within its parent texture

@@ -37,11 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (AZWindow *) window;
 
 /*****************************************************************************\
-|* Return the GPU device we created. This is not supported in 2D
-\*****************************************************************************/
-- (nullable struct SDL_GPUDevice *) gpu;
-
-/*****************************************************************************\
 |* Create a new texture and return a reference-id. Returns <0 value on error
 |* This will not call SDL_Destroy() on any surface provided! 
 \*****************************************************************************/
@@ -287,9 +282,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDictionary *) properties;
 
 /*****************************************************************************\
-|* The renderer
+|* The renderer, only valid for the 2D case
 \*****************************************************************************/
 - (SDL_Renderer *) renderer;
+
+
+// MARK: 3d renderer only
+/*****************************************************************************\
+|* Return the GPU device we created.
+\*****************************************************************************/
+- (nullable struct SDL_GPUDevice *) gpu;
+
+
 @end
 
 

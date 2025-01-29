@@ -22,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class AZColour;
 @class AZComputePipeline;
+@class AZImage;
+@class AZTexture;
 
 @interface AZRenderer3d : NSObject <AZRenderer>
 
@@ -47,6 +49,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL) dispatchComputePipeline:(AZComputePipeline *)pipeline
 				 withUniformData:(void *)data
 						ofLength:(uint32_t)length;
+
+
+/*****************************************************************************\
+|* We can turn Images into textures
+\*****************************************************************************/
+- (nullable AZTexture *) textureForId:(NSInteger)refId;
 
 /*****************************************************************************\
 |* Properties

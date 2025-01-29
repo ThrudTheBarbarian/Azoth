@@ -12,6 +12,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class AZImage;
 @class AZGPUBuffer;
 @class AZSampler;
 @class AZTexture;
@@ -29,8 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 |* Initialisation - convenience
 \*****************************************************************************/
 + (instancetype) pipelineNamed:(NSString *)name
-			  storageBuffersRO:(int)numROStorageBuffers
-			  storageBuffersRW:(int)numRWStorageBuffers
+					   storage:(AZComputeStorageInfo)info
 					   threads:(AZThreadSize)threads;
 
 
@@ -71,9 +71,11 @@ NS_ASSUME_NONNULL_BEGIN
 // MARK: Return bindings-data to the renderer
 
 /*****************************************************************************\
-|* Return the read-write texture binding info structures to the renderer
+|* Populate the storage-texture bindings structs. This expects a adequately
+|* sized buffer, which size can be found by calling into the method
+|* -numTextureReadWriteBindings
 \*****************************************************************************/
-- (nullable SDL_GPUStorageTextureReadWriteBinding *) textureReadWriteBindings;
+- (int) populateTextureBindings:(SDL_GPUStorageTextureReadWriteBinding *)bind;
 
 /*****************************************************************************\
 |* Return the count of read-write texture binding info structures
@@ -81,9 +83,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (uint32_t) numTextureReadWriteBindings;
 
 /*****************************************************************************\
-|* Return the read-write storage binding info structures to the renderer
+|* Populate the storage-texture bindings structs. This expects a adequately
+|* sized buffer, which size can be found by calling into the method
+|* -numBufferReadWriteBindings
 \*****************************************************************************/
-- (nullable SDL_GPUStorageBufferReadWriteBinding *) bufferReadWriteBindings;
+- (int) populateBufferBindings:(SDL_GPUStorageBufferReadWriteBinding *)bind;
 
 /*****************************************************************************\
 |* Return the count of read-write buffer binding info structures
@@ -91,9 +95,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (uint32_t) numBufferReadWriteBindings;
 
 /*****************************************************************************\
-|* Return the sampler binding info structures to the renderer
+|* Populate the sampler bindings structs. This expects a adequately
+|* sized buffer, which size can be found by calling into the method
+|* -numSamplerBindings
 \*****************************************************************************/
-- (nullable SDL_GPUTextureSamplerBinding *) samplerBindings;
+- (int) populateSamplerBindings:(SDL_GPUTextureSamplerBinding *)bind;
 
 /*****************************************************************************\
 |* Return the count of read-write buffer binding info structures
@@ -106,10 +112,7 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 
 // The number of read-only storage buffers
-@property(assign, nonatomic) int							roStorageBuffers;
-
-// The number of read-write storage buffers
-@property(assign, nonatomic) int							rwStorageBuffers;
+@property(assign, nonatomic) AZComputeStorageInfo			storage;
 
 // Thread counts in X,Y,Z
 @property(assign, nonatomic) AZThreadSize					threads;
@@ -121,13 +124,21 @@ NS_ASSUME_NONNULL_BEGIN
 // pipeline. See https://tinyurl.com/nhwh7j6d
 @property(assign, nonatomic) BOOL 							cycle;
 
-// index of the uniform-data slot to bind
+// index of the 1st uniform-data slot to bind
 // uniforms to
 @property(assign, nonatomic) uint32_t 						uniformSlot;
 
-// index of the sampler-data slot to bind
+// index of the 1st sampler-data slot to bind
 // samplers to
 @property(assign, nonatomic) uint32_t 						samplerSlot;
+
+// index of the 1st output-buffer-data slot to bind
+// output-buffers to
+@property(assign, nonatomic) uint32_t 						bufferSlot;
+
+// index of the 1st output-texture-data slot to bind
+// output-textures to
+@property(assign, nonatomic) uint32_t 						textureSlot;
 
 // Number of "work-units" in X. This will be
 // automatically calculate as

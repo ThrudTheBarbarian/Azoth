@@ -466,6 +466,14 @@ typedef struct
 	NSPoint currentScale;			// Just logicalScale * scale
 	} AZViewState;
 
+typedef struct
+	{
+	int roBuffers;					// Number of read-only buffers
+	int rwBuffers;					// Number of read/write buffers
+	int roTextures;					// Number of read-only textures
+	int rwTextures;					// Number of read/write textures
+	} AZComputeStorageInfo;
+
 /*****************************************************************************\
 |* Vsync options
 \*****************************************************************************/

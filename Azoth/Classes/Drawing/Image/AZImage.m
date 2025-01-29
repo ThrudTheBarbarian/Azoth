@@ -14,6 +14,8 @@
 #import "AZImageCache.h"
 #import "AZPainter.h"
 #import "AZRenderer.h"
+#import "AZRenderer3d.h"
+#import "AZTexture.h"
 
 #define CACHE_WIDTH			1024
 #define CACHE_HEIGHT		1024
@@ -183,6 +185,22 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 - (int) height
 	{
 	return (int) _srcRect.size.height;
+	}
+
+
+/*****************************************************************************\
+|* Return an AZTexture object referencing this image's texture. Only useful
+|* for the 3D renderer
+\*****************************************************************************/
+- (AZTexture *) asTexture
+	{
+	AZTexture *texture 	= nil;
+	id<AZRenderer> azr	= AZRenderer.renderer;
+
+	if (azr.rendererType == AZRendererType3d)
+		texture = [(AZRenderer3d *)azr textureForId:_texture];
+
+	return texture;
 	}
 
 /*****************************************************************************\
