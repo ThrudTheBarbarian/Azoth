@@ -185,12 +185,6 @@ NSMutableDictionary<NSNumber *, AZTexture *> * 				textures;
 // The vertices to send to the GPU
 @property(assign, nonatomic) AZVertices						vertices;
 
-// The sprite compute pipeline
-@property(strong, nonatomic) AZComputePipeline *			computePipe;
-
-// The sampler
-@property(strong, nonatomic) AZSampler *					sampler;
-
 // The target we're rendering onto, or nil for screen
 @property(strong, nonatomic, nullable) AZTexture *			target;
 
@@ -422,8 +416,6 @@ static SDL_SpinLock 	_textureLock;
 	for (NSNumber *textureId in _textures.allKeys.copy)
 		[self releaseTexture:textureId.integerValue];
 
-	if (_computePipe.pipeline)
-		SDL_ReleaseGPUComputePipeline(_gpu,_computePipe.pipeline);
 	}
 
 /*****************************************************************************\
@@ -3123,7 +3115,7 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 /*****************************************************************************\
-|* Create the samplers
+|* Select the presentation mode
 \*****************************************************************************/
 - (void) _choosePresentationMode:(out SDL_GPUPresentMode*)presentMode
 						   vsync:(BOOL)vsync

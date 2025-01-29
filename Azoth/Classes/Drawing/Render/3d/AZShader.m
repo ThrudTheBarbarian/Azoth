@@ -212,11 +212,12 @@
 
 
 /*****************************************************************************\
-|* Decrement the SDL retain-count for this shader
+|* Clean up
 \*****************************************************************************/
-- (void) releaseShader
+- (void) dealloc
 	{
-	SDL_ReleaseGPUShader(_gpu, _shader);
+	if (_gpu && _shader)
+		SDL_ReleaseGPUShader(_gpu, _shader);
 	}
 
 @end
