@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* build a sampler
 \*****************************************************************************/
-- (BOOL) buildWithDevice:(id<AZRenderer>)renderer;
+- (BOOL) buildWithRenderer:(id<AZRenderer>)renderer;
 
 /*****************************************************************************\
 |* Properties

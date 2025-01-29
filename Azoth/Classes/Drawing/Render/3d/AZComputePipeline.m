@@ -10,7 +10,7 @@
 
 
 #define SHADER_PATH(base,dir,name,ext) [NSString stringWithFormat:			\
-										@"%@/Shaders/%@/%@.%@",	\
+										@"%@/Shaders/%@/%@.comp.%@",		\
 										base, dir, name, ext]
 
 /*****************************************************************************\
@@ -62,7 +62,7 @@
 /*****************************************************************************\
 |* Build the compute pipeline
 \*****************************************************************************/
-- (BOOL) buildWithDevice:(id<AZRenderer>)renderer
+- (BOOL) buildWithRenderer:(id<AZRenderer>)renderer
 	{
 	/*************************************************************************\
 	|* Get the GPU device from the renderer
@@ -82,7 +82,8 @@
 
 	if (_pipeline == NULL)
 		{
-		SDL_Log("%s", "Cannot create compute pipeline!");
+		SDL_Log("%s", "Cannot create compute pipeline for %s!",
+						_name.UTF8String);
 		return NO;
 		}
 
@@ -139,26 +140,21 @@
 		{
 		NSData * code = [NSData dataWithContentsOfFile:fullPath];
 		if (code == nil)
-			{
-			SDL_Log("Can't load compute shader at %s", fullPath.UTF8String);
 			return NO;
-			}
-		else
-			{
-			SDL_GPUComputePipelineCreateInfo info;
 
-			info.num_readonly_storage_buffers 	= _roStorageBuffers;
-			info.num_readwrite_storage_buffers	= _rwStorageBuffers;
-			info.threadcount_x					= _threads.x;
-			info.threadcount_y					= _threads.y;
-			info.threadcount_z					= _threads.z;
-			info.code							= code.bytes;
-			info.code_size						= code.length;
-			info.entrypoint						= entryPoint.UTF8String;
-			info.format							 = format;
+		SDL_GPUComputePipelineCreateInfo info;
 
-			_pipeline = SDL_CreateGPUComputePipeline(_gpu, &info);
-			}
+		info.num_readonly_storage_buffers 	= _roStorageBuffers;
+		info.num_readwrite_storage_buffers	= _rwStorageBuffers;
+		info.threadcount_x					= _threads.x;
+		info.threadcount_y					= _threads.y;
+		info.threadcount_z					= _threads.z;
+		info.code							= code.bytes;
+		info.code_size						= code.length;
+		info.entrypoint						= entryPoint.UTF8String;
+		info.format							= format;
+
+		_pipeline = SDL_CreateGPUComputePipeline(_gpu, &info);
 		}
 	return (_pipeline != NULL);
 	}

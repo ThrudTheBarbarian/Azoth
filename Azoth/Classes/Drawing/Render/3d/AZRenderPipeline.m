@@ -221,7 +221,7 @@ static NSMutableDictionary<NSNumber *, AZRenderPipeline *> * _pipelineCache;
 	/*************************************************************************\
 	|* Build the pipeline
 	\*************************************************************************/
-	if (![pipe buildWithDevice:azr])
+	if (![pipe buildWithRenderer:azr])
 		{
 		SDL_Log("Cannot build render pipeline");
 		return nil;
@@ -245,7 +245,7 @@ static NSMutableDictionary<NSNumber *, AZRenderPipeline *> * _pipelineCache;
 /*****************************************************************************\
 |* Build the render pipeline
 \*****************************************************************************/
-- (BOOL) buildWithDevice:(id<AZRenderer>)renderer
+- (BOOL) buildWithRenderer:(id<AZRenderer>)renderer
 	{
 	/*************************************************************************\
 	|* Get the GPU device from the renderer

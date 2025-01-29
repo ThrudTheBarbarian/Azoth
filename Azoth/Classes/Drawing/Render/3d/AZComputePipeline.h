@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Build the compute pipeline
 \*****************************************************************************/
-- (BOOL) buildWithDevice:(id<AZRenderer>)renderer;
+- (BOOL) buildWithRenderer:(id<AZRenderer>)renderer;
 
 
 /*****************************************************************************\

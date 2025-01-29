@@ -39,7 +39,7 @@ typedef struct AZPipelineParameters
 /*****************************************************************************\
 |* Build the render pipeline
 \*****************************************************************************/
-- (BOOL) buildWithDevice:(id<AZRenderer>)renderer;
+- (BOOL) buildWithRenderer:(id<AZRenderer>)renderer;
 
 /*****************************************************************************\
 |* Properties

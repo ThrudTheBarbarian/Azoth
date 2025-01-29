@@ -530,20 +530,6 @@ static SDL_SpinLock 	_textureLock;
 								  mode);
 
 	/*************************************************************************\
-    |* Create the compute pipeline (AZMakeThreadSize commented out at top)
-    \*************************************************************************/
-//	_computePipe = [AZComputePipeline pipelineNamed:@"sprite.comp"
-//								   storageBuffersRO:1
-//								   storageBuffersRW:1
-//										    threads:AZMakeThreadSize(64,1,1)];
-//
-//	if (![_computePipe buildWithDevice:self])
-//		{
-//		SDL_Log("Failed to create compute pipeline");
-//		return NO;
-//		}
-
-	/*************************************************************************\
     |* Load the shaders and samplers
     \*************************************************************************/
 	[self _loadShaders];
@@ -3190,7 +3176,7 @@ static SDL_SpinLock 	_textureLock;
 										  addressMode:cfg[i].samplerMode];
 		sampler.maxAnisotropy = cfg[i].anisotropy;
 		sampler.enableAnisotropy = (sampler.maxAnisotropy > 0);
-		[sampler buildWithDevice:self];
+		[sampler buildWithRenderer:self];
 		SAMPLER(cfg[i].textureAddressMode,cfg[i].scaleMode) = sampler;
 		}
 	}
