@@ -472,6 +472,7 @@ typedef struct
 	int rwBuffers;					// Number of read/write buffers
 	int roTextures;					// Number of read-only textures
 	int rwTextures;					// Number of read/write textures
+	int samplers;					// Number of samplers used
 	} AZComputeStorageInfo;
 
 /*****************************************************************************\
