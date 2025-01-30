@@ -152,11 +152,14 @@ static NSMutableSet<NSString *> * _valid						= nil;
 		char **types = SDL_GetClipboardMimeTypes(&num);
 		if (types == NULL)
 			SDL_Log("Cannot find system pasteboard. %s", SDL_GetError());
-		for (int i=0; i<num; i++)
+		else
 			{
-			NSString *entry = [NSString stringWithUTF8String:types[i]];
-			if ([_valid containsObject:entry.lowercaseString])
-				[list addObject:entry];
+			for (int i=0; i<num; i++)
+				{
+				NSString *entry = [NSString stringWithUTF8String:types[i]];
+				if ([_valid containsObject:entry.lowercaseString])
+					[list addObject:entry];
+				}
 			}
 		if (types)
 			SDL_free(types);
