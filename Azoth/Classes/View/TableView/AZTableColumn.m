@@ -140,7 +140,8 @@ NSMutableDictionary<NSNumber *,AZView *> *							cache;
 			}
 		else
 			SDL_Log("Delegate does not supply views via %s!",
-					NSStringFromSelector(getView).UTF8String);
+					getView ? NSStringFromSelector(getView).UTF8String
+							: "(nil-selector)");
 		}
 
 	return view;
