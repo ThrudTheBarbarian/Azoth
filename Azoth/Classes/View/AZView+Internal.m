@@ -21,6 +21,7 @@
 #import "AZWindow.h"
 #import "AZWindowContentView.h"
 
+#undef DEBUG_VIEW_RENDERING
 
 @implementation AZView (Internal)
 
@@ -339,6 +340,19 @@
 	SDL_BlendMode mode = self.isOpaque ? SDL_BLENDMODE_NONE
 									   : SDL_BLENDMODE_ADD_PREMULTIPLIED;
 	[azr setBlendMode:mode];
+
+#ifdef DEBUG_VIEW_RENDERING
+	/*************************************************************************\
+	|* Pre-display call, if a view implements it
+	\*************************************************************************/
+	SEL method = SELECTOR(@"willRenderToDisplay");
+	if ([self respondsToSelector:method])
+		{
+		IMP imp = [self methodForSelector:method];
+		void (*func)(id, SEL) = (void *)imp;
+		func(self, method);
+		}
+#endif
 
 	/*************************************************************************\
 	|* Draw ourselves first...
