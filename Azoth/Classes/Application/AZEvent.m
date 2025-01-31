@@ -103,9 +103,11 @@
 		_type				= AZScrollWheel;
 		_sdlEvent 			= e;
 		_state				= 0;
-		_locationInWindow	= (NSPoint){e->wheel.x, e->wheel.y};
+		_locationInWindow	= (NSPoint){e->wheel.mouse_x, e->wheel.mouse_y};
 		_modifierFlags		= SDL_GetModState();
 		_clickCount			= 0;
+		_deltaX				= e->wheel.x;
+		_deltaY 			= e->wheel.y;
 		}
 	return self;
 	}

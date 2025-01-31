@@ -59,6 +59,12 @@ union SDL_Event;
 
 // How many clicks
 @property(assign, nonatomic, readonly) NSInteger			clickCount;
+
+// Mouse-wheel event, change in X
+@property(assign, nonatomic, readonly) NSInteger			deltaX;
+
+// Mouse-wheel event, change in Y
+@property(assign, nonatomic, readonly) NSInteger			deltaY;
 @end
 
 NS_ASSUME_NONNULL_END
