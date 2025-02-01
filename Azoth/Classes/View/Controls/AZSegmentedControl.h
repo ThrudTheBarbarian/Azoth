@@ -7,6 +7,8 @@
 
 #import <Azoth/AZControl.h>
 
+@class AZImage;
+
 NS_ASSUME_NONNULL_BEGIN
 
 typedef enum
@@ -18,12 +20,21 @@ typedef enum
 
 @interface AZSegmentedControl : AZControl
 /*****************************************************************************\
-|* Initialisation
+|* Initialisation with a set of strings
 \*****************************************************************************/
-+ (instancetype) segmentedControlWithLabels:(NSArray<NSString *> *) labels
-                               trackingMode:(AZSegmentSwitchTracking)mode
-                                     target:(id) target
-                                     action:(SEL) action;
++ (instancetype) withLabels:(NSArray<NSString *> *) labels
+               trackingMode:(AZSegmentSwitchTracking)mode
+					 target:(id) target
+					 action:(SEL) action;
+
+/*****************************************************************************\
+|* Initialisation with a set of images
+\*****************************************************************************/
++ (instancetype) withImages:(NSArray<AZImage *> *) images
+				    padding:(int)padding
+			   trackingMode:(AZSegmentSwitchTracking)mode
+                     target:(id) target
+					 action:(SEL) action;
 
 // MARK: Configuring the segment text
 

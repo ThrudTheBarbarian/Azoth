@@ -134,7 +134,7 @@
 	int segx = NSMaxX(pbtn.frame) + 20;
 
 	NSArray<NSString *> *labels = @[@"Car", @"Bus", @"Bike"];
-	_ctrl = [AZSegmentedControl segmentedControlWithLabels:labels
+	_ctrl = [AZSegmentedControl withLabels:labels
 								trackingMode:AZSegmentSwitchTrackingSelectOne
 								target:self
 								action:@selector(segmentClicked:)];

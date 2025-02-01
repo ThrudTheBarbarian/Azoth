@@ -11,6 +11,7 @@
 #import "AZColour.h"
 #import "AZEvent.h"
 #import "AZFont.h"
+#import "AZImage.h"
 #import "AZPainter.h"
 #import "AZRenderer.h"
 #import "AZSegmentedControl.h"
@@ -43,6 +44,7 @@ static NSInteger _ui[STATE_NUM];	// Textures holding a full frame's UI
 typedef struct
 	{
 	NSString * label;				// The text string
+	AZImage *image;					// *or* an image/icon
 	int width;						// How wide this segment itself is
 	AZTextAlignment alignment;		// How to draw the text
 	BOOL selected;					// Whether this segment is selected
@@ -63,6 +65,9 @@ typedef struct
 
 // The last segment we pressed the mouse on
 @property(assign, nonatomic) NSInteger 							pushedSegment;
+
+// The image padding, if any
+@property(assign, nonatomic) int	 							padding;
 @end
 
 
@@ -149,10 +154,10 @@ typedef struct
 /*****************************************************************************\
 |* Convenience initialiser. Note the frame origin is set to 0,0
 \*****************************************************************************/
-+ (instancetype) segmentedControlWithLabels:(NSArray<NSString *> *) labels
-                               trackingMode:(AZSegmentSwitchTracking)mode
-                                     target:(id) target
-                                     action:(SEL) action
++ (instancetype) withLabels:(NSArray<NSString *> *) labels
+               trackingMode:(AZSegmentSwitchTracking)mode
+					 target:(id) target
+					 action:(SEL) action
 	{
 	[AZSegmentedControl _fetchRects];
 
@@ -176,6 +181,39 @@ typedef struct
 	ctrl.action = action;
 	ctrl.target = target;
 
+	return ctrl;
+	}
+
+/*****************************************************************************\
+|* Convenience initialiser. Note the frame origin is set to 0,0
+\*****************************************************************************/
++ (instancetype) withImages:(NSArray<AZImage *> *) images
+				    padding:(int)padding
+			   trackingMode:(AZSegmentSwitchTracking)mode
+                     target:(id) target
+					 action:(SEL) action
+	{
+	[AZSegmentedControl _fetchRects];
+	float width = (images.count - 1) * NSWidth(_cD[0])
+			    + NSWidth(_cL[0])
+			    + NSWidth(_cR[0]);
+
+	for (AZImage *image in images)
+		width += image.width + padding;
+
+	NSRect frame = NSMakeRect(0,0,width, NSHeight(_cC[0]));
+	AZSegmentedControl *ctrl = [[AZSegmentedControl alloc] initWithFrame:frame];
+
+	int index = 0;
+	for (AZImage *image in images)
+		{
+		[ctrl setImage:image forSegment:index];
+		index ++;
+		}
+
+	ctrl.action 	= action;
+	ctrl.target 	= target;
+	ctrl.padding	= padding;
 	return ctrl;
 	}
 
@@ -217,19 +255,19 @@ typedef struct
 	NSInteger segment = [self _segmentForPoint:p];
 	if (segment >= 0)
 		{
-		_info[segment].pushed 	= YES;
-		_pushedSegment 			= segment;
-
-		if (segment != [self selectedSegment])
+		if (_info[segment].enabled)
 			{
-			if (_info[segment].enabled)
+			_info[segment].pushed 	= YES;
+			_pushedSegment 			= segment;
+
+			if (segment != [self selectedSegment])
 				{
 				BOOL isSelected = [self isSelectedForSegment:segment];
 				[self setSelected:!isSelected forSegment:segment];
 				[self sendAction:self.action to:self.target];
 				}
+			[self setNeedsDisplay:YES];
 			}
-		[self setNeedsDisplay:YES];
 		}
 
 	return YES;
@@ -264,7 +302,7 @@ typedef struct
 	NSInteger ui		= [AZApp textureFor:kUiMap];
 	BOOL allDisabled 	= (self.state == AZControlStateDisabled);
 
-		[azr setBlendMode:SDL_BLENDMODE_BLEND];
+	[azr setBlendMode:SDL_BLENDMODE_BLEND];
 
 	int x 		= 0;
 	int idx		= (allDisabled) ? STATE_D : STATE_N;
@@ -291,13 +329,25 @@ typedef struct
 		x += r.size.width;
 
 		// Add the label
-		int black = (idx == STATE_N) | (idx == STATE_D);
-		[painter setTextAlignment:_info[i].alignment];
-		[painter setTextColour:black ? AZColour.black : AZColour.white];
-		[painter setFont:black? AZApp.controlFont : AZApp.boldControlFont];
+		if (_info[i].image != nil)
+			{
+			int min 	= MIN(r.size.width, r.size.height);
+			int xOff	= (r.size.width - min) / 2;
+			NSRect dst	= NSMakeRect(r.origin.x + xOff,
+									 r.origin.y,
+									 min, min);
+			[painter image:_info[i].image to:NSInsetRect(dst, 3, 3)];
+			}
+		else
+			{
+			int black = (idx == STATE_N) | (idx == STATE_D);
+			[painter setTextAlignment:_info[i].alignment];
+			[painter setTextColour:black ? AZColour.black : AZColour.white];
+			[painter setFont:black? AZApp.controlFont : AZApp.boldControlFont];
 
-		NSRect box = NSInsetRect(r, 3, 2);
-		[painter textInBox:box text:_info[i].label];
+			NSRect box = NSInsetRect(r, 3, 2);
+			[painter textInBox:box text:_info[i].label];
+			}
 
 		// ... and if it's not the last segment, draw a divider too
 		if (i < _numLabels-1)
@@ -310,6 +360,30 @@ typedef struct
 		}
 	}
 
+
+// MARK: Images...
+
+/*****************************************************************************\
+|* fetch the label for a given segment
+\*****************************************************************************/
+- (nullable AZImage *) imageForSegment:(NSInteger)segment
+	{
+	if (segment <0 || segment >= _numLabels)
+		return nil;
+	return _info[segment].image;
+	}
+
+/*****************************************************************************\
+|* set the label for a given segment
+\*****************************************************************************/
+- (void) setImage:(AZImage *)image forSegment:(NSInteger)segment
+	{
+	if (segment >= 0)
+		{
+		[self _ensureSufficientSegments:segment];
+		_info[segment].image = image;
+		}
+	}
 
 // MARK: Labels...
 
@@ -334,6 +408,8 @@ typedef struct
 		_info[segment].label = label;
 		}
 	}
+
+// MARK: Alignment
 
 /*****************************************************************************\
 |* Sets the alignment of the specified segment
@@ -587,6 +663,7 @@ typedef struct
 		{
 		_info[i].alignment 	= AZTextAlignmentCenter;
 		_info[i].label		= @"";
+		_info[i].image 		= nil;
 		_info[i].width		= width;
 		_info[i].enabled	= YES;
 		_info[i].selected 	= NO;
