@@ -10,6 +10,7 @@
 #import "AZClipView.h"
 #import "AZColour.h"
 #import "AZEvent.h"
+#import "AZImage.h"
 #import "AZNotifications.h"
 #import "AZPainter.h"
 #import "AZRenderer.h"
@@ -511,8 +512,8 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 							scale:1.f
 							 left:2.f
 							right:4.f
-							  top:5.f
-						   bottom:5.f
+							  top:1.f
+						   bottom:1.f
 						      dst:dst];
 				}
 			idx ++;
@@ -629,6 +630,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		}
 	else
 		newIndexes = indexes;
+
 	[self _updateSelectionIndices:newIndexes];
 	}
 
@@ -742,7 +744,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 				[verified addIndex:index];
 			index = [newIndexes indexGreaterThanIndex:index];
 			}
-		if (verified.count)
+			if (verified.count || (newIndexes.count == 0))
 			{
 			// Let the delegate know that we're about to change
 			[self noteSelectionWillChange];
@@ -1305,23 +1307,44 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	|* Use the single-pixel-wide strips above to make 9-way-tileable textures
 	|* to use to render any-size table-row backgrounds
 	\*************************************************************************/
-	NSSize nSz		= NSMakeSize(6, _rA[STATE_N].size.height);
-	NSSize hSz		= NSMakeSize(6, _rA[STATE_H].size.height);
+	NSSize nSz		= NSMakeSize(1, _rA[STATE_N].size.height);
+	NSSize hSz		= NSMakeSize(1, _rA[STATE_H].size.height);
 
 	id<AZRenderer> azr	= AZRenderer.renderer;
 	_ui[STATE_N] = [azr createTextureOfSize:nSz];
 	_ui[STATE_H] = [azr createTextureOfSize:hSz];
+
+	[azr setTexture:_ui[STATE_N] blendMode:SDL_BLENDMODE_NONE];
+	[azr setTexture:_ui[STATE_H] blendMode:SDL_BLENDMODE_NONE];
 
 	/*************************************************************************\
 	|* Fill the texture data
 	\*************************************************************************/
 	NSInteger ui	= [AZApp textureFor:kUiMap];
 	[azr lockFocusOn:_ui[STATE_N]];
-	[azr tileFrom:ui src:_rA[STATE_N] dst:NSMakeRect(0,0,6,nSz.height)];
+	NSRect src = _rA[STATE_N];
+	src.size.height = 3;
+	[azr blitFrom:ui src:src dst:NSMakeRect(0,0,1,3)];
+
+	src.origin.y = _rA[STATE_N].size.height - 3;
+	[azr blitFrom:ui src:src dst:NSMakeRect(0,nSz.height-3,1,3)];
+
+	src.origin.y = 3;
+	src.size.height = _rA[STATE_N].size.height - 6;
+	[azr tileFrom:ui src:src dst:NSMakeRect(0,3,1,nSz.height-6)];
 	[azr unlockFocus];
 
 	[azr lockFocusOn:_ui[STATE_H]];
-	[azr tileFrom:ui src:_rA[STATE_H] dst:NSMakeRect(0,0,6,hSz.height)];
+	src = _rA[STATE_H];
+	src.size.height = 3;
+	[azr blitFrom:ui src:src dst:NSMakeRect(0,0,1,3)];
+
+	src.origin.y = _rA[STATE_H].size.height - 3;
+	[azr blitFrom:ui src:src dst:NSMakeRect(0,nSz.height-3,1,3)];
+
+	src.origin.y = 3;
+	src.size.height = _rA[STATE_H].size.height - 6;
+	[azr tileFrom:ui src:src dst:NSMakeRect(0,3,1,nSz.height-6)];
 	[azr unlockFocus];
 	}
 
