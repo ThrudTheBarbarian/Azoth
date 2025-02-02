@@ -145,6 +145,8 @@ struct SDL_Surface;
 	    colour:(AZColour *)colour;
 - (int) rectangleAtX:(int)x y:(int)y w:(int)w h:(int)h filled:(BOOL)yn
 		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
+- (int) rectangleWithRect:(NSRect)rect filled:(BOOL)yn
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
 
 /*****************************************************************************\
 |* Rounded filled rectangle routines

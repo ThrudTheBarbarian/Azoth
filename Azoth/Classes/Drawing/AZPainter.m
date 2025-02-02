@@ -726,6 +726,27 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 /*****************************************************************************\
 |* Filled rectangle routines
 \*****************************************************************************/
+- (int) rectangleWithRect:(NSRect)rect
+				   filled:(BOOL)yn
+				    withR:(uint8_t)r
+				        g:(uint8_t)g
+				        b:(uint8_t)b
+				        a:(uint8_t)a
+	{
+	return [self rectangleAtX:(int)rect.origin.x
+							y:(int)rect.origin.y
+							w:(int)rect.size.width
+							h:(int)rect.size.height
+					   filled:yn
+						withR:r
+							g:g
+							b:b
+							a:a];
+	}
+
+/*****************************************************************************\
+|* Filled rectangle routines
+\*****************************************************************************/
 - (int) rectangleWithRect:(NSRect)r filled:(BOOL)yn colour:(AZColour *)colour
 	{
 	return [self rectangleAtX:(int)r.origin.x
