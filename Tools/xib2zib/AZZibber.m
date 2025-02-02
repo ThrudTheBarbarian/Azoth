@@ -245,6 +245,7 @@
 	[self _xfer:@"rect" in:vi as:@"rect" in:view];
 	[self _xfer:@"userLabel" in:vi as:@"label" in:view];
 	[self _xfer:@"enabled" in:vi as:@"enabled" in:view];
+	[self _xfer:@"hidden" in:vi as:@"hidden" in:view];
 
 	// Override the default class if we have a customClass set
 	NSString *class = vi[@"customClass"];

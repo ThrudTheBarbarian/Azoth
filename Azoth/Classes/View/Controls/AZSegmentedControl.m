@@ -492,7 +492,7 @@ typedef struct
 				_info[i].selected = YES;
 				}
 		}
-
+	[self setNeedsDisplay:YES];
 	return found;
 	}
 
@@ -514,6 +514,7 @@ typedef struct
 			_info[segment].selected = YES;
 			}
 		}
+	[self setNeedsDisplay:YES];
 	}
 
 /*****************************************************************************\

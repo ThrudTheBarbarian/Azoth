@@ -38,6 +38,7 @@ NSString * const kZibEditable		= @"editable";
 NSString * const kZibEnabled		= @"enabled";
 NSString * const kZibFrame			= @"frame";
 NSString * const kZibFrameStyle		= @"frameStyle";
+NSString * const kZibHidden			= @"hidden";
 NSString * const kZibHLineScroll	= @"dhLine";
 NSString * const kZibHPageScroll	= @"dhPage";
 NSString * const kZibHScroller		= @"hscroller";
