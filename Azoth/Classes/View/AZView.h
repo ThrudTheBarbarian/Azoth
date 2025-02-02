@@ -24,9 +24,10 @@
 |* asked if they want to respond to an event in the order {B, A, contentView}
 \*****************************************************************************/
 
-#import <Foundation/Foundation.h>
 #import <Azoth/AZResponder.h>
 #import <Azoth/AZTypes.h>
+#import <Foundation/Foundation.h>
+#import <SDL3/SDL.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -265,6 +266,17 @@ struct SDL_Mutex;
 - (void) rebuildTransforms;
 
 
+/*****************************************************************************\
+|* The mouse has entered the view, default behaviour is to change the pointer
+\*****************************************************************************/
+- (void) mouseEntered:(AZEvent *)event;
+
+/*****************************************************************************\
+|* The mouse has exited the view
+\*****************************************************************************/
+- (void) mouseExited:(AZEvent *)event;
+
+
 // MARK: Drag and drop
 
 /*****************************************************************************\
@@ -368,6 +380,9 @@ beginDraggingSessionWithItems:(NSArray<AZDraggingItem *> *) items
 // Create and return an image from the view's backing
 // texture
 @property (strong, nonatomic) AZImage *						backingImage;
+
+// The cursor to use in this view
+@property (assign, nonatomic) SDL_Cursor *					mouseCursor;
 
 @end
 

@@ -68,6 +68,9 @@
 
 		NSDictionary *resize 	= info[kZibResizeMask];
 		_autoresizingMask 		= resize.AZResizeMask;
+
+		if (info[kZibHidden])
+			_hidden = YES;
 		}
 	return self;
 	}
@@ -100,6 +103,8 @@
 	self.textureMutex				= SDL_CreateMutex();
 	self.hidden						= NO;
 	self.dragTypes					= NSSet.new;
+
+	self.mouseCursor		= SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
 	[self setNeedsDisplay:YES];
 	}
 
@@ -125,6 +130,23 @@
 	}
 
 // MARK: Event manipulation
+
+
+/*****************************************************************************\
+|* The mouse has entered the view, default behaviour is to change the pointer
+\*****************************************************************************/
+- (void) mouseEntered:(AZEvent *)event
+	{
+	SDL_SetCursor(self.mouseCursor);
+	}
+
+/*****************************************************************************\
+|* The mouse has exited the view
+\*****************************************************************************/
+- (void) mouseExited:(AZEvent *)event
+	{
+
+	}
 
 /*****************************************************************************\
 |* Determine if we even want mouse events. This allows a subview to limit its

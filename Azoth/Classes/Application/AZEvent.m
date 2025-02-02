@@ -8,6 +8,7 @@
 #import <SDL3/SDL.h>
 
 #import "AZEvent.h"
+#import "AZView.h"
 
 /*****************************************************************************\
 |* "private" properties
@@ -47,6 +48,38 @@
 		_sdlEvent 			= e;
 		_locationInWindow	= (NSPoint){0,0};
 		_modifierFlags		= 0;
+		}
+	return self;
+	}
+
+/*****************************************************************************\
+|* Instantiation: mouse has exited view
+\*****************************************************************************/
+- (instancetype) initAsExitViewEvent:(AZView *)oldView
+	{
+	if (self = [super init])
+		{
+		float mx, my;
+		_state 				= SDL_GetMouseState(&mx, &my);
+		_locationInWindow 	= NSMakePoint(mx, my);
+		_type 				= AZMouseExited;
+		_modifierFlags		= SDL_GetModState();
+		}
+	return self;
+	}
+
+/*****************************************************************************\
+|* Instantiation: mouse has entered view
+\*****************************************************************************/
+- (instancetype) initAsEnterViewEvent:(AZView *)oldView
+	{
+	if (self = [super init])
+		{
+		float mx, my;
+		_state 				= SDL_GetMouseState(&mx, &my);
+		_locationInWindow 	= NSMakePoint(mx, my);
+		_type 				= AZMouseEntered;
+		_modifierFlags		= SDL_GetModState();
 		}
 	return self;
 	}

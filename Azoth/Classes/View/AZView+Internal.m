@@ -28,11 +28,13 @@
 
 /*****************************************************************************\
 |* Process a mouse event through the subview list recursively, seeing if the
-|* view wants to handle it
+|* view wants to handle it. This method is only ever called on the content-view
+|* of a window
 \*****************************************************************************/
 - (BOOL) processMouseEvent:(AZEvent *)e
 	{
-	static AZView * dragView = nil;
+	static AZView * dragView = nil;		// Dragging view we are in
+	static AZView * lastView = nil;		// Non-dragging view we are in
 
 	/*************************************************************************\
 	|* We do a depth-first search (so all subviews first), procedure is:
@@ -48,6 +50,17 @@
 	NSPoint p		= e.locationInWindow;
 	NSRect global 	= [self visibleRect];
 	global			= [self convertRect:global toView:nil];
+
+	/*************************************************************************\
+	|* Check to see if the mouse has changed view, and send events if so
+	\*************************************************************************/
+	AZView *current	= [self _findViewAtPoint:p];
+	if (current != lastView)
+		{
+		[lastView mouseExited:[[AZEvent alloc] initAsExitViewEvent:lastView]];
+		[current mouseEntered:[[AZEvent alloc] initAsEnterViewEvent:current]];
+		lastView = current;
+		}
 
 	BOOL done 	= NO;
 	for (AZView *subview in self.subviews)

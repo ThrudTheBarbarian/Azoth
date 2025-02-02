@@ -52,6 +52,12 @@ typedef BOOL (^AZImageDrawingHandler)(NSRect dstRect, AZPainter *painter) ;
 \*****************************************************************************/
 + (AZImage *) imageNamed:(NSString *)name;
 
+
+/*****************************************************************************\
+|* Initialisation: Get an image from an atlas
+\*****************************************************************************/
++ (AZImage *) imageWithName:(NSString *)name inAtlas:(NSString *)map;
+
 /*****************************************************************************\
 |* Initialisation: Get an image from the icon atlas
 \*****************************************************************************/

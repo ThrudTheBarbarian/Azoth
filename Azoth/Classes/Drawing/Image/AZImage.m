@@ -108,12 +108,20 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 \*****************************************************************************/
 + (AZImage *) imageWithSystemSymbolName:(NSString *)name
 	{
-	NSRect r 	= [AZApp srcRectFor:name in:kIconsMap];
+	return [self imageWithName:name inAtlas:kIconsMap];
+	}
+
+/*****************************************************************************\
+|* Initialisation: Get an image from an atlas
+\*****************************************************************************/
++ (AZImage *) imageWithName:(NSString *)name inAtlas:(NSString *)map
+	{
+	NSRect r 	= [AZApp srcRectFor:name in:map];
 	if (IS_ZERORECT(r))
 		return nil;
 
 	AZImage *img 	= [AZImage new];
-	img.texture		= [AZApp textureFor:kIconsMap];
+	img.texture		= [AZApp textureFor:map];
 	img.srcRect		= r;
 	img.identifier	= name;
 	return img;

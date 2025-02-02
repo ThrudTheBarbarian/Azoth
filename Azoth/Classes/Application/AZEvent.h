@@ -15,6 +15,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class AZView;
 union SDL_Event;
 
 @interface AZEvent : NSObject
@@ -30,6 +31,12 @@ union SDL_Event;
 - (instancetype) initWithMouseButtonEvent:(union SDL_Event *)sdlEvent;
 - (instancetype) initWithMouseMotionEvent:(union SDL_Event *)sdlEvent;
 - (instancetype) initWithMouseWheelEvent:(union SDL_Event *)sdlEvent;
+
+/*****************************************************************************\
+|* Instantiation: mouse has entered/exited view
+\*****************************************************************************/
+- (instancetype) initAsExitViewEvent:(AZView *)oldView;
+- (instancetype) initAsEnterViewEvent:(AZView *)oldView;
 
 /*****************************************************************************\
 |* Return the current modifier state
