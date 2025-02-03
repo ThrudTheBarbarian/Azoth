@@ -2825,26 +2825,33 @@ static SDL_SpinLock 	_textureLock;
 			SDL_BindGPUComputePipeline(pass, pipeline.pipeline);
 
 			// Bind any samplers
-			SDL_BindGPUComputeSamplers(pass,
-									   pipeline.samplerSlot,
-									   samp,  numSamp);
+			if (numSamp > 0)
+				SDL_BindGPUComputeSamplers(pass,
+										   pipeline.samplerSlot,
+										   samp,  numSamp);
 
 			// Bind any output buffers
-			SDL_GPUBuffer *buffers[numBufs];
-			for (int i=0; i<numBufs; i++)
-				buffers[i] = sb[i].buffer;
-			SDL_BindGPUComputeStorageBuffers(pass,
-											 pipeline.bufferSlot,
-											 buffers, numBufs);
+			if (numBufs > 0)
+				{
+				SDL_GPUBuffer *buffers[numBufs];
+				for (int i=0; i<numBufs; i++)
+					buffers[i] = sb[i].buffer;
+				SDL_BindGPUComputeStorageBuffers(pass,
+												 pipeline.bufferSlot,
+												 buffers, numBufs);
+				}
 
 			// Bind any output textures
-			SDL_GPUTexture *textures[numTex];
-			for (int i=0; i<numTex; i++)
-				textures[i] = st[i].texture;
-			SDL_BindGPUComputeStorageTextures(pass,
-											  pipeline.textureSlot,
-											  textures, numTex);
-
+			if (numTex > 0)
+				{
+				SDL_GPUTexture *textures[numTex];
+				for (int i=0; i<numTex; i++)
+					textures[i] = st[i].texture;
+				SDL_BindGPUComputeStorageTextures(pass,
+												  pipeline.textureSlot,
+												  textures, numTex);
+				}
+				
 			// Push the uniform data
 			SDL_PushGPUComputeUniformData(_state.commandBuffer,
 										  pipeline.uniformSlot,
@@ -3011,9 +3018,12 @@ static SDL_SpinLock 	_textureLock;
 		NSRect clip	= NS_RECT(_state.scissor);
 		clip		= NSIntersectionRect(all, clip);
 
-		NSRect back	= NSZeroRect;
-		back.size 	= _backbuffer.size;
-		clip 		= NSIntersectionRect(clip, back);
+		if ((_target == _backbuffer) || (_target == nil))
+			{
+			NSRect back	= NSZeroRect;
+			back.size 	= _backbuffer.size;
+			clip 		= NSIntersectionRect(clip, back);
+			}
 
 		SDL_Rect scissor = SDL_RECT(clip);
         SDL_SetGPUScissor(_state.renderPass, &scissor);
@@ -3025,9 +3035,12 @@ static SDL_SpinLock 	_textureLock;
 		NSRect clip	= NS_RECT(_state.scissor);
 		clip		= NSIntersectionRect(all, clip);
 
-		NSRect back	= NSZeroRect;
-		back.size 	= _backbuffer.size;
-		clip 		= NSIntersectionRect(clip, back);
+		if ((_target == _backbuffer) || (_target == nil))
+			{
+			NSRect back	= NSZeroRect;
+			back.size 	= _backbuffer.size;
+			clip 		= NSIntersectionRect(clip, back);
+			}
 
 		SDL_Rect scissor = SDL_RECT(clip);
 		SDL_SetGPUScissor(_state.renderPass, &scissor);
