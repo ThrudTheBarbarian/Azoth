@@ -1259,7 +1259,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	// Sanity check
 	if (rowToDisplay >= _rowRecords.count)
 		{
-		SDL_Log("No data to display in %s", self.class.description.UTF8String);
+		//SDL_Log("No data to display in %s", self.class.description.UTF8String);
 		return;
 		}
     int x, y, rowHeight, viewHeight;
