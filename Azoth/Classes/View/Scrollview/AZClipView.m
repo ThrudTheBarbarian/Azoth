@@ -10,6 +10,7 @@
 #import "AZApplication.h"
 #import "AZClipView.h"
 #import "AZColour.h"
+#import "AZEvent.h"
 #import "AZGeometry.h"
 #import "AZNotifications.h"
 #import "AZPainter.h"
@@ -165,6 +166,23 @@
 -(NSPoint)scrollPoint
 	{
 	return [self bounds].origin;
+	}
+
+
+/*****************************************************************************\
+|* We got a mouse-wheeled event
+\*****************************************************************************/
+- (BOOL) mouseWheeled:(AZEvent *)e
+	{
+	NSPoint p = self.scrollPoint;
+	if (e.deltaY > 0)
+		p.y -= self.enclosingScrollView.verticalPageScroll;
+	else
+		p.y += self.enclosingScrollView.verticalPageScroll;
+
+	p = [self constrainScrollPoint:p];
+	[self scrollToPoint:p];
+	return YES;
 	}
 
 /*****************************************************************************\
