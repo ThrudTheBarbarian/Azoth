@@ -45,6 +45,7 @@ NSString * const kZibHScroller		= @"hscroller";
 NSString * const kZibHasHeaderView	= @"hasHeaderView";
 NSString * const kZibId				= @"id";
 NSString * const kZibIdentifier		= @"identifier";
+NSString * const kZibImage 			= @"image";
 NSString * const kZibImageScaling	= @"imageScaling";
 NSString * const kZibInset			= @"inset";
 NSString * const kZibLabel			= @"label";
