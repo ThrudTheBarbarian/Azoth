@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 
 // The image displayed within the frame
-@property(strong, nonatomic) AZImage *								image;
+@property(strong, nonatomic, nullable) AZImage *					image;
 
 // Which type of image alignment (default: AZImageAlignCenter)
 @property(assign, nonatomic) AZImageAlignment						alignment;
