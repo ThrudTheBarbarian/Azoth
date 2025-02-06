@@ -153,6 +153,9 @@ typedef BOOL (^AZImageDrawingHandler)(NSRect dstRect, AZPainter *painter) ;
 // be necessary if you want to tile an image-texture
 // using the renderer, for example
 @property(assign, nonatomic) NSRect								srcRect;
+
+// Whether this image exists in the texture cache
+@property(assign, nonatomic) BOOL								isValid;
 @end
 
 NS_ASSUME_NONNULL_END

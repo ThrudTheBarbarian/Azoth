@@ -197,6 +197,14 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 
 
 /*****************************************************************************\
+|* Whether the image exists in the texture cache
+\*****************************************************************************/
+- (BOOL) isValid
+	{
+	return (_texture > 0);
+	}
+
+/*****************************************************************************\
 |* Return an AZTexture object referencing this image's texture. Only useful
 |* for the 3D renderer
 \*****************************************************************************/
