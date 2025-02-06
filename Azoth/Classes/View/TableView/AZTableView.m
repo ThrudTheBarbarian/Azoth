@@ -124,7 +124,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		int idx = 0;
 		for (NSDictionary *colInfo in cols)
 			{
-			NSString *ident = colInfo[kZibId];
+			NSString *ident = colInfo[kZibIdentifier];
 			if (ident == nil)
 				ident = [NSString stringWithFormat:@"column%d", idx];
 
