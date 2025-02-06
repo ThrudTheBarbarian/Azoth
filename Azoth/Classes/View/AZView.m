@@ -289,6 +289,13 @@
 	return _hidden || [self.superview isHiddenOrHasHiddenAncestor];
 	}
 
+- (void) setHidden:(BOOL)hidden
+	{
+	_hidden = hidden;
+	if (!hidden)
+		[self _invalidateTransforms];
+	}
+
 /*****************************************************************************\
 |* Return the transforms to/from the window co-ords
 \*****************************************************************************/
