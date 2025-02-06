@@ -35,7 +35,7 @@
 	{
 	static AZView * dragView = nil;		// Dragging view we are in
 	static AZView * lastView = nil;		// Non-dragging view we are in
-
+		
 	/*************************************************************************\
 	|* We do a depth-first search (so all subviews first), procedure is:
 	|*  - Does the event co-ordinate lie within the subview
@@ -65,6 +65,9 @@
 	BOOL done 	= NO;
 	for (AZView *subview in self.subviews)
 		{
+		if (subview.hidden)
+			continue;
+
 		// Only want to check against visible rect
 		if (NSPointInRect(p, global))
 			done = [subview processMouseEvent:e];
@@ -75,7 +78,7 @@
 	/*************************************************************************\
 	|* This is where we do the test and propagate 'done' back up the callchain
 	\*************************************************************************/
-	if (!done)
+	if ((!done) && (!self.hidden))
 		{
 		// We use bounds, not frame, because we'll be adding on this view's
 		// frame co-ords as part of the process of finding the point's
