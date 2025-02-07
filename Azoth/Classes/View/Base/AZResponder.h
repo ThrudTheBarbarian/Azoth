@@ -82,10 +82,13 @@ struct SDL_TextInputEvent;
 - (BOOL) rightMouseUp:(AZEvent *)e;
 
 /*****************************************************************************\
-|* Key event handling. This copes with composition as well as simple key
-|* presses. See AZTextField for details of how to use
+|* Key event handling.
 \*****************************************************************************/
-- (BOOL) keyDown:(struct SDL_KeyboardEvent *)e;
+- (BOOL) keyDown:(AZEvent *)e;
+
+- (BOOL) keyUp:(AZEvent *)e;
+
+// composition-related events. TBD
 - (BOOL) textEditingCandidates:(union SDL_Event *)e;
 - (BOOL) textEditing:(struct SDL_TextEditingEvent *)e;
 - (BOOL) textInput:(struct SDL_TextInputEvent *)e;

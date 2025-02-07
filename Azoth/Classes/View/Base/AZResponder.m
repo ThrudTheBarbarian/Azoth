@@ -101,7 +101,10 @@
 |* Key event handling. This copes with composition as well as simple key
 |* presses. See AZTextField for details of how to use
 \*****************************************************************************/
-- (BOOL) keyDown:(struct SDL_KeyboardEvent *)e
+- (BOOL) keyDown:(AZEvent *)e
+	{ return NO; }
+
+- (BOOL) keyUp:(AZEvent *)e
 	{ return NO; }
 
 - (BOOL) textEditingCandidates:(union SDL_Event *)e

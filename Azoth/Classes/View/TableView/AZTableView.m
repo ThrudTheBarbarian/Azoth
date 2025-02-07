@@ -21,6 +21,7 @@
 #import "AZTableView.h"
 #import "AZTypes.h"
 #import "AZView+Internal.h"
+#import "AZWindow.h"
 #import "AZZib.h"
 
 #define DEFAULT_ROWHEIGHT		(30.f)
@@ -310,8 +311,49 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
     return row;
 	}
 
+// MARK: Text input
+/*****************************************************************************\
+|* Accept first responder if asked
+\*****************************************************************************/
+- (BOOL) acceptsFirstResponder
+	{
+	return YES;
+	}
+
+/*****************************************************************************\
+|* There's nothing to do if we resign first-responder
+\*****************************************************************************/
+- (BOOL) resignFirstResponder
+	{
+	return YES;
+	}
+
 
 // MARK: Events
+
+/*****************************************************************************\
+|* We got a key event, see if the delegate is interested
+\*****************************************************************************/
+- (BOOL) keyDown:(AZEvent *)e
+	{
+	BOOL handled 	= NO;
+	SEL keySel 		= SELECTOR(@"tableView:keyDown:");
+	if ([_delegate respondsToSelector:keySel])
+		handled = [_delegate tableView:self keyDown:e];
+	return handled;
+	}
+
+/*****************************************************************************\
+|* We got a key event, see if the delegate is interested
+\*****************************************************************************/
+- (BOOL) keyUp:(AZEvent *)e
+	{
+	BOOL handled 	= NO;
+	SEL keySel 		= SELECTOR(@"tableView:keyUp:");
+	if ([_delegate respondsToSelector:keySel])
+		handled = [_delegate tableView:self keyUp:e];
+	return handled;
+	}
 
 /*****************************************************************************\
 |* The mouse button was clicked
@@ -329,6 +371,9 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		else
 			[self selectRow:_clickedRow byExtendingSelection:_allowsMultipleSelection];
 		}
+
+	// If we got a mousedown, claim first responder
+	[self.window makeFirstResponder:self];
 
 	return YES;
 	}

@@ -31,6 +31,7 @@ union SDL_Event;
 - (instancetype) initWithMouseButtonEvent:(union SDL_Event *)sdlEvent;
 - (instancetype) initWithMouseMotionEvent:(union SDL_Event *)sdlEvent;
 - (instancetype) initWithMouseWheelEvent:(union SDL_Event *)sdlEvent;
+- (instancetype) initWithKeyEvent:(union  SDL_Event *)sdlEvent;
 
 /*****************************************************************************\
 |* Instantiation: mouse has entered/exited view
@@ -72,6 +73,23 @@ union SDL_Event;
 
 // Mouse-wheel event, change in Y
 @property(assign, nonatomic, readonly) NSInteger			deltaY;
+
+// Which keyboard the key was pressed on
+@property(assign, nonatomic, readonly) SDL_KeyboardID		keyboard;
+
+// Which Scancode we got
+@property(assign, nonatomic, readonly) SDL_Scancode			scanCode;
+
+// Which Keycode we got
+@property(assign, nonatomic, readonly) SDL_Keycode			keyCode;
+
+// Whether this was a repeated keypress
+@property(assign, nonatomic, readonly) BOOL					aRepeat;
+
+// The character pressed in the event
+@property(assign, nonatomic, readonly) NSString *			characters;
+
+
 @end
 
 NS_ASSUME_NONNULL_END

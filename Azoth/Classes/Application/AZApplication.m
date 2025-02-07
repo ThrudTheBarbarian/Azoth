@@ -466,7 +466,18 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 
 		case SDL_EVENT_KEY_DOWN:
 			if (_window.firstResponder)
-				[_window.firstResponder keyDown:&(e->key)];
+				{
+				AZEvent *keyEvent = [[AZEvent alloc] initWithKeyEvent:e];
+				[_window.firstResponder keyDown:keyEvent];
+				}
+			break;
+
+		case SDL_EVENT_KEY_UP:
+			if (_window.firstResponder)
+				{
+				AZEvent *keyEvent = [[AZEvent alloc] initWithKeyEvent:e];
+				[_window.firstResponder keyUp:keyEvent];
+				}
 			break;
 
 		/*********************************************************************\

@@ -649,19 +649,19 @@ static float _dh[STATE_NUM];
 |* Key event handling. These are basically modifiers, the actual text
 |* processing uses the -textInput method
 \*****************************************************************************/
-- (BOOL) keyDown:(SDL_KeyboardEvent *)e
+- (BOOL) keyDown:(AZEvent *)e
 	{
 	BOOL handled = NO;
-	switch (e->key)
+	switch (e.keyCode)
 		{
          case SDLK_A:
-            if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+			if (e.modifierFlags & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
                 [self _editSelectAll];
 			handled = YES;
             break;
 
         case SDLK_C:
-            if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+            if (e.modifierFlags & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
                 [self _editCopy];
 			handled = YES;
             break;
@@ -669,22 +669,22 @@ static float _dh[STATE_NUM];
 
 	if (self.enabled)
 		{
-		switch(e->key)
+		switch(e.keyCode)
 			{
 			case SDLK_V:
-				if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+				if (e.modifierFlags & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
 					[self _editPaste];
 				handled = YES;
 				break;
 
 			case SDLK_X:
-				if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+				if (e.modifierFlags & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
 					[self _editCut];
 				handled = YES;
 				break;
 
 			case SDLK_LEFT:
-				if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+				if (e.modifierFlags & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
 					[self _moveCursorToStartOfLine];
 				else
 					[self _moveCursorLeft];
@@ -692,7 +692,7 @@ static float _dh[STATE_NUM];
 				break;
 
 			case SDLK_RIGHT:
-				if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+				if (e.modifierFlags & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
 					[self _moveCursorToEndOfLine];
 				else
 					[self _moveCursorRight];
@@ -701,20 +701,20 @@ static float _dh[STATE_NUM];
 
 			case SDLK_END:
 			case SDLK_DOWN:
-				if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+				if (e.modifierFlags & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
 					[self _moveCursorToEndOfLine];
 				handled = YES;
 				break;
 
 			case SDLK_HOME:
 			case SDLK_UP:
-				if (e->mod & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
+				if (e.modifierFlags & (SDL_KMOD_CTRL | SDL_KMOD_GUI))
 					[self _moveCursorToStartOfLine];
 				handled = YES;
 				break;
 
 		   case SDLK_BACKSPACE:
-				if (e->mod & SDL_KMOD_CTRL)
+				if (e.modifierFlags & SDL_KMOD_CTRL)
 					[self _editBackspaceToBeginning];
 				else
 					[self _editBackspace];
@@ -722,7 +722,7 @@ static float _dh[STATE_NUM];
 				break;
 
 		   case SDLK_DELETE:
-				if (e->mod & SDL_KMOD_CTRL)
+				if (e.modifierFlags & SDL_KMOD_CTRL)
 					[self _editDeleteToEnd];
 				else
 					[self _editDelete];
@@ -731,7 +731,7 @@ static float _dh[STATE_NUM];
 
 			case SDLK_TAB:
 			case SDLK_RETURN:
-				[self _editAction:e->key];
+				[self _editAction:e.keyCode];
 				handled = YES;
 				break;
 			}

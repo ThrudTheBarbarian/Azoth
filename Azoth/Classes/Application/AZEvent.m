@@ -146,6 +146,36 @@
 	}
 
 /*****************************************************************************\
+|* Instantiation: key event
+\*****************************************************************************/
+- (instancetype) initWithKeyEvent:(SDL_Event *)e
+	{
+	if (self = [super init])
+		{
+		_type				= e->key.down ? AZKeyDown : AZKeyUp;
+		_sdlEvent			= e;
+		_keyboard			= e->key.which;
+		_scanCode			= e->key.scancode;
+		_keyCode			= e->key.key;
+		_aRepeat			= e->key.repeat;
+		_modifierFlags		= e->key.mod;
+
+		BOOL caps			= (_modifierFlags & SDL_KMOD_SHIFT)
+							| (_modifierFlags & SDL_KMOD_CAPS);
+
+		unichar c			= _keyCode;
+		if (caps && (c >= 'a') && (c <='z'))
+			c -= ('a' - 'A');
+
+		if ((_keyCode & SDLK_SCANCODE_MASK) == 0)
+			_characters = [NSString stringWithFormat:@"%C", c];
+		else
+			_characters = @"";
+		}
+	return self;
+	}
+
+/*****************************************************************************\
 |* Modifier flags currently set. Flags are mapped to SDL-native types
 \*****************************************************************************/
 + (NSInteger) modifierFlags

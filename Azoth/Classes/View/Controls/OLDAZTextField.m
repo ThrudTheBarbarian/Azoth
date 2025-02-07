@@ -604,9 +604,10 @@ static float _dh[STATE_NUM];
 |* Key event handling. These are basically modifiers, the actual text
 |* processing uses the -textInput method
 \*****************************************************************************/
-- (BOOL) keyDown:(SDL_KeyboardEvent *)e
+- (BOOL) keyDown:(AZEvent *)e
 	{
 	BOOL handled = NO;
+#if 0
 	switch (e->key)
 		{
          case SDLK_A:
@@ -696,6 +697,7 @@ static float _dh[STATE_NUM];
 
 	if (handled)
 		[self setNeedsDisplay:YES];
+#endif
 	return handled;
 	}
 

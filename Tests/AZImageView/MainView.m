@@ -50,7 +50,7 @@
 	return YES;
 	}
 
-- (BOOL) keyDown:(struct SDL_KeyboardEvent *)e
+- (BOOL) keyDown:(AZEvent *)e
 	{
 	NSNotificationCenter *nc = NSNotificationCenter.defaultCenter;
 	[nc postNotificationName:@"key-down" object:nil];

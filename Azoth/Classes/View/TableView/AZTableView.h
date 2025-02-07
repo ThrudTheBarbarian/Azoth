@@ -30,38 +30,42 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol AZTableViewDelegate <NSObject>
 
 // Return a view for a table-column/row combination
-- (AZView *) tableView:(AZTableView *)tableView
-	viewForTableColumn:(AZTableColumn *)column
+- (AZView *) tableView:(AZTableView *)tv
+	viewForTableColumn:(AZTableColumn *)tc
 				   row:(NSInteger)row;
 				   
 @optional
 
 // Determine whether the user can edit a given row/col
-- (BOOL)tableView:(AZTableView *)tableView
-		shouldEditTableColumn:(AZTableColumn *)tableColumn
+- (BOOL)tableView:(AZTableView *)tv
+		shouldEditTableColumn:(AZTableColumn *)tc
 		row:(NSInteger)row;
 
 // Ask the delegate if the user can change the selection
-- (BOOL)selectionShouldChangeInTableView:(AZTableView *)tableView;
+- (BOOL)selectionShouldChangeInTableView:(AZTableView *)tv;
 
 // Return the height of a given row
-- (float)tableView:(AZTableView *)tableView heightOfRow:(NSInteger)row;
+- (float)tableView:(AZTableView *)tv heightOfRow:(NSInteger)row;
+
+// A key was pressed while the view has firstResponder status
+- (BOOL)tableView:(AZTableView *)tv keyDown:(AZEvent *)e;
+- (BOOL)tableView:(AZTableView *)tv keyUp:(AZEvent *)e;
 
 // Ask the delegate if the row can be selected
-- (BOOL)tableView:(AZTableView *)tableView shouldSelectRow:(NSInteger)row;
+- (BOOL)tableView:(AZTableView *)tv shouldSelectRow:(NSInteger)row;
 
 // Ask the delegate if a column can be selected
-- (BOOL)tableView:(AZTableView *)tableView
-		shouldSelectTableColumn:(AZTableColumn *)tableColumn;
+- (BOOL)tableView:(AZTableView *)tv
+		shouldSelectTableColumn:(AZTableColumn *)tc;
 
 // Tell the delegate that a header was clicked on
-- (void)tableView:(AZTableView *)tableView
-		mouseDownInHeaderOfTableColumn:(AZTableColumn *)tableColumn;
+- (void)tableView:(AZTableView *)tv
+		mouseDownInHeaderOfTableColumn:(AZTableColumn *)tc;
 
 // Tell the delegate we're about to display a view
-- (void)tableView:(AZTableView *)tableView
+- (void)tableView:(AZTableView *)tv
 		willDisplayView:(AZView *)view
-		forTableColumn:(AZTableColumn *)tableColumn
+		forTableColumn:(AZTableColumn *)tc
 		row:(NSInteger)row;
 
 // Notification: selection will change, called before the selection changes
