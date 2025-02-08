@@ -36,10 +36,10 @@
 	{
 	if (self = [super init])
 		{
-		_size   	= size;
-		_flags  	= flags;
-		_index 		= index;
-
+		_size   				= size;
+		_flags  				= flags;
+		_index 					= index;
+		_use 					= 1;
 		_view.pixelW 			= (int)size.width;
 		_view.pixelH			= (int)size.height;
 		_view.view.size.width	= -1;

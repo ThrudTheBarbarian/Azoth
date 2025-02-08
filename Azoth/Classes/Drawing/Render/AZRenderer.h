@@ -57,7 +57,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSRect) boundsOfTexture:(NSInteger)refId;
 
 /*****************************************************************************\
-|* Release a texture, removing it from the cache
+|* Bump a texture's retain count by 1. Note that the various create...
+|* methods already retain the texture as needed
+\*****************************************************************************/
+- (void) retainTexture:(NSInteger)refId;
+
+/*****************************************************************************\
+|* Release a texture, removing it from the cache if its retain count = 0
 \*****************************************************************************/
 - (void) releaseTexture:(NSInteger)refId;
 

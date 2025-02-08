@@ -414,7 +414,7 @@ static SDL_SpinLock 	_textureLock;
 - (void) dealloc
 	{
 	for (NSNumber *textureId in _textures.allKeys.copy)
-		[self releaseTexture:textureId.integerValue];
+		[self _destroyTexture:textureId.integerValue];
 
 	}
 
@@ -1471,7 +1471,7 @@ static SDL_SpinLock 	_textureLock;
 		{
 		if (![self _updateTexture:tId inRect:NSZeroRect FromSurface:surface])
 			{
-			[self releaseTexture:tId];
+			[self _destroyTexture:tId];
 			SDL_Log("Can't update the texture from the surface");
 			return -1;
 			}
@@ -1877,13 +1877,35 @@ static SDL_SpinLock 	_textureLock;
 
 
 /*****************************************************************************\
-|* Release a texture, removing it from the cache
+|* Retain a texture, bumping its use-count by +1
+\*****************************************************************************/
+- (void) retainTexture:(NSInteger)refId
+	{
+	AZTexture *texture = _textures[@(refId)];
+	if (texture)
+		texture.use ++;
+	}
+
+/*****************************************************************************\
+|* Release a texture, removing it from the cache if its use-count == 0
 \*****************************************************************************/
 - (void) releaseTexture:(NSInteger)refId
 	{
 	AZTexture *texture = _textures[@(refId)];
 	if (texture)
-		[_textures removeObjectForKey:@(refId)];
+		{
+		texture.use --;
+		if (texture.use == 0)
+			[self _destroyTexture:refId];
+		}
+	}
+
+/*****************************************************************************\
+|* Destroy a texture, removing it from the cache
+\*****************************************************************************/
+- (void) _destroyTexture:(NSInteger)refId
+	{
+	[_textures removeObjectForKey:@(refId)];
 	}
 
 /*****************************************************************************\

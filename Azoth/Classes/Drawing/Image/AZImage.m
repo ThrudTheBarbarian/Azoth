@@ -36,12 +36,14 @@
 
 // The texture that the renderer was previously focussed on
 @property(assign, nonatomic) NSInteger								oldFocus;
+
 @end
 
 /*****************************************************************************\
 |* File-private vars
 \*****************************************************************************/
-static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
+static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * 	_cache;
+static NSMutableDictionary<NSString*,AZImage*> * 						_map;
 
 @implementation AZImage
 
@@ -55,12 +57,13 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 		_imageCache = nil;
 		_texture 	= -3;
 		_srcRect	= NSZeroRect;
+		_texRect	= NSZeroRect;
 		_handler	= nil;
-		
 		static dispatch_once_t onceToken;
 		dispatch_once(&onceToken,
 			^{
-			_cache = [NSMutableDictionary new];
+			_cache 	= NSMutableDictionary.new;
+			_map	= NSMutableDictionary.new;
 			});
 		}
 	return self;
@@ -71,7 +74,13 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 \*****************************************************************************/
 - (void) dealloc
 	{
-	[_imageCache release:_texRect];
+	if (_imageCache)
+		[_imageCache release:_texRect];
+	else if (_texture >= 0)
+		{
+		id<AZRenderer> azr = AZRenderer.renderer;
+		[azr releaseTexture:_texture];
+		}
 	}
 
 /*****************************************************************************\
@@ -86,6 +95,7 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 		AZImage *image 	= AZImage.new;
 		image.srcRect 	= r;
 		image.texture = textureId;
+		[azr retainTexture:textureId];
 		return image;
 		}
 	return nil;
@@ -124,6 +134,9 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 	img.texture		= [AZApp textureFor:map];
 	img.srcRect		= r;
 	img.identifier	= name;
+
+	id<AZRenderer>azr	= AZRenderer.renderer;
+	[azr retainTexture:img.texture];
 	return img;
 	}
 
@@ -135,12 +148,23 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 	{
 	const char *path	= fullpath.fileSystemRepresentation;
 
+	AZImage *mapped 		= _map[fullpath];
+	if (mapped)
+		{
+		id<AZRenderer>azr	= AZRenderer.renderer;
+		[azr retainTexture:mapped.texture];
+		return mapped;
+		}
+
 	SDL_Surface *img = IMG_Load(path);
 	if (img)
 		{
 		AZImage *image = [AZImage new];
 		if ([image _loadSurface:img])
+			{
+			_map[fullpath] = image;
 			return image;
+			}
 		else
 			SDL_Log("Cannot convert surface to texture for %s", path);
 		}
@@ -151,7 +175,9 @@ static NSMutableDictionary<NSString*,NSMutableArray<AZImageCache*>*> * _cache;
 	}
 
 /*****************************************************************************\
-|* Initialisation: Create an image with a GPU texture of a given size
+|* Initialisation: Create an image with a GPU texture of a given size. There
+|* is not sufficient context to see if this is a duplicate, so it should be
+|* used sparingly, and make sure it gets released by the app when possible
 \*****************************************************************************/
 + (AZImage *) imageWithSize:(NSSize) size
 	{
