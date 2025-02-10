@@ -51,7 +51,7 @@
 				for (int j=0; j<width; j+=size)
 					{
 					NSRect r = NSMakeRect(j, i, size, size);
-					[self _identifySlot:r atX:j y:i];
+					//[self _identifySlot:r atX:j y:i];
 					[_slots addObject:NSStringFromRect(r)];
 					}
 
