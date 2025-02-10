@@ -31,6 +31,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		F40BDECD2D5A609F00CC1AB9 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F40BDECC2D5A609F00CC1AB9 /* SDL3.framework */; };
 		F41BC6AD2D0A720700E61EDD /* Azoth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; };
 		F41BC6AE2D0A720700E61EDD /* Azoth.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F454E2102D24DFA1002D2DAB /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
@@ -87,7 +88,6 @@
 		F49533822D1F841800D6B8A6 /* SDL3_ttf.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F49533832D1F841B00D6B8A6 /* SDL3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F49533842D1F842200D6B8A6 /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
-		F49533852D1F842500D6B8A6 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
 		F49533862D1F8DAB00D6B8A6 /* SDL3_image.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; };
 		F49533872D1F8DCA00D6B8A6 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
 		F49533882D1F8DCD00D6B8A6 /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
@@ -422,6 +422,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F40BDECC2D5A609F00CC1AB9 /* SDL3.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SDL3.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F41BC6522D0A61BA00E61EDD /* Azoth.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Azoth.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F41BC69C2D0A71FD00E61EDD /* AZDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F454E1FD2D24D1DA002D2DAB /* AZOutline.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZOutline.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -809,7 +810,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F49533852D1F842500D6B8A6 /* SDL3.xcframework in Frameworks */,
+				F40BDECD2D5A609F00CC1AB9 /* SDL3.framework in Frameworks */,
 				F49533842D1F842200D6B8A6 /* SDL3_ttf.xcframework in Frameworks */,
 				F45ED9312D1146DE00CE8B28 /* avif.xcframework in Frameworks */,
 				F45ED9322D1146DE00CE8B28 /* jxl.xcframework in Frameworks */,
@@ -996,6 +997,7 @@
 		F4B6A11B2D0A977D0033580D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F40BDECC2D5A609F00CC1AB9 /* SDL3.framework */,
 				F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */,
 				F495337E2D1F840800D6B8A6 /* SDL3.xcframework */,
 				F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */,
