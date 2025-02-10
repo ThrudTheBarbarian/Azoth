@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 |* Events : handle the mouse-based events, using the view-coords to determine
 |* 			which view gets to see the event
 \*****************************************************************************/
-- (BOOL) processMouseEvent:(AZEvent *)event;
+- (BOOL) processMouseEvent:(AZEvent *)event depth:(NSInteger)depth;
 
 /*****************************************************************************\
 |* Rendering: Install a texture as backing for the view.

@@ -31,7 +31,7 @@
 |* view wants to handle it. This method is only ever called on the content-view
 |* of a window
 \*****************************************************************************/
-- (BOOL) processMouseEvent:(AZEvent *)e
+- (BOOL) processMouseEvent:(AZEvent *)e depth:(NSInteger)depth
 	{
 	static AZView * dragView = nil;		// Dragging view we are in
 	static AZView * lastView = nil;		// Non-dragging view we are in
@@ -55,7 +55,7 @@
 	|* Check to see if the mouse has changed view, and send events if so
 	\*************************************************************************/
 	AZView *current	= [self _findViewAtPoint:p];
-	if (current != lastView)
+	if ((depth == 0) && (current != lastView))
 		{
 		[lastView mouseExited:[[AZEvent alloc] initAsExitViewEvent:lastView]];
 		[current mouseEntered:[[AZEvent alloc] initAsEnterViewEvent:current]];
@@ -70,7 +70,7 @@
 
 		// Only want to check against visible rect
 		if (NSPointInRect(p, global))
-			done = [subview processMouseEvent:e];
+			done = [subview processMouseEvent:e depth:depth+1];
 		if (done)
 			break;
 		}
@@ -438,7 +438,7 @@
 
 	if (found == nil)
 		{
-		NSRect wframe = [self convertRect:self.bounds toView:nil];
+		NSRect wframe = [self convertRect:self.visibleRect toView:nil];
 		if (NSPointInRect(p, wframe))
 			return self;
 		}
