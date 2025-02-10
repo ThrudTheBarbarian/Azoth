@@ -435,15 +435,15 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 		\*********************************************************************/
 		case SDL_EVENT_MOUSE_BUTTON_DOWN:
 		case SDL_EVENT_MOUSE_BUTTON_UP:
-			[cv processMouseEvent:event];
+			[cv processMouseEvent:event depth:0];
 			break;
 
 		case SDL_EVENT_MOUSE_MOTION:
-			[cv processMouseEvent:event];
+			[cv processMouseEvent:event depth:0];
 			break;
 
 		case SDL_EVENT_MOUSE_WHEEL:
-			[cv processMouseEvent:event];
+			[cv processMouseEvent:event depth:0];
 			break;
 
 		/*********************************************************************\
