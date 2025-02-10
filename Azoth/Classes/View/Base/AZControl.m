@@ -25,6 +25,7 @@
 		_enabled			= YES;
 		_continuous			= NO;
 		_font				= AZApp.controlFont;
+		_fpFormat			= @"%.2f";
 		}
 	return self;
 	}
@@ -41,6 +42,7 @@
 		self.state		 	= AZControlStateNormal;
 		_enabled			= YES;
 		_font				= AZApp.controlFont;
+		_fpFormat			= @"%.2f";
 
 		_continuous			=  ([info[kZibContinuous] isEqualToString:@"YES"])
 							? YES : NO;
@@ -99,6 +101,14 @@
 	{
 	_stringValue = string;
 	[self setNeedsDisplay:YES];
+	}
+
+/*****************************************************************************\
+|* Change the floating point format
+\*****************************************************************************/
+- (void) setFloatingPointFormatLeft:(int)left right:(int)right
+	{
+	_fpFormat = [NSString stringWithFormat:@"%%%d.%df", left, right];
 	}
 
 @end

@@ -298,6 +298,12 @@ static float _dh[STATE_NUM];
 	return [self setStringValue:objectValue.description];
 	}
 
+- (void) setDoubleValue:(double)doubleValue
+	{
+	NSString *str = [NSString stringWithFormat:self.fpFormat, doubleValue];
+	return [self setStringValue:str];
+	}
+
 /*****************************************************************************\
 |* Draw the textField
 \*****************************************************************************/
@@ -731,6 +737,8 @@ static float _dh[STATE_NUM];
 
 			case SDLK_TAB:
 			case SDLK_RETURN:
+			case SDLK_RETURN2:
+			case SDLK_KP_ENTER:
 				[self _editAction:e.keyCode];
 				handled = YES;
 				break;
