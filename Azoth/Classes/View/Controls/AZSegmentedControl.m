@@ -694,7 +694,7 @@ typedef struct
 \*****************************************************************************/
 - (void) _ensureSufficientSegments:(NSInteger)segment
 	{
-	NSInteger num 	= segment;
+	NSInteger num 	= segment+1;
 	int extra		= (int)(num - _numLabels);
 	if (extra <= 0)
 		return;
@@ -711,7 +711,7 @@ typedef struct
 	int totalWidth = (self.bounds.size.width		// Total width
 				   - NSWidth(_cL[0])				// minus left end-cap
 				   - NSWidth(_cR[0])				// minus right end-cap
-				   - (segment-1) * NSWidth(_cD[0]));	// minux divider size
+				   - (segment) * NSWidth(_cD[0]));	// minux divider size
 	int width	   = totalWidth / num;
 
 	for (NSInteger i=_numLabels; i<num; i++)

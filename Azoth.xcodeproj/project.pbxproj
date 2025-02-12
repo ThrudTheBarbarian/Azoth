@@ -32,17 +32,29 @@
 
 /* Begin PBXBuildFile section */
 		F40BDECD2D5A609F00CC1AB9 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F40BDECC2D5A609F00CC1AB9 /* SDL3.framework */; };
+		F40BDF112D5C070700CC1AB9 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F40BDF102D5C070700CC1AB9 /* SDL3.framework */; };
+		F40BDF132D5C071700CC1AB9 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F40BDF122D5C071700CC1AB9 /* SDL3.framework */; };
+		F40BDF142D5C072500CC1AB9 /* SDL3.framework in Embed frameworks */ = {isa = PBXBuildFile; fileRef = F40BDF122D5C071700CC1AB9 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F40BDF152D5C073C00CC1AB9 /* SDL3.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F40BDF122D5C071700CC1AB9 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F40BDF162D5C098700CC1AB9 /* SDL3.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F40BDF122D5C071700CC1AB9 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F40BDF172D5C098E00CC1AB9 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F40BDF122D5C071700CC1AB9 /* SDL3.framework */; };
+		F40BDF182D5C09E200CC1AB9 /* SDL3.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F40BDF122D5C071700CC1AB9 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F40BDF192D5C09EC00CC1AB9 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F40BDF122D5C071700CC1AB9 /* SDL3.framework */; };
+		F40BDF1A2D5C0A1400CC1AB9 /* SDL3.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F40BDF122D5C071700CC1AB9 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F40BDF1B2D5C0A1C00CC1AB9 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F40BDF122D5C071700CC1AB9 /* SDL3.framework */; };
+		F40BDF1C2D5C0A4200CC1AB9 /* SDL3.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F40BDF122D5C071700CC1AB9 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F40BDF1D2D5C0A4800CC1AB9 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F40BDF122D5C071700CC1AB9 /* SDL3.framework */; };
+		F40BDF1E2D5C0A8E00CC1AB9 /* SDL3.framework in Copy Files (7 items) */ = {isa = PBXBuildFile; fileRef = F40BDF122D5C071700CC1AB9 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F40BDF1F2D5C0A9500CC1AB9 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F40BDF122D5C071700CC1AB9 /* SDL3.framework */; };
 		F41BC6AD2D0A720700E61EDD /* Azoth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; };
 		F41BC6AE2D0A720700E61EDD /* Azoth.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F454E2102D24DFA1002D2DAB /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
-		F454E2112D24DFA1002D2DAB /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
 		F454E2122D24DFA1002D2DAB /* SDL3_image.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; };
 		F454E2132D24DFA1002D2DAB /* avif.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; };
 		F454E2142D24DFA1002D2DAB /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
 		F454E2152D24DFA1002D2DAB /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
 		F454E2162D24DFA6002D2DAB /* Azoth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; };
 		F454E2182D24DFBD002D2DAB /* SDL3_ttf.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		F454E2192D24DFBD002D2DAB /* SDL3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F454E21A2D24DFBD002D2DAB /* SDL3_image.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F454E21B2D24DFBD002D2DAB /* avif.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F454E21C2D24DFBD002D2DAB /* jxl.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -83,49 +95,39 @@
 		F495284A2D1F4C8000D6B8A6 /* jxl.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F495284D2D1F4C8000D6B8A6 /* webp.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F495284E2D1F4C8000D6B8A6 /* Azoth.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		F495337F2D1F840800D6B8A6 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
 		F49533812D1F841200D6B8A6 /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
 		F49533822D1F841800D6B8A6 /* SDL3_ttf.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		F49533832D1F841B00D6B8A6 /* SDL3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F49533842D1F842200D6B8A6 /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
 		F49533862D1F8DAB00D6B8A6 /* SDL3_image.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; };
-		F49533872D1F8DCA00D6B8A6 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
 		F49533882D1F8DCD00D6B8A6 /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
 		F49533892D1F8DD100D6B8A6 /* SDL3_ttf.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		F495338A2D1F8DD300D6B8A6 /* SDL3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		F4953ED82D20EFBF00D6B8A6 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
 		F4953ED92D20EFC000D6B8A6 /* SDL3_image.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; };
 		F4953EDA2D20EFC300D6B8A6 /* avif.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; };
 		F4953EDB2D20EFC400D6B8A6 /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
 		F4953EDC2D20EFC600D6B8A6 /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
 		F4953EDD2D20EFD000D6B8A6 /* SDL3_image.xcframework in Embed frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		F4953EDE2D20EFD200D6B8A6 /* SDL3.xcframework in Embed frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F4953EDF2D20EFD400D6B8A6 /* avif.xcframework in Embed frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F4953EE02D20EFD500D6B8A6 /* jxl.xcframework in Embed frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F4953EE12D20EFD600D6B8A6 /* webp.xcframework in Embed frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F49557202D231CC800D6B8A6 /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
-		F49557212D231CC800D6B8A6 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
 		F49557222D231CC800D6B8A6 /* SDL3_image.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; };
 		F49557232D231CC800D6B8A6 /* avif.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; };
 		F49557242D231CC800D6B8A6 /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
 		F49557252D231CC800D6B8A6 /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
 		F49557262D231CD100D6B8A6 /* Azoth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; };
 		F49557282D231CEA00D6B8A6 /* SDL3_ttf.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		F49557292D231CEA00D6B8A6 /* SDL3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F495572A2D231CEA00D6B8A6 /* SDL3_image.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F495572B2D231CEA00D6B8A6 /* avif.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F495572C2D231CEA00D6B8A6 /* jxl.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F495572D2D231CEA00D6B8A6 /* webp.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F495572E2D231CF700D6B8A6 /* Azoth.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F4BD7EF52D2654CB0041034B /* SDL3_ttf.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		F4BD7EF62D2654CB0041034B /* SDL3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F4BD7EF72D2654CB0041034B /* SDL3_image.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F4BD7EF82D2654CB0041034B /* avif.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F4BD7EF92D2654CB0041034B /* jxl.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F4BD7EFA2D2654CB0041034B /* webp.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F4BD7EFB2D2654CE0041034B /* Azoth.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F4BD7EFD2D2654F10041034B /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
-		F4BD7EFE2D2654F10041034B /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
 		F4BD7EFF2D2654F10041034B /* SDL3_image.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; };
 		F4BD7F002D2654F10041034B /* avif.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; };
 		F4BD7F012D2654F10041034B /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
@@ -137,10 +139,8 @@
 		F4BD82CE2D2F25400041034B /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
 		F4BD82CF2D2F25400041034B /* SDL3_image.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; };
 		F4BD82D02D2F25400041034B /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
-		F4BD82D12D2F25400041034B /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
 		F4BD82D22D2F25400041034B /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
 		F4BD82D42D2F256F0041034B /* SDL3_ttf.xcframework in Copy Files (7 items) */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		F4BD82D52D2F256F0041034B /* SDL3.xcframework in Copy Files (7 items) */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F4BD82D62D2F256F0041034B /* SDL3_image.xcframework in Copy Files (7 items) */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F4BD82D72D2F256F0041034B /* avif.xcframework in Copy Files (7 items) */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F4BD82D82D2F256F0041034B /* jxl.xcframework in Copy Files (7 items) */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -265,8 +265,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				F40BDF152D5C073C00CC1AB9 /* SDL3.framework in Embed Frameworks */,
 				F49533892D1F8DD100D6B8A6 /* SDL3_ttf.xcframework in Embed Frameworks */,
-				F495338A2D1F8DD300D6B8A6 /* SDL3.xcframework in Embed Frameworks */,
 				F45ED93A2D11480800CE8B28 /* SDL3_image.xcframework in Embed Frameworks */,
 				F45ED93B2D11480A00CE8B28 /* avif.xcframework in Embed Frameworks */,
 				F45ED93C2D11480D00CE8B28 /* jxl.xcframework in Embed Frameworks */,
@@ -283,8 +283,8 @@
 			dstSubfolderSpec = 10;
 			files = (
 				F454E21E2D24DFCE002D2DAB /* Azoth.framework in Embed Frameworks */,
+				F40BDF1A2D5C0A1400CC1AB9 /* SDL3.framework in Embed Frameworks */,
 				F454E2182D24DFBD002D2DAB /* SDL3_ttf.xcframework in Embed Frameworks */,
-				F454E2192D24DFBD002D2DAB /* SDL3.xcframework in Embed Frameworks */,
 				F454E21A2D24DFBD002D2DAB /* SDL3_image.xcframework in Embed Frameworks */,
 				F454E21B2D24DFBD002D2DAB /* avif.xcframework in Embed Frameworks */,
 				F454E21C2D24DFBD002D2DAB /* jxl.xcframework in Embed Frameworks */,
@@ -316,12 +316,12 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				F49533832D1F841B00D6B8A6 /* SDL3.xcframework in Embed Frameworks */,
 				F49533822D1F841800D6B8A6 /* SDL3_ttf.xcframework in Embed Frameworks */,
 				F49528482D1F4C8000D6B8A6 /* SDL3_image.xcframework in Embed Frameworks */,
 				F49528492D1F4C8000D6B8A6 /* avif.xcframework in Embed Frameworks */,
 				F495284A2D1F4C8000D6B8A6 /* jxl.xcframework in Embed Frameworks */,
 				F495284E2D1F4C8000D6B8A6 /* Azoth.framework in Embed Frameworks */,
+				F40BDF162D5C098700CC1AB9 /* SDL3.framework in Embed Frameworks */,
 				F495284D2D1F4C8000D6B8A6 /* webp.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -334,8 +334,8 @@
 			dstSubfolderSpec = 10;
 			files = (
 				F495572E2D231CF700D6B8A6 /* Azoth.framework in Embed Frameworks */,
+				F40BDF182D5C09E200CC1AB9 /* SDL3.framework in Embed Frameworks */,
 				F49557282D231CEA00D6B8A6 /* SDL3_ttf.xcframework in Embed Frameworks */,
-				F49557292D231CEA00D6B8A6 /* SDL3.xcframework in Embed Frameworks */,
 				F495572A2D231CEA00D6B8A6 /* SDL3_image.xcframework in Embed Frameworks */,
 				F495572B2D231CEA00D6B8A6 /* avif.xcframework in Embed Frameworks */,
 				F495572C2D231CEA00D6B8A6 /* jxl.xcframework in Embed Frameworks */,
@@ -350,11 +350,11 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				F40BDF142D5C072500CC1AB9 /* SDL3.framework in Embed frameworks */,
 				F4953EDD2D20EFD000D6B8A6 /* SDL3_image.xcframework in Embed frameworks */,
 				F4953EDF2D20EFD400D6B8A6 /* avif.xcframework in Embed frameworks */,
 				F4953EE02D20EFD500D6B8A6 /* jxl.xcframework in Embed frameworks */,
 				F4953EE12D20EFD600D6B8A6 /* webp.xcframework in Embed frameworks */,
-				F4953EDE2D20EFD200D6B8A6 /* SDL3.xcframework in Embed frameworks */,
 			);
 			name = "Embed frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -366,11 +366,11 @@
 			dstSubfolderSpec = 10;
 			files = (
 				F4BD7EFB2D2654CE0041034B /* Azoth.framework in Embed Frameworks */,
+				F40BDF1C2D5C0A4200CC1AB9 /* SDL3.framework in Embed Frameworks */,
 				F4BD7EFA2D2654CB0041034B /* webp.xcframework in Embed Frameworks */,
 				F4BD7EF52D2654CB0041034B /* SDL3_ttf.xcframework in Embed Frameworks */,
 				F4BD7EF82D2654CB0041034B /* avif.xcframework in Embed Frameworks */,
 				F4BD7EF92D2654CB0041034B /* jxl.xcframework in Embed Frameworks */,
-				F4BD7EF62D2654CB0041034B /* SDL3.xcframework in Embed Frameworks */,
 				F4BD7EF72D2654CB0041034B /* SDL3_image.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -393,12 +393,12 @@
 			dstSubfolderSpec = 10;
 			files = (
 				F4BD82D42D2F256F0041034B /* SDL3_ttf.xcframework in Copy Files (7 items) */,
-				F4BD82D52D2F256F0041034B /* SDL3.xcframework in Copy Files (7 items) */,
 				F4BD82D62D2F256F0041034B /* SDL3_image.xcframework in Copy Files (7 items) */,
 				F4BD82D72D2F256F0041034B /* avif.xcframework in Copy Files (7 items) */,
 				F4BD82D82D2F256F0041034B /* jxl.xcframework in Copy Files (7 items) */,
 				F4BD82D92D2F256F0041034B /* webp.xcframework in Copy Files (7 items) */,
 				F4BD82DA2D2F256F0041034B /* Azoth.framework in Copy Files (7 items) */,
+				F40BDF1E2D5C0A8E00CC1AB9 /* SDL3.framework in Copy Files (7 items) */,
 			);
 			name = "Copy Files (7 items)";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -423,6 +423,8 @@
 
 /* Begin PBXFileReference section */
 		F40BDECC2D5A609F00CC1AB9 /* SDL3.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SDL3.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F40BDF102D5C070700CC1AB9 /* SDL3.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SDL3.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F40BDF122D5C071700CC1AB9 /* SDL3.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SDL3.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F41BC6522D0A61BA00E61EDD /* Azoth.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Azoth.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F41BC69C2D0A71FD00E61EDD /* AZDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F454E1FD2D24D1DA002D2DAB /* AZOutline.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZOutline.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -823,7 +825,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F49533872D1F8DCA00D6B8A6 /* SDL3.xcframework in Frameworks */,
+				F40BDF112D5C070700CC1AB9 /* SDL3.framework in Frameworks */,
 				F49533882D1F8DCD00D6B8A6 /* SDL3_ttf.xcframework in Frameworks */,
 				F45ED92A2D1145BA00CE8B28 /* webp.xcframework in Frameworks */,
 				F45ED92B2D1145BA00CE8B28 /* jxl.xcframework in Frameworks */,
@@ -837,9 +839,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F40BDF1B2D5C0A1C00CC1AB9 /* SDL3.framework in Frameworks */,
 				F454E2162D24DFA6002D2DAB /* Azoth.framework in Frameworks */,
 				F454E2102D24DFA1002D2DAB /* SDL3_ttf.xcframework in Frameworks */,
-				F454E2112D24DFA1002D2DAB /* SDL3.xcframework in Frameworks */,
 				F454E2122D24DFA1002D2DAB /* SDL3_image.xcframework in Frameworks */,
 				F454E2132D24DFA1002D2DAB /* avif.xcframework in Frameworks */,
 				F454E2142D24DFA1002D2DAB /* jxl.xcframework in Frameworks */,
@@ -865,10 +867,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F40BDF172D5C098E00CC1AB9 /* SDL3.framework in Frameworks */,
 				F49528442D1F4B3100D6B8A6 /* webp.xcframework in Frameworks */,
 				F49533812D1F841200D6B8A6 /* SDL3_ttf.xcframework in Frameworks */,
 				F49533862D1F8DAB00D6B8A6 /* SDL3_image.xcframework in Frameworks */,
-				F495337F2D1F840800D6B8A6 /* SDL3.xcframework in Frameworks */,
 				F49528412D1F4B3100D6B8A6 /* jxl.xcframework in Frameworks */,
 				F49528402D1F4B3100D6B8A6 /* avif.xcframework in Frameworks */,
 				F49528452D1F4B4700D6B8A6 /* Azoth.framework in Frameworks */,
@@ -879,9 +881,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F40BDF192D5C09EC00CC1AB9 /* SDL3.framework in Frameworks */,
 				F49557262D231CD100D6B8A6 /* Azoth.framework in Frameworks */,
 				F49557202D231CC800D6B8A6 /* SDL3_ttf.xcframework in Frameworks */,
-				F49557212D231CC800D6B8A6 /* SDL3.xcframework in Frameworks */,
 				F49557222D231CC800D6B8A6 /* SDL3_image.xcframework in Frameworks */,
 				F49557232D231CC800D6B8A6 /* avif.xcframework in Frameworks */,
 				F49557242D231CC800D6B8A6 /* jxl.xcframework in Frameworks */,
@@ -893,9 +895,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F40BDF132D5C071700CC1AB9 /* SDL3.framework in Frameworks */,
 				F4953EDB2D20EFC400D6B8A6 /* jxl.xcframework in Frameworks */,
 				F4953EDA2D20EFC300D6B8A6 /* avif.xcframework in Frameworks */,
-				F4953ED82D20EFBF00D6B8A6 /* SDL3.xcframework in Frameworks */,
 				F4953EDC2D20EFC600D6B8A6 /* webp.xcframework in Frameworks */,
 				F4953ED92D20EFC000D6B8A6 /* SDL3_image.xcframework in Frameworks */,
 			);
@@ -905,9 +907,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F40BDF1D2D5C0A4800CC1AB9 /* SDL3.framework in Frameworks */,
 				F4BD7F032D2654F50041034B /* Azoth.framework in Frameworks */,
 				F4BD7EFD2D2654F10041034B /* SDL3_ttf.xcframework in Frameworks */,
-				F4BD7EFE2D2654F10041034B /* SDL3.xcframework in Frameworks */,
 				F4BD7EFF2D2654F10041034B /* SDL3_image.xcframework in Frameworks */,
 				F4BD7F002D2654F10041034B /* avif.xcframework in Frameworks */,
 				F4BD7F012D2654F10041034B /* jxl.xcframework in Frameworks */,
@@ -926,12 +928,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F40BDF1F2D5C0A9500CC1AB9 /* SDL3.framework in Frameworks */,
 				F4BD82CC2D2F25400041034B /* avif.xcframework in Frameworks */,
 				F4BD82CD2D2F25400041034B /* Azoth.framework in Frameworks */,
 				F4BD82CE2D2F25400041034B /* jxl.xcframework in Frameworks */,
 				F4BD82CF2D2F25400041034B /* SDL3_image.xcframework in Frameworks */,
 				F4BD82D02D2F25400041034B /* SDL3_ttf.xcframework in Frameworks */,
-				F4BD82D12D2F25400041034B /* SDL3.xcframework in Frameworks */,
 				F4BD82D22D2F25400041034B /* webp.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -997,6 +999,8 @@
 		F4B6A11B2D0A977D0033580D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F40BDF122D5C071700CC1AB9 /* SDL3.framework */,
+				F40BDF102D5C070700CC1AB9 /* SDL3.framework */,
 				F40BDECC2D5A609F00CC1AB9 /* SDL3.framework */,
 				F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */,
 				F495337E2D1F840800D6B8A6 /* SDL3.xcframework */,

@@ -36,6 +36,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void) addItemWithTitle:(NSString *) title;
 
 /*****************************************************************************\
+|* Adds an item with the specified title/tag to the end of the menu
+\*****************************************************************************/
+- (void) addItemWithTitle:(NSString *) title andTag:(NSInteger)tag;
+
+/*****************************************************************************\
 |* Adds multiple items to the end of the menu
 \*****************************************************************************/
 - (void) addItemsWithTitles:(NSArray<NSString *> *) itemTitles;

@@ -321,6 +321,15 @@ static float 		_uiS[STATE_NUM];		// bottom-border for 9-way
 	}
 
 /*****************************************************************************\
+|* Adds an item with the specified title/tag to the end of the menu
+\*****************************************************************************/
+- (void) addItemWithTitle:(NSString *) title andTag:(NSInteger)tag
+	{
+	[_menu addItemWithTitle:title action:nil keyEquivalent:@"" tag:tag];
+	}
+
+
+/*****************************************************************************\
 |* Adds multiple items to the end of the menu
 \*****************************************************************************/
 - (void) addItemsWithTitles:(NSArray<NSString *> *) itemTitles

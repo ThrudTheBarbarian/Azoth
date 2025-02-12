@@ -69,12 +69,12 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 	NSInteger mid	= count * NSHeight(_barSel);
 	NSInteger bot	= (flags & AZMENU_RENDER_BOTTOM) ? NSHeight(_menuBM) : 0;
 
-	AZFont *font 	= AZApp.controlFont;
+	AZFont *font 	= AZApp.boldControlFont;
 	int width		= 0;
 	for (AZMenuItem *item in menu.itemArray)
 		{
 		int w = [menu widthForString:item.title];
-		width = (width > w) ? width : w;
+		width = (width > w) ? width +10 : w;
 		}
 
 	width = (width < menu.measure.frame.size.width)
