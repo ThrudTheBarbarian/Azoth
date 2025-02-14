@@ -7,6 +7,7 @@
 
 #import "AZGPUBuffer.h"
 #import "AZRenderer.h"
+#import "AZRenderer3d.h"
 
 /*****************************************************************************\
 |* "Private" properties
@@ -91,6 +92,16 @@
 - (void) dealloc
 	{
 	SDL_ReleaseGPUBuffer(_gpu, _buffer);
+	}
+
+
+/*****************************************************************************\
+|* Populate a GPU buffer with data from the CPU
+\*****************************************************************************/
+- (BOOL) upload:(NSData *)data
+	{
+	AZRenderer3d *azr 	= (AZRenderer3d *)AZRenderer.renderer;
+	return [azr upload:data to:self];
 	}
 
 @end

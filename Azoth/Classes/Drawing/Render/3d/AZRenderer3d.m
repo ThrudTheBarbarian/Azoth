@@ -14,6 +14,7 @@
 #import "AZColour.h"
 #import "AZColourTarget.h"
 #import "AZComputePipeline.h"
+#import "AZGPUBuffer.h"
 #import "AZMatrix.h"
 #import "AZPipelineTarget.h"
 #import "AZRenderer3d.h"
@@ -2820,13 +2821,21 @@ static SDL_SpinLock 	_textureLock;
 	// Make sure there isn't a render-pass currently in operation
 	[self _flushRenderCommands];
 
-	int numBufs = pipeline.numBufferReadWriteBindings;
-	SDL_GPUStorageBufferReadWriteBinding sb[numBufs];
-	[pipeline populateBufferBindings:sb];
+	int numOutBufs = pipeline.numOutputBufferBindings;
+	SDL_GPUStorageBufferReadWriteBinding sbo[numOutBufs];
+	[pipeline populateOutputBufferBindings:sbo];
 
-	int numTex = pipeline.numTextureReadWriteBindings;
-	SDL_GPUStorageTextureReadWriteBinding st[numTex];
-	[pipeline populateTextureBindings:st];
+	int numInBufs = pipeline.numInputBufferBindings;
+	SDL_GPUStorageBufferReadWriteBinding sbi[numInBufs];
+	[pipeline populateOutputBufferBindings:sbi];
+
+	int numOutTex = pipeline.numOutputTextureBindings;
+	SDL_GPUStorageTextureReadWriteBinding sto[numOutTex];
+	[pipeline populateOutputTextureBindings:sto];
+
+	int numInTex = pipeline.numInputTextureBindings;
+	SDL_GPUStorageTextureReadWriteBinding sti[numOutTex];
+	[pipeline populateOutputTextureBindings:sti];
 
 	int numSamp = pipeline.numSamplerBindings;
 	SDL_GPUTextureSamplerBinding samp[numSamp];
@@ -2835,8 +2844,8 @@ static SDL_SpinLock 	_textureLock;
 	// Create a new compute pass
 	SDL_GPUComputePass *pass = SDL_BeginGPUComputePass(
 		_state.commandBuffer,
-		st, numTex,
-		sb, numBufs);
+		sto, numOutTex,
+		sbo, numOutBufs);
 
 	if (_swapchain != NULL)
 		{
@@ -2846,32 +2855,32 @@ static SDL_SpinLock 	_textureLock;
 			// Bind the pipeline itself
 			SDL_BindGPUComputePipeline(pass, pipeline.pipeline);
 
-			// Bind any samplers
+			// Bind any input samplers
 			if (numSamp > 0)
 				SDL_BindGPUComputeSamplers(pass,
 										   pipeline.samplerSlot,
 										   samp,  numSamp);
 
-			// Bind any output buffers
-			if (numBufs > 0)
+			// Bind any input buffers
+			if (numInBufs > 0)
 				{
-				SDL_GPUBuffer *buffers[numBufs];
-				for (int i=0; i<numBufs; i++)
-					buffers[i] = sb[i].buffer;
+				SDL_GPUBuffer *buffers[numInBufs];
+				for (int i=0; i<numInBufs; i++)
+					buffers[i] = sbi[i].buffer;
 				SDL_BindGPUComputeStorageBuffers(pass,
 												 pipeline.bufferSlot,
-												 buffers, numBufs);
+												 buffers, numInBufs);
 				}
 
-			// Bind any output textures
-			if (numTex > 0)
+			// Bind any input textures
+			if (numInTex > 0)
 				{
-				SDL_GPUTexture *textures[numTex];
-				for (int i=0; i<numTex; i++)
-					textures[i] = st[i].texture;
+				SDL_GPUTexture *textures[numInTex];
+				for (int i=0; i<numInTex; i++)
+					textures[i] = sti[i].texture;
 				SDL_BindGPUComputeStorageTextures(pass,
 												  pipeline.textureSlot,
-												  textures, numTex);
+												  textures, numInTex);
 				}
 				
 			// Push the uniform data
@@ -3156,6 +3165,61 @@ static SDL_SpinLock 	_textureLock;
 
     SDL_UploadToGPUBuffer(pass, &src, &dst, true);
     SDL_EndGPUCopyPass(pass);
+
+    return YES;
+	}
+
+/*****************************************************************************\
+|* Upload data to a buffer
+\*****************************************************************************/
+- (BOOL) upload:(NSData *)data to:(AZGPUBuffer *)buffer
+	{
+	SDL_GPUCopyPass *pass	= NULL;
+	void *staging			= NULL;
+
+	// Quick sanity check
+	if (buffer.size < data.length)
+        {
+        SDL_Log("Data of size %llu does not fit into buffer of size %llu",
+				(uint64_t)data.length, (uint64_t)buffer.size);
+        return NO;
+		}
+
+	// Create a transfer buffer
+    SDL_GPUTransferBufferCreateInfo tbci;
+    SDL_zero(tbci);
+	tbci.size = (Uint32)data.length;
+    tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+
+    SDL_GPUTransferBuffer *tbuf = SDL_CreateGPUTransferBuffer(_gpu, &tbci);
+    if (tbuf == NULL)
+        {
+        SDL_Log("cannot create transfer buffer for upload to GPU");
+        return NO;
+		}
+
+	// Push through the staging buffer
+	staging = SDL_MapGPUTransferBuffer(_gpu, tbuf, YES);
+    SDL_memcpy(staging, data.bytes, data.length);
+    SDL_UnmapGPUTransferBuffer(_gpu, tbuf);
+
+	// Create the copy-pass and execute
+	pass = SDL_BeginGPUCopyPass(_state.commandBuffer);
+    if (!pass)
+        return NO;
+
+    SDL_GPUTransferBufferLocation src;
+    SDL_zero(src);
+    src.transfer_buffer = tbuf;
+
+    SDL_GPUBufferRegion dst;
+    SDL_zero(dst);
+    dst.buffer 	= buffer.buffer;
+    dst.size 	= (uint32_t) data.length;
+
+    SDL_UploadToGPUBuffer(pass, &src, &dst, true);
+    SDL_EndGPUCopyPass(pass);
+	SDL_ReleaseGPUTransferBuffer(_gpu, tbuf);
 
     return YES;
 	}

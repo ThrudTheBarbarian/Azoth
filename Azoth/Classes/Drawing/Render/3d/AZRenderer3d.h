@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class AZColour;
 @class AZComputePipeline;
+@class AZGPUBuffer;
 @class AZImage;
 @class AZTexture;
 
@@ -50,6 +51,11 @@ NS_ASSUME_NONNULL_BEGIN
 				 withUniformData:(void *)data
 						ofLength:(uint32_t)length;
 
+
+/*****************************************************************************\
+|* Upload data to a buffer
+\*****************************************************************************/
+- (BOOL) upload:(NSData *)data to:(AZGPUBuffer *)buffer;
 
 /*****************************************************************************\
 |* We can turn Images into textures

@@ -40,9 +40,17 @@ NSMutableArray<NSDictionary<NSString *,id> *> *					samplers;
 @property(strong, nonatomic)
 NSMutableArray<NSDictionary<NSString*,id> *> *					outTex;
 
-// The storage buffers to bind
+// The input textures to bind
+@property(strong, nonatomic)
+NSMutableArray<NSDictionary<NSString*,id> *> *					inTex;
+
+// The output storage buffers to bind
 @property(strong, nonatomic)
 NSMutableArray<AZGPUBuffer *> *									outBuf;
+
+// The input storage buffers to bind
+@property(strong, nonatomic)
+NSMutableArray<AZGPUBuffer *> *									inBuf;
 
 @end
 
@@ -76,7 +84,9 @@ NSMutableArray<AZGPUBuffer *> *									outBuf;
 		_name 			= name;
 		_samplers 		= NSMutableArray.new;
 		_outTex 		= NSMutableArray.new;
+		_inTex 			= NSMutableArray.new;
 		_outBuf			= NSMutableArray.new;
+		_inBuf			= NSMutableArray.new;
 		_samplerSlot	= 0;
 		_uniformSlot	= 0;
 		_bufferSlot		= 0;
@@ -117,14 +127,6 @@ NSMutableArray<AZGPUBuffer *> *									outBuf;
 	}
 
 /*****************************************************************************\
-|* Add an output buffer
-\*****************************************************************************/
-- (void) addOutputBuffer:(AZGPUBuffer *)buffer
-	{
-	[_outBuf addObject:buffer];
-	}
-
-/*****************************************************************************\
 |* Add an output texture
 \*****************************************************************************/
 - (void) addOutputTexture:(AZTexture *)texture
@@ -149,17 +151,77 @@ NSMutableArray<AZGPUBuffer *> *									outBuf;
 	}
 
 /*****************************************************************************\
+|* Add an input texture
+\*****************************************************************************/
+- (void) addInputTexture:(AZTexture *)texture
+	{
+	[self addInputTexture:texture withMipLevel:0 andLayer:0];
+	}
+
+/*****************************************************************************\
+|* Add an input texture
+\*****************************************************************************/
+- (void) addInputTexture:(AZTexture *)texture
+			withMipLevel:(int)mipLevel
+				andLayer:(int)layer
+
+	{
+	int jobsX = texture.size.width 	/ _threads.x;
+	int jobsY = texture.size.height	/ _threads.y;
+
+	if (jobsX > _jobs.x)
+		_jobs.x = jobsX;
+
+	if (jobsY > _jobs.y)
+		_jobs.y = jobsY;
+
+	[_inTex addObject:@{
+				kTexture 	: texture,
+				kLayer		: @(layer),
+				kMipLevel	: @(mipLevel)
+				}];
+	}
+
+/*****************************************************************************\
+|* Add an output buffer
+\*****************************************************************************/
+- (void) addOutputBuffer:(AZGPUBuffer *)buffer
+	{
+	[_outBuf addObject:buffer];
+	}
+
+
+/*****************************************************************************\
+|* Add an input buffer
+\*****************************************************************************/
+- (void) addInputBuffer:(AZGPUBuffer *)buffer
+	{
+	[_inBuf addObject:buffer];
+	}
+
+/*****************************************************************************\
 |* Remove any previously-supplied bindings (samplers, output-textures,...)
 \*****************************************************************************/
 - (void) reset
 	{
+	[_inTex removeAllObjects];
 	[_outTex removeAllObjects];
 	[_samplers removeAllObjects];
 	[_outBuf removeAllObjects];
+	[_inBuf removeAllObjects];
 	}
 
 /*****************************************************************************\
 |* Build the compute pipeline
+\*****************************************************************************/
+- (BOOL) build
+	{
+	id<AZRenderer> azr = AZRenderer.renderer;
+	return [self buildWithRenderer:azr];
+	}
+
+/*****************************************************************************\
+|* Build the compute pipeline with a given renderer
 \*****************************************************************************/
 - (BOOL) buildWithRenderer:(id<AZRenderer>)renderer
 	{
@@ -246,6 +308,7 @@ NSMutableArray<AZGPUBuffer *> *									outBuf;
 		info.num_readwrite_storage_buffers	= _storage.rwBuffers;
 		info.num_readonly_storage_textures 	= _storage.roTextures;
 		info.num_readwrite_storage_textures	= _storage.rwTextures;
+		info.num_samplers					= _storage.samplers;
 		info.num_uniform_buffers			= 1;
 		info.threadcount_x					= _threads.x;
 		info.threadcount_y					= _threads.y;
@@ -254,7 +317,6 @@ NSMutableArray<AZGPUBuffer *> *									outBuf;
 		info.code_size						= code.length;
 		info.entrypoint						= entryPoint.UTF8String;
 		info.format							= format;
-		info.num_samplers					= _storage.samplers;
 
 		_pipeline = SDL_CreateGPUComputePipeline(_gpu, &info);
 		}
@@ -263,11 +325,11 @@ NSMutableArray<AZGPUBuffer *> *									outBuf;
 
 
 /*****************************************************************************\
-|* Populate the storage-texture bindings structs. This expects a adequately
+|* Populate the output texture bindings structs. This expects a adequately
 |* sized buffer, which size can be found by calling into the method
 |* -numTextureReadWriteBindings
 \*****************************************************************************/
-- (int) populateTextureBindings:(SDL_GPUStorageTextureReadWriteBinding *)bind
+- (int) populateOutputTextureBindings:(SDL_GPUStorageTextureReadWriteBinding *)bind
 	{
 	for (NSInteger i=0; i<_outTex.count; i++)
 		{
@@ -278,7 +340,7 @@ NSMutableArray<AZGPUBuffer *> *									outBuf;
 		BOOL rw = f & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE;
 		if (!(w | rw))
 			{
-			SDL_Log("Trying to bind a texture to a compute output with no flag");
+			SDL_Log("Trying to bind a texture to compute output with no w flag");
 			return (int)i;
 			}
 
@@ -292,20 +354,58 @@ NSMutableArray<AZGPUBuffer *> *									outBuf;
 	}
 
 /*****************************************************************************\
-|* Return the count of read-write texture binding info structures
+|* Return the count of output read-write texture binding info structures
 \*****************************************************************************/
-- (uint32_t) numTextureReadWriteBindings
+- (uint32_t) numOutputTextureBindings
 	{
 	return (uint32_t) _outTex.count;
 	}
 
 
 /*****************************************************************************\
-|* Populate the storage-texture bindings structs. This expects a adequately
+|* Populate the input texture bindings structs. This expects a adequately
 |* sized buffer, which size can be found by calling into the method
-|* -numBufferReadWriteBindings
+|* -numTextureReadWriteBindings
 \*****************************************************************************/
-- (int) populateBufferBindings:(SDL_GPUStorageBufferReadWriteBinding *)bind
+- (int) populateInputTextureBindings:(SDL_GPUStorageTextureReadWriteBinding *)bind
+	{
+	for (NSInteger i=0; i<_inTex.count; i++)
+		{
+		AZTexture *texture 			= (AZTexture *)_inTex[i][kTexture];
+		SDL_GPUTextureUsageFlags f 	= texture.flags;
+
+		BOOL r	= f & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ;
+		BOOL rw = f & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE;
+		if (!(r | rw))
+			{
+			SDL_Log("Trying to bind a texture to compute input with no r flag");
+			return (int)i;
+			}
+
+		bind[i].texture 	= texture.texture;
+		bind[i].mip_level	= ((NSNumber *) _inTex[i][kMipLevel]).intValue;
+		bind[i].layer		= ((NSNumber *) _inTex[i][kLayer]).intValue;
+		bind[i].cycle		= _cycle;
+		}
+
+	return (int)_inTex.count;
+	}
+
+/*****************************************************************************\
+|* Return the count of input read-write texture binding info structures
+\*****************************************************************************/
+- (uint32_t) numInputTextureBindings
+	{
+	return (uint32_t) _inTex.count;
+	}
+
+
+/*****************************************************************************\
+|* Populate the output-buffer bindings structs. This expects a adequately
+|* sized buffer, which size can be found by calling into the method
+|* -numOutputBufferReadWriteBindings
+\*****************************************************************************/
+- (int) populateOutputBufferBindings:(SDL_GPUStorageBufferReadWriteBinding *)bind
 	{
 	for (NSInteger i=0; i<_outBuf.count; i++)
 		{
@@ -316,13 +416,37 @@ NSMutableArray<AZGPUBuffer *> *									outBuf;
 	return (int)_outBuf.count;
 	}
 
+/*****************************************************************************\
+|* Return the count of read-write buffer binding info structures
+\*****************************************************************************/
+- (uint32_t) numOutputBufferBindings
+	{
+	return (uint32_t) _outBuf.count;
+	}
+
+
+/*****************************************************************************\
+|* Populate the input-buffer bindings structs. This expects a adequately
+|* sized buffer, which size can be found by calling into the method
+|* -numInpurBufferReadWriteBindings
+\*****************************************************************************/
+- (int) populateInputBufferBindings:(SDL_GPUStorageBufferReadWriteBinding *)bind
+	{
+	for (NSInteger i=0; i<_inBuf.count; i++)
+		{
+		bind[i].buffer 			= _inBuf[i].buffer;
+		bind[i].cycle			= _cycle;
+		}
+
+	return (int)_inBuf.count;
+	}
 
 /*****************************************************************************\
 |* Return the count of read-write buffer binding info structures
 \*****************************************************************************/
-- (uint32_t) numBufferReadWriteBindings
+- (uint32_t) numInputBufferBindings
 	{
-	return (uint32_t) _outBuf.count;
+	return (uint32_t) _inBuf.count;
 	}
 
 

@@ -34,10 +34,21 @@ NS_ASSUME_NONNULL_BEGIN
 					   threads:(AZThreadSize)threads;
 
 
+
 /*****************************************************************************\
 |* Build the compute pipeline
 \*****************************************************************************/
+- (BOOL) build;
+
+/*****************************************************************************\
+|* Build the compute pipeline with a given renderer
+\*****************************************************************************/
 - (BOOL) buildWithRenderer:(id<AZRenderer>)renderer;
+
+
+
+
+// MARK: Provide objects (textures, buffers, samplers) to the pipeline
 
 /*****************************************************************************\
 |* Add a sampler, used when running the pipeline. Added in order
@@ -48,6 +59,11 @@ NS_ASSUME_NONNULL_BEGIN
 |* Add an output buffer, used when running the pipeline. Added in order
 \*****************************************************************************/
 - (void) addOutputBuffer:(AZGPUBuffer *)buffer;
+
+/*****************************************************************************\
+|* Add an input buffer, used when running the pipeline. Added in order
+\*****************************************************************************/
+- (void) addInputBuffer:(AZGPUBuffer *)buffer;
 
 /*****************************************************************************\
 |* Add an output texture, used when running the pipeline. Added in order
@@ -62,43 +78,85 @@ NS_ASSUME_NONNULL_BEGIN
  				 andLayer:(int)layer;
 
 /*****************************************************************************\
-|* Remove any previously-supplied bindings (samplers, output-textures,...)
+|* Add an input texture, used when running the pipeline. Added in order
 \*****************************************************************************/
-- (void) reset;
+- (void) addInputTexture:(AZTexture *)texture;
+
+/*****************************************************************************\
+|* Add an output texture with all the options
+\*****************************************************************************/
+- (void) addInputTexture:(AZTexture *)texture
+			withMipLevel:(int)mipLevel
+				andLayer:(int)layer;
 
 
 
 // MARK: Return bindings-data to the renderer
 
+
 /*****************************************************************************\
-|* Populate the storage-texture bindings structs. This expects a adequately
-|* sized buffer, which size can be found by calling into the method
-|* -numTextureReadWriteBindings
+|* Remove any previously-supplied bindings (samplers, output-textures,...)
 \*****************************************************************************/
-- (int) populateTextureBindings:(SDL_GPUStorageTextureReadWriteBinding *)bind;
+- (void) reset;
+
+/*****************************************************************************\
+|* Populate the output storage-texture bindings structs. This expects an
+|* appropriately-sized texture, which size can be found by calling into
+|* -numOutputTextureReadWriteBindings
+\*****************************************************************************/
+- (int) populateOutputTextureBindings:(SDL_GPUStorageTextureReadWriteBinding*)b;
 
 /*****************************************************************************\
 |* Return the count of read-write texture binding info structures
 \*****************************************************************************/
-- (uint32_t) numTextureReadWriteBindings;
+- (uint32_t) numOutputTextureBindings;
+
+
 
 /*****************************************************************************\
-|* Populate the storage-texture bindings structs. This expects a adequately
-|* sized buffer, which size can be found by calling into the method
-|* -numBufferReadWriteBindings
+|* Populate the input texture bindings structs. This is less likely to be
+|* used, because specifying a sampler will also specify the input texture to
+|* get data from using that sampler
 \*****************************************************************************/
-- (int) populateBufferBindings:(SDL_GPUStorageBufferReadWriteBinding *)bind;
+- (int) populateInputTextureBindings:(SDL_GPUStorageTextureReadWriteBinding*)b;
+
+/*****************************************************************************\
+|* Return the count of read-write texture binding info structures
+\*****************************************************************************/
+- (uint32_t) numInputTextureBindings;
+
+
+
+/*****************************************************************************\
+|* Populate the output storage-texture bindings structs. This expects an
+|* appropriately-sized buffer, which size can be found by calling into
+|* -numOutputBufferReadWriteBindings
+\*****************************************************************************/
+- (int) populateOutputBufferBindings:(SDL_GPUStorageBufferReadWriteBinding *)b;
 
 /*****************************************************************************\
 |* Return the count of read-write buffer binding info structures
 \*****************************************************************************/
-- (uint32_t) numBufferReadWriteBindings;
+- (uint32_t) numOutputBufferBindings;
+
+
 
 /*****************************************************************************\
-|* Populate the sampler bindings structs. This expects a adequately
-|* sized buffer, which size can be found by calling into the method
-|* -numSamplerBindings
+|* Populate the input buffer bindings structs. This expects an
+|* appropriately-sized buffer, which size can be found by calling into
+|* -numInputBufferReadWriteBindings
 \*****************************************************************************/
+- (int) populateInputBufferBindings:(SDL_GPUStorageBufferReadWriteBinding *)b;
+
+/*****************************************************************************\
+|* Return the count of input buffer binding info structures
+\*****************************************************************************/
+- (uint32_t) numInputBufferBindings;
+
+
+
+/*****************************************************************************\
+|* Populate the input sampler bindings structs. \*****************************************************************************/
 - (int) populateSamplerBindings:(SDL_GPUTextureSamplerBinding *)bind;
 
 /*****************************************************************************\
