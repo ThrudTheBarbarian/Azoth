@@ -1484,6 +1484,17 @@ static SDL_SpinLock 	_textureLock;
 	return tId;
 	}
 
+
+/*****************************************************************************\
+|* Name a texture
+\*****************************************************************************/
+- (void) setName:(NSString *)name forTexture:(NSInteger)textureId
+	{
+	AZTexture *texture = _textures[@(textureId)];
+	[texture setName:name];
+	}
+
+
 /*****************************************************************************\
 |* Propagate the surface characteristics to a texture
 \*****************************************************************************/
@@ -2827,7 +2838,7 @@ static SDL_SpinLock 	_textureLock;
 
 	int numInBufs = pipeline.numInputBufferBindings;
 	SDL_GPUStorageBufferReadWriteBinding sbi[numInBufs];
-	[pipeline populateOutputBufferBindings:sbi];
+	[pipeline populateInputBufferBindings:sbi];
 
 	int numOutTex = pipeline.numOutputTextureBindings;
 	SDL_GPUStorageTextureReadWriteBinding sto[numOutTex];
@@ -2835,7 +2846,7 @@ static SDL_SpinLock 	_textureLock;
 
 	int numInTex = pipeline.numInputTextureBindings;
 	SDL_GPUStorageTextureReadWriteBinding sti[numOutTex];
-	[pipeline populateOutputTextureBindings:sti];
+	[pipeline populateInputTextureBindings:sti];
 
 	int numSamp = pipeline.numSamplerBindings;
 	SDL_GPUTextureSamplerBinding samp[numSamp];
@@ -3185,6 +3196,9 @@ static SDL_SpinLock 	_textureLock;
         return NO;
 		}
 
+	// Flush any current render-pass commands
+	[self _flushRenderCommands];
+
 	// Create a transfer buffer
     SDL_GPUTransferBufferCreateInfo tbci;
     SDL_zero(tbci);
@@ -3199,12 +3213,13 @@ static SDL_SpinLock 	_textureLock;
 		}
 
 	// Push through the staging buffer
-	staging = SDL_MapGPUTransferBuffer(_gpu, tbuf, YES);
+	staging = SDL_MapGPUTransferBuffer(_gpu, tbuf, NO);
     SDL_memcpy(staging, data.bytes, data.length);
     SDL_UnmapGPUTransferBuffer(_gpu, tbuf);
 
 	// Create the copy-pass and execute
-	pass = SDL_BeginGPUCopyPass(_state.commandBuffer);
+	SDL_GPUCommandBuffer *cbuf = SDL_AcquireGPUCommandBuffer(_gpu);
+	pass = SDL_BeginGPUCopyPass(cbuf);
     if (!pass)
         return NO;
 
@@ -3217,8 +3232,9 @@ static SDL_SpinLock 	_textureLock;
     dst.buffer 	= buffer.buffer;
     dst.size 	= (uint32_t) data.length;
 
-    SDL_UploadToGPUBuffer(pass, &src, &dst, true);
+    SDL_UploadToGPUBuffer(pass, &src, &dst, NO);
     SDL_EndGPUCopyPass(pass);
+	SDL_SubmitGPUCommandBuffer(cbuf);
 	SDL_ReleaseGPUTransferBuffer(_gpu, tbuf);
 
     return YES;
