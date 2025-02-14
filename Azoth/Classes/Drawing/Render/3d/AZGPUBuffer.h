@@ -46,6 +46,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 // The actual GPU buffer
 @property(assign, nonatomic) SDL_GPUBuffer *					buffer;
+
+// The name of the buffer
+@property(assign, nonatomic) NSString *							name;
 @end
 
 NS_ASSUME_NONNULL_END

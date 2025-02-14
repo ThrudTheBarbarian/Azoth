@@ -235,4 +235,12 @@
 	return &_view;
 	}
 
+/*****************************************************************************\
+|* Set the texture name 
+\*****************************************************************************/
+- (void) setName:(NSString *)name
+	{
+	_name = name;
+	SDL_SetGPUTextureName(_gpu, self.texture, name.UTF8String);
+	}
 @end

@@ -101,6 +101,9 @@ NS_ASSUME_NONNULL_BEGIN
 // Last command generation that we used this texture
 @property(strong, nonatomic) NSMutableDictionary *		 		properties;
 
+// The name of the texture
+@property(assign, nonatomic) NSString *							name;
+
 // Number of retains this texture has, only released
 // when the count goes to 0
 @property(assign, nonatomic) NSInteger		 					use;

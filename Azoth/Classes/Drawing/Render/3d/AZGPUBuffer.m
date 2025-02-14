@@ -104,4 +104,13 @@
 	return [azr upload:data to:self];
 	}
 
+/*****************************************************************************\
+|* Set/Get the buffer name
+\*****************************************************************************/
+- (void) setName:(NSString *)name
+	{
+	_name = name;
+	SDL_SetGPUBufferName(_gpu, self.buffer, name.UTF8String);
+	}
+
 @end
