@@ -18,6 +18,7 @@
 		{
 		_ptr 	= ptr;
 		_hint 	= @"";
+		_use 	= 1;
 		}
 	return self;
 	}
@@ -28,6 +29,7 @@
 		{
 		_ptr 	= ptr;
 		_hint 	= hint ? hint : @"";
+		_use 	= 1;
 		}
 	return self;
 	}
@@ -38,6 +40,7 @@
 		{
 		_p 	= p;
 		_hint 	= @"";
+		_use 	= 1;
 		}
 	return self;
 	}
@@ -48,6 +51,7 @@
 		{
 		_p 		= p;
 		_hint 	= hint ? hint : @"";
+		_use 	= 1;
 		}
 	return self;
 	}
@@ -58,6 +62,7 @@
 		{
 		_rect = r;
 		_hint = @"";
+		_use 	= 1;
 		}
 	return self;
 	}
@@ -68,6 +73,7 @@
 		{
 		_rect = r;
 		_hint = hint ? hint : @"";
+		_use 	= 1;
 		}
 	return self;
 	}

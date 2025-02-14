@@ -176,9 +176,23 @@ NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
 	AZObject *object = _textures[@(refId)];
 	if (object && [object.hint isEqualToString:kTextureType])
 		{
-		SDL_DestroyTexture((SDL_Texture *)object.ptr);
-		[_textures removeObjectForKey:@(refId)];
+		object.use --;
+		if (object.use == 0)
+			{
+			SDL_DestroyTexture((SDL_Texture *)object.ptr);
+			[_textures removeObjectForKey:@(refId)];
+			}
 		}
+	}
+
+/*****************************************************************************\
+|* Retain a texture, bumping its use-count by +1
+\*****************************************************************************/
+- (void) retainTexture:(NSInteger)refId
+	{
+	AZObject *object = _textures[@(refId)];
+	if (object)
+		object.use ++;
 	}
 
 /*****************************************************************************\

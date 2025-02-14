@@ -45,6 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(assign, nonatomic) void *								ptr;
 @property(assign, nonatomic) NSRect								rect;
 @property(assign, nonatomic) NSPoint							p;
+@property(assign, nonatomic) NSInteger							use;
 @end
 
 NS_ASSUME_NONNULL_END
