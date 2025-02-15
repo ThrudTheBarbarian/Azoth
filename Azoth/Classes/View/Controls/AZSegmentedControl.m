@@ -365,9 +365,9 @@ typedef struct
 	for (int i=0; i<_numLabels; i++)
 		{
 		idx		= (allDisabled) ? STATE_D
-				: (_info[i].pushed & _info[0].enabled) ? STATE_HP
+				: (_info[i].pushed & _info[i].enabled) ? STATE_HP
 				: (_info[i].pushed) ? STATE_P
-				: (_info[i].selected & (_info[0].enabled == NO)) ? STATE_HD
+				: (_info[i].selected & (_info[i].enabled == NO)) ? STATE_HD
 				: (_info[i].selected) ? STATE_H
 				: (_info[i].enabled == NO) ? STATE_D
 				: STATE_N;
