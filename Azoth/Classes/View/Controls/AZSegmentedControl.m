@@ -358,10 +358,6 @@ typedef struct
 	int idx		= (allDisabled) ? STATE_D : STATE_N;
 	[azr blitFrom:_ui.ui[idx] src:self.bounds dst:self.bounds];
 
-		AZImage *img 	= [AZImage imageWithTexture:_ui.ui[idx]];
-		NSString *path 	= [NSString stringWithFormat:@"/tmp/sd.%d.png", idx];
-		[img saveAs:path inFormat:AZImageFormatPNG withQuality:100];
-
 	for (int i=0; i<_numLabels; i++)
 		{
 		idx		= (allDisabled) ? STATE_D
@@ -840,10 +836,6 @@ typedef struct
 				   bottom:5.f
 					dst:self.bounds];
 		[azr unlockFocus];
-
-		AZImage *img 	= [AZImage imageWithTexture:_ui.ui[i]];
-		NSString *path 	= [NSString stringWithFormat:@"/tmp/sc.%d.png", i];
-		[img saveAs:path inFormat:AZImageFormatPNG withQuality:100];
 
 		/*********************************************************************\
 		|* Housekeeping
