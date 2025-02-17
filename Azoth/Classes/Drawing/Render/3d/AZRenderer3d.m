@@ -3240,6 +3240,118 @@ static SDL_SpinLock 	_textureLock;
     return YES;
 	}
 
+
+/*****************************************************************************\
+|* Download data from a buffer
+\*****************************************************************************/
+- (NSData *) download:(AZGPUBuffer *)buffer
+	{
+	SDL_GPUCopyPass *pass	= NULL;
+
+	NSMutableData *data 	= [NSMutableData dataWithLength:buffer.size];
+
+	// Flush any current-render-pass commands
+	[self _flushRenderCommands];
+
+	// Create a transfer buffer
+    SDL_GPUTransferBufferCreateInfo tbci;
+    SDL_zero(tbci);
+	tbci.size 		= (Uint32)data.length;
+	tbci.usage		= SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD;
+
+    SDL_GPUTransferBuffer *tbuf = SDL_CreateGPUTransferBuffer(_gpu, &tbci);
+    if (tbuf == NULL)
+        {
+        SDL_Log("cannot create transfer buffer for download from GPU");
+        return nil;
+		}
+
+	// Create the copy-pass and configure
+	SDL_GPUCommandBuffer *cbuf = SDL_AcquireGPUCommandBuffer(_gpu);
+	pass = SDL_BeginGPUCopyPass(cbuf);
+    if (!pass)
+        return nil;
+
+    SDL_GPUBufferRegion src;
+    src.buffer 	= buffer.buffer;
+    src.offset  = 0;
+    src.size 	= (uint32_t) data.length;
+
+    SDL_GPUTransferBufferLocation dst;
+    dst.transfer_buffer = tbuf;
+    dst.offset 			= 0;
+
+	// Copy the data from GPU buffer to transfer buffer
+	SDL_DownloadFromGPUBuffer(pass, &src, &dst);
+    SDL_EndGPUCopyPass(pass);
+
+	SDL_GPUFence* fence = SDL_SubmitGPUCommandBufferAndAcquireFence(cbuf);
+	SDL_WaitForGPUFences(_gpu, true, &fence, 1);
+	SDL_ReleaseGPUFence(_gpu, fence);
+
+	// Copy from the staging buffer into the NSData
+	void *staging 	= SDL_MapGPUTransferBuffer(_gpu, tbuf, NO);
+	SDL_memcpy(data.mutableBytes, staging, data.length);
+    SDL_UnmapGPUTransferBuffer(_gpu, tbuf);
+	SDL_ReleaseGPUTransferBuffer(_gpu, tbuf);
+
+	return data;
+	}
+
+
+/*****************************************************************************\
+|* Clear a buffer to a value
+\*****************************************************************************/
+- (BOOL) clearBuffer:(AZGPUBuffer *)buffer to:(uint8_t)value
+	{
+	SDL_GPUCopyPass *pass	= NULL;
+	void *staging			= NULL;
+
+	// Flush any current render-pass commands
+	[self _flushRenderCommands];
+
+	// Create a transfer buffer
+    SDL_GPUTransferBufferCreateInfo tbci;
+    SDL_zero(tbci);
+	tbci.size = (Uint32)buffer.size;
+    tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+
+    SDL_GPUTransferBuffer *tbuf = SDL_CreateGPUTransferBuffer(_gpu, &tbci);
+    if (tbuf == NULL)
+        {
+        SDL_Log("cannot create transfer buffer for upload to GPU");
+        return NO;
+		}
+
+	// Push through the staging buffer
+	staging = SDL_MapGPUTransferBuffer(_gpu, tbuf, NO);
+	SDL_memset(staging, value, buffer.size);
+    SDL_UnmapGPUTransferBuffer(_gpu, tbuf);
+
+	// Create the copy-pass and execute
+	SDL_GPUCommandBuffer *cbuf = SDL_AcquireGPUCommandBuffer(_gpu);
+	pass = SDL_BeginGPUCopyPass(cbuf);
+    if (!pass)
+        return NO;
+
+    SDL_GPUTransferBufferLocation src;
+    SDL_zero(src);
+    src.transfer_buffer = tbuf;
+
+    SDL_GPUBufferRegion dst;
+    SDL_zero(dst);
+    dst.buffer 	= buffer.buffer;
+    dst.size 	= (uint32_t) buffer.size;
+
+    SDL_UploadToGPUBuffer(pass, &src, &dst, NO);
+    SDL_EndGPUCopyPass(pass);
+	SDL_SubmitGPUCommandBuffer(cbuf);
+	SDL_ReleaseGPUTransferBuffer(_gpu, tbuf);
+
+    return YES;
+	}
+
+
 /*****************************************************************************\
 |* Create the back-buffer
 \*****************************************************************************/

@@ -58,6 +58,16 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL) upload:(NSData *)data to:(AZGPUBuffer *)buffer;
 
 /*****************************************************************************\
+|* Download data from a buffer
+\*****************************************************************************/
+- (NSData *) download:(AZGPUBuffer *)buffer;
+
+/*****************************************************************************\
+|* Clear a buffer to a value
+\*****************************************************************************/
+- (BOOL) clearBuffer:(AZGPUBuffer *)buffer to:(uint8_t)value;
+
+/*****************************************************************************\
 |* We can turn Images into textures
 \*****************************************************************************/
 - (nullable AZTexture *) textureForId:(NSInteger)refId;

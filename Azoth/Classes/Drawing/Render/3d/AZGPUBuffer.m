@@ -100,9 +100,33 @@
 \*****************************************************************************/
 - (BOOL) upload:(NSData *)data
 	{
-	AZRenderer3d *azr 	= (AZRenderer3d *)AZRenderer.renderer;
+	AZRenderer3d *azr = (AZRenderer3d *)AZRenderer.renderer;
 	return [azr upload:data to:self];
 	}
+
+/*****************************************************************************\
+|* Download the buffer to an NSData
+\*****************************************************************************/
+- (NSData *) download
+	{
+	AZRenderer3d *azr = (AZRenderer3d *)AZRenderer.renderer;
+	return [azr download:self];
+	}
+
+/*****************************************************************************\
+|* Clear the buffer to a byte value
+\*****************************************************************************/
+- (BOOL) clear
+	{
+	return [self clearTo:0];
+	}
+
+- (BOOL) clearTo:(uint8_t)value
+	{
+	AZRenderer3d *azr 	= (AZRenderer3d *)AZRenderer.renderer;
+	return [azr clearBuffer:self to:value];
+	}
+
 
 /*****************************************************************************\
 |* Set/Get the buffer name
