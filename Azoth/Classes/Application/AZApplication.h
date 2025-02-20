@@ -20,6 +20,7 @@ extern NSString * const kCursorsMap;
 enum SDL_AppResult;
 union SDL_Event;
 struct TTF_TextEngine;
+struct SDL_Window;
 
 @class AZEventSink;
 @class AZFont;
@@ -56,6 +57,12 @@ struct TTF_TextEngine;
 \*****************************************************************************/
 - (void) terminateBecause:(enum SDL_AppResult)reason withAppState:(void *)state;
 
+
+
+/*****************************************************************************\
+|* Return the window for the passed-in SDL_Window.
+\*****************************************************************************/
+- (nullable AZWindow *) windowForSDLWindow:(struct SDL_Window *)sdlWindow;
 
 /*****************************************************************************\
 |* Fetch a font with a given spec, but also cache it so that future requests
@@ -120,6 +127,10 @@ struct TTF_TextEngine;
 
 // The main application window
 @property(strong, nonatomic) AZWindow *						window;
+
+// Store the top-level windows for each SDLwindow we know about
+@property(strong, nonatomic)
+NSMutableDictionary<NSNumber *, AZWindow *> * 				windows ;
 
 // The delegate for the application
 @property(strong, nonatomic) id<AZAppDelegate>				delegate;

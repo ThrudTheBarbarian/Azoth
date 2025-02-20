@@ -31,10 +31,20 @@
 	if (self = [super initWithFrame:frame])
 		{
 		[self _commonWindowContentViewInit];
+		self.window = window;
 		}
 	return self;
 	}
 
+
+/*****************************************************************************\
+|* Convenience initialiser
+\*****************************************************************************/
++ (instancetype) withWindow:(AZWindow *)window
+	{
+	return [[AZWindowContentView alloc] initWithWindow:window];
+	}
+	
 /*****************************************************************************\
 |* Configuration via dictionary. This is called by the NIB loader, but is a
 |* valid way to create the view
@@ -47,7 +57,7 @@
 		}
 	return self;
 	}
-
+	
 /*****************************************************************************\
 |* Common window-content view initialisation
 \*****************************************************************************/
@@ -59,6 +69,16 @@
 	_drag  					= nil;
 	}
 
+	
+/*****************************************************************************\
+|* Make sure we have the backing texture if we want to draw
+\*****************************************************************************/
+- (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
+	{
+	if (self.bg < 0)
+		[self _installBackingTexture];
+	[super drawInRect:dirtyRect withPainter:painter];
+	}
 
 /*****************************************************************************\
 |* Represent the current dragging session

@@ -329,7 +329,7 @@ beginDraggingSessionWithItems:(NSArray<AZDraggingItem *> *) items
 @property(strong, nonatomic, nullable) AZView *				superview;
 
 // The window that this view is attached to
-@property(assign, nonatomic, nullable) AZWindow	*			window;
+@property(weak, nonatomic, nullable) AZWindow	*			window;
 
 // Backing texture-id for drawing into
 @property(assign, nonatomic) NSInteger						bg;

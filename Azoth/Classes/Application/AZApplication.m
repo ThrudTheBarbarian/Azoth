@@ -63,6 +63,7 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 
 // A view to cover the rest of the view and shade it
 @property(strong, nonatomic, nullable) AZView *					modalShield;
+
 @end
 
 @implementation AZApplication
@@ -74,13 +75,14 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 	{
 	if (self = [super init])
 		{
-		_bin 				= [NSMutableArray new];
-		_eventSinks			= [NSMutableArray new];
-		_atlantes			= [NSMutableDictionary new];
-		_knownFonts			= [NSMutableDictionary new];
+		_bin 				= NSMutableArray.new;
+		_eventSinks			= NSMutableArray.new;
+		_atlantes			= NSMutableDictionary.new;
+		_knownFonts			= NSMutableDictionary.new;
 		_windowTitle		= @"Window title";
 		_rendererType	 	= AZRendererType2d;
 		_windowFlags		= 0;
+		_windows			= NSMutableDictionary.new;
 		}
 	return self;
 	}
@@ -99,6 +101,14 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 		});
 
 	return instance;
+	}
+
+/*****************************************************************************\
+|* Return the window for the passed-in SDL_Window.
+\*****************************************************************************/
+- (nullable AZWindow *) windowForSDLWindow:(struct SDL_Window *)sdlWindow
+	{
+	return _windows[@(SDL_GetWindowID(sdlWindow))];
 	}
 
 /*****************************************************************************\
@@ -268,7 +278,6 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 		if (ok)
 			{
 			_window = azr.window;
-			[_window installContentView];
 			[self _bootstrap];
 			}
 		else
@@ -404,7 +413,9 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 - (SDL_AppResult) handleEvent:(SDL_Event *)e withAppState:(void *)state
 	{
 	SDL_AppResult result 	= SDL_APP_CONTINUE;
-	AZView *cv 				= [AZWindow contentViewForWindow:_window];
+	SDL_Window *sdlWin		= SDL_GetWindowFromEvent(e);
+	AZWindow *window		= [AZApp windowForSDLWindow:sdlWin];
+	AZWindowContentView *cv = window.contentView;
 	AZEvent * event			= [[AZEvent alloc] initWithSDLEvent:e];
 
 	/*************************************************************************\
@@ -512,36 +523,25 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 	[azr setBlendMode:SDL_BLENDMODE_NONE];
 
 	// Redraw any of the subviews that need it into their own textures
-	AZWindowContentView *wcv = [AZWindow contentViewForWindow:_window];
-	if (!NSEqualRects(wcv.dirty, NSZeroRect))
-		[wcv _drawDirtyRect];
-	[wcv redrawSubViewsIfNecessary];
+	for (AZWindow *window in _windows.allValues)
+		{
+		AZWindowContentView *wcv = window.contentView;
+		if (!NSEqualRects(wcv.dirty, NSZeroRect))
+			[wcv _drawDirtyRect];
+		[wcv redrawSubViewsIfNecessary];
 
-	// Get the top-level view, draw it as the background
-	[azr blitFrom:wcv.bg src:wcv.bounds dst:wcv.bounds];
+		// Get the top-level view, draw it as the background
+		[azr blitFrom:wcv.bg src:wcv.bounds dst:wcv.bounds];
 
-	// Run through the views in reverse order, telling them to render their
-	// subviews to the screen
-	for (AZView *subview in [wcv.subviews reverseObjectEnumerator])
-		[subview _renderToScreen];
+		// Run through the views in reverse order, telling them to render their
+		// subviews to the screen
+		for (AZView *subview in [wcv.subviews reverseObjectEnumerator])
+			[subview _renderToScreen];
 
-	// Handle any drag-in-progress
-	[azr setClip:wcv.bounds];
-	[wcv showDragInProgress];
-//	[azr clear];
-//
-//	[azr unlockFocus];
-//	[azr setDrawColour:AZColour.red];
-//	[azr renderRect:NSMakeRect(50,50,100,100)];
-//
-//	NSPoint pts[10000];
-//	for (int i=0; i<10000; i++)
-//		{
-//		pts[i].x = SDL_rand(640);
-//		pts[i].y = SDL_rand(480);
-//		}
-//	[azr setDrawColour:AZColour.blue];
-//	[azr renderPoints:pts count:10000];
+		// Handle any drag-in-progress
+		[azr setClip:wcv.bounds];
+		[wcv showDragInProgress];
+		}
 
 	// Tell the renderer we're done
 	[azr present];

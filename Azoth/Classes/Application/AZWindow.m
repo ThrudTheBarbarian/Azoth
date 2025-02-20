@@ -9,6 +9,7 @@
 #import <SDL3_image/SDL_image.h>
 #import <SDL3_ttf/SDL_ttf.h>
 
+#import <AZApplication.h>
 #import "AZView.h"
 #import "AZView+Internal.h"
 #import "AZWindow.h"
@@ -27,7 +28,7 @@ static NSMutableDictionary<NSNumber*,AZWindowContentView*>* _contentViews = nil;
 /*****************************************************************************\
 |* Store the top-level windows for each SDLwindow we know about
 \*****************************************************************************/
-static NSMutableDictionary<NSNumber *, AZWindow *> * _windows = nil;
+//static NSMutableDictionary<NSNumber *, AZWindow *> * _windows = nil;
 
 @implementation AZWindow
 
@@ -44,165 +45,21 @@ static NSMutableDictionary<NSNumber *, AZWindow *> * _windows = nil;
 		static dispatch_once_t onceToken;
 		dispatch_once(&onceToken,
 			^{
-			self.responders 		= [NSMutableArray new];
-			self.firstResponder 	= nil;
-
-			_contentViews 			= [NSMutableDictionary new];
-			_windows				= [NSMutableDictionary new];
+			self.responders 	= [NSMutableArray new];
+			self.firstResponder = nil;
 			});
 
-		_window 								= window;
-		_windows[@(SDL_GetWindowID(_window))] 	= self;
+		/*********************************************************************\
+		|* Set up the window map and the top-level content view
+		\*********************************************************************/
+		_window					= window;
+		NSNumber *winId			= @(SDL_GetWindowID(window));
+		AZApp.windows[winId]	= self;
+		_contentView			= [AZWindowContentView withWindow:self];
+		_contentView.isOpaque	= YES;
 		}
 
 	return self;
-	}
-
-#if 0
-/*****************************************************************************\
-|* Initialisation
-\*****************************************************************************/
-- (instancetype) initWithContentRect:(NSRect)contentRect
-						   styleMask:(NSInteger)style
-						     backing:(NSInteger)ignored
-						       defer:(BOOL)alsoIgnored;
-	{
-	if (self = [super init])
-		{
-		if ([self _initWithRect:contentRect style:style] != SDL_APP_CONTINUE)
-			self = nil;
-		}
-
-	return self;
-	}
-
-- (instancetype) initWithContentRect:(NSRect)contentRect
-						   styleMask:(NSInteger)style
-	{
-	if (self = [super init])
-		{
-		if ([self _initWithRect:contentRect style:style] != SDL_APP_CONTINUE)
-			self = nil;
-		}
-
-	return self;
-	}
-
-+ (AZWindow *) windowWithContentRect:(NSRect)contentRect
-						   styleMask:(NSInteger)styleMask
-	{
-	return [[AZWindow alloc] initWithContentRect:contentRect
-								  	   styleMask:styleMask];
-	}
-
-/*****************************************************************************\
-|* Common initialisation
-\*****************************************************************************/
-- (SDL_AppResult) _initWithRect:(NSRect)r style:(NSInteger)style
-	{
-	SDL_AppResult ok = SDL_APP_CONTINUE;
-
-	/*************************************************************************\
-    |* Set up the responder state storage and content-view map
-    \*************************************************************************/
-	static dispatch_once_t onceToken;
-	dispatch_once(&onceToken,
-		^{
-		self.responders 		= [NSMutableArray new];
-		self.firstResponder 	= nil;
-
-		_contentViews 			= [NSMutableDictionary new];
-		_windows				= [NSMutableDictionary new];
-		});
-
-
-	/*************************************************************************\
-    |* Make sure we can initialise
-    \*************************************************************************/
-    if (!SDL_Init(SDL_INIT_VIDEO))
-		{
-        SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
-		ok = SDL_APP_FAILURE;
-		}
-
-	/*************************************************************************\
-    |* Create the window
-    \*************************************************************************/
-    if (!SDL_CreateWindowAndRenderer("Demo app",
-									 r.size.width,
-									 r.size.height,
-									 style,
-									 &_window,
-									 &_renderer))
-		{
-        SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
-        ok = SDL_APP_FAILURE;
-		}
-	else
-		{
-		_windows[@(SDL_GetWindowID(_window))] = self;
-		}
-
-	/*************************************************************************\
-    |* Initialise font system
-    \*************************************************************************/
-    if (!TTF_Init())
-		{
-        SDL_Log("Couldn't initialize TTF: %s\n",SDL_GetError());
-        ok = SDL_APP_FAILURE;
-		}
-
-	return ok;
-	}
-#endif
-
-/*****************************************************************************\
-|* Add a content view to the window
-\*****************************************************************************/
-- (void) installContentView
-	{
-	int w,h;
-	SDL_GetWindowSizeInPixels(_window, &w, &h);
-	AZWindowContentView *cv 	= [[AZWindowContentView alloc] initWithWindow:self];
-	[self installContentView:cv];
-	}
-
-/*****************************************************************************\
-|* Add a content view to the window
-\*****************************************************************************/
-- (void) installContentView:(AZWindowContentView *)contentView
-	{
-	contentView.window		= self;
-	NSNumber *windowId 		= @(SDL_GetWindowID(_window));
-
-	_contentViews[windowId] = contentView;
-	contentView.isOpaque 	= YES;
-	self.contentView		= contentView;
-
-	[contentView _installBackingTexture];
-	}
-
-/*****************************************************************************\
-|* Return the window for the given SDL_Window.
-\*****************************************************************************/
-+ (AZWindow *) windowForSDLWindow:(SDL_Window *)sdlWindow
-	{
-	return _windows[@(SDL_GetWindowID(sdlWindow))];
-	}
-
-/*****************************************************************************\
-|* Return the contentView for any given SDL_Window. If one does not exist it
-|* will be created and returned
-\*****************************************************************************/
-+ (AZWindowContentView *) contentViewForWindow:(AZWindow *)window
-	{
-	return [self contentViewForSDLWindow:window.window];
-	}
-
-+ (AZWindowContentView *) contentViewForSDLWindow:(struct SDL_Window *)window;
-	{
-	NSNumber *windowId = @(SDL_GetWindowID(window));
-	return [_contentViews objectForKey:windowId];
 	}
 
 /*****************************************************************************\

@@ -163,7 +163,7 @@
 	{
 	AZView * from = otherView;
 	if (from == nil)
-		from = (AZView *) [AZWindow contentViewForWindow:self.window];
+		from = (AZView *) self.window.contentView;
 
 	AZTransform * toWindow	= from.transformToWindow;
 	AZTransform * fromWindow	= self.transformFromWindow;
@@ -179,7 +179,7 @@
 	{
 	AZView * from = otherView;
 	if (from == nil)
-		from = (AZView *) [AZWindow contentViewForWindow:self.window];
+		from = (AZView *) self.window.contentView;
 
 	AZTransform * toWindow	= from.transformToWindow;
 	AZTransform *fromWindow	= self.transformFromWindow;
@@ -195,7 +195,7 @@
 	{
 	AZView * from = otherView;
 	if (from == nil)
-		from = (AZView *) [AZWindow contentViewForWindow:self.window];
+		from = (AZView *) self.window.contentView;
 
 	AZTransform *toWindow	= from.transformToWindow;
 	AZTransform *fromWindow	= self.transformFromWindow;
@@ -224,7 +224,7 @@
 	{
 	AZView * toView = otherView;
 	if (toView == nil)
-		toView = (AZView *) [AZWindow contentViewForWindow:self.window];
+		toView = (AZView *) self.window.contentView;
 
 	AZTransform * toWindow	= self.transformToWindow;
 	AZTransform * fromWindow	= toView.transformFromWindow;
@@ -240,7 +240,7 @@
 	{
 	AZView * toView = otherView;
 	if (toView == nil)
-		toView = (AZView *) [AZWindow contentViewForWindow:self.window];
+		toView = (AZView *) self.window.contentView;
 
 	AZTransform * toWindow		= self.transformToWindow;
 	AZTransform * fromWindow	= toView.transformFromWindow;
@@ -256,7 +256,7 @@
 	{
 	AZView * toView = otherView;
 	if (toView == nil)
-		toView = (AZView *) [AZWindow contentViewForWindow:self.window];
+		toView = (AZView *) self.window.contentView;
 
 	AZTransform * toWindow		= self.transformToWindow;
 	AZTransform * fromWindow	= toView.transformFromWindow;

@@ -20,6 +20,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype) initWithWindow:(AZWindow *)window;
 
 /*****************************************************************************\
+|* Convenience initialiser
+\*****************************************************************************/
++ (instancetype) withWindow:(AZWindow *)window;
+
+/*****************************************************************************\
 |* Represent the current dragging session
 \*****************************************************************************/
 - (void) showDragInProgress;

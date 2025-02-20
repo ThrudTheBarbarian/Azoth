@@ -504,8 +504,9 @@ NSString * const kZibWindow			= @"window";
 		{
 		if (IS_ROOT_VIEW)
 			{
-			view.autoresizingMask = AZViewWidthSizable | AZViewHeightSizable;
-			[window installContentView:(AZWindowContentView*)view];
+			view.autoresizingMask 	= AZViewWidthSizable | AZViewHeightSizable;
+			window.contentView 		= (AZWindowContentView *)view;
+			view.window				= window;
 			}
 		else
 			{
