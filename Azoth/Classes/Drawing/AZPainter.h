@@ -16,6 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 @class AZTextPainter;
 @class AZView;
 
+@protocol AZRenderer;
+
 struct SDL_Surface;
 
 @interface AZPainter : NSObject
@@ -29,8 +31,10 @@ struct SDL_Surface;
 /*****************************************************************************\
 |* Initialisation: texture-based
 \*****************************************************************************/
-- (instancetype) initWithTexture:(NSInteger)texture;
-+ (AZPainter *) painterForTexture:(NSInteger)texture;
+- (instancetype) initWithTexture:(NSInteger)texture
+					 forRenderer:(id<AZRenderer>)azr;
++ (AZPainter *) painterForTexture:(NSInteger)texture
+					 andRenderer:(id<AZRenderer>)azr;
 
 // MARK: Execution of the draw routine
 

@@ -10,6 +10,8 @@
 #import <SDL3_ttf/SDL_ttf.h>
 
 #import <AZApplication.h>
+#import "AZRenderer2d.h"
+#import "AZRenderer3d.h"
 #import "AZView.h"
 #import "AZView+Internal.h"
 #import "AZWindow.h"
@@ -31,6 +33,33 @@ static NSMutableDictionary<NSNumber*,AZWindowContentView*>* _contentViews = nil;
 //static NSMutableDictionary<NSNumber *, AZWindow *> * _windows = nil;
 
 @implementation AZWindow
+
+/*****************************************************************************\
+|* Initialisation
+\*****************************************************************************/
++ (instancetype) withTitle:(NSString *)title
+					 frame:(NSRect)f
+					 style:(NSInteger)flags
+	{
+	/*************************************************************************\
+	|* Create the window
+	\*************************************************************************/
+	int w 	= (int) f.size.width;
+	int h	= (int) f.size.height;
+	SDL_Window *window = SDL_CreateWindow(title.UTF8String, w, h, flags);
+	if (window != NULL)
+		{
+		/*********************************************************************\
+		|* Position it on screen
+		\*********************************************************************/
+		int x = f.origin.x;
+		int y = f.origin.y;
+		SDL_SetWindowPosition(window, x, y);
+
+		return [[AZWindow alloc] initWithWindow:window];
+		}
+	return nil;
+	}
 
 /*****************************************************************************\
 |* Initialisation
@@ -61,6 +90,39 @@ static NSMutableDictionary<NSNumber*,AZWindowContentView*>* _contentViews = nil;
 
 	return self;
 	}
+
+
+/*****************************************************************************\
+|* Create the renderer for this window
+\*****************************************************************************/
+- (BOOL) createRenderer
+	{
+	BOOL ok = YES;
+
+	switch (AZApp.rendererType)
+		{
+		case AZRendererType2d:
+			_renderer = AZRenderer2d.renderer;
+			break;
+
+		case AZRendererType3d:
+			_renderer = AZRenderer3d.new;
+			if (![(AZRenderer3d *)_renderer claim:self])
+				{
+				SDL_Log("Cannot claim the GPU for window");
+				ok = NO;
+				}
+			break;
+			
+		default:
+			SDL_Log("Unknown renderer-type %d requested", AZApp.rendererType);
+			ok = NO;
+			break;
+		}
+
+	return ok;
+	}
+
 
 /*****************************************************************************\
 |* Make an AZResponder the first-responder

@@ -214,11 +214,11 @@ NSMutableArray<AZGPUBuffer *> *									inBuf;
 /*****************************************************************************\
 |* Build the compute pipeline
 \*****************************************************************************/
-- (BOOL) build
-	{
-	id<AZRenderer> azr = AZRenderer.renderer;
-	return [self buildWithRenderer:azr];
-	}
+//- (BOOL) build
+//	{
+//	id<AZRenderer> azr = AZRenderer.renderer;
+//	return [self buildWithRenderer:azr];
+//	}
 
 /*****************************************************************************\
 |* Build the compute pipeline with a given renderer

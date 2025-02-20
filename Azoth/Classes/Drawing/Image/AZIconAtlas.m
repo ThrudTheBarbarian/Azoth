@@ -30,10 +30,10 @@
 	return [[AZIconAtlas alloc] initWithTexture:texture metadata:map];
 	}
 
-+ (AZIconAtlas *) atlasWithName:(NSString *)name
++ (AZIconAtlas *) atlasWithName:(NSString *)name forRenderer:(id<AZRenderer>)azr
 	{
 	AZIconAtlas *atlas = [AZIconAtlas new];
-	if ([atlas load:name] != SDL_APP_CONTINUE)
+	if ([atlas _load:name withRenderer:azr] != SDL_APP_CONTINUE)
 		return nil;
 	return atlas;
 	}
@@ -44,10 +44,9 @@
 |* and location/size of each image in the map. Atlas files are expected to be
 |* in the resources directory
 \*****************************************************************************/
-- (NSInteger) load:(NSString *)name
+- (NSInteger) _load:(NSString *)name withRenderer:(id<AZRenderer>)azr
 	{
 	NSInteger result	= SDL_APP_CONTINUE;
-	id<AZRenderer> azr 	= AZRenderer.renderer;
 
 	NSString *rsrc = [[NSBundle bundleForClass:[self class]] resourcePath];
 	NSString *path = [NSString stringWithFormat:@"%@/Atlas/%@.png", rsrc, name];

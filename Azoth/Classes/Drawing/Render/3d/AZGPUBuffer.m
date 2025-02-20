@@ -14,8 +14,8 @@
 \*****************************************************************************/
 @interface AZGPUBuffer()
 
-// The GPU device we were created with
-@property(assign, nonatomic) SDL_GPUDevice *						gpu;
+// The Renderer we were created with
+@property(strong, nonatomic) AZRenderer3d *							azr;
 
 @end
 
@@ -72,7 +72,7 @@
 						   usage:(SDL_GPUBufferUsageFlags)flags
 						   props:(SDL_PropertiesID)props
 	{
-	_gpu 		= azr.gpu;
+	_azr 		= (AZRenderer3d *)azr;
 	_size		= size;
 	_flags		= flags;
 	_props		= props;
@@ -83,7 +83,7 @@
 		.props = _props
 		};
 
-	_buffer = SDL_CreateGPUBuffer(_gpu, &info);
+	_buffer = SDL_CreateGPUBuffer(_azr.gpu, &info);
 	}
 
 /*****************************************************************************\
@@ -91,7 +91,7 @@
 \*****************************************************************************/
 - (void) dealloc
 	{
-	SDL_ReleaseGPUBuffer(_gpu, _buffer);
+	SDL_ReleaseGPUBuffer(_azr.gpu, _buffer);
 	}
 
 
@@ -100,8 +100,7 @@
 \*****************************************************************************/
 - (BOOL) upload:(NSData *)data
 	{
-	AZRenderer3d *azr = (AZRenderer3d *)AZRenderer.renderer;
-	return [azr upload:data to:self];
+	return [_azr upload:data to:self];
 	}
 
 /*****************************************************************************\
@@ -109,8 +108,7 @@
 \*****************************************************************************/
 - (NSData *) download
 	{
-	AZRenderer3d *azr = (AZRenderer3d *)AZRenderer.renderer;
-	return [azr download:self];
+	return [_azr download:self];
 	}
 
 /*****************************************************************************\
@@ -123,8 +121,7 @@
 
 - (BOOL) clearTo:(uint8_t)value
 	{
-	AZRenderer3d *azr 	= (AZRenderer3d *)AZRenderer.renderer;
-	return [azr clearBuffer:self to:value];
+	return [_azr clearBuffer:self to:value];
 	}
 
 
@@ -134,7 +131,7 @@
 - (void) setName:(NSString *)name
 	{
 	_name = name;
-	SDL_SetGPUBufferName(_gpu, self.buffer, name.UTF8String);
+	SDL_SetGPUBufferName(_azr.gpu, self.buffer, name.UTF8String);
 	}
 
 @end

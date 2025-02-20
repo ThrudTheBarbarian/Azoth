@@ -116,7 +116,7 @@ static NSRect	_sortDn;
     NSInteger count 				= _tableView.tableColumns.count;
     NSSize spacing 					= _tableView.spacing;
 
-	id<AZRenderer> azr				= AZRenderer.renderer;
+	id<AZRenderer> azr				= self.window.renderer;
 	NSInteger ui					= [AZApp textureFor:kUiMap];
 
 	[painter setTextColour:AZColour.black];

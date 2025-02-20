@@ -537,7 +537,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 		float yMax 	= self.textureSize.height;
 		float w		= self.bounds.size.width;
 
-		id<AZRenderer> azr	= AZRenderer.renderer;
+		id<AZRenderer> azr	= self.window.renderer;
 
 		int idx = 0;
 		while ((y < yMax) && (idx < _numberOfRows))
@@ -1352,12 +1352,12 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	|* Use the single-pixel-wide strips above to make 9-way-tileable textures
 	|* to use to render any-size table-row backgrounds
 	\*************************************************************************/
-	NSSize nSz		= NSMakeSize(1, _rA[STATE_N].size.height);
-	NSSize hSz		= NSMakeSize(1, _rA[STATE_H].size.height);
+	NSSize nSz			= NSMakeSize(1, _rA[STATE_N].size.height);
+	NSSize hSz			= NSMakeSize(1, _rA[STATE_H].size.height);
 
-	id<AZRenderer> azr	= AZRenderer.renderer;
-	_ui[STATE_N] = [azr createTextureOfSize:nSz];
-	_ui[STATE_H] = [azr createTextureOfSize:hSz];
+	id<AZRenderer> azr	= self.window.renderer;
+	_ui[STATE_N] 		= [azr createTextureOfSize:nSz];
+	_ui[STATE_H] 		= [azr createTextureOfSize:hSz];
 
 	[azr setTexture:_ui[STATE_N] blendMode:SDL_BLENDMODE_NONE];
 	[azr setTexture:_ui[STATE_H] blendMode:SDL_BLENDMODE_NONE];

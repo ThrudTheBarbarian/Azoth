@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class AZGPUBuffer;
 @class AZImage;
 @class AZTexture;
+@class AZWindow;
 
 @interface AZRenderer3d : NSObject <AZRenderer>
 
@@ -33,6 +34,11 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 + (AZRenderer3d *) renderer;
 
+
+/*****************************************************************************\
+|* Claim a window
+\*****************************************************************************/
+- (BOOL) claim:(AZWindow *)window;
 
 /*****************************************************************************\
 |* Blend operation/factor extraction

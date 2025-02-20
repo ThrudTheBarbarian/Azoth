@@ -316,6 +316,16 @@ static SDL_SpinLock 	_textureLock;
 	if (self = [super init])
 		{
 		/*********************************************************************\
+		|* Make sure the static stuff is only set up once
+		\*********************************************************************/
+		static dispatch_once_t onceToken;
+		dispatch_once(&onceToken,
+			^{
+			_textureId 		= 1;
+			_textureLock 	= 0;
+			});
+
+		/*********************************************************************\
 		|* Set the properties dictionary up
 		\*********************************************************************/
 		_properties 	= [NSMutableDictionary new];
@@ -392,20 +402,74 @@ static SDL_SpinLock 	_textureLock;
 	return self;
 	}
 
+///*****************************************************************************\
+//|* Return the 3D renderer
+//\*****************************************************************************/
+//+ (AZRenderer3d *) renderer
+//	{
+//	static AZRenderer3d *azr = nil;
+//	static dispatch_once_t onceToken;
+//	dispatch_once(&onceToken,
+//		^{
+//		azr 			= [AZRenderer3d new];
+//		_textureId 		= 1;
+//		_textureLock 	= 0;
+//		});
+//	return azr;
+//	}
+//
+
+
 /*****************************************************************************\
-|* Return the 3D renderer
+|* Claim a window
 \*****************************************************************************/
-+ (AZRenderer3d *) renderer
+- (BOOL) claim:(AZWindow *)window
 	{
-	static AZRenderer3d *azr = nil;
-	static dispatch_once_t onceToken;
-	dispatch_once(&onceToken,
-		^{
-		azr 			= [AZRenderer3d new];
-		_textureId 		= 1;
-		_textureLock 	= 0;
-		});
-	return azr;
+	/*************************************************************************\
+    |* Link to the AZWindow instance
+    \*************************************************************************/
+	_window = window;
+
+	/*************************************************************************\
+    |* Initialise the main view
+    \*************************************************************************/
+	_mainView.view.size.width	= -1;
+	_mainView.view.size.height	= -1;
+	_mainView.scale 			= (NSPoint){1.f, 1.f};
+	_mainView.logicalScale 		= _mainView.scale;
+	_mainView.currentScale 		= _mainView.scale;
+	_dpiScale					= _mainView.scale;
+	_view						= &_mainView;
+
+	[self _updatePixelViewport:&_mainView];
+	[self _updatePixelClipRect:&_mainView];
+	[self _updateMainViewDimensions];
+
+	_properties[AZRendererWindow] 		= _window;
+	_properties[AZRendererColourspace]	= @(_outputColourspace);
+	_properties[AZRendererRenderer] 	= self;
+
+
+	_cmdGeneration	= 1;
+	_lineMethod		= [self _renderLineMethod];
+
+	[self _updateHdrProperties];
+
+	SDL_ClearError();
+
+	/*************************************************************************\
+    |* Open the GPU
+    \*************************************************************************/
+	BOOL ok = [self _initialiseGPU];
+
+	/*************************************************************************\
+    |* Initialise
+    \*************************************************************************/
+	const char *hint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
+	if (hint && *hint)
+		_properties[AZRendererVSync] = @(YES);
+
+	return ok;
 	}
 
 
@@ -431,30 +495,30 @@ static SDL_SpinLock 	_textureLock;
 |* Create a window with a given size, title, flags that is compatible with
 |* this type of renderer
 \*****************************************************************************/
-- (BOOL) createWindowWithTitle:(NSString *)title
-						 frame:(NSRect)frame
-						 style:(NSInteger)styleFlags
-	{
-	/*************************************************************************\
-    |* Open the window
-    \*************************************************************************/
-	BOOL ok = [self _openWindow:title frame:frame style:styleFlags];
-
-	/*************************************************************************\
-    |* Open the GPU
-    \*************************************************************************/
-	if (ok)
-		ok &= [self _initialiseGPU];
-
-	/*************************************************************************\
-    |* Initialise
-    \*************************************************************************/
-	const char *hint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
-	if (hint && *hint)
-		_properties[AZRendererVSync] = @(YES);
-
-	return ok;
-	}
+//- (BOOL) createWindowWithTitle:(NSString *)title
+//						 frame:(NSRect)frame
+//						 style:(NSInteger)styleFlags
+//	{
+//	/*************************************************************************\
+//    |* Open the window
+//    \*************************************************************************/
+//	BOOL ok = [self _openWindow:title frame:frame style:styleFlags];
+//
+//	/*************************************************************************\
+//    |* Open the GPU
+//    \*************************************************************************/
+//	if (ok)
+//		ok &= [self _initialiseGPU];
+//
+//	/*************************************************************************\
+//    |* Initialise
+//    \*************************************************************************/
+//	const char *hint = SDL_GetHint(SDL_HINT_RENDER_VSYNC);
+//	if (hint && *hint)
+//		_properties[AZRendererVSync] = @(YES);
+//
+//	return ok;
+//	}
 
 /*****************************************************************************\
 |* Get a texture-id
@@ -600,58 +664,58 @@ static SDL_SpinLock 	_textureLock;
 /*****************************************************************************\
 |* Open the window
 \*****************************************************************************/
-- (BOOL) _openWindow:(NSString *)title frame:(NSRect)f style:(NSInteger)flags
-	{
-	/*************************************************************************\
-    |* Create the window
-    \*************************************************************************/
-	int w 	= (int) f.size.width;
-	int h	= (int) f.size.height;
-	_sdl = SDL_CreateWindow(title.UTF8String, w, h, flags);
-	if (_sdl == NULL)
-		return NO;
-
-	/*************************************************************************\
-    |* Link it to the AZWindow instance
-    \*************************************************************************/
-	_window = [[AZWindow alloc] initWithWindow:_sdl];
-
-	/*************************************************************************\
-    |* Position it on screen
-    \*************************************************************************/
-	int x = f.origin.x;
-	int y = f.origin.y;
-	if (!SDL_SetWindowPosition(_sdl, x, y))
-		return NO;
-
-	/*************************************************************************\
-    |* Initialise the main view
-    \*************************************************************************/
-	_mainView.view.size.width	= -1;
-	_mainView.view.size.height	= -1;
-	_mainView.scale 			= (NSPoint){1.f, 1.f};
-	_mainView.logicalScale 		= _mainView.scale;
-	_mainView.currentScale 		= _mainView.scale;
-	_dpiScale					= _mainView.scale;
-	_view						= &_mainView;
-
-	[self _updatePixelViewport:&_mainView];
-	[self _updatePixelClipRect:&_mainView];
-	[self _updateMainViewDimensions];
-
-	_properties[AZRendererWindow] 		= _window;
-	_properties[AZRendererColourspace]	= @(_outputColourspace);
-	_properties[AZRendererRenderer] 	= self;
-
-
-	_cmdGeneration	= 1;
-	_lineMethod		= [self _renderLineMethod];
-
-	[self _updateHdrProperties];
-
-	SDL_ClearError();
-	return YES;
-	}
+//- (BOOL) _openWindow:(NSString *)title frame:(NSRect)f style:(NSInteger)flags
+//	{
+//	/*************************************************************************\
+//    |* Create the window
+//    \*************************************************************************/
+//	int w 	= (int) f.size.width;
+//	int h	= (int) f.size.height;
+//	_sdl = SDL_CreateWindow(title.UTF8String, w, h, flags);
+//	if (_sdl == NULL)
+//		return NO;
+//
+//	/*************************************************************************\
+//    |* Link it to the AZWindow instance
+//    \*************************************************************************/
+//	_window = [[AZWindow alloc] initWithWindow:_sdl];
+//
+//	/*************************************************************************\
+//    |* Position it on screen
+//    \*************************************************************************/
+//	int x = f.origin.x;
+//	int y = f.origin.y;
+//	if (!SDL_SetWindowPosition(_sdl, x, y))
+//		return NO;
+//
+//	/*************************************************************************\
+//    |* Initialise the main view
+//    \*************************************************************************/
+//	_mainView.view.size.width	= -1;
+//	_mainView.view.size.height	= -1;
+//	_mainView.scale 			= (NSPoint){1.f, 1.f};
+//	_mainView.logicalScale 		= _mainView.scale;
+//	_mainView.currentScale 		= _mainView.scale;
+//	_dpiScale					= _mainView.scale;
+//	_view						= &_mainView;
+//
+//	[self _updatePixelViewport:&_mainView];
+//	[self _updatePixelClipRect:&_mainView];
+//	[self _updateMainViewDimensions];
+//
+//	_properties[AZRendererWindow] 		= _window;
+//	_properties[AZRendererColourspace]	= @(_outputColourspace);
+//	_properties[AZRendererRenderer] 	= self;
+//
+//
+//	_cmdGeneration	= 1;
+//	_lineMethod		= [self _renderLineMethod];
+//
+//	[self _updateHdrProperties];
+//
+//	SDL_ClearError();
+//	return YES;
+//	}
 
 
 /*****************************************************************************\

@@ -114,9 +114,9 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 /*****************************************************************************\
 |* Bootstrap the fonts and user-interface maps
 \*****************************************************************************/
-- (void) _bootstrap
+- (void) _bootstrap:(AZWindow *)window
 	{
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= window.renderer;
 
 	/*************************************************************************\
     |* Create the text renderer for any textboxes
@@ -128,7 +128,8 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 	\*************************************************************************/
 	for (NSString *name in @[kUiMap, kIconsMap, kHudMap, kCursorsMap])
 		{
-		AZIconAtlas *atlas = [AZIconAtlas atlasWithName:name];
+		AZIconAtlas *atlas = [AZIconAtlas atlasWithName:name
+											forRenderer:azr];
 		if (atlas)
 			_atlantes[name] = atlas;
 		}
@@ -137,7 +138,8 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 	|* Load the system font after notifying the delegate, so it has a
 	|* chance to change the system font path
 	\*************************************************************************/
-	self.systemFont = [self systemFontWithSize:_systemFontInfo.size];
+	self.systemFont = [self systemFontWithSize:_systemFontInfo.size
+								   forRenderer:azr];
 	if (!_systemFont)
 		{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -154,7 +156,7 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 		.name 	= AZApp.systemFontInfo.name,
 		.style 	= AZFONT_MEDIUM
 		};
-	_controlFont = [self fontWithStyle:style];
+	_controlFont = [self fontWithStyle:style forRenderer:azr];
 	if (!_controlFont)
 		{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -171,7 +173,7 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 		.name 	= AZApp.systemFontInfo.name,
 		.style 	= AZFONT_BOLD
 		};
-	_boldControlFont = [self fontWithStyle:bstyle];
+	_boldControlFont = [self fontWithStyle:bstyle forRenderer:azr];
 	if (!_boldControlFont)
 		{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -218,14 +220,14 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 	/*************************************************************************\
     |* Choose a renderer
     \*************************************************************************/
-	self.viability		= SDL_APP_CONTINUE;
-	if (![AZRenderer makeDefaultRendererOfType:_rendererType])
-		{
-        SDL_Log("Couldn't create renderer: %s", SDL_GetError());
-		self.viability = SDL_APP_FAILURE;
-		return;
-		}
-	id<AZRenderer> azr = AZRenderer.renderer;
+//	self.viability		= SDL_APP_CONTINUE;
+//	if (![AZRenderer makeDefaultRendererOfType:_rendererType])
+//		{
+//        SDL_Log("Couldn't create renderer: %s", SDL_GetError());
+//		self.viability = SDL_APP_FAILURE;
+//		return;
+//		}
+//	id<AZRenderer> azr = AZRenderer.renderer;
 
 	/*************************************************************************\
     |* Set up the system-font info with reasonable defaults
@@ -272,13 +274,13 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
     \*************************************************************************/
     if (_window == nil)
 		{
-		BOOL ok = [azr createWindowWithTitle:_windowTitle
-									   frame:_initialFrame
-									   style:_windowFlags];
-		if (ok)
+		_window = [AZWindow withTitle:_windowTitle
+								frame:_initialFrame
+								style:_windowFlags];
+		if (_window)
 			{
-			_window = azr.window;
-			[self _bootstrap];
+			[_window createRenderer];
+			[self _bootstrap:_window];
 			}
 		else
 			{
@@ -332,12 +334,13 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 |* can return the same object
 \*****************************************************************************/
 - (nullable AZFont *) fontWithStyle:(AZFontStyle)style
+						forRenderer:(id<AZRenderer>)azr;
 	{
 	NSString *key 	= FONT_KEY(style);
 	AZFont *font	= _knownFonts[key];
 	if (font == nil)
 		{
-		font = [AZFont fontWithStyle:style];
+		font = [AZFont fontWithStyle:style forRenderer:azr];
 		if (font)
 			_knownFonts[key] = font;
 		}
@@ -350,6 +353,7 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 |* requests can return the same object
 \*****************************************************************************/
 - (nullable AZFont *) systemFontWithSize:(int)points
+							 forRenderer:(id<AZRenderer>)azr;
 	{
 	AZFontStyle style =
 		{
@@ -357,7 +361,7 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 		.name = self.systemFontInfo.name,
 		.style = AZFONT_MEDIUM
 		};
-	return [self fontWithStyle:style];
+	return [self fontWithStyle:style forRenderer:azr];
 	}
 
 /*****************************************************************************\
@@ -516,16 +520,16 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 \*****************************************************************************/
 - (SDL_AppResult) nextFrameWithAppState:(void *)state
 	{
-	id<AZRenderer> azr	= AZRenderer.renderer;
-
-	// Before we render anything into the *textures* make sure there is
-	// no outstanding blending effect from the last cycle around
-	[azr setBlendMode:SDL_BLENDMODE_NONE];
-
 	// Redraw any of the subviews that need it into their own textures
 	for (AZWindow *window in _windows.allValues)
 		{
-		AZWindowContentView *wcv = window.contentView;
+		AZWindowContentView *wcv 	= window.contentView;
+		id<AZRenderer> azr			= window.renderer;
+
+		// Before we render anything into the *textures* make sure there is
+		// no outstanding blending effect from the last cycle around
+		[azr setBlendMode:SDL_BLENDMODE_NONE];
+
 		if (!NSEqualRects(wcv.dirty, NSZeroRect))
 			[wcv _drawDirtyRect];
 		[wcv redrawSubViewsIfNecessary];
@@ -541,10 +545,11 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 		// Handle any drag-in-progress
 		[azr setClip:wcv.bounds];
 		[wcv showDragInProgress];
-		}
 
-	// Tell the renderer we're done
-	[azr present];
+
+		// Tell the renderer we're done
+		[azr present];
+		}
 
 	// If there's anything in the bin, get rid of it safely now
 	[self _purgeBin];
@@ -629,10 +634,12 @@ void SDL_AppQuit(void *appState, SDL_AppResult result)
 \*****************************************************************************/
 - (void) _purgeBin
 	{
-	id<AZRenderer> azr	= AZRenderer.renderer;
-	for (NSNumber *obj in _bin)
-		[azr releaseTexture:obj.integerValue];
-
+	for (AZWindow *window in _windows)
+		{
+		id<AZRenderer> azr	= window.renderer;
+		for (NSNumber *obj in _bin)
+			[azr releaseTexture:obj.integerValue];
+		}
 	[_bin removeAllObjects];
 	}
 

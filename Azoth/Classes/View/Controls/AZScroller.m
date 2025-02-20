@@ -116,7 +116,7 @@ static NSRect	_sR[STATE_NUM];
 	{
 	NSRect b 			= self.bounds;
 	NSInteger ui		= [AZApp textureFor:kUiMap];
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= self.window.renderer;
 
 	// Map the track source rectangles
 	NSRect srcL = _sL[STATE_HT];
@@ -206,7 +206,7 @@ static NSRect	_sR[STATE_NUM];
 	{
 	NSRect b 			= self.bounds;
 	NSInteger ui		= [AZApp textureFor:kUiMap];
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= self.window.renderer;
 
 	// Map the track source rectangles
 	NSRect srcL = _sL[STATE_VT];

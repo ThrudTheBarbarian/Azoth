@@ -15,6 +15,7 @@
 #import "AZPainter.h"
 #import "AZRenderer.h"
 #import "AZPopupButton.h"
+#import "AZWindow.h"
 #import "AZZib.h"
 #import "NSDictionary+ZIB.h"
 
@@ -37,6 +38,10 @@ static float 		_uiW[STATE_NUM];		// left-border for 9-way
 static float		_uiN[STATE_NUM];		// top-border for 9-way
 static float		_uiE[STATE_NUM];		// right-border for 9-way
 static float 		_uiS[STATE_NUM];		// bottom-border for 9-way
+
+static NSRect 		_bL[STATE_NUM];
+static NSRect 		_bC[STATE_NUM];
+static NSRect 		_bR[STATE_NUM];
 
 @implementation AZPopupButton
 /*****************************************************************************\
@@ -120,7 +125,8 @@ static float 		_uiS[STATE_NUM];		// bottom-border for 9-way
 - (void) _commonPopUpButtonInit
 	{
 	[AZPopupButton _fetchRects];
-		self.backgroundColour	= AZColour.clear;
+	[self _renderRects];
+	self.backgroundColour	= AZColour.clear;
 	}
 
 /*****************************************************************************\
@@ -180,42 +186,48 @@ static float 		_uiS[STATE_NUM];		// bottom-border for 9-way
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken,
 		^{
-		NSRect bL[STATE_NUM];
-		NSRect bC[STATE_NUM];
-		NSRect bR[STATE_NUM];
+		_bL[STATE_N]   	= [AZApp srcRectFor:@"button-bezel-left" in:kUiMap];
+		_bL[STATE_P]   	= [AZApp srcRectFor:@"button-bezel-left" in:kUiMap];
+		_bL[STATE_DN]  	= [AZApp srcRectFor:@"popup-bezel-disabled-left" in:kUiMap];
+		_bL[STATE_DP]	= [AZApp srcRectFor:@"popup-bezel-disabled-left" in:kUiMap];
 
-		bL[STATE_N]   	= [AZApp srcRectFor:@"button-bezel-left" in:kUiMap];
-		bL[STATE_P]   	= [AZApp srcRectFor:@"button-bezel-left" in:kUiMap];
-		bL[STATE_DN]  	= [AZApp srcRectFor:@"popup-bezel-disabled-left" in:kUiMap];
-		bL[STATE_DP]	= [AZApp srcRectFor:@"popup-bezel-disabled-left" in:kUiMap];
+		_bC[STATE_N]   	= [AZApp srcRectFor:@"popup-bezel-center" in:kUiMap];
+		_bC[STATE_P]   	= [AZApp srcRectFor:@"popup-bezel-center" in:kUiMap];
+		_bC[STATE_DN]  	= [AZApp srcRectFor:@"popup-bezel-disabled-center" in:kUiMap];
+		_bC[STATE_DP]	= [AZApp srcRectFor:@"popup-bezel-disabled-center" in:kUiMap];
 
-		bC[STATE_N]   	= [AZApp srcRectFor:@"popup-bezel-center" in:kUiMap];
-		bC[STATE_P]   	= [AZApp srcRectFor:@"popup-bezel-center" in:kUiMap];
-		bC[STATE_DN]  	= [AZApp srcRectFor:@"popup-bezel-disabled-center" in:kUiMap];
-		bC[STATE_DP]	= [AZApp srcRectFor:@"popup-bezel-disabled-center" in:kUiMap];
+		_bR[STATE_N]   	= [AZApp srcRectFor:@"popup-bezel-right" in:kUiMap];
+		_bR[STATE_P]   	= [AZApp srcRectFor:@"popup-bezel-right-pullsdown" in:kUiMap];
+		_bR[STATE_DN]	= [AZApp srcRectFor:@"popup-bezel-disabled-right" in:kUiMap];
+		_bR[STATE_DP]	= [AZApp srcRectFor:@"popup-bezel-disabled-right-pullsdown" in:kUiMap];
+		});
+	}
 
-		bR[STATE_N]   	= [AZApp srcRectFor:@"popup-bezel-right" in:kUiMap];
-		bR[STATE_P]   	= [AZApp srcRectFor:@"popup-bezel-right-pullsdown" in:kUiMap];
-		bR[STATE_DN]	= [AZApp srcRectFor:@"popup-bezel-disabled-right" in:kUiMap];
-		bR[STATE_DP]	= [AZApp srcRectFor:@"popup-bezel-disabled-right-pullsdown" in:kUiMap];
-
-		id<AZRenderer> azr	= AZRenderer.renderer;
+/*****************************************************************************\
+|* Render the rectangles from the UI texture atlas
+\*****************************************************************************/
+- (void) _renderRects
+	{
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken,
+		^{
+		id<AZRenderer> azr	= self.window.renderer;
 		NSInteger S			= [AZApp textureFor:kUiMap];
 
 		for (int i=0; i<STATE_NUM; i++)
 			{
 			int W,H;
 
-			float left 	= NSWidth(bL[i]);
-			float mid 	= NSWidth(bC[i]);
-			float right	= NSWidth(bR[i]);
+			float left 	= NSWidth(_bL[i]);
+			float mid 	= NSWidth(_bC[i]);
+			float right	= NSWidth(_bR[i]);
 
 			/*****************************************************************\
 			|* Create 9-way tileable textures for the button, so we can fill
 			|* in the background of any-size button
 			\*****************************************************************/
 			W = left  + mid*3 + right;
-			H = NSHeight(bL[i]);
+			H = NSHeight(_bL[i]);
 
 			_ui[i] = [azr createTextureOfSize:NSMakeSize(W, H)];
 
@@ -223,11 +235,11 @@ static float 		_uiS[STATE_NUM];		// bottom-border for 9-way
 			|* Draw the pixmap rectangles to the new combined texture
 			\*****************************************************************/
 			[azr lockFocusOn:_ui[i]];
-			[azr blitFrom:S src:bL[i] dst:NSMakeRect(0 ,0, left, H)];
-			[azr blitFrom:S src:bC[i] dst:NSMakeRect(left, 0, mid, H)];
-			[azr blitFrom:S src:bC[i] dst:NSMakeRect(left+1, 0, mid, H)];
-			[azr blitFrom:S src:bC[i] dst:NSMakeRect(left+2, 0, mid, H)];
-			[azr blitFrom:S src:bR[i] dst:NSMakeRect(left+mid+2, 0, right, H)];
+			[azr blitFrom:S src:_bL[i] dst:NSMakeRect(0 ,0, left, H)];
+			[azr blitFrom:S src:_bC[i] dst:NSMakeRect(left, 0, mid, H)];
+			[azr blitFrom:S src:_bC[i] dst:NSMakeRect(left+1, 0, mid, H)];
+			[azr blitFrom:S src:_bC[i] dst:NSMakeRect(left+2, 0, mid, H)];
+			[azr blitFrom:S src:_bR[i] dst:NSMakeRect(left+mid+2, 0, right, H)];
 			[azr unlockFocus];
 
 			_uiRect 	= NSMakeRect(0, 0, W, H);
@@ -249,7 +261,7 @@ static float 		_uiS[STATE_NUM];		// bottom-border for 9-way
 	NSRect bounds	= self.bounds;
 	[super drawInRect:dirtyRect withPainter:painter];
 
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= self.window.renderer;
 	int state 			= self.state + (_menu.pullsDown ? 1 : 0);
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];

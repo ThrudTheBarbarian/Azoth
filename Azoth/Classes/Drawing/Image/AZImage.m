@@ -25,6 +25,9 @@
 \*****************************************************************************/
 @interface AZImage()
 
+// The renderer for the window in which we display
+@property(weak, nonatomic) id<AZRenderer>							azr;
+
 // The texture box we were initially allocted
 @property(assign, nonatomic) NSRect									texRect;
 
@@ -50,10 +53,11 @@ static NSMutableDictionary<NSString*,AZImage*> * 						_map;
 /*****************************************************************************\
 |* Initialisation: initialise an instance
 \*****************************************************************************/
-- (instancetype) init
+- (instancetype) initWithRenderer:(id<AZRenderer>)azr
 	{
 	if (self = [super init])
 		{
+		_azr		= azr;
 		_imageCache = nil;
 		_texture 	= -3;
 		_srcRect	= NSZeroRect;
@@ -77,67 +81,51 @@ static NSMutableDictionary<NSString*,AZImage*> * 						_map;
 	if (_imageCache)
 		[_imageCache release:_texRect];
 	else if (_texture >= 0)
-		{
-		id<AZRenderer> azr = AZRenderer.renderer;
-		[azr releaseTexture:_texture];
-		}
-	}
-
-/*****************************************************************************\
-|* Initialisation: Create an image by referencing a texture
-\*****************************************************************************/
-+ (AZImage *) imageWithTexture:(NSInteger)textureId
-	{
-	id<AZRenderer>azr	= AZRenderer.renderer;
-	NSRect r			= [azr boundsOfTexture:textureId];
-	if (!NSEqualRects(r, NSZeroRect))
-		{
-		AZImage *image 	= AZImage.new;
-		image.srcRect 	= r;
-		image.texture = textureId;
-		[azr retainTexture:textureId];
-		return image;
-		}
-	return nil;
+		[_azr releaseTexture:_texture];
 	}
 
 /*****************************************************************************\
 |* Initialisation: Load an image from the current bundle's Resources/ directory
 \*****************************************************************************/
 + (AZImage *) imageNamed:(NSString *)name
+			 forRenderer:(id<AZRenderer>)azr;
 	{
 	NSString *rsrc 		= [[NSBundle mainBundle] resourcePath];
 	NSString *fullpath 	= [NSString stringWithFormat:@"%@/%@", rsrc, name];
 
-	return [AZImage imageWithContentsOfFile:fullpath];
+	return [AZImage imageWithContentsOfFile:fullpath forRenderer:azr];
 	}
 
-
-/*****************************************************************************\
-|* Initialisation: Get an image from the icon atlas
-\*****************************************************************************/
-+ (AZImage *) imageWithSystemSymbolName:(NSString *)name
-	{
-	return [self imageWithName:name inAtlas:kIconsMap];
-	}
 
 /*****************************************************************************\
 |* Initialisation: Get an image from an atlas
 \*****************************************************************************/
-+ (AZImage *) imageWithName:(NSString *)name inAtlas:(NSString *)map
++ (AZImage *) imageWithName:(NSString *)name
+					inAtlas:(NSString *)map
+				forRenderer:(id<AZRenderer>)azr
 	{
 	NSRect r 	= [AZApp srcRectFor:name in:map];
 	if (IS_ZERORECT(r))
 		return nil;
 
-	AZImage *img 	= [AZImage new];
+	AZImage *img 	= [[AZImage alloc] initWithRenderer:azr];
 	img.texture		= [AZApp textureFor:map];
 	img.srcRect		= r;
 	img.identifier	= name;
 
-	id<AZRenderer>azr	= AZRenderer.renderer;
 	[azr retainTexture:img.texture];
 	return img;
+	}
+
+/*****************************************************************************\
+|* Initialisation: Get an image from the icon atlas
+\*****************************************************************************/
++ (AZImage *) imageWithSystemSymbolName:(NSString *)name
+							forRenderer:(id<AZRenderer>)azr
+	{
+	return [self imageWithName:name
+					   inAtlas:kIconsMap
+				   forRenderer:azr];
 	}
 
 
@@ -145,13 +133,13 @@ static NSMutableDictionary<NSString*,AZImage*> * 						_map;
 |* Initialisation: Load an image from a file path
 \*****************************************************************************/
 + (AZImage *) imageWithContentsOfFile:(NSString *)fullpath
+						  forRenderer:(id<AZRenderer>)azr
 	{
 	const char *path	= fullpath.fileSystemRepresentation;
+	AZImage *mapped		= _map[fullpath];
 
-	AZImage *mapped 		= _map[fullpath];
 	if (mapped)
 		{
-		id<AZRenderer>azr	= AZRenderer.renderer;
 		[azr retainTexture:mapped.texture];
 		return mapped;
 		}
@@ -159,7 +147,7 @@ static NSMutableDictionary<NSString*,AZImage*> * 						_map;
 	SDL_Surface *img = IMG_Load(path);
 	if (img)
 		{
-		AZImage *image = [AZImage new];
+		AZImage *image 	= [[AZImage alloc] initWithRenderer:azr];
 		if ([image _loadSurface:img])
 			{
 			_map[fullpath] = image;
@@ -180,13 +168,13 @@ static NSMutableDictionary<NSString*,AZImage*> * 						_map;
 |* used sparingly, and make sure it gets released by the app when possible
 \*****************************************************************************/
 + (AZImage *) imageWithSize:(NSSize) size
+				forRenderer:(id<AZRenderer>)azr
 	{
-	id<AZRenderer> azr	= AZRenderer.renderer;
 	NSInteger texture	= [azr createTextureOfSize:size];
 	if (texture < 0)
 		return nil;
 
-	AZImage *img 	= [AZImage new];
+	AZImage *img 	= [[AZImage alloc] initWithRenderer:azr];
 	img.texture		= texture;
 	img.srcRect		= NSMakeRect(0,0,size.width, size.height);
 	return img;
@@ -196,16 +184,35 @@ static NSMutableDictionary<NSString*,AZImage*> * 						_map;
 |* Initialisation: Create an image that draws on demand
 \*****************************************************************************/
 + (AZImage *) imageWithSize:(NSSize) size
-			 drawingHandler:(AZImageDrawingHandler) drawingHandler
+			    forRenderer:(id<AZRenderer>)azr
 			clearBeforeDraw:(BOOL)clear
+			 drawingHandler:(AZImageDrawingHandler) drawingHandler
 	{
-	AZImage *img = [AZImage imageWithSize:size];
+	AZImage *img = [AZImage imageWithSize:size forRenderer:azr];
 	if (img)
 		{
 		img.handler = drawingHandler;
 		img.clearBeforeDraw	= clear;
 		}
 	return img;
+	}
+
+/*****************************************************************************\
+|* Initialisation: Create an image by referencing a texture
+\*****************************************************************************/
++ (AZImage *) imageWithTexture:(NSInteger)textureId
+				   forRenderer:(id<AZRenderer>)azr
+	{
+	NSRect r = [azr boundsOfTexture:textureId];
+	if (!NSEqualRects(r, NSZeroRect))
+		{
+		AZImage *image 	= [[AZImage alloc] initWithRenderer:azr];
+		image.srcRect 	= r;
+		image.texture = textureId;
+		[azr retainTexture:textureId];
+		return image;
+		}
+	return nil;
 	}
 
 /*****************************************************************************\
@@ -237,10 +244,9 @@ static NSMutableDictionary<NSString*,AZImage*> * 						_map;
 - (AZTexture *) asTexture
 	{
 	AZTexture *texture 	= nil;
-	id<AZRenderer> azr	= AZRenderer.renderer;
 
-	if (azr.rendererType == AZRendererType3d)
-		texture = [(AZRenderer3d *)azr textureForId:_texture];
+	if (_azr.rendererType == AZRendererType3d)
+		texture = [(AZRenderer3d *)_azr textureForId:_texture];
 
 	return texture;
 	}
@@ -259,7 +265,8 @@ static NSMutableDictionary<NSString*,AZImage*> * 						_map;
 \*****************************************************************************/
 - (AZPainter *) lockFocus:(BOOL)clearTexture
 	{
-	AZPainter *painter = [AZPainter painterForTexture:_texture];
+	AZPainter *painter = [AZPainter painterForTexture:_texture
+										  andRenderer:_azr];
 	[painter lockFocus:clearTexture];
 	return painter;
 	}
@@ -298,8 +305,7 @@ static NSMutableDictionary<NSString*,AZImage*> * 						_map;
 	BOOL ok 		 = NO;
 	const char *path = fullPath.fileSystemRepresentation;
 
-	id<AZRenderer> azr	= AZRenderer.renderer;
-	SDL_Surface *surface = [azr surfaceFor:_texture];
+	SDL_Surface *surface = [_azr surfaceFor:_texture];
 	if (surface)
 		{
 		switch (format)
@@ -429,7 +435,6 @@ static NSMutableDictionary<NSString*,AZImage*> * 						_map;
 - (BOOL) _loadSurface:(SDL_Surface *)surface
 	{
 	BOOL success		= NO;
-	id<AZRenderer> azr	= AZRenderer.renderer;
 	int sizes[] 		= {16, 32, 64, 128, 256};
 	int numSizes		= sizeof(sizes)/sizeof(sizes[0]);
 	BOOL inAtlas		= NO;
@@ -459,7 +464,8 @@ static NSMutableDictionary<NSString*,AZImage*> * 						_map;
 				_cache[name] = domain;
 				AZImageCache *ic = [AZImageCache cacheWithWidth:CACHE_WIDTH
 														 height:CACHE_HEIGHT
-														  size:sizes[i]];
+														  size:sizes[i]
+														   for:_azr];
 				[domain addObject:ic];
 				}
 
@@ -486,7 +492,8 @@ static NSMutableDictionary<NSString*,AZImage*> * 						_map;
 				{
 				ic = [AZImageCache cacheWithWidth:CACHE_WIDTH
 										   height:CACHE_HEIGHT
-										     size:sizes[i]];
+										     size:sizes[i]
+										      for:_azr];
 				[domain addObject:ic];
 				_srcRect = ic.acquire;
 				_texRect = _srcRect;
@@ -500,24 +507,24 @@ static NSMutableDictionary<NSString*,AZImage*> * 						_map;
 			/*****************************************************************\
 			|* Ok, so create a texture of the same size as the surface
 			\*****************************************************************/
-			NSInteger temp = [azr createTextureWithSurface:surface];
+			NSInteger temp = [_azr createTextureWithSurface:surface];
 			if (temp < 0)
 				SDL_Log("Cannot convert surface to texture in AZImage");
 			else
 				{
-				NSInteger currentFocus = azr.currentFocus;
-				[azr lockFocusOn:ic.textureId];
+				NSInteger currentFocus = _azr.currentFocus;
+				[_azr lockFocusOn:ic.textureId];
 
 				NSRect from = NSMakeRect(0,0,surface->w, surface->h);
 				_srcRect.size = from.size;
 
 				// First clear the rect within the image-cache
-				[azr setDrawColour:AZColour.clear];
-				[azr renderFilledRect:_srcRect];
+				[_azr setDrawColour:AZColour.clear];
+				[_azr renderFilledRect:_srcRect];
 
-				[azr blitFrom:temp src:from dst:_srcRect];
-				[azr releaseTexture:temp];
-				[azr restoreFocus:currentFocus];
+				[_azr blitFrom:temp src:from dst:_srcRect];
+				[_azr releaseTexture:temp];
+				[_azr restoreFocus:currentFocus];
 
 				_texture 	= ic.textureId;
 				inAtlas 	= YES;
@@ -532,7 +539,7 @@ static NSMutableDictionary<NSString*,AZImage*> * 						_map;
 	\*************************************************************************/
 	if (!inAtlas)
 		{
-		_texture = [azr createTextureWithSurface:surface];
+		_texture = [_azr createTextureWithSurface:surface];
 		if (_texture >= 0)
 			{
 			_srcRect.origin.x 		= 0;

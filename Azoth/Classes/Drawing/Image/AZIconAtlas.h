@@ -9,6 +9,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@protocol AZRenderer;
+
 @interface AZIconAtlas : NSObject
 /*****************************************************************************\
 |* Initialisation: with a pre-determined texture/metadata-map
@@ -24,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 |* Initialisation: or load in from disk. The name is the file within the
 |* Resources/ directory of the framework
 \*****************************************************************************/
-+ (AZIconAtlas *) atlasWithName:(NSString *)name;
++ (AZIconAtlas *) atlasWithName:(NSString *)name forRenderer:(id<AZRenderer>)azr;
 
 
 // This is the dictionary holding the image name/offset/size

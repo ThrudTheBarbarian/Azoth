@@ -14,6 +14,9 @@
 
 @interface AZImageCache()
 
+// The renderer for the window in which we display
+@property(weak, nonatomic) id<AZRenderer>						azr;
+
 // The number of 'slots' left in the cache
 @property(strong, nonatomic) NSMutableSet *						slots;
 
@@ -31,7 +34,10 @@
 /*****************************************************************************\
 |* Initialisation: Create with a width and height for a given size of image
 \*****************************************************************************/
-- (instancetype) initWithWidth:(int)width height:(int)height size:(int)size
+- (instancetype) initWithWidth:(int)width
+						height:(int)height
+						  size:(int)size
+						   for:(id<AZRenderer>)azr
 	{
 	if (self = [super init])
 		{
@@ -39,8 +45,8 @@
 		_width 				= width;
 		_height 			= height;
 		_size 				= size;
+		_azr 				= azr;
 
-		id<AZRenderer> azr	= AZRenderer.renderer;
 		NSSize tSize		= NSMakeSize(width, height);
 		_textureId			= [azr createTextureOfSize:tSize];
 		if (_textureId < 0)
@@ -62,9 +68,15 @@
 /*****************************************************************************\
 |* Initialisation: .. conveniently
 \*****************************************************************************/
-+ (AZImageCache *) cacheWithWidth:(int)width height:(int)height size:(int)size
++ (AZImageCache *) cacheWithWidth:(int)width
+						   height:(int)height
+						     size:(int)size
+						      for:(id<AZRenderer>)azr;
 	{
-	return [[AZImageCache alloc] initWithWidth:width height:height size:size];
+	return [[AZImageCache alloc] initWithWidth:width
+										height:height
+										  size:size
+										   for:azr];
 	}
 
 /*****************************************************************************\
@@ -107,7 +119,8 @@
 \*****************************************************************************/
 - (void) _identifySlot:(NSRect)r atX:(int)x y:(int)y
 	{
-	AZPainter *P = [AZPainter painterForTexture:_textureId];
+	AZPainter *P = [AZPainter painterForTexture:_textureId
+									andRenderer:_azr];
 	[P lockFocus:NO];
 	[P setTextColour:AZColour.red];
 

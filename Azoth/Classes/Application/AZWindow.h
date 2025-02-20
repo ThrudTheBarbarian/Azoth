@@ -14,6 +14,8 @@ struct SDL_Window;
 
 @class AZWindowContentView;
 
+@protocol AZRenderer;
+
 @interface AZWindow : AZResponder
 
 #if 0
@@ -37,6 +39,13 @@ struct SDL_Window;
 \*****************************************************************************/
 - (instancetype) initWithWindow:(struct SDL_Window *)window;
 
+/*****************************************************************************\
+|* Initialisation
+\*****************************************************************************/
++ (instancetype) withTitle:(NSString *)title
+					 frame:(NSRect)f
+					 style:(NSInteger)flags;
+
 
 /*****************************************************************************\
 |* End editing in table-views. Should this move to AZTableView ?
@@ -48,6 +57,10 @@ struct SDL_Window;
 \*****************************************************************************/
 - (BOOL) makeFirstResponder:(nullable AZResponder *)responder;
 
+/*****************************************************************************\
+|* Create the renderer for this window
+\*****************************************************************************/
+- (BOOL) createRenderer;
 
 /*****************************************************************************\
 |* Properties
@@ -55,9 +68,6 @@ struct SDL_Window;
 
 // The main window, where the rendering happens
 @property(assign, nonatomic) struct SDL_Window *			window;
-
-// The renderer for the window
-@property(assign, nonatomic) struct SDL_Renderer *			renderer;
 
 // The current first-responder
 @property(retain, nonatomic, nullable) AZResponder *		firstResponder;
@@ -86,6 +96,9 @@ struct SDL_Window;
 
 // The content-view for the window
 @property(strong, nonatomic) AZWindowContentView *			contentView;
+
+// The renderer for this window
+@property(assign, nonatomic) id<AZRenderer>					renderer;
 @end
 
 

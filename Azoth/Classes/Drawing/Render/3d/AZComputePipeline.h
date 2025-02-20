@@ -33,18 +33,10 @@ NS_ASSUME_NONNULL_BEGIN
 					   storage:(AZComputeStorageInfo)info
 					   threads:(AZThreadSize)threads;
 
-
-
-/*****************************************************************************\
-|* Build the compute pipeline
-\*****************************************************************************/
-- (BOOL) build;
-
 /*****************************************************************************\
 |* Build the compute pipeline with a given renderer
 \*****************************************************************************/
 - (BOOL) buildWithRenderer:(id<AZRenderer>)renderer;
-
 
 
 

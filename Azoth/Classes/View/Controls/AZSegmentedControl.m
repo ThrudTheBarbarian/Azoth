@@ -131,9 +131,12 @@ typedef struct
 				NSString *image = segment[kZibImage];
 				if (image != nil)
 					{
-					AZImage *img = [AZImage imageWithSystemSymbolName:image];
+					id<AZRenderer> azr = self.window.renderer;
+					AZImage *img = [AZImage imageWithSystemSymbolName:image
+														  forRenderer:azr];
 					if (img == nil)
-						img = [AZImage imageWithSystemSymbolName:@"cyclone"];
+						img = [AZImage imageWithSystemSymbolName:@"cyclone"
+													 forRenderer:azr];
 					[self setImage:img forSegment:idx];
 					_padding = 0;
 					setFrame = YES;
@@ -348,7 +351,7 @@ typedef struct
 
 	NSRect b 			= self.bounds;
 	float H				= b.size.height;
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= self.window.renderer;
 	NSInteger ui		= [AZApp textureFor:kUiMap];
 	BOOL allDisabled 	= (self.state == AZControlStateDisabled);
 
@@ -784,7 +787,7 @@ typedef struct
 \*****************************************************************************/
 - (void) _renderTextures
 	{
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= self.window.renderer;
 	NSInteger S			= [AZApp textureFor:kUiMap];
 
 	for (int i=0; i<STATE_NUM; i++)

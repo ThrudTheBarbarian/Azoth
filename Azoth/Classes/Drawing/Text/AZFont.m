@@ -58,7 +58,14 @@ static void _restoreTargetState(TargetState *state, id<AZRenderer> azr)
 		}
 	}
 
+/*****************************************************************************\
+|* "Private" properties of a font
+\*****************************************************************************/
 @interface AZFont()
+
+// The renderer for the window in which we display
+@property(weak, nonatomic) id<AZRenderer>						azr;
+
 // The list of extents for characters in this font
 @property(strong, nonatomic)
 NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
@@ -75,12 +82,13 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 @implementation AZFont
 
 /*****************************************************************************\
-|* Initialisation
+|* Initialisation - internal only method
 \*****************************************************************************/
-- (instancetype) init
+- (instancetype) initWithRenderer:(id<AZRenderer>)azr
 	{
 	if (self = [super init])
 		{
+		_azr 			= azr;
 		_extents 		= [NSMutableDictionary new];
 		_textures		= [NSMutableArray new];
 		_lastGlyph		= [AZGlyphData new];
@@ -89,12 +97,20 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 	return self;
 	}
 
-+ (AZFont *) font
+/*****************************************************************************\
+|* Return a new font object for a given renderer
+\*****************************************************************************/
++ (AZFont *) fontWithRenderer:(id<AZRenderer>)azr
 	{
-	return [[AZFont alloc] init];
+	return [[AZFont alloc] initWithRenderer:azr];
 	}
 
-+ (nullable AZFont *) fontWithName:(NSString *)name size:(int)points
+/*****************************************************************************\
+|* Return a sized new font of a particular name, for a given renderer
+\*****************************************************************************/
++ (nullable AZFont *) fontWithName:(NSString *)name
+							  size:(int)points
+					   forRenderer:(id<AZRenderer>)azr
 	{
 	AZFont *font = [[AZFont alloc] init];
 	AZFontStyle style =
@@ -108,7 +124,11 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 	return nil;
 	}
 
+/*****************************************************************************\
+|* Return a system font of a given size, for a given renderer
+\*****************************************************************************/
 + (nullable AZFont *) systemFontWithSize:(int)points
+							 forRenderer:(id<AZRenderer>)azr
 	{
 	AZFont *font = [[AZFont alloc] init];
 	AZFontStyle style =
@@ -122,7 +142,11 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 	return nil;
 	}
 
+/*****************************************************************************\
+|* Return a font with a given style for a given renderer
+\*****************************************************************************/
 + (nullable AZFont *) fontWithStyle:(AZFontStyle)style
+						forRenderer:(id<AZRenderer>)azr
 	{
 	AZFont *font = [[AZFont alloc] init];
 	if ([font load:style])
@@ -193,8 +217,6 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 \*****************************************************************************/
 - (BOOL) loadFont:(TTF_Font *)ttf
 	{
-	id<AZRenderer> azr	= AZRenderer.renderer;
-
     BOOL ok = (ttf != NULL);
 	if (ok)
 		{
@@ -267,7 +289,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 				[self _uploadGlyphCache:i surface:surfaces[i]];
                 SDL_DestroySurface(surfaces[i]);
 				NSInteger textureId = _textures[i].integerValue;
-				[azr setTexture:textureId blendMode:SDL_BLENDMODE_BLEND];
+				[_azr setTexture:textureId blendMode:SDL_BLENDMODE_BLEND];
 
                 // Update the glyph cursor to the new cache level.  We need
                 // to do this here because the actual cache lags behind our
@@ -302,7 +324,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 		[self _uploadGlyphCache:i surface:surfaces[i]];
 		SDL_DestroySurface(surfaces[i]);
 		NSInteger textureId = _textures[i].integerValue;
-		[azr setTexture:textureId blendMode:SDL_BLENDMODE_BLEND];
+		[_azr setTexture:textureId blendMode:SDL_BLENDMODE_BLEND];
         ok = YES;
         }
 
@@ -371,11 +393,9 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 \*****************************************************************************/
 - (void) setColourForAllCaches:(AZColour *)c
 	{
-	id<AZRenderer> azr	= AZRenderer.renderer;
-
 	for (NSNumber *textureId in _textures)
 		{
-		[azr setTexture:textureId.integerValue modR:c.R g:c.G b:c.B];
+		[_azr setTexture:textureId.integerValue modR:c.R g:c.G b:c.B];
 		//SDL_SetTextureAlphaMod(texture, c.A);
 		}
 	}
@@ -400,13 +420,12 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 	if (_ttfFont == NULL)
 		return nil;
 
-	id<AZRenderer> azr	= AZRenderer.renderer;
 	AZGlyphData *data 	= _extents[@(codepoint)];
 
 	if (data == nil)
 		{
-		float w 		= [azr widthOfTexture:_lastGlyph.cacheId];
-		float h 		= [azr heightOfTexture:_lastGlyph.cacheId];
+		float w 		= [_azr widthOfTexture:_lastGlyph.cacheId];
+		float h 		= [_azr heightOfTexture:_lastGlyph.cacheId];
 		SDL_Color white = {255, 255, 255, 255};
 
 		NSString *character = [NSString stringWithFormat:@"%C", codepoint];
@@ -457,11 +476,10 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 	BOOL ok = (glyph != NULL);
 	if (ok)
 		{
-		id<AZRenderer> azr	= AZRenderer.renderer;
 		SDL_SetSurfaceBlendMode(glyph, SDL_BLENDMODE_NONE);
 		// move [azr lockFocusOn:_lastGlyph.cacheId];
 
-		NSInteger previous = azr.currentFocus;
+		NSInteger previous = _azr.currentFocus;
 		TargetState s;
 
 		/*****************************************************************\
@@ -469,21 +487,21 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 		|* for the default target)
 		\*****************************************************************/
 		if (previous > 0)
-			_preserveTargetState(&s, azr);
+			_preserveTargetState(&s, _azr);
 
-		NSInteger img = [azr createTextureWithSurface:glyph];
+		NSInteger img = [_azr createTextureWithSurface:glyph];
 
-		[azr lockFocusOn:img];
-		[azr blitFrom:img src:NSZeroRect dst:_lastGlyph.rect];
-		[azr unlockFocus];
+		[_azr lockFocusOn:img];
+		[_azr blitFrom:img src:NSZeroRect dst:_lastGlyph.rect];
+		[_azr unlockFocus];
 
 		if (previous > 0)
 			{
-			[azr lockFocusOn:previous];
-			_restoreTargetState(&s, azr);
+			[_azr lockFocusOn:previous];
+			_restoreTargetState(&s, _azr);
 			}
 
-		[azr releaseTexture:img];
+		[_azr releaseTexture:img];
 		ok = true;
 		}
 	return ok;
@@ -495,10 +513,8 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 - (BOOL) _growGlyphCache
 	{
 	BOOL ok 			= NO;
-	id<AZRenderer> azr	= AZRenderer.renderer;
-
 	NSSize size			= NSMakeSize(_height * 12,_height * 12);
-	NSInteger cache 	= [azr createTextureOfSize:size
+	NSInteger cache 	= [_azr createTextureOfSize:size
 											format:SDL_PIXELFORMAT_BGRA8888
 										 withFlags:SDL_TEXTUREACCESS_TARGET];
 
@@ -507,11 +523,11 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
 			"Error: FontCache ran out of packing space and could not"
 			 " add another cache level.\n");
-		[azr releaseTexture:cache];
+		[_azr releaseTexture:cache];
 		}
 	else
 		{
-		NSInteger previous = azr.currentFocus;
+		NSInteger previous = _azr.currentFocus;
 		TargetState s;
 		
 		/*********************************************************************\
@@ -519,22 +535,22 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 		|* the default target)
 		\*********************************************************************/
 		if (previous >= 0)
-			_preserveTargetState(&s, azr);
+			_preserveTargetState(&s, _azr);
 
-		[azr setTexture:cache blendMode:SDL_BLENDMODE_BLEND];
-		[azr lockFocusOn:cache];
+		[_azr setTexture:cache blendMode:SDL_BLENDMODE_BLEND];
+		[_azr lockFocusOn:cache];
 
 		Uint8 r, g, b, a;
-		[azr drawColourR:&r g:&g b:&b a:&a];
-		[azr setDrawColourToRed:0 g:0 b:0 a:0];
-		[azr clear];
-		[azr setDrawColourToRed:r g:g b:b a:a];
-		[azr unlockFocus];
+		[_azr drawColourR:&r g:&g b:&b a:&a];
+		[_azr setDrawColourToRed:0 g:0 b:0 a:0];
+		[_azr clear];
+		[_azr setDrawColourToRed:r g:g b:b a:a];
+		[_azr unlockFocus];
 
 		if (previous >= 0)
 			{
-			[azr lockFocusOn:previous];
-			_restoreTargetState(&s, azr);
+			[_azr lockFocusOn:previous];
+			_restoreTargetState(&s, _azr);
 			}
 
 		ok = true;
@@ -579,9 +595,8 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 	_ownsTTF = NO;
 	_ttfFont = NULL;
 
-	id<AZRenderer> azr	= AZRenderer.renderer;
 	for (NSNumber *textureId in _textures)
-		[azr releaseTexture:textureId.integerValue];
+		[_azr releaseTexture:textureId.integerValue];
 	[_textures removeAllObjects];
 	[_extents removeAllObjects];
 	[self _initialiseFont];
@@ -648,13 +663,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 \*****************************************************************************/
 - (BOOL) _uploadGlyphCache:(int)cacheId surface:(SDL_Surface*)data_surface
 	{
-	id<AZRenderer> azr	= AZRenderer.renderer;
-
 	BOOL ok = (data_surface != NULL);
-
-//	if (!IMG_SavePNG(data_surface, "/tmp/letters.png"))
-//		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't save surface %s",
-//					 SDL_GetError());
 
 	if (ok)
 		{
@@ -664,50 +673,50 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 		|* Upload with render target enabled so we can add glyphs later
 		\*********************************************************************/
 		if (!_renderToTarget)
-			texNew = [azr createTextureWithSurface:data_surface];
+			texNew = [_azr createTextureWithSurface:data_surface];
 		else
 			{
 			/*****************************************************************\
 			|* Create the new texture
 			\*****************************************************************/
 			NSSize size = NSMakeSize(data_surface->w, data_surface->h);
-			texNew 	    = [azr createTextureOfSize:size
+			texNew 	    = [_azr createTextureOfSize:size
 											format:data_surface->format
 										 withFlags:SDL_TEXTUREACCESS_TARGET];
-			[azr setTexture:texNew blendMode:SDL_BLENDMODE_BLEND];
+			[_azr setTexture:texNew blendMode:SDL_BLENDMODE_BLEND];
 
 			/*****************************************************************\
 			|* Create the texture
 			\*****************************************************************/
-			NSInteger temp	= [azr createTextureWithSurface:data_surface];
+			NSInteger temp	= [_azr createTextureWithSurface:data_surface];
 
 			/*****************************************************************\
 			|* only backup if previous target existed (SDL will preserve them
 			|* for the default target)
 			\*****************************************************************/
-			NSInteger prevTarget = azr.currentFocus;
+			NSInteger prevTarget = _azr.currentFocus;
 
 			TargetState s;
 			if (prevTarget >= 0)
-				_preserveTargetState(&s, azr);
+				_preserveTargetState(&s, _azr);
 
-			[azr setTexture:temp blendMode:SDL_BLENDMODE_NONE];
-			[azr lockFocusOn:texNew];
+			[_azr setTexture:temp blendMode:SDL_BLENDMODE_NONE];
+			[_azr lockFocusOn:texNew];
 
 			Uint8 r, g, b, a;
-			[azr drawColourR:&r g:&g b:&b a:&a];
-			[azr setDrawColourToRed:0 g:0 b:0 a:0];
-			[azr clear];
-			[azr setDrawColourToRed:r g:g b:b a:a];
+			[_azr drawColourR:&r g:&g b:&b a:&a];
+			[_azr setDrawColourToRed:0 g:0 b:0 a:0];
+			[_azr clear];
+			[_azr setDrawColourToRed:r g:g b:b a:a];
 
-			[azr blitFrom:temp src:NSZeroRect dst:NSZeroRect];
-			[azr unlockFocus];
+			[_azr blitFrom:temp src:NSZeroRect dst:NSZeroRect];
+			[_azr unlockFocus];
 			if (prevTarget)
 				{
-				_restoreTargetState(&s, azr);
-				[azr lockFocusOn:prevTarget];
+				_restoreTargetState(&s, _azr);
+				[_azr lockFocusOn:prevTarget];
 				}
-			[azr releaseTexture:temp];
+			[_azr releaseTexture:temp];
 			}
 			
 		if (texNew < 0 || ![self _setGlyphCache:cacheId texture:texNew])
@@ -715,7 +724,7 @@ NSMutableDictionary<NSNumber*, AZGlyphData *> *					extents;
 			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
 				"Error: FontCache ran out of packing space and could not "
 				"add another cache level.\n");
-			[azr releaseTexture:texNew];
+			[_azr releaseTexture:texNew];
 			ok = NO;
 			}
 		}

@@ -13,6 +13,7 @@
 #import "AZPainter.h"
 #import "AZRenderer.h"
 #import "AZTypes.h"
+#import "AZWindow.h"
 
 #define WIDTH       400
 #define HEIGHT      170
@@ -73,7 +74,8 @@
 	NSRect dst  = src;
 	dst.origin  = NSMakePoint(20,(HEIGHT-src.size.height)/2);
 
-	AZFont *font = [AZApp systemFontWithSize:16];
+	AZFont *font = [AZApp systemFontWithSize:16
+								 forRenderer:self.window.renderer];
 	[painter setFont:font];
 	[painter setTextColour:AZColour.black];
 
@@ -85,7 +87,7 @@
 		y += font.height+5;
 		}
 
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= self.window.renderer;
 	NSInteger ui		= [AZApp textureFor:kUiMap];
 	[azr blitFrom:ui src:src dst:dst];
 	}

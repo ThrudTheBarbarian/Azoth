@@ -9,16 +9,24 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@protocol AZRenderer;
+
 @interface AZImageCache : NSObject
 /*****************************************************************************\
 |* Initialisation: Create with a width and height for a given size of image
 \*****************************************************************************/
-- (instancetype) initWithWidth:(int)width height:(int)height size:(int)size;
+- (instancetype) initWithWidth:(int)width
+						height:(int)height
+						  size:(int)size
+						   for:(id<AZRenderer>)azr;
 
 /*****************************************************************************\
 |* Initialisation: .. conveniently
 \*****************************************************************************/
-+ (AZImageCache *) cacheWithWidth:(int)width height:(int)height size:(int)size;
++ (AZImageCache *) cacheWithWidth:(int)width
+						   height:(int)height
+						     size:(int)size
+						      for:(id<AZRenderer>)azr;
 
 /*****************************************************************************\
 |* Fetch a slot to use from the cache. If none available, returns NSZeroRect

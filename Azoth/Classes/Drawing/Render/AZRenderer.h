@@ -287,6 +287,9 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 - (NSDictionary *) properties;
 
+@optional
+
+// MARK: 2D renderer only
 /*****************************************************************************\
 |* The renderer, only valid for the 2D case
 \*****************************************************************************/
@@ -303,23 +306,7 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 - (nullable struct SDL_GPUDevice *) gpu;
 
-
 @end
 
-
-
-@interface AZRenderer : NSObject
-
-/*****************************************************************************\
-|* Return the default renderer
-\*****************************************************************************/
-+ (id<AZRenderer>) renderer;
-
-/*****************************************************************************\
-|* Return a renderer of the requested type
-\*****************************************************************************/
-+ (BOOL) makeDefaultRendererOfType:(AZRendererType)type;
-
-@end
 
 NS_ASSUME_NONNULL_END

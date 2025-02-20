@@ -18,6 +18,7 @@
 #import "AZMenu.h"
 #import "AZMenuItem.h"
 #import "AZMenuView.h"
+#import "AZWindow.h"
 
 static NSRect _barSel;				// The menu bar when mouse is over it
 static NSRect _menuTL;				// top-left of the menu, if rendered
@@ -237,7 +238,7 @@ static NSRect _menuBR;				// bottom-right of the menu, if rendered
 	NSRect bounds	= self.bounds;
 	[super drawInRect:dirtyRect withPainter:painter];
 
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= self.window.renderer;
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 
 	NSInteger ui		= [AZApp textureFor:kUiMap];

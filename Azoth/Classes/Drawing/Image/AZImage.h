@@ -14,6 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 @class AZPainter;
 @class AZTexture;
 
+@protocol AZRenderer;
+
 /*****************************************************************************\
 |* Typedefs and enums
 \*****************************************************************************/
@@ -50,40 +52,48 @@ typedef BOOL (^AZImageDrawingHandler)(NSRect dstRect, AZPainter *painter) ;
 /*****************************************************************************\
 |* Initialisation: Load an image from the current bundle's Resources/ directory
 \*****************************************************************************/
-+ (AZImage *) imageNamed:(NSString *)name;
++ (AZImage *) imageNamed:(NSString *)name
+			 forRenderer:(id<AZRenderer>)azr;
 
 
 /*****************************************************************************\
 |* Initialisation: Get an image from an atlas
 \*****************************************************************************/
-+ (AZImage *) imageWithName:(NSString *)name inAtlas:(NSString *)map;
++ (AZImage *) imageWithName:(NSString *)name
+					inAtlas:(NSString *)map
+				forRenderer:(id<AZRenderer>)azr;
 
 /*****************************************************************************\
 |* Initialisation: Get an image from the icon atlas
 \*****************************************************************************/
-+ (AZImage *) imageWithSystemSymbolName:(NSString *)name;
++ (AZImage *) imageWithSystemSymbolName:(NSString *)name
+							forRenderer:(id<AZRenderer>)azr;
 
 /*****************************************************************************\
 |* Initialisation: Load an image from a file path
 \*****************************************************************************/
-+ (AZImage *) imageWithContentsOfFile:(NSString *)path;
++ (AZImage *) imageWithContentsOfFile:(NSString *)path
+						  forRenderer:(id<AZRenderer>)azr;
 
 /*****************************************************************************\
 |* Initialisation: Create an image with a GPU texture of a given size
 \*****************************************************************************/
-+ (AZImage *) imageWithSize:(NSSize) size;
++ (AZImage *) imageWithSize:(NSSize) size
+				forRenderer:(id<AZRenderer>)azr;
 
 /*****************************************************************************\
 |* Initialisation: Create an image that draws on demand
 \*****************************************************************************/
 + (AZImage *) imageWithSize:(NSSize) size
-			 drawingHandler:(AZImageDrawingHandler) drawingHandler
-			clearBeforeDraw:(BOOL)clear;
+			    forRenderer:(id<AZRenderer>)azr
+			clearBeforeDraw:(BOOL)clear
+			 drawingHandler:(AZImageDrawingHandler) drawingHandler;
 
 /*****************************************************************************\
 |* Initialisation: Create an image by referencing a texture
 \*****************************************************************************/
-+ (AZImage *) imageWithTexture:(NSInteger)textureId;
++ (AZImage *) imageWithTexture:(NSInteger)textureId
+				   forRenderer:(id<AZRenderer>)azr;
 
 /*****************************************************************************\
 |* Force a draw of an on-demand image;

@@ -88,7 +88,7 @@ NSString * const kZibWindow			= @"window";
 |* Access to the application's private methods
 \*****************************************************************************/
 @interface AZApplication (PrivateMethods)
-- (void) _bootstrap;
+- (void) _bootstrap:(AZWindow *)window;
 @end
 
 /*****************************************************************************\
@@ -402,13 +402,20 @@ NSString * const kZibWindow			= @"window";
 	\*************************************************************************/
 	if (ok)
 		{
-		id<AZRenderer> azr = AZRenderer.renderer;
-
-		BOOL ok = [azr createWindowWithTitle:@"Untitled"
-									   frame:frame
-									   style:styleMask];
-		if (ok)
-			window = [azr window];
+//		id<AZRenderer> azr = AZRenderer.renderer;
+//
+//		BOOL ok = [azr createWindowWithTitle:@"Untitled"
+//									   frame:frame
+//									   style:styleMask];
+//		if (ok)
+//			window = [azr window];
+		window = [AZWindow withTitle:@"Untitled" frame:frame style:styleMask];
+		if (window)
+			[window createRenderer];
+		else
+			{
+			SDL_Log("Couldn't create window: %s", SDL_GetError());
+			}
 		}
 
 	/*************************************************************************\
@@ -426,15 +433,15 @@ NSString * const kZibWindow			= @"window";
 		// different to Cocoa, where the Application has a delegate which is
 		// the object with a link to the window, but we don't need a delegate
 		// as much as Cocoa does...
-		AZApp.window = window;
+		//AZApp.window = window;
 
 		// Bootstrap the shared renderer instance at this point. Note that it
 		// must be called *after* the window is set into the shared application
-		[AZRenderer renderer];
+		//[AZRenderer renderer];
 
 		// And now we have a renderer, call the application to load up its
 		// texture-based resources
-		[AZApp _bootstrap];
+		[AZApp _bootstrap:window];
 
 		// Add the window to the top-level objects we return back
 		[_topLevel addObject:window];
@@ -504,7 +511,7 @@ NSString * const kZibWindow			= @"window";
 		{
 		if (IS_ROOT_VIEW)
 			{
-			view.autoresizingMask 	= AZViewWidthSizable | AZViewHeightSizable;
+			view.autoresizingMask = AZViewWidthSizable | AZViewHeightSizable;
 			window.contentView 		= (AZWindowContentView *)view;
 			view.window				= window;
 			}

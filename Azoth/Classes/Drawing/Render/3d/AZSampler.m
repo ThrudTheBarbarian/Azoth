@@ -82,15 +82,6 @@
 	}
 
 /*****************************************************************************\
-|* build a sampler
-\*****************************************************************************/
-- (BOOL) build
-	{
-	AZRenderer3d * azr = (AZRenderer3d *)AZRenderer.renderer;
-	return [self buildWithRenderer:azr];
-	}
-
-/*****************************************************************************\
 |* build a sampler using a specific renderer
 \*****************************************************************************/
 - (BOOL) buildWithRenderer:(id<AZRenderer>)renderer

@@ -54,7 +54,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 |* "Private" properties
 \*****************************************************************************/
 @interface AZPainter()
-@property(assign, nonatomic) id<AZRenderer>						renderer;
+@property(assign, nonatomic) id<AZRenderer>						azr;
 @property(strong, nonatomic, nullable) AZView * 				view;
 @property(assign, nonatomic) NSInteger 							texture;
 @property(assign, nonatomic) NSRect 							oldClip;
@@ -81,6 +81,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		{
 		[view _installBackingTextureIfNecessary];
 		_view 		= view;
+		_azr		= view.window.renderer;
 		_texture	= view.bg;
 		if (![self _painterCommonInit])
 			self = nil;
@@ -92,10 +93,12 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 |* Initialisation
 \*****************************************************************************/
 - (instancetype) initWithTexture:(NSInteger)texture
+					 forRenderer:(id<AZRenderer>)azr
 	{
 	if (self = [super init])
 		{
 		_view 		= nil;
+		_azr		= azr;
 		_texture	= texture;
 		if (![self _painterCommonInit])
 			self = nil;
@@ -108,15 +111,15 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 \*****************************************************************************/
 - (BOOL) _painterCommonInit
 	{
-	_renderer = AZRenderer.renderer;
-	if (_renderer == NULL)
+	_azr = _view.window.renderer;
+	if (_azr == NULL)
 		{
 		SDL_LogError(SDL_LOG_CATEGORY_GPU, "Cannot get window renderer");
 		return NO;
 		}
 	_usingAntiAliasing	= NO;
 	_drawAAEndpoint		= NO;
-	_textPainter		= [AZTextPainter painterWithRenderer:_renderer];
+	_textPainter		= [AZTextPainter painterWithRenderer:_azr];
 	_textPainter.font	= AZApp.controlFont;
 	return YES;
 	}
@@ -127,8 +130,9 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	}
 
 + (AZPainter *) painterForTexture:(NSInteger)texture
+					  andRenderer:(id<AZRenderer>)azr
 	{
-	return [[AZPainter alloc] initWithTexture:texture];
+	return [[AZPainter alloc] initWithTexture:texture forRenderer:azr];
 	}
 
 /*****************************************************************************\
@@ -161,29 +165,29 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 - (void) lockFocus:(BOOL)clearTexture
 	{
 	AZColour *clearColour	= nil;
-	_oldClip 				= _renderer.clipRect;
-	_oldFocus 				= [_renderer currentFocus];
+	_oldClip 				= _azr.clipRect;
+	_oldFocus 				= [_azr currentFocus];
 	_focusLocked			= YES;
 
-	if (![_renderer lockFocusOn:_texture])
+	if (![_azr lockFocusOn:_texture])
 		SDL_Log("Failed to lock focus on texture %d for %s",
 				(int)_texture, self.class.description.UTF8String);
 
 	if (_view)
 		{
-		[_renderer setClip:_view.dirty];
+		[_azr setClip:_view.dirty];
 		clearColour = _view.backgroundColour;
 		}
 	else
 		{
-		[_renderer setClip:[_renderer boundsOfTexture:_texture]];
+		[_azr setClip:[_azr boundsOfTexture:_texture]];
 		clearColour = AZColour.clear;
 		}
 
 	if (clearTexture)
 		{
-		[_renderer setDrawColour:clearColour];
-		[_renderer clear];
+		[_azr setDrawColour:clearColour];
+		[_azr clear];
 		}
 	}
 
@@ -194,8 +198,8 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 - (void) unlockFocus
 	{
 	_focusLocked = NO;
-	[_renderer setClip:_oldClip];
-	[_renderer restoreFocus:_oldFocus];
+	[_azr setClip:_oldClip];
+	[_azr restoreFocus:_oldFocus];
 	}
 
 
@@ -208,7 +212,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 // Draw a single pixel in the current colour
 - (int) pixelAtX:(int)x y:(int)y
 	{
-	return [_renderer renderPointAtX:x y:y];
+	return [_azr renderPointAtX:x y:y];
 	}
 
 // Draw pixel with blending enabled if a<255
@@ -228,9 +232,9 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	{
 	int result = 0;
 	if (a != 255)
-		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
-	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
-	result |= [_renderer renderPointAtX:x y:y];
+		result |= [_azr setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_azr setDrawColourToRed:r g:g b:b a:a];
+	result |= [_azr renderPointAtX:x y:y];
 	return result;
 	}
 
@@ -270,7 +274,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 // Draw a line in the current colour. No blending
 - (int) lineAtX:(int)x1 y:(int)y1 toX:(int)x2 y:(int)y2
 	{
-	return [_renderer renderLineFromX:x1 y:y1 toX:x2 y:y2];
+	return [_azr renderLineFromX:x1 y:y1 toX:x2 y:y2];
 	}
 
 
@@ -299,9 +303,9 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		return [self _aaLineAtX:x1 y:y1 toX:x2 y:y2 withR:r g:g b:b a:a];
 	int result = 0;
 	if (a != 255)
-		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
-	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
-	result |= [_renderer renderLineFromX:x1 y:y1 toX:x2 y:y2];
+		result |= [_azr setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_azr setDrawColourToRed:r g:g b:b a:a];
+	result |= [_azr renderLineFromX:x1 y:y1 toX:x2 y:y2];
 	return result;
 	}
 
@@ -365,9 +369,9 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	// Draw
 	int result = 0;
 	if (a != 255)
-		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
-	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
-	result |= [_renderer renderRect:NSMakeRect(x,y,w,h)];
+		result |= [_azr setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_azr setDrawColourToRed:r g:g b:b a:a];
+	result |= [_azr renderRect:NSMakeRect(x,y,w,h)];
 	return result;
 	}
 
@@ -379,9 +383,9 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 \*****************************************************************************/
 - (void) rectangleWithBezel:(NSRect)r withClip:(NSRect)clip
 	{
-	NSRect originalClip = self.renderer.clipRect;
+	NSRect originalClip = _azr.clipRect;
 	NSRect intersection	= NSIntersectionRect(originalClip, clip);
-	[self.renderer setClip:intersection];
+	[_azr setClip:intersection];
 
 	[self rectangleWithRect:r colour:AZColour.white];
 
@@ -404,7 +408,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	r2.size.height -= 3;
 	[self rectangleWithRect:r2 colour:AZColour.control];
 
-	[self.renderer setClip:originalClip];
+	[_azr setClip:originalClip];
 	}
 
 /*****************************************************************************\
@@ -412,9 +416,9 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 \*****************************************************************************/
 - (void) rectangleWithGroove:(NSRect)r withClip:(NSRect)clip
 	{
-	NSRect originalClip = self.renderer.clipRect;
+	NSRect originalClip = _azr.clipRect;
 	NSRect intersection	= NSIntersectionRect(originalClip, clip);
-	[self.renderer setClip:intersection];
+	[_azr setClip:intersection];
 
 	[self rectangleWithRect:r colour:AZColour.grey75];
 
@@ -437,7 +441,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	r2.size.height -= 4;
 	[self rectangleWithRect:r2 colour:AZColour.control];
 
-	[self.renderer setClip:originalClip];
+	[_azr setClip:originalClip];
 	}
 
 /*****************************************************************************\
@@ -445,9 +449,9 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 \*****************************************************************************/
 - (void) rectangleWithButton:(NSRect)r withClip:(NSRect)clip
 	{
-	NSRect originalClip = self.renderer.clipRect;
+	NSRect originalClip = _azr.clipRect;
 	NSRect intersection	= NSIntersectionRect(originalClip, clip);
-	[self.renderer setClip:intersection];
+	[_azr setClip:intersection];
 
 	NSRect r2 = r;
 	r2.origin.y += r.size.height -1;
@@ -490,7 +494,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	r2.size.height -= 3;
 	[self rectangleWithRect:r2 colour:AZColour.control];
 
-	[self.renderer setClip:originalClip];
+	[_azr setClip:originalClip];
 	}
 
 /*****************************************************************************\
@@ -502,9 +506,9 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 				inColour:(AZColour *)colour
 				withClip:(NSRect)clip
 	{
-	NSRect originalClip = self.renderer.clipRect;
+	NSRect originalClip = _azr.clipRect;
 	NSRect intersection	= NSIntersectionRect(originalClip, clip);
-	[self.renderer setClip:intersection];
+	[_azr setClip:intersection];
 
 	// Start at top-left and work our way around, plotting lines as we go
 	float x 	= rect.origin.x;
@@ -612,7 +616,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		}
 
 
-	[self.renderer setClip:originalClip];
+	[_azr setClip:originalClip];
 	}
 
 
@@ -804,12 +808,12 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	// Draw
 	int result = 0;
 	if (a != 255)
-		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
-	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
+		result |= [_azr setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_azr setDrawColourToRed:r g:g b:b a:a];
 	if (yn)
-		result |= [_renderer renderFilledRect:NSMakeRect(x, y, w, h)];
+		result |= [_azr renderFilledRect:NSMakeRect(x, y, w, h)];
 	else
-		result |= [_renderer renderRect:NSMakeRect(x, y, w, h)];
+		result |= [_azr renderRect:NSMakeRect(x, y, w, h)];
 	return result;
 	}
 
@@ -911,8 +915,8 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	// Set color
 	result = 0;
 	if (a != 255)
-		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
-	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
+		result |= [_azr setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_azr setDrawColourToRed:r g:g b:b a:a];
 
 	// Draw corners
 	do
@@ -986,8 +990,8 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		}
 	else
 		{
-		result |= [_renderer renderFilledRect:NSMakeRect(x,y,radius,h)];
-		result |= [_renderer renderFilledRect:NSMakeRect(x+w-radius,y,radius,h)];
+		result |= [_azr renderFilledRect:NSMakeRect(x,y,radius,h)];
+		result |= [_azr renderFilledRect:NSMakeRect(x+w-radius,y,radius,h)];
 		}
 
 	return (result);
@@ -1184,8 +1188,8 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	// Set color
 	int result = 0;
 	if (a != 255)
-		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
-	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
+		result |= [_azr setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_azr setDrawColourToRed:r g:g b:b a:a];
 
 	// Set up state
 	int cx = 0;
@@ -1489,8 +1493,8 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	// Set color
 	int result = 0;
 	if (a != 255)
-		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
-	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
+		result |= [_azr setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_azr setDrawColourToRed:r g:g b:b a:a];
 
 	// Init vars
 	int oh = 0xffff;
@@ -1680,8 +1684,8 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	// Set color
 	int result = 0;
 	if (a != 255)
-		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
-	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
+		result |= [_azr setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_azr setDrawColourToRed:r g:g b:b a:a];
 
 	// Init vars
 	int oh = 0xffff;
@@ -1885,7 +1889,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	points[num].y = pts[0].y;
 
 	// Draw
-	return [_renderer renderLines:points count:nn];
+	return [_azr renderLines:points count:nn];
 	}
 
 - (int) polygonWith:(int)num x:(int *)vx y:(int *)vy
@@ -1914,7 +1918,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	points[num].y = vy[0];
 
 	// Draw
-	return [_renderer renderLines:points count:nn];
+	return [_azr renderLines:points count:nn];
 	}
 
 /*****************************************************************************\
@@ -1937,8 +1941,8 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	// Set color
 	int result = 0;
 	if (a != 255)
-		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
-	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
+		result |= [_azr setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_azr setDrawColourToRed:r g:g b:b a:a];
 
 	// Draw
 	return [self _polygonWith:num vx:vx vy:vy withR:r g:g b:b a:a];
@@ -2048,8 +2052,8 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		// Set color
 		result = 0;
 	    if (a != 255)
-			result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
-		result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
+			result |= [_azr setBlendMode:SDL_BLENDMODE_BLEND];
+		result |= [_azr setDrawColourToRed:r g:g b:b a:a];
 
 		for (int i = 0; (i < ints); i += 2)
 			{
@@ -2140,11 +2144,11 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		}
 
     // Create texture for drawing
-	NSInteger texture = [_renderer createTextureWithSurface:surface];
+	NSInteger texture = [_azr createTextureWithSurface:surface];
 	if (texture < 0)
 		return -1;
 
-	[_renderer setTexture:texture blendMode:SDL_BLENDMODE_BLEND];
+	[_azr setTexture:texture blendMode:SDL_BLENDMODE_BLEND];
 
 	// Draw, scanning y
 
@@ -2259,8 +2263,8 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	// Set color
 	int result = 0;
 	if (a != 255)
-		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
-	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
+		result |= [_azr setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_azr setDrawColourToRed:r g:g b:b a:a];
 
 	// Draw
 	double t=0.0;
@@ -2378,7 +2382,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 \*****************************************************************************/
 - (void) image:(AZImage *)img at:(NSPoint)xy
 	{
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= _view.window.renderer;
 	if (img.handler != nil)
 		[img draw];
 
@@ -2407,7 +2411,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	NSRect dstRect = clipped;
 	dstRect.origin = p;
 
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= _view.window.renderer;
 	if (img.handler != nil)
 		[img draw];
 	[azr blitFrom:img.texture src:clipped dst:dstRect];
@@ -2418,7 +2422,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 \*****************************************************************************/
 - (void) image:(AZImage *)img to:(NSRect)dstRect
 	{
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= _view.window.renderer;
 	if (img.handler != nil)
 		[img draw];
 	NSRect srcRect = img.srcRect;
@@ -2440,7 +2444,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	if ((NSWidth(clipped) == 0) || (NSHeight(clipped) == 0))
 		return;
 
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= _view.window.renderer;
 	if (img.handler != nil)
 		[img draw];
 	[azr blitFrom:img.texture src:clipped dst:dstRect];
@@ -2457,7 +2461,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		 about:(NSPoint)center
 		  flip:(AZFlipMode)flipMask
 	{
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= _view.window.renderer;
 
 	NSRect srcRect = img.srcRect;
 	NSRect dstRect = srcRect;
@@ -2487,7 +2491,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		 about:(NSPoint)center
 		  flip:(AZFlipMode)flipMask
 	{
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= _view.window.renderer;
 
 	// Make sure we have a reasonable srcRect. The image srcRect is possibly
 	// from an Atlas texture (else its origin will be at 0,0) so add in the
@@ -2527,7 +2531,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 // Draw a hline in the current colour. No blending
 - (int) _hLineFromX1:(int)x1 toX2:(int)x2 atY:(int)y
 	{
-	return [_renderer renderLineFromX:x1 y:y toX:x2 y:y];
+	return [_azr renderLineFromX:x1 y:y toX:x2 y:y];
 	}
 
 // Draw a hline with blending
@@ -2552,9 +2556,9 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	{
 	int result = 0;
 	if (a != 255)
-		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
-	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
-	result |= [_renderer renderLineFromX:x1 y:y toX:x2 y:y];
+		result |= [_azr setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_azr setDrawColourToRed:r g:g b:b a:a];
+	result |= [_azr renderLineFromX:x1 y:y toX:x2 y:y];
 	return result;
 	}
 
@@ -2567,7 +2571,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 // Draw a vline in the current colour. No blending
 - (int) _vLineFromY1:(int)y1 toY2:(int)y2 atX:(int)x
 	{
-	return [_renderer renderLineFromX:x y:y1 toX:x y:y2];
+	return [_azr renderLineFromX:x y:y1 toX:x y:y2];
 	}
 
 // Draw a vline with blending
@@ -2592,9 +2596,9 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	{
 	int result = 0;
 	if (a != 255)
-		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
-	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
-	result |= [_renderer renderLineFromX:x y:y1 toX:x y:y2];
+		result |= [_azr setBlendMode:SDL_BLENDMODE_BLEND];
+	result |= [_azr setDrawColourToRed:r g:g b:b a:a];
+	result |= [_azr renderLineFromX:x y:y1 toX:x y:y2];
 	return result;
 	}
 
@@ -2800,7 +2804,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	// Draw
 	int result = 0;
 	if (a != 255)
-		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
+		result |= [_azr setBlendMode:SDL_BLENDMODE_BLEND];
 
 	// "End points"
 	result |= [self pixelAtX:xp y:yp withR:r g:g b:b a:a];
@@ -2957,7 +2961,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		points[num].x = vx[0];
 		points[num].y = vy[0];
 
-		return [_renderer renderLines:points count:nn];
+		return [_azr renderLines:points count:nn];
 		}
 
 	// Pointer setup
@@ -3046,7 +3050,7 @@ static int _qsortInts(const void *a, const void *b)
 		src.origin.x = textureX;
 		dst.origin.x= x1;
 		dst.size.width = src.size.width;
-		[_renderer blitFrom:texture src:src dst:dst];
+		[_azr blitFrom:texture src:src dst:dst];
 		}
 	else
 		{
@@ -3057,7 +3061,7 @@ static int _qsortInts(const void *a, const void *b)
 		src.origin.x = textureX;
 		dst.origin.x = x1;
 		dst.size.width = src.size.width;
-		result |= ([_renderer blitFrom:texture src:src dst:dst] != 0);
+		result |= ([_azr blitFrom:texture src:src dst:dst] != 0);
 		int writeWidth = textureW;
 
 		// now draw the rest, set the source x to 0
@@ -3070,7 +3074,7 @@ static int _qsortInts(const void *a, const void *b)
 			src.size.width = writeWidth;
 			dst.origin.x = x1 + pixelsWritten;
 			dst.size.width = src.size.width;
-			result |= ([_renderer blitFrom:texture src:src dst:dst] != 0);
+			result |= ([_azr blitFrom:texture src:src dst:dst] != 0);
 			pixelsWritten += writeWidth;
 			}
 		}

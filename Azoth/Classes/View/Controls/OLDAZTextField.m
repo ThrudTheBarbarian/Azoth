@@ -369,7 +369,7 @@ static float _dh[STATE_NUM];
 				   sCR.size.width,
 				   sCR.size.height};
 
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= self.window.renderer;
 	NSInteger ui	= [AZApp textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
@@ -445,7 +445,7 @@ static float _dh[STATE_NUM];
 				   sBR.size.width,
 				   sBR.size.height};
 
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= self.window.renderer;
 	NSInteger ui	= [AZApp textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
@@ -760,7 +760,7 @@ static float _dh[STATE_NUM];
 	{
 	if (_showCursor)
 		{
-		id<AZRenderer> azr	= AZRenderer.renderer;
+		id<AZRenderer> azr	= self.window.renderer;
 		[azr setBlendMode:SDL_BLENDMODE_BLEND];
 		[azr setDrawColourToRed:0 g:0 b:0 a:0xff];
 		[azr renderFilledRect:NS_RECT(_cursorRect)];
@@ -786,7 +786,7 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (void) _editDrawTextWithPainter:(AZPainter *)P
 	{
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= self.window.renderer;
 	[azr setBlendMode:SDL_BLENDMODE_BLEND];
 	[azr setDrawColour:AZColour.black];
 
@@ -1114,7 +1114,7 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (void) _editUpdateTextInputArea
 	{
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= self.window.renderer;
 
     SDL_FPoint window_edit_rect_min;
     SDL_FPoint window_edit_rect_max;
@@ -1464,7 +1464,7 @@ static int UTF8ByteLength(const char *text, int num_codepoints)
 - (void) _editDrawComposition
 	{
     // Draw an underline under the composed text
-	id<AZRenderer> azr			= AZRenderer.renderer;
+	id<AZRenderer> azr			= self.window.renderer;
 	TTF_Font *font 				= AZApp.controlFont.ttfFont;
 	TTF_SubString **substrings	= NULL;
 
@@ -1514,7 +1514,7 @@ static int UTF8ByteLength(const char *text, int num_codepoints)
 \*****************************************************************************/
 - (void) _editDrawCandidatesWithPainter:(AZPainter *)P
 	{
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= self.window.renderer;
  	TTF_Font *font 		= AZApp.controlFont.ttfFont;
 
 	SDL_Rect safe_rect;

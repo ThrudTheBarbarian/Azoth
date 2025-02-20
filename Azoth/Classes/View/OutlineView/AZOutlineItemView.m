@@ -11,6 +11,7 @@
 #import "AZPainter.h"
 #import "AZRenderer.h"
 #import "AZOutlineItemView.h"
+#import "AZWindow.h"
 
 #define DISCLOSURE_WIDTH		(10)
 
@@ -94,12 +95,11 @@ static NSRect	_rB;
 	{
 	[super drawInRect:dirtyRect withPainter:painter];
 
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= self.window.renderer;
 	NSInteger ui		= [AZApp textureFor:kUiMap];
 
 	if (_selected)
 		{
-		id<AZRenderer> azr	= AZRenderer.renderer;
 		NSInteger ui	= [AZApp textureFor:kUiMap];
 
 		float bx		= _indent;

@@ -355,8 +355,8 @@ static float _dh[STATE_NUM];
 				   sCR.size.width,
 				   sCR.size.height};
 
-	id<AZRenderer> azr	= AZRenderer.renderer;
-	NSInteger ui	= [AZApp textureFor:kUiMap];
+	id<AZRenderer> azr	= self.window.renderer;
+	NSInteger ui		= [AZApp textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 
@@ -431,8 +431,8 @@ static float _dh[STATE_NUM];
 				   sBR.size.width,
 				   sBR.size.height};
 
-	id<AZRenderer> azr	= AZRenderer.renderer;
-	NSInteger ui	= [AZApp textureFor:kUiMap];
+	id<AZRenderer> azr	= self.window.renderer;
+	NSInteger ui		= [AZApp textureFor:kUiMap];
 
 	[azr setBlendMode:SDL_BLENDMODE_ADD];
 
@@ -808,7 +808,7 @@ static float _dh[STATE_NUM];
 	{
 	if (_showCursor)
 		{
-		id<AZRenderer> azr	= AZRenderer.renderer;
+		id<AZRenderer> azr	= self.window.renderer;
 		[azr setBlendMode:SDL_BLENDMODE_BLEND];
 		[azr setDrawColourToRed:0 g:0 b:0 a:0xff];
 		[azr renderFilledRect:_cursorRect];
@@ -840,7 +840,7 @@ static float _dh[STATE_NUM];
 \*****************************************************************************/
 - (void) _editDrawTextWithPainter:(AZPainter *)P
 	{
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= self.window.renderer;
 	[azr setBlendMode:SDL_BLENDMODE_BLEND];
 
 	[azr setDrawColour:AZColour.black];

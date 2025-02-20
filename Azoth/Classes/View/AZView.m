@@ -124,7 +124,7 @@
 	{
 	if (_bg >= 0)
 		{
-		[AZRenderer.renderer releaseTexture:_bg];
+		[self.window.renderer releaseTexture:_bg];
 		_bg = -1;
 		}
 	}
@@ -937,8 +937,8 @@ beginDraggingSessionWithItems:(NSArray<AZDraggingItem *> *) items
 - (AZImage *) backingImage
 	{
 	NSSize size 		= self.bounds.size;
-	AZImage *img 		= [AZImage imageWithSize:size];
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= self.window.renderer;
+	AZImage *img 		= [AZImage imageWithSize:size forRenderer:azr];
 	[azr lockFocusOn:img.texture];
 
 	[self _renderRecursivelyAt:NSMakePoint(0,0)];
@@ -948,7 +948,7 @@ beginDraggingSessionWithItems:(NSArray<AZDraggingItem *> *) items
 
 - (void) _renderRecursivelyAt:(NSPoint)p
 	{
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= self.window.renderer;
 	NSRect dst = self.bounds;
 	dst.origin.x += p.x;
 	dst.origin.y += p.y;

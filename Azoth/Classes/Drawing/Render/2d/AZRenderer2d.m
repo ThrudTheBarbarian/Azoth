@@ -47,7 +47,7 @@ NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
 	{
 	if (self = [super init])
 		{
-		_renderer 	= AZApp.window.renderer;
+		_renderer 	= AZApp.window.renderer.renderer;
 
 		/*********************************************************************\
 		|* Prepare to store the textures

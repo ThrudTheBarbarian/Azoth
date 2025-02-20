@@ -219,7 +219,7 @@
 	\*************************************************************************/
 	if (w*h > 0)
 		{
-		id<AZRenderer> azr	= AZRenderer.renderer;
+		id<AZRenderer> azr	= self.window.renderer;
 
 		SDL_LockMutex(self.textureMutex);
 		if (self.bg >= 0)
@@ -279,7 +279,7 @@
 	/*************************************************************************\
 	|* Draw to the screen
 	\*************************************************************************/
-	[AZRenderer.renderer unlockFocus];
+	[self.window.renderer unlockFocus];
 	[self _render];
 	}
 
@@ -288,7 +288,7 @@
 \*****************************************************************************/
 - (void) _render
 	{
-	id<AZRenderer> azr	= AZRenderer.renderer;
+	id<AZRenderer> azr	= self.window.renderer;
 
 	/*************************************************************************\
 	|* If we are hidden, short-circuit the display routine for ourselves and

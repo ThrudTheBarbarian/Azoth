@@ -29,6 +29,7 @@ struct SDL_Window;
 @class AZWindow;
 
 @protocol AZAppDelegate;
+@protocol AZRenderer;
 
 @interface AZApplication : NSObject
 	
@@ -68,13 +69,15 @@ struct SDL_Window;
 |* Fetch a font with a given spec, but also cache it so that future requests
 |* can return the same object
 \*****************************************************************************/
-- (nullable AZFont *) fontWithStyle:(AZFontStyle)style;
+- (nullable AZFont *) fontWithStyle:(AZFontStyle)style
+						forRenderer:(id<AZRenderer>)renderer;
 
 /*****************************************************************************\
 |* Fetch the system font with a given size, but also cache it so that future
 |* requests can return the same object
 \*****************************************************************************/
-- (nullable AZFont *) systemFontWithSize:(int)points;
+- (nullable AZFont *) systemFontWithSize:(int)points
+							 forRenderer:(id<AZRenderer>)renderer;
 
 /*****************************************************************************\
 |* Application service: dispose of things after renderPresent called. Useful

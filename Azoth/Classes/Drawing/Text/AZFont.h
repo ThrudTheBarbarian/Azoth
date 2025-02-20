@@ -21,15 +21,39 @@ struct TTF_Font;
 @class AZGlyphData;
 @class AZObject;
 
+@protocol AZRenderer;
+
 @interface AZFont : NSObject
 
 /*****************************************************************************\
 |* Initialisation
 \*****************************************************************************/
-+ (AZFont *) font;
-+ (nullable AZFont *) fontWithStyle:(AZFontStyle)style;
-+ (nullable AZFont *) fontWithName:(NSString *)name size:(int)points;
-+ (nullable AZFont *) systemFontWithSize:(int)points;
+- (instancetype) init NS_UNAVAILABLE;
+
+/*****************************************************************************\
+|* Return a new font object for a given renderer
+\*****************************************************************************/
++ (AZFont *) fontForRenderer:(id<AZRenderer>)azr;
+
+
+/*****************************************************************************\
+|* Return a sized new font of a particular name, for a given renderer
+\*****************************************************************************/
++ (nullable AZFont *) fontWithName:(NSString *)name
+							  size:(int)points
+					   forRenderer:(id<AZRenderer>)azr;
+
+/*****************************************************************************\
+|* Return a system font of a given size, for a given renderer
+\*****************************************************************************/
++ (nullable AZFont *) systemFontWithSize:(int)points
+							 forRenderer:(id<AZRenderer>)azr;
+
+/*****************************************************************************\
+|* Return a font with a given style for a given renderer
+\*****************************************************************************/
++ (nullable AZFont *) fontWithStyle:(AZFontStyle)style
+						forRenderer:(id<AZRenderer>)azr;
 
 /*****************************************************************************\
 |* Load a font
