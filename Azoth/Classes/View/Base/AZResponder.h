@@ -77,6 +77,11 @@ struct SDL_TextInputEvent;
 - (BOOL) rightMouseDown:(AZEvent *)e;
 
 /*****************************************************************************\
+|* Right mouse-button-dragged event, return YES if we consume the event
+\*****************************************************************************/
+- (BOOL) rightMouseDragged:(AZEvent *)e;
+
+/*****************************************************************************\
 |* Right mouse-button-up event, return YES if we consume the event
 \*****************************************************************************/
 - (BOOL) rightMouseUp:(AZEvent *)e;

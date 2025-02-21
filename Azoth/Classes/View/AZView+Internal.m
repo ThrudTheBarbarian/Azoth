@@ -110,6 +110,7 @@
 
 					case AZRightMouseDown:
 						done = [self rightMouseDown:e];
+						dragView = self;
 						break;
 
 					case AZRightMouseUp:
@@ -118,16 +119,24 @@
 						break;
 
 					case AZMouseMoved:
+						{
 						// If we're no longer pressing the button, we might
 						// have dragged out of window and released it. Zero out
 						// the dragging-view
-						if ((e.state & AZButtonLeft) == 0)
+						BOOL dragLeft 	= (e.state & AZButtonLeft);
+						BOOL dragRight	= (e.state & AZButtonRight);
+						if ((!dragLeft) && (!dragRight))
 							dragView = nil;
 
-						done = (dragView != nil)
-							 ? [dragView mouseDragged:e]
-							 : [self mouseMoved:e];
+						if (dragView)
+							done = (dragLeft)
+								 ? [dragView mouseDragged:e]
+								 : [dragView rightMouseDragged:e];
+						else
+							done = [self mouseMoved:e];
+
 						break;
+						}
 
 					case AZScrollWheel:
 						done = [self mouseWheeled:e];

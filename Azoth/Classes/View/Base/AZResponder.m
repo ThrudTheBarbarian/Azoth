@@ -98,6 +98,12 @@
 	{ return NO; }
 
 /*****************************************************************************\
+|* Right mouse-button-dragged event, return YES if we consume the event
+\*****************************************************************************/
+- (BOOL) rightMouseDragged:(AZEvent *)e
+	{ return NO; }
+
+/*****************************************************************************\
 |* Key event handling. This copes with composition as well as simple key
 |* presses. See AZTextField for details of how to use
 \*****************************************************************************/
