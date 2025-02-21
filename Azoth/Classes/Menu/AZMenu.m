@@ -577,7 +577,7 @@
 	AZMenu *menu	= item.menu;
 	AZMenuSize sz 	= [AZMenuView measureMenu:menu];
 	_menuView 	  	= [[AZMenuView alloc] initWithMenu:menu andSize:sz];
-	AZView *cv 		= (AZView *) self.window.contentView;
+	AZView *cv 		= (AZView *) view.window.contentView;
 
 	NSInteger index	= [menu selectedIndex];
 		if ((index < 1) && (menu.numberOfItems > 1))
