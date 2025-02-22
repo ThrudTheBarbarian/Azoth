@@ -3400,7 +3400,7 @@ static SDL_SpinLock 	_textureLock;
 	}
 
 /*****************************************************************************\
-|* Create the samplers
+|* Create the vertex buffer
 \*****************************************************************************/
 - (BOOL) _initialiseVertexBuffer:(Uint32)size
 	{
