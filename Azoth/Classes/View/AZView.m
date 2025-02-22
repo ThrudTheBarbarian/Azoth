@@ -687,7 +687,9 @@
 
 	if(originChanged || sizeChanged)
 		{
+		NSRect r = self.frame;
 		[self setFrame:frame];
+		[self didResizeFrom:r];
 		return YES;
 		}
 	return NO;
