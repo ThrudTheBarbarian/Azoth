@@ -278,6 +278,7 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 		if (ok)
 			{
 			_window = azr.window;
+			[_window installContentView];
 			[self _bootstrap];
 			}
 		else

@@ -28,7 +28,7 @@ static NSMutableDictionary<NSNumber*,AZWindowContentView*>* _contentViews = nil;
 /*****************************************************************************\
 |* Store the top-level windows for each SDLwindow we know about
 \*****************************************************************************/
-//static NSMutableDictionary<NSNumber *, AZWindow *> * _windows = nil;
+static NSMutableDictionary<NSNumber *, AZWindow *> * _windows = nil;
 
 @implementation AZWindow
 
@@ -47,6 +47,9 @@ static NSMutableDictionary<NSNumber*,AZWindowContentView*>* _contentViews = nil;
 			^{
 			self.responders 	= [NSMutableArray new];
 			self.firstResponder = nil;
+
+			_contentViews 		= [NSMutableDictionary new];
+			_windows			= [NSMutableDictionary new];
 			});
 
 		/*********************************************************************\
@@ -55,11 +58,58 @@ static NSMutableDictionary<NSNumber*,AZWindowContentView*>* _contentViews = nil;
 		_window					= window;
 		NSNumber *winId			= @(SDL_GetWindowID(window));
 		AZApp.windows[winId]	= self;
-		_contentView			= [AZWindowContentView withWindow:self];
-		_contentView.isOpaque	= YES;
 		}
 
 	return self;
+	}
+
+/*****************************************************************************\
+|* Add a content view to the window
+\*****************************************************************************/
+- (void) installContentView
+	{
+	int w,h;
+	SDL_GetWindowSizeInPixels(_window, &w, &h);
+	AZWindowContentView *cv 	= [[AZWindowContentView alloc] initWithWindow:self];
+	[self installContentView:cv];
+	}
+
+/*****************************************************************************\
+|* Add a content view to the window
+\*****************************************************************************/
+- (void) installContentView:(AZWindowContentView *)contentView
+	{
+	contentView.window		= self;
+	NSNumber *windowId 		= @(SDL_GetWindowID(_window));
+
+	_contentViews[windowId] = contentView;
+	contentView.isOpaque 	= YES;
+	self.contentView		= contentView;
+
+	[contentView _installBackingTexture];
+	}
+
+/*****************************************************************************\
+|* Return the window for the given SDL_Window.
+\*****************************************************************************/
++ (AZWindow *) windowForSDLWindow:(SDL_Window *)sdlWindow
+	{
+	return _windows[@(SDL_GetWindowID(sdlWindow))];
+	}
+
+/*****************************************************************************\
+|* Return the contentView for any given SDL_Window. If one does not exist it
+|* will be created and returned
+\*****************************************************************************/
++ (AZWindowContentView *) contentViewForWindow:(AZWindow *)window
+	{
+	return [self contentViewForSDLWindow:window.window];
+	}
+
++ (AZWindowContentView *) contentViewForSDLWindow:(struct SDL_Window *)window;
+	{
+	NSNumber *windowId = @(SDL_GetWindowID(window));
+	return [_contentViews objectForKey:windowId];
 	}
 
 /*****************************************************************************\

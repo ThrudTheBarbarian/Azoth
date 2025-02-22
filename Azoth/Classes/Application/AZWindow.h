@@ -39,6 +39,24 @@ struct SDL_Window;
 
 
 /*****************************************************************************\
+|* Add a content view to the window, either make a default one, or install one
+|* we already have ready to go
+\*****************************************************************************/
+- (void) installContentView;
+- (void) installContentView:(AZWindowContentView *)contentView;
+
+/*****************************************************************************\
+|* Return the window for any given SDL_Window.
+\*****************************************************************************/
++ (AZWindow *) windowForSDLWindow:(struct SDL_Window *)sdlWindow;
+
+/*****************************************************************************\
+|* Return the contentView for any given (SDL_)Window.
+\*****************************************************************************/
++ (AZWindowContentView *) contentViewForWindow:(AZWindow *)window;
++ (AZWindowContentView *) contentViewForSDLWindow:(struct SDL_Window *)window;
+
+/*****************************************************************************\
 |* End editing in table-views. Should this move to AZTableView ?
 \*****************************************************************************/
 - (void)endEditingFor:(nullable id)sender;
