@@ -873,6 +873,13 @@ NSMutableDictionary<NSNumber *, AZObject *> * 						textures;
 	_clearColour = colour.copy;
 	}
 
+/*****************************************************************************\
+|* Doesn't work for the 2D renderer
+\*****************************************************************************/
+- (void)setName:(nonnull NSString *)name forTexture:(NSInteger)refId
+	{}
+
+
 
 
 
