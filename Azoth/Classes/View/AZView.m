@@ -137,16 +137,15 @@
 \*****************************************************************************/
 - (void) mouseEntered:(AZEvent *)event
 	{
-	SDL_SetCursor(self.mouseCursor);
+	if (!self.hidden)
+		SDL_SetCursor(self.mouseCursor);
 	}
 
 /*****************************************************************************\
 |* The mouse has exited the view
 \*****************************************************************************/
 - (void) mouseExited:(AZEvent *)event
-	{
-
-	}
+	{}
 
 /*****************************************************************************\
 |* Determine if we even want mouse events. This allows a subview to limit its
