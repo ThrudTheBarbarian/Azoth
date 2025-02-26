@@ -273,6 +273,11 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	return [_renderer renderLineFromX:x1 y:y1 toX:x2 y:y2];
 	}
 
+- (int) lineAt:(NSPoint)xy1 to:(NSPoint)xy2
+	{
+	return [_renderer renderLineFromX:xy1.x y:xy1.y toX:xy2.x y:xy2.y];
+	}
+
 
 // Draw a line with blending enabled if a<255
 - (int) lineAtX:(int)x1 y:(int)y1 toX:(int)x2 y:(int)y2 colour:(AZColour *)colr
@@ -281,6 +286,18 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 					   y:y1
 					 toX:x2
 					   y:y2
+				   withR:colr.R
+					   g:colr.G
+					   b:colr.B
+					   a:colr.A];
+	}
+
+- (int) lineAt:(NSPoint)xy1 to:(NSPoint)xy2 colour:(AZColour *)colr
+	{
+	return [self lineAtX:xy1.x
+					   y:xy1.y
+					 toX:xy2.x
+					   y:xy2.y
 				   withR:colr.R
 					   g:colr.G
 					   b:colr.B

@@ -76,7 +76,13 @@ struct SDL_Surface;
 \*****************************************************************************/
 
 // Draw a line in the current colour. No blending
+- (int) lineAt:(NSPoint)xy1 to:(NSPoint)xy2;
+
+// Draw a line in the current colour. No blending
 - (int) lineAtX:(int)x1 y:(int)y1 toX:(int)x2 y:(int)y2;
+
+// Draw a line with blending enabled if a<255
+- (int) lineAt:(NSPoint)xy1 to:(NSPoint)xy2 colour:(AZColour *)colr;
 
 // Draw a line with blending enabled if a<255
 - (int) lineAtX:(int)x1 y:(int)y1 toX:(int)x2 y:(int)y2 colour:(AZColour *)colr;
