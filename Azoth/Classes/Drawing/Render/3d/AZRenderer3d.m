@@ -1461,7 +1461,10 @@ static SDL_SpinLock 	_textureLock;
 	props[AZRendererCreateHeadroom] = @(headroom);
 	props[AZRendererCreateFormat] = @(format);
 
-	int access = SDL_TEXTUREACCESS_STREAMING | SDL_TEXTUREACCESS_TARGET;
+	SDL_GPUTextureUsageFlags access = SDL_GPU_TEXTUREUSAGE_SAMPLER
+								    | SDL_GPU_TEXTUREUSAGE_COLOR_TARGET
+								    | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ
+								    | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE;
 	props[AZRendererCreateAccess] = @(access);
 
 	props[AZRendererCreateWidth] = @(surface->w);
