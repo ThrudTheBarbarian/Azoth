@@ -243,4 +243,11 @@
 	_name = name;
 	SDL_SetGPUTextureName(_gpu, self.texture, name.UTF8String);
 	}
+
+- (NSString *) description
+	{
+	return [NSString stringWithFormat:
+			@"[AZTexture %p  name:%@ size:%@ flags:0x%02x index:%@]",
+			self, _name, NSStringFromSize(_size), _flags, _index];
+	}
 @end
