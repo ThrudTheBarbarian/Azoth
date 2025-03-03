@@ -1,0 +1,443 @@
+// Compute shader to generate [combined] perlin [and cubic] noise, writing
+// to an ARGB texture where the A comes from the noise, and the RGB come
+// from an input texture that is tiled (sampled in WRAP mode) across the
+// output.
+//
+// Takes in uniform parameters:
+//
+//
+//  o height  	  (float)   : This is the Z-dimension (from 0..3) of the perlin
+//						   	  noise filter. It lets us vary the noise without
+//   					   	  scrolling around
+//
+//  o period  	  (float)  	: repeatable periodicity in the output. Basically
+//                         	  input values are modulo this period, if it is > 0
+//                         	  uaed as a scaling metric for the noise
+//
+//  o persistence (float)	: The longevity (or "persistence" :) of the tail
+//                            when adding successive octaves to the noise. This
+//                            should be a value <1.f since it's used as an
+//                            exponential, and should *decrease* not increase
+//
+//  o octaves 	  (uint)	: The number of successively-less additions to each
+//                            noise value. Every octave has half the impact as
+//                            the previous one
+//
+//  o threshold   (float)   : Below the threshold, all is black. This lets us
+//                            isolate the noise into "islands" where it can
+//                            be concentrated.
+//
+//  o seed         (int)    : The seed value for cubic noise. This is just a
+//                            part of the random number generator for cubics
+//
+//  o period       (int)    : Used to define the spatial domain of the cubic
+//                            funciton, in conjunction with the octave for
+//                            varying levels of detail
+//
+// In addition, we need an input texture to operate on, this will be tiled
+// across the output texture, with its alpha value being modulated by the
+// noise at that point
+
+/*****************************************************************************\
+|* Parameter declarations
+\*****************************************************************************/
+
+// Declare the constant buffer for passed-in uniforms.
+cbuffer UBO : register(b0, space2)
+	{                                        // size [actual]
+    float height 		: packoffset(c0.x);	 // 16   [16]   Z perlin co-ord
+    float period		: packoffset(c0.y);	 //  4   [ 0]   repeat-length
+    float persistence	: packoffset(c0.z);	 //  4	 [ 0]	amplitude/octave
+	int   octaves		: packoffset(c0.w);	 //  4   [ 0]   number of octaves
+	float threshold		: packoffset(c1.x);  // 16	 [16]	black point
+	uint  seed			: packoffset(c1.y);	 //  4   [ 0]   cubic seed
+	uint  cperiod		: packoffset(c1.z);	 //  4   [ 0]   cubic period
+	uint  algorithms	: packoffset(c1.w);	 //  4   [ 0]   which noise to use
+	};
+
+// Declare the output image texture. This is what is written to by the noise
+// function as alpha, combined with the input RGB data
+RWTexture2D<unorm float4> dstImage 		: register(u0, space1);
+
+// Declare the input image texture and sampler
+Texture2D<float4> 	srcImage 			: register(t0, space0);
+SamplerState   		srcSampler 			: register(s0, space0);
+
+// Declare the regions image texture and sampler
+Texture2D<float4> 	rgnImage 			: register(t1, space0);
+SamplerState   		rgnSampler 			: register(s1, space0);
+
+
+/*****************************************************************************\
+|* Perlin noise functions
+\*****************************************************************************/
+
+// Hash lookup table as defined by Ken Perlin.  This is a randomly
+// arranged array of all numbers from 0-255 inclusive. Repeated once
+// to guard against out-of-bounds errors
+static int permute[512] =
+	{
+	0x97,0xa0,0x89,0x5b,0x5a,0x0f,0x83,0x0d,0xc9,
+	0x5f,0x60,0x35,0xc2,0xe9,0x07,0xe1,0x8c,
+	0x24,0x67,0x1e,0x45,0x8e,0x08,0x63,0x25,
+	0xf0,0x15,0x0a,0x17,0xbe,0x06,0x94,0xf7,
+	0x78,0xea,0x4b,0x00,0x1a,0xc5,0x3e,0x5e,
+	0xfc,0xdb,0xcb,0x75,0x23,0x0b,0x20,0x39,
+	0xb1,0x21,0x58,0xed,0x95,0x38,0x57,0xae,
+	0x14,0x7d,0x88,0xab,0xa8,0x44,0xaf,0x4a,
+	0xa5,0x47,0x86,0x8b,0x30,0x1b,0xa6,0x4d,
+	0x92,0x9e,0xe7,0x53,0x6f,0xe5,0x7a,0x3c,
+	0xd3,0x85,0xe6,0xdc,0x69,0x5c,0x29,0x37,
+	0x2e,0xf5,0x28,0xf4,0x66,0x8f,0x36,0x41,
+	0x19,0x3f,0xa1,0x01,0xd8,0x50,0x49,0xd1,
+	0x4c,0x84,0xbb,0xd0,0x59,0x12,0xa9,0xc8,
+	0xc4,0x87,0x82,0x74,0xbc,0x9f,0x56,0xa4,
+	0x64,0x6d,0xc6,0xad,0xba,0x03,0x40,0x34,
+	0xd9,0xe2,0xfa,0x7c,0x7b,0x05,0xca,0x26,
+	0x93,0x76,0x7e,0xff,0x52,0x55,0xd4,0xcf,
+	0xce,0x3b,0xe3,0x2f,0x10,0x3a,0x11,0xb6,
+	0xbd,0x1c,0x2a,0xdf,0xb7,0xaa,0xd5,0x77,
+	0xf8,0x98,0x02,0x2c,0x9a,0xa3,0x46,0xdd,
+	0x99,0x65,0x9b,0xa7,0x2b,0xac,0x09,0x81,
+	0x16,0x27,0xfd,0x13,0x62,0x6c,0x6e,0x4f,
+	0x71,0xe0,0xe8,0xb2,0xb9,0x70,0x68,0xda,
+	0xf6,0x61,0xe4,0xfb,0x22,0xf2,0xc1,0xee,
+	0xd2,0x90,0x0c,0xbf,0xb3,0xa2,0xf1,0x51,
+	0x33,0x91,0xeb,0xf9,0x0e,0xef,0x6b,0x31,
+	0xc0,0xd6,0x1f,0xb5,0xc7,0x6a,0x9d,0xb8,
+	0x54,0xcc,0xb0,0x73,0x79,0x32,0x2d,0x7f,
+	0x04,0x96,0xfe,0x8a,0xec,0xcd,0x5d,0xde,
+	0x72,0x43,0x1d,0x18,0x48,0xf3,0x8d,0x80,
+	0xc3,0x4e,0x42,0xd7,0x3d,0x9c,0xb4,
+
+	0x97,0xa0,0x89,0x5b,0x5a,0x0f,0x83,0x0d,0xc9,
+	0x5f,0x60,0x35,0xc2,0xe9,0x07,0xe1,0x8c,
+	0x24,0x67,0x1e,0x45,0x8e,0x08,0x63,0x25,
+	0xf0,0x15,0x0a,0x17,0xbe,0x06,0x94,0xf7,
+	0x78,0xea,0x4b,0x00,0x1a,0xc5,0x3e,0x5e,
+	0xfc,0xdb,0xcb,0x75,0x23,0x0b,0x20,0x39,
+	0xb1,0x21,0x58,0xed,0x95,0x38,0x57,0xae,
+	0x14,0x7d,0x88,0xab,0xa8,0x44,0xaf,0x4a,
+	0xa5,0x47,0x86,0x8b,0x30,0x1b,0xa6,0x4d,
+	0x92,0x9e,0xe7,0x53,0x6f,0xe5,0x7a,0x3c,
+	0xd3,0x85,0xe6,0xdc,0x69,0x5c,0x29,0x37,
+	0x2e,0xf5,0x28,0xf4,0x66,0x8f,0x36,0x41,
+	0x19,0x3f,0xa1,0x01,0xd8,0x50,0x49,0xd1,
+	0x4c,0x84,0xbb,0xd0,0x59,0x12,0xa9,0xc8,
+	0xc4,0x87,0x82,0x74,0xbc,0x9f,0x56,0xa4,
+	0x64,0x6d,0xc6,0xad,0xba,0x03,0x40,0x34,
+	0xd9,0xe2,0xfa,0x7c,0x7b,0x05,0xca,0x26,
+	0x93,0x76,0x7e,0xff,0x52,0x55,0xd4,0xcf,
+	0xce,0x3b,0xe3,0x2f,0x10,0x3a,0x11,0xb6,
+	0xbd,0x1c,0x2a,0xdf,0xb7,0xaa,0xd5,0x77,
+	0xf8,0x98,0x02,0x2c,0x9a,0xa3,0x46,0xdd,
+	0x99,0x65,0x9b,0xa7,0x2b,0xac,0x09,0x81,
+	0x16,0x27,0xfd,0x13,0x62,0x6c,0x6e,0x4f,
+	0x71,0xe0,0xe8,0xb2,0xb9,0x70,0x68,0xda,
+	0xf6,0x61,0xe4,0xfb,0x22,0xf2,0xc1,0xee,
+	0xd2,0x90,0x0c,0xbf,0xb3,0xa2,0xf1,0x51,
+	0x33,0x91,0xeb,0xf9,0x0e,0xef,0x6b,0x31,
+	0xc0,0xd6,0x1f,0xb5,0xc7,0x6a,0x9d,0xb8,
+	0x54,0xcc,0xb0,0x73,0x79,0x32,0x2d,0x7f,
+	0x04,0x96,0xfe,0x8a,0xec,0xcd,0x5d,0xde,
+	0x72,0x43,0x1d,0x18,0x48,0xf3,0x8d,0x80,
+	0xc3,0x4e,0x42,0xd7,0x3d,0x9c,0xb4
+	};
+
+
+/*****************************************************************************\
+|* Perlin: Internal functions
+\*****************************************************************************/
+
+// Fade function. This uses the function as defined by Ken Perlin, The
+// output for any given t is:
+//
+//              6t^5 - 15t^4 + 10t^3
+//
+float perlinFade(float t)
+	{
+	return t * t * t * (t * (t * 6 - 15) + 10);
+	}
+
+// Increment function, increment the values while respecting the period
+// if the period is >0
+int inc(int idx)
+	{
+	idx = idx + 1;
+	if (period > 0)
+		idx %= period;
+
+	return idx;
+	}
+
+// The gradient function. Calculate the dot product of a randomly selected
+// gradient vector and the 8 location vectors
+float grad(int hash, float x, float y, float z)
+	{
+	switch (hash & 0xf)
+		{
+		case 0x0:	return  x + y;
+		case 0x1: 	return -x + y;
+		case 0x2: 	return  x - y;
+		case 0x3:	return -x - y;
+		case 0x4:	return  x + z;
+		case 0x5:	return -x + z;
+		case 0x6:	return  x - z;
+		case 0x7:	return -x - z;
+		case 0x8:	return  y + z;
+		case 0x9: 	return -y + z;
+		case 0xa: 	return  y - z;
+		case 0xb:	return -y - z;
+		case 0xc:	return  y + x;
+		case 0xd:	return -y + z;
+		case 0xe:	return  y - x;
+		case 0xf:	return -y - z;
+		default:	return  0;		// Never happens
+		}
+	}
+
+
+// Linearly interpolate
+float lerp(float a, float b, float x)
+	{
+	return a + x * (b - a);
+	}
+
+
+/*****************************************************************************\
+|* Perlin: Noise function
+\*****************************************************************************/
+float perlinNoise(float x, float y, float z)
+	{
+	if (period > 0)
+		{
+		x = x % period;
+		y = y % period;
+		z = z % period;
+		}
+
+	// Calculate the "unit cube" that the point asked will be located in
+	// The left bound is ( |_x_|,|_y_|,|_z_| ) and the right bound is that
+	// plus 1.
+	int xi = (int)x & 255;
+	int yi = (int)y & 255;
+	int zi = (int)z & 255;
+
+	//Next we calculate the location (from 0.0 to 1.0) in that cube
+    float xf = x - (int)x;
+    float yf = y - (int)y;
+    float zf = z - (int)z;
+
+	// Ease into the (integer) co-ordinates using the fade function
+	// This gives an S-like curve between two integer points
+	float u 	= perlinFade(xf);
+	float v 	= perlinFade(yf);
+	float w		= perlinFade(zf);
+
+	// Work out the 8 directional vectors we'll use for the perlin
+	// noise
+    int aaa = permute[permute[permute[    xi ]+    yi ]+    zi ];
+    int aba = permute[permute[permute[    xi ]+inc(yi)]+    zi ];
+    int aab = permute[permute[permute[    xi ]+    yi ]+inc(zi)];
+    int abb = permute[permute[permute[    xi ]+inc(yi)]+inc(zi)];
+    int baa = permute[permute[permute[inc(xi)]+    yi ]+    zi ];
+    int bba = permute[permute[permute[inc(xi)]+inc(yi)]+    zi ];
+    int bab = permute[permute[permute[inc(xi)]+    yi ]+inc(zi)];
+    int bbb = permute[permute[permute[inc(xi)]+inc(yi)]+inc(zi)];
+
+	// Linearly interpolate to get the result
+	float x1 = lerp(grad(aaa, xf  , yf  , zf  ),
+				    grad(baa, xf-1, yf  , zf  ), u);
+
+	float x2 = lerp(grad(aba, xf  , yf-1, zf  ),
+				    grad(bba, xf-1, yf-1, zf  ), u);
+	float y1 = lerp(x1, x2, v);
+
+	      x1 = lerp(grad(aab, xf  , yf  , zf-1),
+				    grad(bab, xf-1, yf  , zf-1), u);
+
+	      x2 = lerp(grad(abb, xf  , yf-1, zf-1),
+				    grad(bbb, xf-1, yf-1, zf-1), u);
+	float y2 = lerp(x1, x2, v);
+
+	// For convenience we bind the result to 0 - 1 (theoretical min/max
+	// before is [-1, 1])
+	return (lerp(y1, y2, w) + 1.f)/2.f;
+	}
+
+
+/*****************************************************************************\
+|* Perlin: This is the "octaves" control, where the perlin noise function is
+|*         called repeatedly with successively smaller contributions each time
+\*****************************************************************************/
+float octavedPerlin(float x, float y, float z)
+	{
+	float total 		= 0.f;
+	float frequency		= 1.f;
+	float amplitude		= 1.f;
+	float maxValue 		= 0.f;
+
+	for (int i=0; i<octaves; i++)
+		{
+		total 		+= perlinNoise(x * frequency,
+								   y * frequency,
+								   z * frequency) * amplitude;
+		maxValue	+= amplitude;
+		amplitude 	*= persistence;
+		frequency 	*= 2.f;
+		}
+
+	return total / maxValue;
+	}
+
+#define CUBIC_A 	134775813
+#define CUBIC_B 	1103515245
+#define UINT32_MAX	4294967295
+
+/*****************************************************************************\
+|* Cubic: random noise generator
+\*****************************************************************************/
+float cubicRandom(int x, int y)
+	{
+	int term1 = ((x ^ y) * CUBIC_A) ^ (seed + x);
+	int term2 = (((CUBIC_B * x) << 16) ^ (CUBIC_B * y) - CUBIC_A);
+
+	return float (term1 * term2) / UINT32_MAX;
+	}
+
+/*****************************************************************************\
+|* Cubic: Periodicity management
+\*****************************************************************************/
+int cubicTile(int coordinate, int tperiod)
+	{
+	return coordinate % tperiod;
+	}
+
+/*****************************************************************************\
+|* Cubic: Interpolation
+\*****************************************************************************/
+int cubicInterpolate(float a, float b, float c, float d, float x)
+	{
+	const float p = (d - c) - (a - b);
+	return x * (x * (x * p + ((a - b) - p)) + (c - a)) + b;
+	}
+
+/*****************************************************************************\
+|* Cubic: The actual noise function entry-point
+\*****************************************************************************/
+float cubicNoise(float x, float y, int octave)
+	{
+	uint i;
+	const int xi 		= (int)floor(x / octave);
+	const float lerpx 	= x / octave - xi;
+	const int yi 		= (int)floor(y / octave);
+	const float lerpy 	= y / octave - yi;
+
+	float xval[4];
+
+	float oPeriod 		= cperiod / octave;
+
+	for(i = 0; i < 4; ++i)
+		xval[i] = cubicInterpolate(
+						cubicRandom(cubicTile(xi - 1, oPeriod),
+									cubicTile(yi - 1 + i, oPeriod)),
+						cubicRandom(cubicTile(xi, oPeriod),
+									cubicTile(yi - 1 + i, oPeriod)),
+						cubicRandom(cubicTile(xi + 1, oPeriod),
+									cubicTile(yi - 1 + i, oPeriod)),
+						cubicRandom(cubicTile(xi + 2, oPeriod),
+									cubicTile(yi - 1 + i, oPeriod)),
+						lerpx);
+
+	return cubicInterpolate(
+						xval[0],
+						xval[1],
+						xval[2],
+						xval[3],
+						lerpy) * 0.5f + 0.25f;
+	}
+
+/*****************************************************************************\
+|* Cubic: This is the "octaves" control, where the cubic noise function is
+|*        called repeatedly with successively smaller contributions each time
+\*****************************************************************************/
+float octavedCubic(float x, float y)
+	{
+	float total 		= 0.f;
+	float amplitude		= 1.f;
+	float maxValue 		= 0.f;
+
+	for (int i=0; i<octaves; i++)
+		{
+		total 		+= cubicNoise(x, y, i) * amplitude;
+		maxValue	+= amplitude;
+		amplitude 	*= persistence;
+		}
+
+	return total / maxValue;
+	}
+
+/*****************************************************************************\
+|* General: Create a threshold below which we get 0 returned
+\*****************************************************************************/
+float thresholded(float x)
+	{
+	if (x < threshold)
+		return 0.f;
+	float val = x - threshold;
+
+	return (x-threshold)/(1.f-threshold);
+	}
+
+/*****************************************************************************\
+|* Finally, the actual compute shader entry point
+\*****************************************************************************/
+
+[numthreads(8, 8, 1)]
+void main(uint3 GlobalInvocationID : SV_DispatchThreadID)
+	{
+	// Get the width and height of the source-image (typically a
+	// 512x512 texture) to tile across the output
+    float w, h;
+    srcImage.GetDimensions(w, h);
+
+	// Work out the U,V co-ords of the input source texture and
+	// read the pixel value via the sampler
+    float2 coord = float2(GlobalInvocationID.xy);
+    float2 texcoord = coord / float2(w, h);
+    float4 pixel 	= srcImage.SampleLevel(srcSampler, texcoord, 0.0f);
+
+
+	// If we have the flag set, then calculate the octaved perlin
+	// noise for this x,y
+    float noise = 1.f;
+
+    if (algorithms & 1)
+		noise *= octavedPerlin(GlobalInvocationID.x/period,
+							   GlobalInvocationID.y/period,
+							   height);
+
+	// If we have the flag set, then calculate the octaved cubic
+	// noise for yhis x,y
+	if (algorithms & 2)
+		noise *= octavedCubic(GlobalInvocationID.x,
+							  GlobalInvocationID.y);
+
+	// Run the noise through a threshold controlled by a slider in
+	// the interface
+	noise = thresholded(noise);
+
+	// Get the 'A' value from the regions mask
+//	if (algorithms & 4)
+//		{
+//		rgnImage.GetDimensions(w, h);
+//		texcoord 	= coord / float2(w, h);
+//		float4 rgns = rgnImage.SampleLevel(rgnSampler, texcoord, 0.0f);
+//		noise 		= noise * rgns.a;
+//		}
+		
+	// Write the RGB from the sampled image, with the A coming from
+	// the noise function
+    dstImage[GlobalInvocationID.xy] = float4(pixel.xyz, noise);
+	}
+
