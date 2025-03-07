@@ -60,6 +60,13 @@ NSMutableDictionary<NSNumber *,AZView *> *							cache;
     else if (width < _minWidth)
         width = _minWidth;
 	_width = width;
+
+	for (AZView *view in _cache.allValues)
+		{
+		NSSize sz 	= view.frame.size;
+		sz.width	= _width;
+		[view setFrameSize:sz];
+		}
 	}
 
 // MARK: Headers
