@@ -2,7 +2,7 @@
 //  AZEventSink.m
 //  Azoth
 //
-//  Created by Simon Gornall on 12/19/24.
+//  Created by ThrudTheBarbarian on 12/19/24.
 //
 
 #import <SDL3/SDL.h>

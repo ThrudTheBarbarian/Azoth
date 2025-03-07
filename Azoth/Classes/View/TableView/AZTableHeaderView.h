@@ -2,7 +2,7 @@
 //  AZTableHeaderView.h
 //  Azoth
 //
-//  Created by Simon Gornall on 12/25/24.
+//  Created by ThrudTheBarbarian on 12/25/24.
 //
 
 #import <Azoth/AZTextField.h>

@@ -2,7 +2,7 @@
 //  AppDelegate.m
 //  AZCollectionView
 //
-//  Created by Simon Gornall on 1/8/25.
+//  Created by ThrudTheBarbarian on 1/8/25.
 //
 
 #import <SDL3/SDL.h>

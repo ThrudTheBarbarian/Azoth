@@ -2,7 +2,7 @@
 //  startup.m
 //  Azoth
 //
-//  Created by Simon Gornall on 12/16/24.
+//  Created by ThrudTheBarbarian on 12/16/24.
 //
 
 

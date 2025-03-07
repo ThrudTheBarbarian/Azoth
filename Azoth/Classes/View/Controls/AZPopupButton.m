@@ -2,7 +2,7 @@
 //  AZPopupButton.m
 //  Azoth
 //
-//  Created by Simon Gornall on 12/20/24.
+//  Created by ThrudTheBarbarian on 12/20/24.
 //
 
 #import <SDL3/SDL.h>
@@ -79,7 +79,7 @@ static float 		_uiS[STATE_NUM];		// bottom-border for 9-way
 
 		int idx = 0;
 		int selected = -1;
-		int nextTag = 1;
+		int nextTag = 0;
 		NSString *selectedId	= info[kZibSelect];
 		for (NSDictionary *item in items)
 			{

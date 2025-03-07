@@ -2,7 +2,7 @@
 //  AZOutlineView.h
 //  Azoth
 //
-//  Created by Simon Gornall on 12/31/24.
+//  Created by ThrudTheBarbarian on 12/31/24.
 //
 
 #import <Azoth/AZTableView.h>

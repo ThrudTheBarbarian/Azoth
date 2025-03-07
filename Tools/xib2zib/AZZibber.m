@@ -2,7 +2,7 @@
 //  AZZibber.m
 //  Azoth
 //
-//  Created by Simon Gornall on 1/3/25.
+//  Created by ThrudTheBarbarian on 1/3/25.
 //
 
 #import "AZTypes.h"

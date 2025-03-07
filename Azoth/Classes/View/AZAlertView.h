@@ -2,7 +2,7 @@
 //  AZAlertView.h
 //  Azoth
 //
-//  Created by Simon Gornall on 1/22/25.
+//  Created by ThrudTheBarbarian on 1/22/25.
 //
 
 #import <Azoth/AZView.h>

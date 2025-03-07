@@ -2,7 +2,7 @@
 //  AZMenuItem.h
 //  Azoth
 //
-//  Created by Simon Gornall on 12/18/24.
+//  Created by ThrudTheBarbarian on 12/18/24.
 //
 
 #import <Foundation/Foundation.h>

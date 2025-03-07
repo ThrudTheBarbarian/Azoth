@@ -2,7 +2,7 @@
 //  AZTextPainter.m
 //  Azoth
 //
-//  Created by Simon Gornall on 12/14/24.
+//  Created by ThrudTheBarbarian on 12/14/24.
 //
 
 #import <SDL3/SDL.h>
@@ -141,7 +141,7 @@
 \*****************************************************************************/
 - (NSRect) drawInBox:(NSRect)box text:(NSString *)text
 	{
-	int Y = NSMidY(box) - _font.height/2;
+	int Y = NSMidY(box) - _font.height/2 -1;
 
 	switch (_alignment)
 		{

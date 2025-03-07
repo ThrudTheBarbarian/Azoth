@@ -2,7 +2,7 @@
 //  AZTexture.h
 //  Azoth
 //
-//  Created by Simon Gornall on 1/14/25.
+//  Created by ThrudTheBarbarian on 1/14/25.
 //
 // Only support BGRA8888
 

@@ -2,7 +2,7 @@
 //  AZGPUBuffer.m
 //  Azoth
 //
-//  Created by Simon Gornall on 1/29/25.
+//  Created by ThrudTheBarbarian on 1/29/25.
 //
 
 #import "AZGPUBuffer.h"

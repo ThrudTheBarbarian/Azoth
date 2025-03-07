@@ -2,7 +2,7 @@
 //  AZSegmentedControl.h
 //  Azoth
 //
-//  Created by Simon Gornall on 12/20/24.
+//  Created by ThrudTheBarbarian on 12/20/24.
 //
 
 #import <Azoth/AZControl.h>

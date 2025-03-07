@@ -2,7 +2,7 @@
 //  DraggingView.m
 //  AZDragAndDrop
 //
-//  Created by Simon Gornall on 1/10/25.
+//  Created by ThrudTheBarbarian on 1/10/25.
 //
 
 #import "DraggingView.h"

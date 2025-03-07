@@ -2,7 +2,7 @@
 //  AZRenderProperties.m
 //  Azoth
 //
-//  Created by Simon Gornall on 1/16/25.
+//  Created by ThrudTheBarbarian on 1/16/25.
 //
 
 #import "AZRenderProperties.h"

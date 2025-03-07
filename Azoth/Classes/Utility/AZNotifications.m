@@ -2,7 +2,7 @@
 //  AZNotifications.m
 //  Azoth
 //
-//  Created by Simon Gornall on 12/15/24.
+//  Created by ThrudTheBarbarian on 12/15/24.
 //
 
 #import "AZNotifications.h"

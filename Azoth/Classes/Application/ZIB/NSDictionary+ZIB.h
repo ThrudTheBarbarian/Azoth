@@ -2,7 +2,7 @@
 //  NSDictionary+ZIB.h
 //  Azoth
 //
-//  Created by Simon Gornall on 1/4/25.
+//  Created by ThrudTheBarbarian on 1/4/25.
 //
 
 #import <Foundation/Foundation.h>

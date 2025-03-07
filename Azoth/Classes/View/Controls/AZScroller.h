@@ -2,7 +2,7 @@
 //  AZScroller.h
 //  Azoth
 //
-//  Created by Simon Gornall on 12/21/24.
+//  Created by ThrudTheBarbarian on 12/21/24.
 //
 
 #import <Azoth/AZControl.h>

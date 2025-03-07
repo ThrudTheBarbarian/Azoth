@@ -2,7 +2,7 @@
 //  AZCVLayoutOperation.h
 //  Azoth
 //
-//  Created by Simon Gornall on 1/7/25.
+//  Created by ThrudTheBarbarian on 1/7/25.
 //
 
 #import <Foundation/Foundation.h>

@@ -2,7 +2,7 @@
 //  AZSplitView.h
 //  Azoth
 //
-//  Created by Simon Gornall on 12/24/24.
+//  Created by ThrudTheBarbarian on 12/24/24.
 //
 
 #import <Azoth/AZView.h>

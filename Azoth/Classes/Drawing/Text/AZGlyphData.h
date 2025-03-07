@@ -2,7 +2,7 @@
 //  AZGlyphData.h
 //  Azoth
 //
-//  Created by Simon Gornall on 12/14/24.
+//  Created by ThrudTheBarbarian on 12/14/24.
 //
 
 #import <Foundation/Foundation.h>

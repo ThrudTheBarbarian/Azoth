@@ -2,7 +2,7 @@
 //  AZTextField.m
 //  Azoth
 //
-//  Created by Simon Gornall on 12/16/24.
+//  Created by ThrudTheBarbarian on 12/16/24.
 //
 
 #import <SDL3/SDL.h>
@@ -72,6 +72,9 @@ static float _dh[STATE_NUM];
 // For window rendering
 @property(assign, nonatomic) 	NSRect					editArea;
 @property(assign, nonatomic) 	NSRect					origArea;
+
+// Value we have on focus
+@property(strong, nonatomic) 	NSString *				focusValue;
 
 // Timer for blinking cursor
 @property(strong, nonatomic) 	NSTimer *				blinkTimer;
@@ -229,6 +232,7 @@ static float _dh[STATE_NUM];
 	{
 	if (self.enabled && self.editable && (self.state == AZControlStateNormal))
 		{
+		_focusValue = self.stringValue;
 		self.state = AZControlStateHighlighted;
 		SDL_StartTextInput(self.window.window);
 
@@ -267,6 +271,8 @@ static float _dh[STATE_NUM];
 		self.showCursor = NO;
 		self.state = AZControlStateNormal;
 		[self setNeedsDisplay:YES];
+		if (![self.stringValue isEqualToString:_focusValue])
+			[self sendAction:self.action to:self.target];
 		}
 	return YES;
 	}
@@ -290,7 +296,10 @@ static float _dh[STATE_NUM];
 	[super setStringValue:stringValue];
 	[self setNeedsDisplay:YES];
     if (self.continuous)
+        {
         [self sendAction:self.action to:self.target];
+		_focusValue = self.stringValue;
+		}
 	}
 
 - (void) setObjectValue:(NSObject *)objectValue
@@ -302,6 +311,11 @@ static float _dh[STATE_NUM];
 	{
 	NSString *str = [NSString stringWithFormat:self.fpFormat, doubleValue];
 	return [self setStringValue:str];
+	}
+
+- (double) doubleValue
+	{
+	return self.stringValue.doubleValue;
 	}
 
 /*****************************************************************************\

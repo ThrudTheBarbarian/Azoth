@@ -2,7 +2,7 @@
 //  AZVertexAttribute.h
 //  sdl3_gpu
 //
-//  Created by Simon Gornall on 1/13/25.
+//  Created by ThrudTheBarbarian on 1/13/25.
 //
 
 #import <Foundation/Foundation.h>

@@ -2,7 +2,7 @@
 //  AZControl.h
 //  Azoth
 //
-//  Created by Simon Gornall on 12/15/24.
+//  Created by ThrudTheBarbarian on 12/15/24.
 //
 
 #import <Foundation/Foundation.h>
@@ -28,6 +28,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (void) setFloatingPointFormatLeft:(int)left right:(int)right;
 
 /*****************************************************************************\
+|* Wrappers around stringValue
+\*****************************************************************************/
+- (void) setDoubleValue:(double)doubleValue;
+- (void) setIntValue:(int)intValue;
+
+- (double) doubleValue;
+- (int) intValue;
+
+/*****************************************************************************\
 |* Send an action to the target
 \*****************************************************************************/
 - (void) sendAction:(nullable SEL)action to:(nullable NSObject *)target;
@@ -41,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(strong, nonatomic, nullable) NSObject *		objectValue;
 @property(copy, nonatomic) NSString *					stringValue;
-@property(assign, nonatomic) double						doubleValue;
+
 @property(assign, nonatomic) BOOL						continuous;
 
 @property(strong, nonatomic) AZFont *					font;

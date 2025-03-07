@@ -2,7 +2,7 @@
 //  AZComputePipeline.h
 //  Azoth
 //
-//  Created by Simon Gornall on 1/14/25.
+//  Created by ThrudTheBarbarian on 1/14/25.
 //
 
 #import <SDL3/SDL.h>

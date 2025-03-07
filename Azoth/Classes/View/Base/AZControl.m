@@ -2,7 +2,7 @@
 //  AZControl.m
 //  Azoth
 //
-//  Created by Simon Gornall on 12/15/24.
+//  Created by ThrudTheBarbarian on 12/15/24.
 //
 
 #import <SDL3/SDL.h>
@@ -93,14 +93,31 @@
 \*****************************************************************************/
 - (void) setDoubleValue:(double)doubleValue
 	{
-	_doubleValue = doubleValue;
-	[self setNeedsDisplay:YES];
+	[self setStringValue:[NSString stringWithFormat:@"%f", doubleValue]];
 	}
 
 - (void) setStringValue:(NSString *)string
 	{
 	_stringValue = string;
 	[self setNeedsDisplay:YES];
+	}
+
+- (void) setIntValue:(int)intValue
+	{
+	[self setStringValue:[NSString stringWithFormat:@"%d", intValue]];
+	}
+
+/*****************************************************************************\
+|* Default actions for get...
+\*****************************************************************************/
+- (double) doubleValue
+	{
+	return self.stringValue.doubleValue;
+	}
+
+- (int) intValue
+	{
+	return self.stringValue.intValue;
 	}
 
 /*****************************************************************************\

@@ -2,7 +2,7 @@
 //  main.m
 //  AZDragAndDrop
 //
-//  Created by Simon Gornall on 1/10/25.
+//  Created by ThrudTheBarbarian on 1/10/25.
 //
 
 #define SDL_MAIN_USE_CALLBACKS 1

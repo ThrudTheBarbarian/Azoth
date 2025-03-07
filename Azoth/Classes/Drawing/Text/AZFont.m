@@ -2,7 +2,7 @@
 //  AZFont.m
 //  Azoth
 //
-//  Created by Simon Gornall on 12/14/24.
+//  Created by ThrudTheBarbarian on 12/14/24.
 //
 #import <SDL3/SDL.h>
 #import <SDL3_ttf/SDL_ttf.h>

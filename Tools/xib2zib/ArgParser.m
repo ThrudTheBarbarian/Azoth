@@ -2,7 +2,7 @@
 //  ArgParser.m
 //  Azoth
 //
-//  Created by Simon Gornall on 1/2/25.
+//  Created by ThrudTheBarbarian on 1/2/25.
 //
 
 #import "ArgParser.h"

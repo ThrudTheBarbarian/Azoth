@@ -2,7 +2,7 @@
 //  AZImage.m
 //  Azoth
 //
-//  Created by Simon Gornall on 12/28/24.
+//  Created by ThrudTheBarbarian on 12/28/24.
 //
 
 #import <SDL3/SDL.h>
@@ -297,6 +297,9 @@ static NSMutableDictionary<NSString*,AZImage*> * 						_map;
 	{
 	BOOL ok 		 = NO;
 	const char *path = fullPath.fileSystemRepresentation;
+
+	if (_handler)
+		[self draw];
 
 	id<AZRenderer> azr	= AZRenderer.renderer;
 	SDL_Surface *surface = [azr surfaceFor:_texture];

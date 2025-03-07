@@ -2,7 +2,7 @@
 //  AZGeometry.h
 //  Azoth
 //
-//  Created by Simon Gornall on 12/12/24.
+//  Created by ThrudTheBarbarian on 12/12/24.
 //
 
 #ifndef AZGeometry_h

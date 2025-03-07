@@ -2,7 +2,7 @@
 //  AZImageView.m
 //  Azoth
 //
-//  Created by Simon Gornall on 12/29/24.
+//  Created by ThrudTheBarbarian on 12/29/24.
 //
 
 #import "AZColour.h"
@@ -289,6 +289,7 @@
 \*****************************************************************************/
 - (void) _drawUnscaledIn:(NSRect)rect withPainter:(AZPainter *)P
 	{
+	rect = self.bounds;
 	float rw 	= NSWidth(rect);
 	float rh 	= NSHeight(rect);
 	float w	 	= _image.width;
@@ -315,6 +316,7 @@
 \*****************************************************************************/
 - (void) _drawScaledIn:(NSRect)rect withPainter:(AZPainter *)P
 	{
+	rect = self.bounds;
 	float W,H;
 	float aspect = ((float)_image.width)/_image.height;
 	if (aspect > 1.f)
@@ -337,6 +339,7 @@
 \*****************************************************************************/
 - (void) _drawToFitIn:(NSRect)rect withPainter:(AZPainter *)P
 	{
+	rect = self.bounds;
 	NSRect src = NSMakeRect(0,0,_image.width, _image.height);
 	[P image:_image from:src to:rect];
 	}
@@ -346,6 +349,7 @@
 \*****************************************************************************/
 - (void) _drawDownscaledIn:(NSRect)rect withPainter:(AZPainter *)P
 	{
+	rect = self.bounds;
 	float xs = rect.size.width  / _image.width;
 	float ys = rect.size.height / _image.height;
 	float W, H;

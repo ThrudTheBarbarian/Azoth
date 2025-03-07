@@ -2,7 +2,7 @@
 //  AppDelegate.h
 //  AZImageView
 //
-//  Created by Simon Gornall on 12/30/24.
+//  Created by ThrudTheBarbarian on 12/30/24.
 //
 
 #import <Azoth/Azoth.h>

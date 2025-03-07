@@ -2,7 +2,7 @@
 //  AppDelegate.m
 //  Azoth
 //
-//  Created by Simon Gornall on 1/15/25.
+//  Created by ThrudTheBarbarian on 1/15/25.
 //
 
 #import "AppDelegate.h"

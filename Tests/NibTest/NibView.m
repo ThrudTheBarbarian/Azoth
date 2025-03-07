@@ -2,7 +2,7 @@
 //  NibView.m
 //  Azoth
 //
-//  Created by Simon Gornall on 1/1/25.
+//  Created by ThrudTheBarbarian on 1/1/25.
 //
 
 #import "NibView.h"
