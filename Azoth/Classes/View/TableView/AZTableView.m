@@ -429,8 +429,7 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 	_tiled = YES;
 	if (self.autoresizeColumns)
 		{
-		int num = (int) _tableColumns.count;
-
+		int num   = (int) _tableColumns.count;
 		int width = (self.bounds.size.width - (num-1) * _spacing.width)  / num;
 		for (AZTableColumn *col in _tableColumns)
 			col.width = width;
@@ -449,9 +448,9 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
 
     if ([clipView isKindOfClass:AZClipView.class])
 		{
-        NSSize size 	= clipView.bounds.size;
-        NSInteger count = _tableColumns.count;
-        float lastWidth = size.width - (count * _spacing.width);
+        NSSize size 		= clipView.bounds.size;
+        NSInteger count 	= _tableColumns.count;
+        float lastWidth 	= size.width - (count * _spacing.width);
 
         AZTableColumn *lastColumn = _tableColumns.lastObject;
 
@@ -464,6 +463,34 @@ NSMutableDictionary<NSString*, NSMutableSet<AZView *> *> *			pool;
             lastColumn.width = lastColumn.width + lastWidth;
 
         [self setNeedsDisplay:YES];
+		}
+	}
+
+/*****************************************************************************\
+|* Cope with the frame size changing
+\*****************************************************************************/
+- (void) setFrame:(NSRect)frame
+	{
+	static NSRect oldFrame = {0,0,0,0};
+
+	[super setFrame:frame];
+	[self tile];
+
+	// Prevent infinite loop when resize notification called which calls
+	// reloadData
+	if (!NSEqualRects(oldFrame, self.frame))
+		{
+		oldFrame 			= self.frame;
+		NSNotification *n	= nil;
+		SEL sel 			= SELECTOR(@"tableViewColumnDidResize:");
+		BOOL supported		= [_delegate respondsToSelector:sel];
+		if (supported)
+			{
+			n = [NSNotification
+					notificationWithName:AZTableViewColumnDidResizeNotification
+								  object:self];
+			[_delegate tableViewColumnDidResize:n];
+			}
 		}
 	}
 
