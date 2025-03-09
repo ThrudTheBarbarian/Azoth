@@ -236,7 +236,8 @@ NSMutableArray<AZGPUBuffer *> *									inBuf;
 		}
 
 	/*********************************************************************\
-	|* Attempt to load from the framework bundle then the application
+	|* Attempt to load from the framework bundle then the application, then
+	|* finally from an absolute path
 	\*********************************************************************/
 	if (![self _load:_name from:[NSBundle bundleForClass:self.class]])
 		[self _load:_name from:NSBundle.mainBundle];
@@ -252,18 +253,19 @@ NSMutableArray<AZGPUBuffer *> *									inBuf;
 
 
 /*****************************************************************************\
-|* Load a compute shader from a location
+|* Load a compute shader from a location. Note that the bundle can only be
+|* nil if the full path is provided
 \*****************************************************************************/
-- (BOOL) _load:(NSString *)name from:(NSBundle *)bundle
+- (BOOL) _load:(NSString *)name from:(nullable NSBundle *)bundle
 	{
-	/*************************************************************************\
+	/*********************************************************************\
 	|* Do a format match to get the correct shader format
-	\*************************************************************************/
+	\*********************************************************************/
 	NSString *fullPath				= nil;
 	SDL_GPUShaderFormat format 		= SDL_GPU_SHADERFORMAT_INVALID;
 	NSString *entryPoint			= nil;
-	
-	if (self)
+
+	if (self && (![name hasPrefix:@"/"]))
 		{
 		NSString *rsrc 				= bundle.resourcePath;
 		SDL_GPUShaderFormat known	= SDL_GetGPUShaderFormats(_gpu);
@@ -284,6 +286,35 @@ NSMutableArray<AZGPUBuffer *> *									inBuf;
 			{
 			fullPath 	= SHADER_PATH(rsrc, @"directx", name, @"dxil");
 			format 		= SDL_GPU_SHADERFORMAT_DXIL;
+			entryPoint 	= @"main";
+			}
+		else
+			{
+			SDL_Log("%s", "Unrecognized backend compute shader format!");
+			return NO;
+			}
+		}
+
+	/*************************************************************************\
+	|* Override the path if it's absolute
+	\*************************************************************************/
+	else if (self)
+		{
+		fullPath = name;
+
+		if ([name.pathExtension isEqualToString:@"spv"])
+			{
+			format 		= SDL_GPU_SHADERFORMAT_SPIRV;
+			entryPoint 	= @"main";
+			}
+		else if ([name.pathExtension isEqualToString:@"msl"])
+			{
+			format	 	= SDL_GPU_SHADERFORMAT_MSL;
+			entryPoint 	= @"main0";
+			}
+		else if ([name.pathExtension isEqualToString:@"dxil"])
+			{
+			format	 	= SDL_GPU_SHADERFORMAT_MSL;
 			entryPoint 	= @"main";
 			}
 		else
