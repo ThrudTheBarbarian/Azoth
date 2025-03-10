@@ -302,7 +302,7 @@ NSMutableArray<AZGPUBuffer *> *									inBuf;
 		{
 		fullPath = name;
 
-		if ([name.pathExtension isEqualToString:@"spv"])
+		if ([name.pathExtension isEqualToString:@"spirv"])
 			{
 			format 		= SDL_GPU_SHADERFORMAT_SPIRV;
 			entryPoint 	= @"main";
