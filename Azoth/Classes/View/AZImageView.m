@@ -142,6 +142,11 @@
 				[self _drawDownscaledIn:imgRect withPainter:painter];
 				break;
 			}
+	else if (_noImageText)
+		{
+		[painter setTextAlignment:AZTextAlignmentCenter];
+		[painter textInBox:self.bounds text:_noImageText];
+		}
 
 	if (_mouseIsOver)
 		{

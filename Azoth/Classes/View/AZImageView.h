@@ -34,6 +34,9 @@ NS_ASSUME_NONNULL_BEGIN
 |* Properties
 \*****************************************************************************/
 
+// The text to display if there is no image
+@property(strong, nonatomic, nullable) NSString *					noImageText;
+
 // The image displayed within the frame
 @property(strong, nonatomic, nullable) AZImage *					image;
 
