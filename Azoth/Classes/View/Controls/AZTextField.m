@@ -888,6 +888,9 @@ static float _dh[STATE_NUM];
 
 
     // Calculate the cursor rect
+	if (_cursor > self.stringValue.length)
+		_cursor = (int) self.stringValue.length;
+		
 	NSString *sub 	= [self.stringValue substringToIndex:_cursor];
 	int cx			= [AZApp.controlFont textWidthFor:sub]
 					+ _editArea.origin.x;
