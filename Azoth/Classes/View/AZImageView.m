@@ -375,14 +375,14 @@
 	else if (ys < 1.f)
 		{
 		// Y is larger, scale down both by ys
-		W = _image.width / ys;
-		H = _image.height / ys;
+		W = _image.width * ys;
+		H = _image.height * ys;
 		}
 	else
 		{
 		// X is larger, scale down both by xs
-		W = _image.width / xs;
-		H = _image.height / xs;
+		W = _image.width * xs;
+		H = _image.height * xs;
 		}
 
 	NSRect result 	= [self _align:rect forWidth:W height:H];
