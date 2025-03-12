@@ -69,14 +69,14 @@
 	if (self = [super initWithDictionary:info])
 		{
 		NSString *scaling = info[kZibImageScaling];
-		if ([scaling isEqualToString:@"proportionallyDown"])
-			_scaling = AZImageScaleProportionallyDown;
+		if ([scaling isEqualToString:@"none"])
+			_scaling = AZImageScaleNone;
 		else if ([scaling isEqualToString:@"proportionallyUpOrDown"])
 			_scaling = AZImageScaleProportionallyUpOrDown;
 		else if ([scaling isEqualToString:@"axesIndependently"])
 			_scaling = AZImageScaleAxesIndependently;
 		else
-			_scaling = AZImageScaleNone;
+			_scaling = AZImageScaleProportionallyDown;
 
 		NSString *frame = info[kZibFrameStyle];
 		if ([frame isEqualToString:@"grayBezel"])
