@@ -286,6 +286,8 @@ NSMutableDictionary<NSString *, AZFont *> *						knownFonts;
 			SDL_Log("Couldn't create main window: %s", SDL_GetError());
 			self.viability = SDL_APP_FAILURE;
 			}
+
+		_delegate.window = _window;
 		}
 
 	/*************************************************************************\
