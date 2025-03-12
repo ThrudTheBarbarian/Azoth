@@ -85,6 +85,20 @@
 		F47AB7662D3821AC00501720 /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
 		F47AB7672D3821AC00501720 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
 		F47AB7682D3821AC00501720 /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
+		F481CE792D80FB3500667EB9 /* Azoth.framework in Resources */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; };
+		F481CE7A2D80FB4200667EB9 /* avif.xcframework in Resources */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; };
+		F481CE7B2D80FB4200667EB9 /* jxl.xcframework in Resources */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
+		F481CE7C2D80FB4200667EB9 /* SDL3_image.xcframework in Resources */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; };
+		F481CE7D2D80FB4200667EB9 /* SDL3_ttf.xcframework in Resources */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
+		F481CE7E2D80FB4200667EB9 /* SDL3.xcframework in Resources */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
+		F481CE7F2D80FB4200667EB9 /* webp.xcframework in Resources */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
+		F481CE802D80FB5B00667EB9 /* avif.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; };
+		F481CE812D80FB5B00667EB9 /* Azoth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F41BC6522D0A61BA00E61EDD /* Azoth.framework */; };
+		F481CE822D80FB5B00667EB9 /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
+		F481CE832D80FB5B00667EB9 /* SDL3_image.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */; };
+		F481CE842D80FB5B00667EB9 /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
+		F481CE852D80FB5B00667EB9 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
+		F481CE862D80FB5B00667EB9 /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
 		F49528402D1F4B3100D6B8A6 /* avif.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; };
 		F49528412D1F4B3100D6B8A6 /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
 		F49528442D1F4B3100D6B8A6 /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
@@ -180,6 +194,13 @@
 
 /* Begin PBXContainerItemProxy section */
 		F41BC6AF2D0A720700E61EDD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F41BC6492D0A61BA00E61EDD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F41BC6512D0A61BA00E61EDD;
+			remoteInfo = Azoth;
+		};
+		F481CE772D80FB2C00667EB9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F41BC6492D0A61BA00E61EDD /* Project object */;
 			proxyType = 1;
@@ -471,6 +492,7 @@
 		F45ED9252D1145B900CE8B28 /* avif.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = avif.xcframework; path = ../../../../opt/SDL3/avif.xcframework; sourceTree = "<group>"; };
 		F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3_image.xcframework; path = ../../../../opt/SDL3/SDL3_image.xcframework; sourceTree = "<group>"; };
 		F47AB7392D381F2A00501720 /* GpuTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GpuTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F481CE3E2D80FA6100667EB9 /* AZFullscreen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZFullscreen.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F495282B2D1F496200D6B8A6 /* AZTable.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZTable.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F495337E2D1F840800D6B8A6 /* SDL3.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3.xcframework; path = ../../../../opt/SDL3/SDL3.xcframework; sourceTree = "<group>"; };
 		F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3_ttf.xcframework; path = ../../../../opt/SDL3/SDL3_ttf.xcframework; sourceTree = "<group>"; };
@@ -586,6 +608,15 @@
 			);
 			target = F47AB7382D381F2A00501720 /* GpuTest */;
 		};
+		F481CE762D80FA8100667EB9 /* Exceptions for "Tests" folder in "AZFullscreen" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				AZFullscreen/AppDelegate.m,
+				AZFullscreen/main.m,
+				AZFullscreen/MainView.m,
+			);
+			target = F481CE3D2D80FA6100667EB9 /* AZFullscreen */;
+		};
 		F4B3BF2D2D264D7C000C343A /* Exceptions for "Tests" folder in "Azoth" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -621,6 +652,11 @@
 				AZDragAndDrop/DroppingView.h,
 				AZDragAndDrop/DroppingView.m,
 				AZDragAndDrop/main.m,
+				AZFullscreen/AppDelegate.h,
+				AZFullscreen/AppDelegate.m,
+				AZFullscreen/main.m,
+				AZFullscreen/MainView.h,
+				AZFullscreen/MainView.m,
 				AZImageView/AppDelegate.h,
 				AZImageView/AppDelegate.m,
 				AZImageView/Assets.xcassets,
@@ -839,6 +875,7 @@
 				F4BD83A52D318F450041034B /* Exceptions for "Tests" folder in "AZDragAndDrop" target */,
 				F47AB7552D381F3200501720 /* Exceptions for "Tests" folder in "GpuTest" target */,
 				F4D6A07F2D73B57F007E3E44 /* Exceptions for "Tests" folder in "AZCompute" target */,
+				F481CE762D80FA8100667EB9 /* Exceptions for "Tests" folder in "AZFullscreen" target */,
 			);
 			explicitFolders = (
 				AZCompute/Resources/Shaders,
@@ -917,6 +954,20 @@
 				F47AB7662D3821AC00501720 /* SDL3_ttf.xcframework in Frameworks */,
 				F47AB7672D3821AC00501720 /* SDL3.xcframework in Frameworks */,
 				F47AB7682D3821AC00501720 /* webp.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F481CE3B2D80FA6100667EB9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F481CE802D80FB5B00667EB9 /* avif.xcframework in Frameworks */,
+				F481CE812D80FB5B00667EB9 /* Azoth.framework in Frameworks */,
+				F481CE822D80FB5B00667EB9 /* jxl.xcframework in Frameworks */,
+				F481CE832D80FB5B00667EB9 /* SDL3_image.xcframework in Frameworks */,
+				F481CE842D80FB5B00667EB9 /* SDL3_ttf.xcframework in Frameworks */,
+				F481CE852D80FB5B00667EB9 /* SDL3.xcframework in Frameworks */,
+				F481CE862D80FB5B00667EB9 /* webp.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1064,6 +1115,7 @@
 				F4BD837A2D318D990041034B /* AZDragAndDrop.app */,
 				F47AB7392D381F2A00501720 /* GpuTest.app */,
 				F4D6A0632D73B562007E3E44 /* AZCompute.app */,
+				F481CE3E2D80FA6100667EB9 /* AZFullscreen.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1219,6 +1271,26 @@
 			);
 			productName = GpuTest;
 			productReference = F47AB7392D381F2A00501720 /* GpuTest.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F481CE3D2D80FA6100667EB9 /* AZFullscreen */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F481CE672D80FA6200667EB9 /* Build configuration list for PBXNativeTarget "AZFullscreen" */;
+			buildPhases = (
+				F481CE3A2D80FA6100667EB9 /* Sources */,
+				F481CE3B2D80FA6100667EB9 /* Frameworks */,
+				F481CE3C2D80FA6100667EB9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F481CE782D80FB2C00667EB9 /* PBXTargetDependency */,
+			);
+			name = AZFullscreen;
+			packageProductDependencies = (
+			);
+			productName = AZFullscreen;
+			productReference = F481CE3E2D80FA6100667EB9 /* AZFullscreen.app */;
 			productType = "com.apple.product-type.application";
 		};
 		F495282A2D1F496200D6B8A6 /* AZTable */ = {
@@ -1425,6 +1497,9 @@
 					F47AB7382D381F2A00501720 = {
 						CreatedOnToolsVersion = 16.1;
 					};
+					F481CE3D2D80FA6100667EB9 = {
+						CreatedOnToolsVersion = 16.1;
+					};
 					F495282A2D1F496200D6B8A6 = {
 						CreatedOnToolsVersion = 16.1;
 					};
@@ -1460,7 +1535,7 @@
 					};
 				};
 			};
-			buildConfigurationList = F41BC64C2D0A61BA00E61EDD /* Build configuration list for PBXProject ".xcodeproj" */;
+			buildConfigurationList = F41BC64C2D0A61BA00E61EDD /* Build configuration list for PBXProject "Azoth" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -1490,6 +1565,7 @@
 				F4C296F52D4055D2003432CA /* ShaderCompilation */,
 				F4D6A0622D73B562007E3E44 /* AZCompute */,
 				F4D6A09E2D73B651007E3E44 /* AZComputeShaders */,
+				F481CE3D2D80FA6100667EB9 /* AZFullscreen */,
 			);
 		};
 /* End PBXProject section */
@@ -1520,6 +1596,20 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F481CE3C2D80FA6100667EB9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F481CE792D80FB3500667EB9 /* Azoth.framework in Resources */,
+				F481CE7E2D80FB4200667EB9 /* SDL3.xcframework in Resources */,
+				F481CE7C2D80FB4200667EB9 /* SDL3_image.xcframework in Resources */,
+				F481CE7A2D80FB4200667EB9 /* avif.xcframework in Resources */,
+				F481CE7B2D80FB4200667EB9 /* jxl.xcframework in Resources */,
+				F481CE7D2D80FB4200667EB9 /* SDL3_ttf.xcframework in Resources */,
+				F481CE7F2D80FB4200667EB9 /* webp.xcframework in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1630,6 +1720,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F481CE3A2D80FA6100667EB9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F49528272D1F496200D6B8A6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1700,6 +1797,11 @@
 			isa = PBXTargetDependency;
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
 			targetProxy = F41BC6AF2D0A720700E61EDD /* PBXContainerItemProxy */;
+		};
+		F481CE782D80FB2C00667EB9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
+			targetProxy = F481CE772D80FB2C00667EB9 /* PBXContainerItemProxy */;
 		};
 		F4BD80152D2A293C0041034B /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2131,6 +2233,54 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "net.moebius-tech.GpuTest";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Release;
+		};
+		F481CE612D80FA6200667EB9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Tests/AZFullscreen/AZFullscreen.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainNibFile = MainMenu;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.moebius-tech.AZFullscreen";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Debug;
+		};
+		F481CE622D80FA6200667EB9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Tests/AZFullscreen/AZFullscreen.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainNibFile = MainMenu;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "net.moebius-tech.AZFullscreen";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
@@ -2621,7 +2771,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		F41BC64C2D0A61BA00E61EDD /* Build configuration list for PBXProject ".xcodeproj" */ = {
+		F41BC64C2D0A61BA00E61EDD /* Build configuration list for PBXProject "Azoth" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F41BC65B2D0A61BA00E61EDD /* Debug */,
@@ -2662,6 +2812,15 @@
 			buildConfigurations = (
 				F47AB7472D381F2B00501720 /* Debug */,
 				F47AB7482D381F2B00501720 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F481CE672D80FA6200667EB9 /* Build configuration list for PBXNativeTarget "AZFullscreen" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F481CE612D80FA6200667EB9 /* Debug */,
+				F481CE622D80FA6200667EB9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
