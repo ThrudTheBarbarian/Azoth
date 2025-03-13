@@ -200,6 +200,17 @@ NSMutableArray<AZGPUBuffer *> *									inBuf;
 	}
 
 /*****************************************************************************\
+|* Sanity-check the jobs thread-count
+\*****************************************************************************/
+- (void) setJobs:(AZThreadSize)jobs
+	{
+	jobs.x 	= (jobs.x > 0) ? jobs.x : 1;
+	jobs.y 	= (jobs.y > 0) ? jobs.y : 1;
+	jobs.z 	= (jobs.z > 0) ? jobs.z : 1;
+	_jobs 	= jobs;
+	}
+
+/*****************************************************************************\
 |* Remove any previously-supplied bindings (samplers, output-textures,...)
 \*****************************************************************************/
 - (void) reset
@@ -356,7 +367,7 @@ NSMutableArray<AZGPUBuffer *> *									inBuf;
 
 
 /*****************************************************************************\
-|* Populate the output texture bindings structs. This expects a adequately
+|* Populate the output texture bindings structs. This expects an adequately
 |* sized buffer, which size can be found by calling into the method
 |* -numTextureReadWriteBindings
 \*****************************************************************************/
