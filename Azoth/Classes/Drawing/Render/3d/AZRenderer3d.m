@@ -617,10 +617,61 @@ static SDL_SpinLock 	_textureLock;
 	_window = [[AZWindow alloc] initWithWindow:_sdl];
 
 	/*************************************************************************\
-    |* Position it on screen
+    |* Get the requested size
     \*************************************************************************/
 	int x = f.origin.x;
 	int y = f.origin.y;
+
+	/*************************************************************************\
+    |* Find the display list
+    \*************************************************************************/
+	int num = 0;
+	SDL_DisplayID * displays 	= SDL_GetDisplays(&num);
+	SDL_DisplayID choice 		= (num > 0) ? displays[0] : -1;
+	if (displays)
+		{
+		NSUserDefaults *ud = NSUserDefaults.standardUserDefaults;
+		int dpy = [ud stringForKey:AZ_DEFAULT_SCREEN].intValue;
+
+		if ((dpy >= 0) && (dpy < num))
+			choice = displays[dpy];
+		}
+
+	/*************************************************************************\
+    |* Position it, if possible
+    \*************************************************************************/
+	if (choice >= 0)
+		{
+		SDL_Rect bounds;
+		SDL_GetDisplayBounds(choice, &bounds);
+		int W = bounds.w;
+		int H = bounds.h;
+
+		if (w > W)
+			{
+			w = W;
+			x = 0;
+			}
+		else if (w + x > W)
+			{
+			x = (W-w)/2;
+			}
+
+		if (h > H)
+			{
+			h = H;
+			y = 0;
+			}
+		else if (w + x > W)
+			{
+			y = (H-h)/2;
+			}
+		}
+	SDL_free(displays);
+
+	/*************************************************************************\
+    |* Set the position
+    \*************************************************************************/
 	if (!SDL_SetWindowPosition(_sdl, x, y))
 		return NO;
 

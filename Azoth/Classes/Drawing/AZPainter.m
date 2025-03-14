@@ -2294,15 +2294,13 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
 
 	// Draw
-	float t=0.f;
-	int x1=(int)SDL_round(_evaluateBezier(x,num+1,t));
-	int y1=(int)SDL_round(_evaluateBezier(y,num+1,t));
+	int idx 	= 1;
+	float t		= 0.f;
+	int total 	= num * steps + 1;
 
-	int total = num * steps + 1;
 	int px[total], py[total];
-	int idx = 1;
-	px[0] = (int)x1;
-	py[0] = (int)y1;
+	px[0] = (int)SDL_round(_evaluateBezier(x,num+1,t));
+	py[0] = (int)SDL_round(_evaluateBezier(y,num+1,t));
 
 	for (int i = 0; i <= total; i++)
 		{
