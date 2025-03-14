@@ -252,11 +252,15 @@ struct SDL_Surface;
 /*****************************************************************************\
 |* bezier lines
 \*****************************************************************************/
-- (int) bezierWithPoints:(int)num x:(int *)xc y:(int *)y steps:(int)steps
+- (int) bezierWithPoints:(int)num x:(float *)xc y:(float *)y steps:(int)steps
 		colour:(AZColour *)colour;
 
-- (int) bezierWithPoints:(int)num x:(int *)xc y:(int *)y steps:(int)steps
+- (int) bezierWithPoints:(int)num x:(float *)xc y:(float *)y steps:(int)steps
 		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
+
+- (int) bezierWithPoints:(int)num x:(float *)vx y:(float *)vy steps:(int)steps
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
+		filled:(BOOL)fill;
 
 
 /*****************************************************************************\

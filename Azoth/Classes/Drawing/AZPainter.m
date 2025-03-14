@@ -2226,7 +2226,7 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 /*****************************************************************************\
 |* Bezier curve enumeration
 \*****************************************************************************/
-- (int) bezierWithPoints:(int)num x:(int *)xc y:(int *)yc steps:(int)steps
+- (int) bezierWithPoints:(int)num x:(float *)xc y:(float *)yc steps:(int)steps
 		colour:(AZColour *)colour
 	{
 	return [self bezierWithPoints:num
@@ -2239,10 +2239,24 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 								a:colour.A];
 	}
 
-- (int) bezierWithPoints:(int)num x:(int *)vx y:(int *)vy steps:(int)steps
+/*****************************************************************************\
+|* Bezier curve line draw
+\*****************************************************************************/
+- (int) bezierWithPoints:(int)num x:(float *)vx y:(float *)vy steps:(int)steps
 		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
 	{
-	double *x, *y;
+	return [self bezierWithPoints:num x:vx y:vy steps:steps
+							withR:r g:g b:b a:a filled:NO];
+	}
+
+/*****************************************************************************\
+|* Bezier curve line draw or fill
+\*****************************************************************************/
+- (int) bezierWithPoints:(int)num x:(float *)vx y:(float *)vy steps:(int)steps
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
+		filled:(BOOL)fill
+	{
+	float *x, *y;
 
 	// Sanity check
 	if (num < 3)
@@ -2252,26 +2266,26 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		return (-1);
 
 	// Variable setup
-	double stepsize=(double)1.0/(double)steps;
+	float stepsize = 1.f/(float)steps;
 
 	/* Transfer vertices into float arrays */
-	if ((x=(double *)malloc(sizeof(double)*(num+1)))==NULL)
+	if ((x=(float *)SDL_malloc(sizeof(float)*(num+1))) == NULL)
 		return(-1);
 
-	if ((y=(double *)malloc(sizeof(double)*(num+1)))==NULL)
+	if ((y=(float *)SDL_malloc(sizeof(float)*(num+1))) == NULL)
 		{
-		free(x);
+		SDL_free(x);
 		return(-1);
 		}
 
 	for (int i=0; i < num; i++)
 		{
-		x[i]=(double)vx[i];
-		y[i]=(double)vy[i];
+		x[i] = vx[i];
+		y[i] = vy[i];
 		}
 
-	x[num]=(double)vx[0];
-	y[num]=(double)vy[0];
+	x[num] = vx[0];
+	y[num] = vy[0];
 
 	// Set color
 	int result = 0;
@@ -2280,27 +2294,43 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	result |= [_renderer setDrawColourToRed:r g:g b:b a:a];
 
 	// Draw
-	double t=0.0;
+	float t=0.f;
 	int x1=(int)SDL_round(_evaluateBezier(x,num+1,t));
 	int y1=(int)SDL_round(_evaluateBezier(y,num+1,t));
 
-	int total = num * steps;
+	int total = num * steps + 1;
+	int px[total], py[total];
+	int idx = 1;
+	px[0] = (int)x1;
+	py[0] = (int)y1;
+
 	for (int i = 0; i <= total; i++)
 		{
 		t += stepsize;
-		int x2=(int)_evaluateBezier(x,num,t);
-		int y2=(int)_evaluateBezier(y,num,t);
-			result |= [self lineAtX:x1 y:y1 toX:x2 y:y2];
-		x1 = x2;
-		y1 = y2;
+		px[idx] = (int)_evaluateBezier(x,num,t);
+		py[idx] = (int)_evaluateBezier(y,num,t);
+		idx ++;
+		}
+
+	if (fill)
+		{
+		[self polygonWith:idx x:px y:py filled:YES withR:r g:g b:b a:a];
+		}
+	else
+		{
+		for (int i=0; i<total; i++)
+			[self lineAtX:px[i] y:py[i] toX:px[i+1] y:py[i+1]
+				  withR:r g:g b:b a:a];
 		}
 
 	// Clean up temporary array
-	free(x);
-	free(y);
+	SDL_free(x);
+	SDL_free(y);
 
 	return (result);
 	}
+
+
 
 // MARK: Text drawing
 
@@ -3099,7 +3129,7 @@ static int _qsortInts(const void *a, const void *b)
 |* Internal function to calculate bezier interpolator of data array with ndata
 |* values at position 't'.
 \*****************************************************************************/
-static double _evaluateBezier(double *data, int num, double t)
+static double _evaluateBezier(float *data, int num, float t)
 	{
 	// Sanity check bounds
 	if (t < 0.0)
@@ -3113,31 +3143,31 @@ static double _evaluateBezier(double *data, int num, double t)
 
 	/* Calculate interpolate */
 	int n 			= num-1;
-	double result	= 0.0;
-	double muk 		= 1.0;
-	double munk 	= SDL_pow(1-mu,(double)n);
+	float result	= 0.f;
+	float muk 		= 1.f;
+	float munk 		= SDL_pow(1-mu,(float)n);
 
 	for (int k=0; k <= n; k++)
 		{
 		int nn 			= n;
 		int kn 			= k;
 		int nkn 		= n - k;
-		double blend 	= muk * munk;
-		muk *= mu;
-		munk /= (1-mu);
+		float blend 	= muk * munk;
+		muk 		   *= mu;
+		munk 		   /= (1-mu);
 		while (nn >= 1)
 			{
 			blend *= nn;
 			nn--;
 			if (kn > 1)
 				{
-				blend /= (double)kn;
+				blend /= (float)kn;
 				kn--;
 				}
 
 			if (nkn > 1)
 				{
-				blend /= (double)nkn;
+				blend /= (float)nkn;
 				nkn--;
 				}
 			}
