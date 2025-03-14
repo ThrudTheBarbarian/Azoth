@@ -410,7 +410,8 @@
 		[self _drawDirtyRect];
 
 	for (AZView *view in self.subviews)
-		[view _redrawViewAndSubviews];
+		if (!view.hidden)
+			[view _redrawViewAndSubviews];
 	}
 
 /*****************************************************************************\
