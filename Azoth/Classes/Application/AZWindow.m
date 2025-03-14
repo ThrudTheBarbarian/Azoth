@@ -58,6 +58,14 @@ static NSMutableDictionary<NSNumber *, AZWindow *> * _windows = nil;
 		_window					= window;
 		NSNumber *winId			= @(SDL_GetWindowID(window));
 		AZApp.windows[winId]	= self;
+
+		/*********************************************************************\
+		|* Set the minimum size
+		\*********************************************************************/
+		int w,h;
+		SDL_GetWindowSizeInPixels(_window, &w, &h);
+		_minSize = NSMakeSize(w,h);
+		SDL_SetWindowMinimumSize(_window, w, h);
 		}
 
 	return self;
