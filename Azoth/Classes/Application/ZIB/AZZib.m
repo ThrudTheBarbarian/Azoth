@@ -8,6 +8,7 @@
 #import <SDL3/SDL.h>
 
 #import "AZApplication.h"
+#import "AZAppDelegate.h"
 #import "AZButton.h"
 #import "AZClipView.h"
 #import "AZControl.h"
@@ -422,11 +423,9 @@ NSString * const kZibWindow			= @"window";
 		if (info[kZibTitle])
 			window.title = info[kZibTitle];
 
-		// And link us through to the shared application. This is a little
-		// different to Cocoa, where the Application has a delegate which is
-		// the object with a link to the window, but we don't need a delegate
-		// as much as Cocoa does...
+		// And link us through to the shared application and delegate
 		AZApp.window = window;
+		AZApp.delegate.window = window;
 
 		// Bootstrap the shared renderer instance at this point. Note that it
 		// must be called *after* the window is set into the shared application
