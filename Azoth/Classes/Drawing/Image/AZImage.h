@@ -39,7 +39,7 @@ typedef enum
 // rendered.
 typedef BOOL (^AZImageDrawingHandler)(NSRect dstRect, AZPainter *painter) ;
 
-@interface AZImage : NSObject <AZPasteboardWriting>
+@interface AZImage : NSObject <AZPasteboardWriting, NSCopying>
 
 /*****************************************************************************\
 |* Initialisation: Don't create images manually, call one of the convenience

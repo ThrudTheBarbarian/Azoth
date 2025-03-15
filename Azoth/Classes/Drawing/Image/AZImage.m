@@ -252,7 +252,7 @@ static NSMutableDictionary<NSString*,AZImage*> * 						_map;
 	{
 	return _srcRect;
 	}
-	
+
 /*****************************************************************************\
 |* Lock focus on the image, which internally creates the AZPainter that will
 |* have this image as its context.
@@ -576,6 +576,26 @@ static NSMutableDictionary<NSString*,AZImage*> * 						_map;
 - (nonnull NSArray<NSString *> *)writableTypesForPasteboard:(nonnull AZPasteboard *)pasteboard
 	{
 	return @[AZPasteboardTypeImage];
+	}
+
+// MARK: NSCopying
+
+/*****************************************************************************\
+|* Duplicate this image and return
+\*****************************************************************************/
+- (nonnull id)copyWithZone:(nullable NSZone *)zone
+	{
+	NSSize size 			= NSMakeSize(self.width, self.height);
+	AZImage *copy 			= [AZImage imageWithSize:size];
+	copy.clearBeforeDraw	= _clearBeforeDraw;
+	copy.isTemplate			= _isTemplate;
+	copy.identifier			= _identifier;
+	copy.isValid			= _isValid;
+
+	AZPainter  *P			= [copy lockFocus:NO];
+	[P image:self at:NSMakePoint(0,0)];
+	[copy unlockFocusWithPainter:P];
+	return copy;
 	}
 
 @end
