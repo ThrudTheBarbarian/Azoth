@@ -1,15 +1,17 @@
 //
-//  AZPoint.h
+//  AZBezierPoint.h
 //  Azoth
 //
 //  Created by Simon Gornall on 3/15/25.
+//  Based on git@github.com:aurimasg/cubic-bezier-offsetter.git
 //
 
 #import <Foundation/Foundation.h>
 #import <SDL3/SDL.h>
 
-#define FUZZY_EQUAL(x,y)	(SDL_fabs((x)-(y)) < DBL_EPSILON)
-#define FUZZY_ZERO(x)		(SDL_fabs(x) < DBL_EPSILON)
+#define FUZZY_EQUAL_WITH(x,y,t)	(SDL_fabs((x)-(y)) < (t))
+#define FUZZY_EQUAL(x,y)		(SDL_fabs((x)-(y)) < DBL_EPSILON)
+#define FUZZY_ZERO(x)			(SDL_fabs(x) < DBL_EPSILON)
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -21,7 +23,7 @@ typedef enum
 	} TrianglePointOrientation;
 
 
-@interface AZPoint : NSObject
+@interface AZBezierPoint : NSObject <NSCopying>
 
 /*****************************************************************************\
 |* Initialisation : Declare an empty point
@@ -63,52 +65,56 @@ typedef enum
 |* less than zero if points are counter-clockwise. And returns zero if
 | * points are collinear
 \*****************************************************************************/
-+ (double) turn:(AZPoint *)p0 and:(AZPoint *)p1 and:(AZPoint *)p2;
++ (double) turn:(AZBezierPoint *)p0
+			and:(AZBezierPoint *)p1
+			and:(AZBezierPoint *)p2;
 
 /*****************************************************************************\
 |* Determines orientation of triangle defined by three given points
 \*****************************************************************************/
-+ (TrianglePointOrientation) triangleOrientation:(AZPoint *)p0
-											 and:(AZPoint *)p1
-											 and:(AZPoint *)p2;
++ (TrianglePointOrientation) triangleOrientation:(AZBezierPoint *)p0
+											 and:(AZBezierPoint *)p1
+											 and:(AZBezierPoint *)p2;
 
 /*****************************************************************************\
 |* Returns true if triangle defined by three given points is clockwise.
 |* Returns false if triangle is counter-clockwise or if points are
 |* collinear
 \*****************************************************************************/
-+ (BOOL) triangleClockwise:(AZPoint *)p0 and:(AZPoint *)p1 and:(AZPoint *)p2;
++ (BOOL) triangleClockwise:(AZBezierPoint *)p0
+					   and:(AZBezierPoint *)p1
+					   and:(AZBezierPoint *)p2;
 
 
 /*****************************************************************************\
 |* Add two points
 \*****************************************************************************/
-+ (AZPoint *) add:(AZPoint *)p1 to:(AZPoint *)p2;
++ (AZBezierPoint *) add:(AZBezierPoint *)p1 to:(AZBezierPoint *)p2;
 
 /*****************************************************************************\
 |* Subtract one point from another
 \*****************************************************************************/
-+ (AZPoint *) subtract:(AZPoint *)p1 from:(AZPoint *)p2;
++ (AZBezierPoint *) subtract:(AZBezierPoint *)p1 from:(AZBezierPoint *)p2;
 
 /*****************************************************************************\
 |* Scale a point
 \*****************************************************************************/
-+ (AZPoint *) scale:(AZPoint *)p1 by:(double)scale;
++ (AZBezierPoint *) scale:(AZBezierPoint *)p1 by:(double)scale;
 
 /*****************************************************************************\
 |* Scale a point
 \*****************************************************************************/
-+ (AZPoint *) multiply:(AZPoint *)p1 by:(AZPoint *)p2;
++ (AZBezierPoint *) multiply:(AZBezierPoint *)p1 by:(AZBezierPoint *)p2;
 
 /*****************************************************************************\
 |* Divide a point by another
 \*****************************************************************************/
-+ (AZPoint *) divide:(AZPoint *)p1 by:(AZPoint *)p2;
++ (AZBezierPoint *) divide:(AZBezierPoint *)p1 by:(AZBezierPoint *)p2;
 
 /*****************************************************************************\
 |* Negate a point
 \*****************************************************************************/
-+ (AZPoint *) negate:(AZPoint *)p1;
++ (AZBezierPoint *) negate:(AZBezierPoint *)p1;
 
 
 // MARK: Public methods
@@ -122,24 +128,24 @@ typedef enum
 |* Return a linear interpolation from this point to another, using parameter
 |* t which must range from 0..1 inclusive
 \*****************************************************************************/
-- (AZPoint *)lerpTo:(AZPoint *)other by:(double)t;
+- (AZBezierPoint *)lerpTo:(AZBezierPoint *)other by:(double)t;
 
 /*****************************************************************************\
 |* Returns whether a point is equal to another one, within a tolerance, if the
 |* single-argument version is called, a tolerance of DBL_EPSILON is used
 \*****************************************************************************/
-- (BOOL) isEqual:(AZPoint *)p;
-- (BOOL) isEqual:(AZPoint *)p tolerance:(double)tolerance;
+- (BOOL) isEqual:(AZBezierPoint *)p;
+- (BOOL) isEqual:(AZBezierPoint *)p tolerance:(double)tolerance;
 
 /*****************************************************************************\
 |* Returns distance from this point to another point
 \*****************************************************************************/
-- (double) distanceTo:(AZPoint *)other;
+- (double) distanceTo:(AZBezierPoint *)other;
 
 /*****************************************************************************\
 |* Returns squared distance from this point to another point
 \*****************************************************************************/
-- (double) distanceToSquared:(AZPoint *)other;
+- (double) distanceToSquared:(AZBezierPoint *)other;
 
 /*****************************************************************************\
 |* Returns length of vector defined by X and Y components of this point
@@ -155,19 +161,19 @@ typedef enum
 |* Returns normalized version of this vector. If this vector has length of
 |* zero, vector with both components set to zero will be returned
 \*****************************************************************************/
-- (AZPoint *) unitVector;
+- (AZBezierPoint *) unitVector;
 
 /*****************************************************************************\
 |* Returns vector which has direction perpendicular to the direction of
 |* this vector
 \*****************************************************************************/
-- (AZPoint *) normalVector;
+- (AZBezierPoint *) normalVector;
 
 /*****************************************************************************\
 |* Returns vector which has direction perpendicular to the direction of
 |* this vector, vector is normalised
 \*****************************************************************************/
-- (AZPoint *) unitNormalVector;
+- (AZBezierPoint *) unitNormalVector;
 
 /*****************************************************************************\
 |* Returns cross product of two 2D vectors (this × point).
@@ -176,47 +182,47 @@ typedef enum
 |* return value is Z component of cross product. This method returns that
 |* and does not calculate anything else.
 \*****************************************************************************/
-- (double) cross:(AZPoint *)other;
+- (double) cross:(AZBezierPoint *)other;
 
 /*****************************************************************************\
 |* Returns dot product of this vector and a given vector
 \*****************************************************************************/
-- (double) dot:(AZPoint *)other;
+- (double) dot:(AZBezierPoint *)other;
 
 /*****************************************************************************\
 |* Returns vector created by rotating this vector 90 degrees counter-clockwise
 \*****************************************************************************/
-- (AZPoint *) rotated90CCW;
+- (AZBezierPoint *) rotated90CCW;
 
 /*****************************************************************************\
 |* Add to this point
 \*****************************************************************************/
-- (void) add:(AZPoint *)p1;
+- (AZBezierPoint *) add:(AZBezierPoint *)p1;
 
 /*****************************************************************************\
 |* Subtract a point from this one
 \*****************************************************************************/
-- (void) subtract:(AZPoint *)p1;
+- (AZBezierPoint *) subtract:(AZBezierPoint *)p1;
 
 /*****************************************************************************\
 |* Scale this point
 \*****************************************************************************/
-- (void) scaleBy:(double)scale;
+- (AZBezierPoint *) scaleXY:(double)scale;
 
 /*****************************************************************************\
 |* Scale this point
 \*****************************************************************************/
-- (void) multiplyBy:(AZPoint *)p1;
+- (AZBezierPoint *) multiplyBy:(AZBezierPoint *)p1;
 
 /*****************************************************************************\
 |* Divide this point by another
 \*****************************************************************************/
-- (void) divideBy:(AZPoint *)p1;
+- (AZBezierPoint *) divideBy:(AZBezierPoint *)p1;
 
 /*****************************************************************************\
 |* Negate this point
 \*****************************************************************************/
-- (void) negate;
+- (AZBezierPoint *) negate;
 
 
 

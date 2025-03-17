@@ -1,20 +1,21 @@
 //
-//  AZBezierElement.m
+//  AZBezierPath.m
 //  Azoth
 //
 //  Created by Simon Gornall on 3/15/25.
+//  Based on git@github.com:aurimasg/cubic-bezier-offsetter.git
 //
 
-#import "AZBezierElement.h"
-#import "AZLine.h"
-#import "AZPoint.h"
+#import "AZBezierPath.h"
+#import "AZBezierLine.h"
+#import "AZBezierPoint.h"
 
 #define CUBE_ROOT(x) (SDL_pow((x), 1.0/3.0))
 
-@interface AZBezierElement()
+@interface AZBezierPath()
 @end
 
-@implementation AZBezierElement
+@implementation AZBezierPath
 
 /*****************************************************************************\
 |* Initialisation : Declare an empty bezier path element
@@ -23,18 +24,19 @@
 	{
 	if (self = [super init])
 		{
+		_segments 	= NSMutableArray.new;
 		_tolerance  = DBL_EPSILON;
-		_p0			= AZPoint.new;
-		_p1			= AZPoint.new;
-		_c0			= AZPoint.new;
-		_c1			= AZPoint.new;
+		_p0			= AZBezierPoint.new;
+		_p1			= AZBezierPoint.new;
+		_c0			= AZBezierPoint.new;
+		_c1			= AZBezierPoint.new;
 		}
 	return self;
 	}
 
 + (instancetype) empty;
 	{
-	return AZBezierElement.new;
+	return AZBezierPath.new;
 	}
 
 
@@ -48,11 +50,12 @@
 	{
 	if (self = [super init])
 		{
+		_segments 	= NSMutableArray.new;
 		_tolerance	= DBL_EPSILON;
-		_p0 		= [AZPoint point:p0];
-		_p1 		= [AZPoint point:p1];
-		_c0 		= [AZPoint point:c0];
-		_c1 		= [AZPoint point:c1];
+		_p0 		= [AZBezierPoint point:p0];
+		_p1 		= [AZBezierPoint point:p1];
+		_c0 		= [AZBezierPoint point:c0];
+		_c1 		= [AZBezierPoint point:c1];
 		}
 	return self;
 	}
@@ -62,7 +65,7 @@
 				 control2:(NSPoint)c1
 					   to:(NSPoint)p1
 	{
-	return [[AZBezierElement alloc] initFrom:p0 control1:c0 control2:c1 to:p1];
+	return [[AZBezierPath alloc] initFrom:p0 control1:c0 control2:c1 to:p1];
 	}
 
 
@@ -73,11 +76,12 @@
 	{
 	if (self = [super init])
 		{
+		_segments 	= NSMutableArray.new;
 		_tolerance	= DBL_EPSILON;
-		_p0 		= [AZPoint point:p0];
-		_p1 		= [AZPoint point:p1];
-		_c0			= AZPoint.new;
-		_c1			= AZPoint.new;
+		_p0 		= [AZBezierPoint point:p0];
+		_p1 		= [AZBezierPoint point:p1];
+		_c0			= AZBezierPoint.new;
+		_c1			= AZBezierPoint.new;
 		_c0.x 		= p0.x + (2.0 / 3.0) * (c.x - p0.x);
 		_c0.y 		= p0.y + (2.0 / 3.0) * (c.y - p0.y);
 		_c1.x 		= c.x  + (1.0 / 3.0) * (p1.x - c.x);
@@ -88,7 +92,7 @@
 
 + (instancetype) pathFrom:(NSPoint)p0 control:(NSPoint)c to:(NSPoint)p1
 	{
-	return [[AZBezierElement alloc] initFrom:p0 control:c to:p1];
+	return [[AZBezierPath alloc] initFrom:p0 control:c to:p1];
 	}
 
 
@@ -99,11 +103,12 @@
 	{
 	if (self = [super init])
 		{
+		_segments 	= NSMutableArray.new;
 		_tolerance	= DBL_EPSILON;
-		_p0 		= [AZPoint point:p0];
-		_p1 		= [AZPoint point:p1];
-		_c0			= AZPoint.new;
-		_c1			= AZPoint.new;
+		_p0 		= [AZBezierPoint point:p0];
+		_p1 		= [AZBezierPoint point:p1];
+		_c0			= AZBezierPoint.new;
+		_c1			= AZBezierPoint.new;
 		_c0.x 		= p0.x + (1.0 / 3.0) * (p1.x - p0.x);
 		_c0.y 		= p0.y + (1.0 / 3.0) * (p1.y - p0.y);
 		_c1.x 		= p0.x + (1.0 / 3.0) * (p1.x - p0.x);
@@ -114,7 +119,7 @@
 
 + (instancetype) pathFrom:(NSPoint)p0 to:(NSPoint)p1;
 	{
-	return [[AZBezierElement alloc] initFrom:p0 to:p1];
+	return [[AZBezierPath alloc] initFrom:p0 to:p1];
 	}
 
 
@@ -155,8 +160,8 @@
         (maxy >= _c1.y) &&
 
         // Are all points collinear?
-        [AZPoint isZero:[AZPoint turn:_p0 and:_c0 and:_p1]] &&
-		[AZPoint isZero:[AZPoint turn:_p0 and:_c1 and:_p1]];
+        [AZBezierPoint isZero:[AZBezierPoint turn:_p0 and:_c0 and:_p1]] &&
+		[AZBezierPoint isZero:[AZBezierPoint turn:_p0 and:_c1 and:_p1]];
 	}
 
 
@@ -165,94 +170,104 @@
 // MARK: Public methods
 
 /*****************************************************************************\
+|* Is this curve a point within a tolerance
+\*****************************************************************************/
+- (BOOL) isPointWithTolerance:(double)tolerance
+	{
+	return  [_p0 isEqual:_p1 tolerance:tolerance] &&
+			[_p0 isEqual:_c0 tolerance:tolerance] &&
+			[_p0 isEqual:_c1 tolerance:tolerance];
+	}
+
+/*****************************************************************************\
 |* Get the line representing the tangent at the start of the element
 \*****************************************************************************/
-- (AZLine *) startTangentWithTolerance:(double)tolerance
+- (AZBezierLine *) startTangentWithTolerance:(double)tolerance
 	{
     if ([_p0 isEqual:_c0 tolerance:tolerance])
 		{
 		if ([_p0 isEqual:_c1 tolerance:tolerance])
-			return [AZLine lineFrom:_p0 to:_p1];
-		return [AZLine lineFrom:_p0 to:_c1];
+			return [AZBezierLine lineFrom:_p0 to:_p1];
+		return [AZBezierLine lineFrom:_p0 to:_c1];
 		}
-	return [AZLine lineFrom:_p0 to:_c0];
+	return [AZBezierLine lineFrom:_p0 to:_c0];
 	}
 
 /*****************************************************************************\
 |* Get the line representing the tangent at the end of the element
 \*****************************************************************************/
-- (AZLine *) endTangentWithTolerance:(double)tolerance
+- (AZBezierLine *) endTangentWithTolerance:(double)tolerance
 	{
     if ([_p1 isEqual:_c1 tolerance:tolerance])
 		{
 		if ([_p1 isEqual:_c0 tolerance:tolerance])
-			return [AZLine lineFrom:_p1 to:_p0];
-		return [AZLine lineFrom:_p1 to:_c0];
+			return [AZBezierLine lineFrom:_p1 to:_p0];
+		return [AZBezierLine lineFrom:_p1 to:_c0];
 		}
-	return [AZLine lineFrom:_p1 to:_c1];
+	return [AZBezierLine lineFrom:_p1 to:_c1];
 	}
 
 /*****************************************************************************\
 |* Interpolate the point along the curve, 0 < t < 1
 \*****************************************************************************/
-- (AZPoint *) pointAt:(double)t
+- (AZBezierPoint *) pointAt:(double)t
 	{
 	t = SDL_clamp(t, 0.0, 1.0);
     const double it = 1.0 - t;
 
-	AZPoint *a0 = [AZPoint add:[AZPoint scale:_p0 by:it]
-							to:[AZPoint scale:_c0 by:t]];
+	AZBezierPoint *a0 = [AZBezierPoint add:[AZBezierPoint scale:_p0 by:it]
+							to:[AZBezierPoint scale:_c0 by:t]];
 
-	AZPoint *b0 = [AZPoint add:[AZPoint scale:_c0 by:it]
-							to:[AZPoint scale:_c1 by:t]];
+	AZBezierPoint *b0 = [AZBezierPoint add:[AZBezierPoint scale:_c0 by:it]
+							to:[AZBezierPoint scale:_c1 by:t]];
 
-	AZPoint *c0 = [AZPoint add:[AZPoint scale:_c1 by:it]
-							to:[AZPoint scale:_p1 by:t]];
+	AZBezierPoint *c0 = [AZBezierPoint add:[AZBezierPoint scale:_c1 by:it]
+							to:[AZBezierPoint scale:_p1 by:t]];
 
-	AZPoint *a1 = [AZPoint add:[AZPoint scale:a0 by:it]
-							to:[AZPoint scale:b0 by:t]];
+	AZBezierPoint *a1 = [AZBezierPoint add:[AZBezierPoint scale:a0 by:it]
+							to:[AZBezierPoint scale:b0 by:t]];
 
-	AZPoint *b1 = [AZPoint add:[AZPoint scale:b0 by:it]
-							to:[AZPoint scale:c0 by:t]];
+	AZBezierPoint *b1 = [AZBezierPoint add:[AZBezierPoint scale:b0 by:it]
+							to:[AZBezierPoint scale:c0 by:t]];
 
-	return [AZPoint add:[AZPoint scale:a1 by:it]
-					 to:[AZPoint scale:b1 by:t]];
+	return [AZBezierPoint add:[AZBezierPoint scale:a1 by:it]
+					 to:[AZBezierPoint scale:b1 by:t]];
 	}
 
 /*****************************************************************************\
 |* Return the normal vector at a given point along the curve, 0 < t < 1
 \*****************************************************************************/
-- (AZPoint *) normalVector:(double)t
+- (AZBezierPoint *) normalVector:(double)t
 	{
-	if ([AZPoint isZero:t])
+	if ([AZBezierPoint isZero:t])
 		{
 		if ([_p0 isEqual:_c0])
 			{
 			if ([_p0 isEqual:_c1])
-				return [AZLine lineFrom:_p0 to:_p1].normalVector;
+				return [AZBezierLine lineFrom:_p0 to:_p1].normalVector;
 			else
-				return [AZLine lineFrom:_p0 to:_c1].normalVector;
+				return [AZBezierLine lineFrom:_p0 to:_c1].normalVector;
 			}
 		}
-	else if ([AZPoint isZero:t-1.0])
+	else if ([AZBezierPoint isZero:t-1.0])
 		{
 		if ([_c1 isEqual:_p1])
 			{
 			if ([_c0 isEqual:_p1])
-				return [AZLine lineFrom:_p0 to:_p1].normalVector;
+				return [AZBezierLine lineFrom:_p0 to:_p1].normalVector;
             else
-				return [AZLine lineFrom:_c0 to:_p1].normalVector;
+				return [AZBezierLine lineFrom:_c0 to:_p1].normalVector;
 			}
 		}
 
-    AZPoint *d = [self derivativeAt:t];
-	return [AZPoint pointAtX:d.y y:-d.x];
+    AZBezierPoint *d = [self derivativeAt:t];
+	return [AZBezierPoint pointAtX:d.y y:-d.x];
 	}
 
 /*****************************************************************************\
 |* Return the unit normal vector at a given point along the curve, 0 < t < 1
 \*****************************************************************************/
-- (AZPoint *) unitNormalVector:(double)t
+- (AZBezierPoint *) unitNormalVector:(double)t
 	{
 	return [self normalVector:t].unitVector;
 	}
@@ -260,43 +275,44 @@
 /*****************************************************************************\
 |* Return the derivative at a given point along the curve, 0 < t < 1
 \*****************************************************************************/
-- (AZPoint *) derivativeAt:(double)t
+- (AZBezierPoint *) derivativeAt:(double)t
 	{
-	t 				= SDL_clamp(t, 0.0, 1.0);
-    const double it = 1.0 - t;
+	AZBezierPoint *p 	= nil;
+	t 					= SDL_clamp(t, 0.0, 1.0);
+    const double it 	= 1.0 - t;
 
-    const double d = t * t;
-    const double a = -it * it;
-    const double b = 1.0 - 4.0 * t + 3.0 * d;
-    const double c = 2.0 * t - 3.0 * d;
+    const double d 		= t * t;
+    const double a 		= -it * it;
+    const double b 		= 1.0 - 4.0 * t + 3.0 * d;
+    const double c 		= 2.0 * t - 3.0 * d;
 
-	AZPoint *p = [AZPoint pointAtX:a*_p0.x + b * _c0.x + c * _c1.x + d * _p1.x
-								 y:a*_p0.y + b * _c0.y + c * _c1.y + d * _p1.y];
-	[p scaleBy:3.0];
-	return p;
+	p = [AZBezierPoint pointAtX:a*_p0.x + b * _c0.x + c * _c1.x + d * _p1.x
+							  y:a*_p0.y + b * _c0.y + c * _c1.y + d * _p1.y];
+
+	return [p scaleXY:3.0];
 	}
 
 /*****************************************************************************\
 |* Return the second derivative at a given point along the curve, 0 < t < 1
 \*****************************************************************************/
-- (AZPoint *) secondDerivativeAt:(double)t
+- (AZBezierPoint *) secondDerivativeAt:(double)t
 	{
-	t 				= SDL_clamp(t, 0.0, 1.0);
-    const double a 	= 2.0 - 2.0 * t;
-    const double b 	= -4.0 + 6.0 * t;
-    const double c 	= 2.0 - 6.0 * t;
-    const double d 	= 2.0 * t;
+	AZBezierPoint *p 	= nil;
+	t 					= SDL_clamp(t, 0.0, 1.0);
+    const double a 		= 2.0 - 2.0 * t;
+    const double b 		= -4.0 + 6.0 * t;
+    const double c 		= 2.0 - 6.0 * t;
+    const double d 		= 2.0 * t;
 
-	AZPoint *p = [AZPoint pointAtX:a*_p0.x + b * _c0.x + c * _c1.x + d * _p1.x
-								 y:a*_p0.y + b * _c0.y + c * _c1.y + d * _p1.y];
-	[p scaleBy:3.0];
-	return p;
+	p = [AZBezierPoint pointAtX:a*_p0.x + b * _c0.x + c * _c1.x + d * _p1.x
+							  y:a*_p0.y + b * _c0.y + c * _c1.y + d * _p1.y];
+	return [p scaleXY:3.0];
 	}
 
 /*****************************************************************************\
 |* Fetch a subcurve from the source curve between two points, both 0..1
 \*****************************************************************************/
-- (AZBezierElement *) subcurveFrom:(double)t0 to:(double)t1
+- (AZBezierPath *) subcurveFrom:(double)t0 to:(double)t1
 	{
 	if (t0 >= t1)
 		{
@@ -305,10 +321,10 @@
 		}
 
 	// Corner case, t0 is coincident with t1
-	if ([AZPoint isZero:t0-t1])
+	if ([AZBezierPoint isZero:t0-t1])
 		{
 		NSPoint p = [self pointAt:t0].asPoint;
-		return [AZBezierElement pathFrom:p control1:p control2:p to:p];
+		return [AZBezierPath pathFrom:p control1:p control2:p to:p];
 		}
 
 	// If t0 is actually the start...
@@ -319,14 +335,14 @@
 			return self;
 
 		// Cut the curve at t1 only
-		AZPoint *ab 	= [_p0 lerpTo:_c0 by:t1];
-		AZPoint *bc 	= [_c0 lerpTo:_c1 by:t1];
-		AZPoint *cd 	= [_c1 lerpTo:_p1 by:t1];
-		AZPoint *abc 	= [ab  lerpTo:bc  by:t1];
-		AZPoint *bcd 	= [bc  lerpTo:cd  by:t1];
-		AZPoint *abcd 	= [abc lerpTo:bcd by:t1];
+		AZBezierPoint *ab 		= [_p0 lerpTo:_c0 by:t1];
+		AZBezierPoint *bc 		= [_c0 lerpTo:_c1 by:t1];
+		AZBezierPoint *cd 		= [_c1 lerpTo:_p1 by:t1];
+		AZBezierPoint *abc 		= [ab  lerpTo:bc  by:t1];
+		AZBezierPoint *bcd 		= [bc  lerpTo:cd  by:t1];
+		AZBezierPoint *abcd 	= [abc lerpTo:bcd by:t1];
 
-		return [AZBezierElement pathFrom:_p0.asPoint
+		return [AZBezierPath pathFrom:_p0.asPoint
 								control1:ab.asPoint
 								control2:abc.asPoint
 									  to:abcd.asPoint];
@@ -336,36 +352,36 @@
 	if (t1 >= (1.0 - DBL_EPSILON))
 		{
 		// Cut the curve at t0 only
-		AZPoint *ab 	= [_p0 lerpTo:_c0 by:t0];
-		AZPoint *bc 	= [_c0 lerpTo:_c1 by:t0];
-		AZPoint *cd 	= [_c1 lerpTo:_p1 by:t0];
-		AZPoint *abc 	= [ab  lerpTo:bc  by:t0];
-		AZPoint *bcd 	= [bc  lerpTo:cd  by:t0];
-		AZPoint *abcd 	= [abc lerpTo:bcd by:t0];
+		AZBezierPoint *ab 		= [_p0 lerpTo:_c0 by:t0];
+		AZBezierPoint *bc 		= [_c0 lerpTo:_c1 by:t0];
+		AZBezierPoint *cd 		= [_c1 lerpTo:_p1 by:t0];
+		AZBezierPoint *abc 		= [ab  lerpTo:bc  by:t0];
+		AZBezierPoint *bcd 		= [bc  lerpTo:cd  by:t0];
+		AZBezierPoint *abcd 	= [abc lerpTo:bcd by:t0];
 
-		return [AZBezierElement pathFrom:abcd.asPoint
+		return [AZBezierPath pathFrom:abcd.asPoint
 								control1:bcd.asPoint
 								control2:cd.asPoint
 									  to:_p1.asPoint];
 		}
 
 	// Else cut the curve at both t0 and t1
-	AZPoint *ab0 	= [_p0  lerpTo:_c0  by:t1];
-	AZPoint *bc0 	= [_c0  lerpTo:_c1  by:t1];
-	AZPoint *cd0 	= [_c1  lerpTo:_p1  by:t1];
-	AZPoint *abc0 	= [ab0  lerpTo:bc0  by:t1];
-	AZPoint *bcd0 	= [bc0  lerpTo:cd0  by:t1];
-	AZPoint *abcd0 	= [abc0 lerpTo:bcd0 by:t1];
+	AZBezierPoint *ab0 		= [_p0  lerpTo:_c0  by:t1];
+	AZBezierPoint *bc0 		= [_c0  lerpTo:_c1  by:t1];
+	AZBezierPoint *cd0 		= [_c1  lerpTo:_p1  by:t1];
+	AZBezierPoint *abc0 	= [ab0  lerpTo:bc0  by:t1];
+	AZBezierPoint *bcd0 	= [bc0  lerpTo:cd0  by:t1];
+	AZBezierPoint *abcd0 	= [abc0 lerpTo:bcd0 by:t1];
 
     const double m 	= t0 / t1;
-	AZPoint *ab1 	= [_p0  lerpTo:ab0   by:m];
-	AZPoint *bc1 	= [ab0  lerpTo:abc0  by:m];
-	AZPoint *cd1 	= [abc0 lerpTo:abcd0 by:m];
-	AZPoint *abc1 	= [ab1  lerpTo:bc1   by:m];
-	AZPoint *bcd1 	= [bc1  lerpTo:cd1   by:m];
-	AZPoint *abcd1 	= [abc1 lerpTo:bcd1  by:m];
+	AZBezierPoint *ab1 		= [_p0  lerpTo:ab0   by:m];
+	AZBezierPoint *bc1 		= [ab0  lerpTo:abc0  by:m];
+	AZBezierPoint *cd1 		= [abc0 lerpTo:abcd0 by:m];
+	AZBezierPoint *abc1 	= [ab1  lerpTo:bc1   by:m];
+	AZBezierPoint *bcd1 	= [bc1  lerpTo:cd1   by:m];
+	AZBezierPoint *abcd1 	= [abc1 lerpTo:bcd1  by:m];
 
-	return [AZBezierElement pathFrom:abcd1.asPoint
+	return [AZBezierPath pathFrom:abcd1.asPoint
 							control1:bcd1.asPoint
 							control2:cd1.asPoint
 								  to:abcd0.asPoint];
@@ -426,33 +442,36 @@
 /*****************************************************************************\
 |* Split a curve into 2 using its midpoint as the cut point
 \*****************************************************************************/
-- (void) splitInto:(AZBezierElement *)l1 and:(AZBezierElement *)l2
+- (void) splitInto:(AZBezierPath *)l1 and:(AZBezierPath *)l2
 	{
-	AZPoint *c 		= [AZPoint scale:[AZPoint add:_c0 to:_c1] by:0.5];
+	AZBezierPoint *c, *aP2, *bP2, *aP3, *bP3, *m;
 
-	AZPoint *aP2	= [AZPoint scale:[AZPoint add:_p0 to:_c0] by:0.5];
-	AZPoint *bP3	= [AZPoint scale:[AZPoint add:_c1 to:_p1] by:0.5];
-	AZPoint *aP3	= [AZPoint scale:[AZPoint add:aP2 to:c  ] by:0.5];
-	AZPoint *bP2	= [AZPoint scale:[AZPoint add:bP3 to:c  ] by:0.5];
-	AZPoint *m		= [AZPoint scale:[AZPoint add:aP3 to:bP2] by:0.5];
+	c 		= [AZBezierPoint scale:[AZBezierPoint add:_c0 to:_c1] by:0.5];
+	aP2		= [AZBezierPoint scale:[AZBezierPoint add:_p0 to:_c0] by:0.5];
+	bP3		= [AZBezierPoint scale:[AZBezierPoint add:_c1 to:_p1] by:0.5];
+	aP3		= [AZBezierPoint scale:[AZBezierPoint add:aP2 to:c  ] by:0.5];
+	bP2		= [AZBezierPoint scale:[AZBezierPoint add:bP3 to:c  ] by:0.5];
+	m		= [AZBezierPoint scale:[AZBezierPoint add:aP3 to:bP2] by:0.5];
 
-	l1.p0 			= _p0;
-	l1.c0			= aP2;
-	l1.c1 			= aP3;
-	l1.p1 			= m;
+	l1.p0 	= _p0;
+	l1.c0	= aP2;
+	l1.c1 	= aP3;
+	l1.p1 	= m;
 
-	l2.p0 			= m;
-	l2.c0			= bP2;
-	l2.c1 			= bP3;
-	l2.p1 			= _p1;
+	l2.p0 	= m;
+	l2.c0	= bP2;
+	l2.c1 	= bP3;
+	l2.p1 	= _p1;
 	}
 
 /*****************************************************************************\
 |* Find the intersections of a ray with this element
 \*****************************************************************************/
-- (int) rayIntersectionFrom:(AZPoint *)p0 to:(AZPoint *)p1 roots:(double *)t;
+- (int) rayIntersectionFrom:(AZBezierPoint *)p0
+						 to:(AZBezierPoint *)p1
+					  roots:(double *)t;
 	{
-	AZPoint *v = [AZPoint subtract:p0 from:p1];
+	AZBezierPoint *v = [AZBezierPoint subtract:p0 from:p1];
 
     const double ax = (_p0.y - p0.y) * v.x - (_p0.x - p0.x) * v.y;
     const double bx = (_c0.y - p0.y) * v.x - (_c0.x - p0.x) * v.y;

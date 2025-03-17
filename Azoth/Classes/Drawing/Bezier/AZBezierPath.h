@@ -1,18 +1,19 @@
 //
-//  AZBezierElement.h
+//  AZBezierPath.h
 //  Azoth
 //
 //  Created by Simon Gornall on 3/15/25.
+//  Based on git@github.com:aurimasg/cubic-bezier-offsetter.git
 //
 
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class AZPoint;
-@class AZLine;
+@class AZBezierPoint;
+@class AZBezierLine;
 
-@interface AZBezierElement : NSObject
+@interface AZBezierPath : NSObject
 
 /*****************************************************************************\
 |* Initialisation : Declare an empty bezier path
@@ -50,42 +51,42 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Get the line representing the tangent at the start of the element
 \*****************************************************************************/
-- (AZLine *) startTangentWithTolerance:(double)tolerance;
+- (AZBezierLine *) startTangentWithTolerance:(double)tolerance;
 
 /*****************************************************************************\
 |* Get the line representing the tangent at the end of the element
 \*****************************************************************************/
-- (AZLine *) endTangentWithTolerance:(double)tolerance;
+- (AZBezierLine *) endTangentWithTolerance:(double)tolerance;
 
 /*****************************************************************************\
 |* Interpolate the point along the curve, 0 < t < 1
 \*****************************************************************************/
-- (AZPoint *) pointAt:(double)t;
+- (AZBezierPoint *) pointAt:(double)t;
 
 /*****************************************************************************\
 |* Return the normal vector at a given point along the curve, 0 < t < 1
 \*****************************************************************************/
-- (AZPoint *) normalVector:(double)t;
+- (AZBezierPoint *) normalVector:(double)t;
 
 /*****************************************************************************\
 |* Return the unit normal vector at a given point along the curve, 0 < t < 1
 \*****************************************************************************/
-- (AZPoint *) unitNormalVector:(double)t;
+- (AZBezierPoint *) unitNormalVector:(double)t;
 
 /*****************************************************************************\
 |* Return the derivative at a given point along the curve, 0 < t < 1
 \*****************************************************************************/
-- (AZPoint *) derivativeAt:(double)t;
+- (AZBezierPoint *) derivativeAt:(double)t;
 
 /*****************************************************************************\
 |* Return the second derivative at a given point along the curve, 0 < t < 1
 \*****************************************************************************/
-- (AZPoint *) secondDerivativeAt:(double)t;
+- (AZBezierPoint *) secondDerivativeAt:(double)t;
 
 /*****************************************************************************\
 |* Fetch a subcurve from the source curve between two points, both 0..1
 \*****************************************************************************/
-- (AZBezierElement *) subcurveFrom:(double)t to:(double)t1;
+- (AZBezierPath *) subcurveFrom:(double)t to:(double)t1;
 
 /*****************************************************************************\
 |* Find the roots of the max curvature part of the curve
@@ -100,28 +101,35 @@ NS_ASSUME_NONNULL_BEGIN
 /*****************************************************************************\
 |* Split a curve into 2 using its midpoint as the cut point
 \*****************************************************************************/
-- (void) splitInto:(AZBezierElement *)l1 and:(AZBezierElement *)l2;
+- (void) splitInto:(AZBezierPath *)l1 and:(AZBezierPath *)l2;
+
+/*****************************************************************************\
+|* Is this curve a point within a tolerance
+\*****************************************************************************/
+- (BOOL) isPointWithTolerance:(double)tolerance;
 
 /*****************************************************************************\
 |* Find the intersections of a ray with this element
 \*****************************************************************************/
-- (int) rayIntersectionFrom:(AZPoint *)p0 to:(AZPoint *)p1 roots:(double *)t;
+- (int) rayIntersectionFrom:(AZBezierPoint *)p0
+						 to:(AZBezierPoint *)p1
+					  roots:(double *)t;
 
 /*****************************************************************************\
 |* Properties
 \*****************************************************************************/
 
 // starting point of the bezier curve
-@property(assign, nonatomic) AZPoint *							p0;
+@property(assign, nonatomic) AZBezierPoint *					p0;
 
 // 1st control point of the bezier curve
-@property(assign, nonatomic) AZPoint *							c0;
+@property(assign, nonatomic) AZBezierPoint *					c0;
 
 // 2nd control point of the bezier curve
-@property(assign, nonatomic) AZPoint *							c1;
+@property(assign, nonatomic) AZBezierPoint *					c1;
 
 // ending point of the bezier curve
-@property(assign, nonatomic) AZPoint *							p1;
+@property(assign, nonatomic) AZBezierPoint *					p1;
 
 // tolerance for point equality
 @property(assign, nonatomic) double								tolerance;
@@ -131,6 +139,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Is this element a straight line (no curves)
 @property(assign, readonly, nonatomic) BOOL						isStraight;
+
+// The list of segments in the path
+@property(strong, nonatomic) NSMutableArray<AZBezierPath *> *	segments;
 @end
 
 NS_ASSUME_NONNULL_END

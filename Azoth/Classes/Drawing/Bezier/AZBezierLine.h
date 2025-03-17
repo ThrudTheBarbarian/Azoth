@@ -1,15 +1,16 @@
 //
-//  AZLine.h
+//  AZBezierLine.h
 //  Azoth
 //
 //  Created by Simon Gornall on 3/15/25.
+//  Based on git@github.com:aurimasg/cubic-bezier-offsetter.git
 //
 
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class AZPoint;
+@class AZBezierPoint;
 
 typedef enum
 	{
@@ -21,17 +22,17 @@ typedef enum
 typedef struct
 	{
 	LineIntersectionKind	kind;	// What type of intersection
-	AZPoint *				point;	// Intersection point, only if not None
+	AZBezierPoint *			point;	// Intersection point, only if not None
 	} LineIntersection;
 
 typedef struct
 	{
 	BOOL					found;	// What type of intersection
-	AZPoint *				point;	// Intersection point, only if not None
+	AZBezierPoint *			point;	// Intersection point, only if not None
 	} LineIntersectionSimple;
 
 
-@interface AZLine : NSObject
+@interface AZBezierLine : NSObject
 
 /*****************************************************************************\
 |* Initialisation : Declare an empty line
@@ -42,48 +43,48 @@ typedef struct
 /*****************************************************************************\
 |* Initialisation : A line between two points
 \*****************************************************************************/
-- (instancetype) initFrom:(AZPoint *)p1 to:(AZPoint *)p2;
-+ (instancetype) lineFrom:(AZPoint *)p1 to:(AZPoint *)p2;
+- (instancetype) initFrom:(AZBezierPoint *)p1 to:(AZBezierPoint *)p2;
++ (instancetype) lineFrom:(AZBezierPoint *)p1 to:(AZBezierPoint *)p2;
 
 - (instancetype) initFromX:(double)x0 y:(double)y0 toX:(double)x1 y:(double)y1;
 + (instancetype) lineFromX:(double)x0 y:(double)y0 toX:(double)x1 y:(double)y1;
 
-- (instancetype) initFrom:(AZPoint *)p toX:(double)x1 y:(double)y1;
-+ (instancetype) lineFrom:(AZPoint *)p toX:(double)x1 y:(double)y1;
+- (instancetype) initFrom:(AZBezierPoint *)p toX:(double)x1 y:(double)y1;
++ (instancetype) lineFrom:(AZBezierPoint *)p toX:(double)x1 y:(double)y1;
 
-- (instancetype) initFromX:(double)x0 y:(double)y0 to:(AZPoint *)p;
-+ (instancetype) lineFromX:(double)x0 y:(double)y0 to:(AZPoint *)p;
+- (instancetype) initFromX:(double)x0 y:(double)y0 to:(AZBezierPoint *)p;
++ (instancetype) lineFromX:(double)x0 y:(double)y0 to:(AZBezierPoint *)p;
 
 
 /*****************************************************************************\
 |* Return the reversed line
 \*****************************************************************************/
-- (AZLine *) reversed;
+- (AZBezierLine *) reversed;
 
 /*****************************************************************************\
 |* Return the unit vector for the line
 \*****************************************************************************/
-- (AZPoint *) unitVector;
+- (AZBezierPoint *) unitVector;
 
 /*****************************************************************************\
 |* Return the normal vector for the line
 \*****************************************************************************/
-- (AZPoint *) normalVector;
+- (AZBezierPoint *) normalVector;
 
 /*****************************************************************************\
 |* Return the unit normal vector for the line
 \*****************************************************************************/
-- (AZPoint *) unitNormalVector;
+- (AZBezierPoint *) unitNormalVector;
 
 /*****************************************************************************\
 |* Return this line translated by a {dx,dy} step
 \*****************************************************************************/
-- (AZLine *) translated:(AZPoint *)p;
+- (AZBezierLine *) translated:(AZBezierPoint *)p;
 
 /*****************************************************************************\
 |* Return the midpoint of the line
 \*****************************************************************************/
-- (AZPoint *) midpoint;
+- (AZBezierPoint *) midpoint;
 
 /*****************************************************************************\
 |* Is this line a point, within a tolerance
@@ -93,22 +94,22 @@ typedef struct
 /*****************************************************************************\
 |* Get the angle (in degrees) between this line and another
 \*****************************************************************************/
-- (double) degreesToLine:(AZLine *)other;
+- (double) degreesToLine:(AZBezierLine *)other;
 
 /*****************************************************************************\
 |* Get the angle (in radians) between this line and another
 \*****************************************************************************/
-- (double) radiansToLine:(AZLine *)other;
+- (double) radiansToLine:(AZBezierLine *)other;
 
 /*****************************************************************************\
 |* Get the intersection of this line with another
 \*****************************************************************************/
-- (LineIntersection) intersect:(AZLine *)other;
+- (LineIntersection) intersect:(AZBezierLine *)other;
 
 /*****************************************************************************\
 |* Get the simple intersection of this line with another
 \*****************************************************************************/
-- (LineIntersectionSimple) intersectSimple:(AZLine *)other;
+- (LineIntersectionSimple) intersectSimple:(AZBezierLine *)other;
 
 /*****************************************************************************\
 |* Extend a line by an amount, at the front
@@ -123,12 +124,12 @@ typedef struct
 /*****************************************************************************\
 |* Is the point on the line segment
 \*****************************************************************************/
-- (BOOL) isPoint:(AZPoint *)p onLineSegmentWithTolerance:(double)tolerance;
+- (BOOL) isPoint:(AZBezierPoint *)p onLineSegmentWithTolerance:(double)tolerance;
 
 /*****************************************************************************\
 |* Is the point on the line
 \*****************************************************************************/
-- (BOOL) isPoint:(AZPoint *)p onLineWithTolerance:(double)tolerance;
+- (BOOL) isPoint:(AZBezierPoint *)p onLineWithTolerance:(double)tolerance;
 
 
 
@@ -137,8 +138,8 @@ typedef struct
 \*****************************************************************************/
 
 // Points that define the line
-@property(strong, nonatomic, readonly) AZPoint *				p0;
-@property(strong, nonatomic, readonly) AZPoint *				p1;
+@property(strong, nonatomic, readonly) AZBezierPoint *			p0;
+@property(strong, nonatomic, readonly) AZBezierPoint *			p1;
 
 // Starting point of the line
 @property(assign, nonatomic, readonly) double					x0;

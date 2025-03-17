@@ -1,12 +1,13 @@
 //
-//  AZLine.m
+//  AZBezierLine.m
 //  Azoth
 //
 //  Created by Simon Gornall on 3/15/25.
+//  Based on git@github.com:aurimasg/cubic-bezier-offsetter.git
 //
 
-#import "AZLine.h"
-#import "AZPoint.h"
+#import "AZBezierLine.h"
+#import "AZBezierPoint.h"
 
 
 /*****************************************************************************\
@@ -18,7 +19,7 @@ static double _rad2Deg(const double x)
     return x * 57.295779513082320876798154814105;
 	}
 
-@implementation AZLine
+@implementation AZBezierLine
 
 /*****************************************************************************\
 |* Initialisation : Declare an empty line
@@ -27,78 +28,78 @@ static double _rad2Deg(const double x)
 	{
 	if (self = [super init])
 		{
-		_p0 = AZPoint.new;
-		_p1 = AZPoint.new;
+		_p0 = AZBezierPoint.new;
+		_p1 = AZBezierPoint.new;
 		}
 	return self;
 	}
 
 + (instancetype) empty
 	{
-	return AZLine.new;
+	return AZBezierLine.new;
 	}
 
 /*****************************************************************************\
 |* Initialisation : A line between two points
 \*****************************************************************************/
-- (instancetype) initFrom:(AZPoint *)p1 to:(AZPoint *)p2
+- (instancetype) initFrom:(AZBezierPoint *)p1 to:(AZBezierPoint *)p2
 	{
 	if (self = [super init])
 		{
-		_p0 = [AZPoint pointAtX:p1.x y:p1.y];
-		_p1 = [AZPoint pointAtX:p2.x y:p2.y];
+		_p0 = [AZBezierPoint pointAtX:p1.x y:p1.y];
+		_p1 = [AZBezierPoint pointAtX:p2.x y:p2.y];
 		}
 	return self;
 	}
 
-+ (instancetype) lineFrom:(AZPoint *)p1 to:(AZPoint *)p2
++ (instancetype) lineFrom:(AZBezierPoint *)p1 to:(AZBezierPoint *)p2
 	{
-	return [[AZLine alloc] initFrom:p1 to:p2];
+	return [[AZBezierLine alloc] initFrom:p1 to:p2];
 	}
 
 - (instancetype) initFromX:(double)x0 y:(double)y0 toX:(double)x1 y:(double)y1
 	{
 	if (self = [super init])
 		{
-		_p0 = [AZPoint pointAtX:x0 y:y0];
-		_p1 = [AZPoint pointAtX:x1 y:y1];
+		_p0 = [AZBezierPoint pointAtX:x0 y:y0];
+		_p1 = [AZBezierPoint pointAtX:x1 y:y1];
 		}
 	return self;
 	}
 
 + (instancetype) lineFromX:(double)x0 y:(double)y0 toX:(double)x1 y:(double)y1
 	{
-	return [[AZLine alloc] initFromX:x0 y:y0 toX:x1 y:y1];
+	return [[AZBezierLine alloc] initFromX:x0 y:y0 toX:x1 y:y1];
 	}
 
-- (instancetype) initFrom:(AZPoint *)p toX:(double)x1 y:(double)y1
+- (instancetype) initFrom:(AZBezierPoint *)p toX:(double)x1 y:(double)y1
 	{
 	if (self = [super init])
 		{
-		_p0 = [AZPoint pointAtX:p.x y:p.y];
-		_p1 = [AZPoint pointAtX:x1 y:y1];
+		_p0 = [AZBezierPoint pointAtX:p.x y:p.y];
+		_p1 = [AZBezierPoint pointAtX:x1 y:y1];
 		}
 	return self;
 	}
 
-+ (instancetype) lineFrom:(AZPoint *)p toX:(double)x1 y:(double)y1
++ (instancetype) lineFrom:(AZBezierPoint *)p toX:(double)x1 y:(double)y1
 	{
-	return [[AZLine alloc] initFrom:p toX:x1 y:y1];
+	return [[AZBezierLine alloc] initFrom:p toX:x1 y:y1];
 	}
 
-- (instancetype) initFromX:(double)x0 y:(double)y0 to:(AZPoint *)p
+- (instancetype) initFromX:(double)x0 y:(double)y0 to:(AZBezierPoint *)p
 	{
 	if (self = [super init])
 		{
-		_p0 = [AZPoint pointAtX:x0 y:y0];
-		_p1 = [AZPoint pointAtX:p.x y:p.y];
+		_p0 = [AZBezierPoint pointAtX:x0 y:y0];
+		_p1 = [AZBezierPoint pointAtX:p.x y:p.y];
 		}
 	return self;
 	}
 
-+ (instancetype) lineFromX:(double)x0 y:(double)y0 to:(AZPoint *)p
++ (instancetype) lineFromX:(double)x0 y:(double)y0 to:(AZBezierPoint *)p
 	{
-	return [[AZLine alloc] initFromX:x0 y:y0 to:p];
+	return [[AZBezierLine alloc] initFromX:x0 y:y0 to:p];
 	}
 
 
@@ -151,8 +152,7 @@ static double _rad2Deg(const double x)
 \*****************************************************************************/
 - (BOOL) isPoint
 	{
-	return  [AZPoint isZero:_p0.x - _p1.x] &&
-			[AZPoint isZero:_p0.y - _p1.y];
+	return FUZZY_EQUAL(_p0.x, _p1.x) && FUZZY_EQUAL(_p0.y, _p1.y);
 	}
 
 
@@ -163,32 +163,32 @@ static double _rad2Deg(const double x)
 /*****************************************************************************\
 |* Return the reversed line
 \*****************************************************************************/
-- (AZLine *) reversed;
+- (AZBezierLine *) reversed;
 	{
-	return [AZLine lineFrom:_p1 to:_p0];
+	return [AZBezierLine lineFrom:_p1 to:_p0];
 	}
 
 /*****************************************************************************\
 |* Return the unit vector for the line
 \*****************************************************************************/
-- (AZPoint *) unitVector
+- (AZBezierPoint *) unitVector
 	{
-	AZPoint *p = [AZPoint subtract:_p0 from:_p1];
+	AZBezierPoint *p = [AZBezierPoint subtract:_p0 from:_p1];
 	return p.unitVector;
 	}
 
 /*****************************************************************************\
 |* Return the normal vector for the line
 \*****************************************************************************/
-- (AZPoint *) normalVector
+- (AZBezierPoint *) normalVector
 	{
-	return [AZPoint pointAtX:[self dy] y:-[self dx]];
+	return [AZBezierPoint pointAtX:[self dy] y:-[self dx]];
 	}
 
 /*****************************************************************************\
 |* Return the unit normal vector for the line
 \*****************************************************************************/
-- (AZPoint *) unitNormalVector
+- (AZBezierPoint *) unitNormalVector
 	{
 	return self.normalVector.unitVector;
 	}
@@ -196,19 +196,20 @@ static double _rad2Deg(const double x)
 /*****************************************************************************\
 |* Return this line translated by a {dx,dy} step
 \*****************************************************************************/
-- (AZLine *) translated:(AZPoint *)p
+- (AZBezierLine *) translated:(AZBezierPoint *)p
 	{
-	AZPoint *P0 = [AZPoint add:_p0 to:p];
-	AZPoint *P1 = [AZPoint add:_p1 to:p];
-	return [AZLine lineFrom:P0 to:P1];
+	AZBezierPoint *P0 = [AZBezierPoint add:_p0 to:p];
+	AZBezierPoint *P1 = [AZBezierPoint add:_p1 to:p];
+	return [AZBezierLine lineFrom:P0 to:P1];
 	}
 
 /*****************************************************************************\
 |* Return the midpoint of the line
 \*****************************************************************************/
-- (AZPoint *) midpoint
+- (AZBezierPoint *) midpoint
 	{
-	return [AZPoint pointAtX:(_p0.x + _p1.x) * 0.5 y:(_p0.y + _p1.y) * 0.5];
+	return [AZBezierPoint pointAtX:(_p0.x + _p1.x) * 0.5
+								 y:(_p0.y + _p1.y) * 0.5];
 	}
 
 /*****************************************************************************\
@@ -216,15 +217,15 @@ static double _rad2Deg(const double x)
 \*****************************************************************************/
 - (BOOL) isPointWithTolerance:(double)tolerance;
 	{
-	return  [AZPoint isZero:_p0.x - _p1.x tolerance:tolerance] &&
-			[AZPoint isZero:_p0.y - _p1.y tolerance:tolerance];
+	return  FUZZY_EQUAL_WITH(_p0.x, _p1.x, tolerance) &&
+			FUZZY_EQUAL_WITH(_p0.y, _p1.y, tolerance);
 	}
 
 
 /*****************************************************************************\
 |* Get the angle (in degrees) between this line and another
 \*****************************************************************************/
-- (double) degreesToLine:(AZLine *)l;
+- (double) degreesToLine:(AZBezierLine *)l;
 	{
 	return _rad2Deg([self radiansToLine:l]);
 	}
@@ -232,7 +233,7 @@ static double _rad2Deg(const double x)
 /*****************************************************************************\
 |* Get the angle (in radians) between this line and another
 \*****************************************************************************/
-- (double) radiansToLine:(AZLine *)l;
+- (double) radiansToLine:(AZBezierLine *)l;
 	{
     // FLT_EPSILON instead of DBL_EPSILON is used deliberately.
     static double kMinRange = -1.0 - FLT_EPSILON;
@@ -282,11 +283,11 @@ static double _rad2Deg(const double x)
 	const double theta 			 = _rad2Deg(SDL_atan2(-dy, dx));
     const double thetaNormalized = theta < 0 ? theta + 360 : theta;
 
-	if ([AZPoint isZero:thetaNormalized-360.0])
+	if (FUZZY_EQUAL(thetaNormalized,360.0))
         return 0;
 
 	// In case we have -0, return positive zero.
-	if ([AZPoint isZero:thetaNormalized])
+	if (FUZZY_ZERO(thetaNormalized))
         return 0;
 
     return thetaNormalized;
@@ -295,20 +296,20 @@ static double _rad2Deg(const double x)
 /*****************************************************************************\
 |* Get the intersection of this line with another
 \*****************************************************************************/
-- (LineIntersection) intersect:(AZLine *)l
+- (LineIntersection) intersect:(AZBezierLine *)l
 	{
-	AZPoint *a 					= [AZPoint subtract:_p0 from:_p1];
-	AZPoint *b 					= [AZPoint subtract:l.p0 from:l.p1];
+	AZBezierPoint *a 			= [AZBezierPoint subtract:_p0 from:_p1];
+	AZBezierPoint *b 			= [AZBezierPoint subtract:l.p0 from:l.p1];
     const double denominator 	= a.y * b.x - a.x * b.y;
 
     if (denominator == 0)
         return (LineIntersection){None, nil};
 
-	AZPoint *c 					= [AZPoint subtract:l.p0 from:_p0];
+	AZBezierPoint *c 			= [AZBezierPoint subtract:l.p0 from:_p0];
     const double reciprocal 	= 1.0 / denominator;
     const double na 			= (b.y * c.x - b.x * c.y) * reciprocal;
 
-	AZPoint *point 				= [AZPoint scale:[AZPoint add:_p0 to:a] by:na];
+	AZBezierPoint *point		= [[_p0.copy add:a] scaleXY:na];
     if ((na < 0) || (na > 1))
         return (LineIntersection){Unbounded, point};
 
@@ -324,20 +325,20 @@ static double _rad2Deg(const double x)
 /*****************************************************************************\
 |* Get the simple intersection of this line with another
 \*****************************************************************************/
-- (LineIntersectionSimple) intersectSimple:(AZLine *)l
+- (LineIntersectionSimple) intersectSimple:(AZBezierLine *)l
 	{
-	AZPoint *a 					= [AZPoint subtract:_p0 from:_p1];
-	AZPoint *b 					= [AZPoint subtract:l.p0 from:l.p1];
+	AZBezierPoint *a 			= [AZBezierPoint subtract:_p0 from:_p1];
+	AZBezierPoint *b 			= [AZBezierPoint subtract:l.p0 from:l.p1];
     const double denominator 	= a.y * b.x - a.x * b.y;
 
     if (denominator == 0)
 		return (LineIntersectionSimple){NO, nil};
 
-	AZPoint *c 					= [AZPoint subtract:l.p0 from:_p0];
+	AZBezierPoint *c 			= [AZBezierPoint subtract:l.p0 from:_p0];
     const double reciprocal 	= 1.0 / denominator;
     const double na 			= (b.y * c.x - b.x * c.y) * reciprocal;
 
-	AZPoint *point 				= [AZPoint scale:[AZPoint add:_p0 to:a] by:na];
+	AZBezierPoint *point		= [[_p0.copy add:a] scaleXY:na];
 	return (LineIntersectionSimple){YES, point};
 	}
 
@@ -346,11 +347,11 @@ static double _rad2Deg(const double x)
 \*****************************************************************************/
 - (void) extendFrontBy:(double)length
 	{
-	if ((self.isPoint) || ([AZPoint isZero:self.length]))
+	if ((self.isPoint) || (FUZZY_ZERO(self.length)))
 		return;
 
-	AZPoint *v = self.unitVector;
-	_p1 = [AZPoint pointAtX:_p1.x + v.x * length
+	AZBezierPoint *v = self.unitVector;
+	_p1 = [AZBezierPoint pointAtX:_p1.x + v.x * length
 						  y:_p1.y + v.y * length];
 	}
 
@@ -359,18 +360,18 @@ static double _rad2Deg(const double x)
 \*****************************************************************************/
 - (void) extendBackBy:(double)length
 	{
-	if ((self.isPoint) || ([AZPoint isZero:self.length]))
+	if ((self.isPoint) || (FUZZY_ZERO(self.length)))
 		return;
 
-	AZPoint *v = self.unitVector;
-	_p0 = [AZPoint pointAtX:_p1.x - v.x * length
+	AZBezierPoint *v = self.unitVector;
+	_p0 = [AZBezierPoint pointAtX:_p1.x - v.x * length
 						  y:_p1.y - v.y * length];
 	}
 
 /*****************************************************************************\
 |* Is the point on the line segment
 \*****************************************************************************/
-- (BOOL) isPoint:(AZPoint *)p onLineSegmentWithTolerance:(double)epsilon
+- (BOOL) isPoint:(AZBezierPoint *)p onLineSegmentWithTolerance:(double)epsilon
 	{
     const double cross = (p.y - _p0.y) * (_p1.x - _p0.x)
 					   - (p.x - _p0.x) * (_p1.y - _p0.y);
@@ -391,7 +392,7 @@ static double _rad2Deg(const double x)
 /*****************************************************************************\
 |* Is the point on the line
 \*****************************************************************************/
-- (BOOL) isPoint:(AZPoint *)p onLineWithTolerance:(double)epsilon
+- (BOOL) isPoint:(AZBezierPoint *)p onLineWithTolerance:(double)epsilon
 	{
     const double cross = (p.y - _p0.y) * (_p1.x - _p0.x)
 					   - (p.x - _p0.x) * (_p1.y - _p0.y);

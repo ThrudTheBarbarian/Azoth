@@ -634,6 +634,7 @@
 				AZCompute/AppDelegate.m,
 				AZCompute/main.m,
 				AZCompute/Resources/Shaders,
+				AZCompute/Shaders/Makefile,
 				AZDemo/AppDelegate.h,
 				AZDemo/AppDelegate.m,
 				AZDemo/Assets.xcassets,
