@@ -24,6 +24,7 @@
 	{
 	if (self = [super init])
 		{
+		_points 	= 0;
 		_segments 	= NSMutableArray.new;
 		_tolerance  = DBL_EPSILON;
 		_p0			= AZBezierPoint.new;
@@ -56,6 +57,7 @@
 		_p1 		= [AZBezierPoint point:p1];
 		_c0 		= [AZBezierPoint point:c0];
 		_c1 		= [AZBezierPoint point:c1];
+		_points 	= 4;
 		}
 	return self;
 	}
@@ -86,6 +88,7 @@
 		_c0.y 		= p0.y + (2.0 / 3.0) * (c.y - p0.y);
 		_c1.x 		= c.x  + (1.0 / 3.0) * (p1.x - c.x);
 		_c1.y 		= c.y  + (1.0 / 3.0) * (p1.y - c.y);
+		_points 	= 4;
 		}
 	return self;
 	}
@@ -113,6 +116,7 @@
 		_c0.y 		= p0.y + (1.0 / 3.0) * (p1.y - p0.y);
 		_c1.x 		= p0.x + (1.0 / 3.0) * (p1.x - p0.x);
 		_c1.y 		= p0.y + (1.0 / 3.0) * (p1.y - p0.y);
+		_points 	= 4;
 		}
 	return self;
 	}

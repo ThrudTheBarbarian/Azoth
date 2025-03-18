@@ -142,6 +142,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 // The list of segments in the path
 @property(strong, nonatomic) NSMutableArray<AZBezierPath *> *	segments;
+
+// The number of points in this element
+@property(assign, nonatomic) int								points;
 @end
 
 NS_ASSUME_NONNULL_END
