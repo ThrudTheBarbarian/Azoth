@@ -44,6 +44,11 @@ typedef enum
 
 // The Bezier curves to draw
 @property(strong, nonatomic) NSMutableArray<AZBezierPath *> *		paths;
+
+// Colours for drawing, saves re-creating
+@property(strong, nonatomic) AZColour *								fg;
+@property(strong, nonatomic) AZColour *								pt;
+@property(strong, nonatomic) AZColour *								ctrl;
 @end
 
 
@@ -60,6 +65,10 @@ typedef enum
 	self.state 				= Pt_None;
 	_arrow 					= SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
 	[self _updateCursor];
+
+	_fg						= AZColour.black;
+	_pt 					= AZColour.yellow;
+	_ctrl					= AZColour.red;
 	}
 
 /*****************************************************************************\
@@ -78,11 +87,33 @@ typedef enum
 	for (int i=0; i<H; i+= STEP)
 		[painter lineAtX:0 y:i toX:W y:i colour:line];
 
-	if (_current != nil)
-		{
-		AZColour *fg	= AZColour.black;
-		[painter bezier:_current steps:20 colour:fg fill:NO];
-		}
+	for (AZBezierPath *path in _paths)
+		[self draw:path withPainter:painter];
+	if (_current)
+		[self draw:_current withPainter:painter];
+
+	}
+
+/*****************************************************************************\
+|* Draw a bezier curve with handles
+\*****************************************************************************/
+- (void) draw:(AZBezierPath *)path withPainter:(AZPainter *)painter
+	{
+	NSRect r = NSMakeRect(path.p0.x - 5, path.p0.y - 5, 10, 10);
+	[painter rectangleWithRect:r colour:_pt];
+
+	r = NSMakeRect(path.p1.x - 5, path.p1.y - 5, 10, 10);
+	[painter rectangleWithRect:r colour:_pt];
+
+	r = NSMakeRect(path.c0.x - 5, path.c0.y - 5, 10, 10);
+	[painter rectangleWithRect:r colour:_ctrl];
+	[painter lineAtX:path.c0.x y:path.c0.y toX:path.p0.x y:path.p0.y];
+
+	r = NSMakeRect(path.c1.x - 5, path.c1.y - 5, 10, 10);
+	[painter rectangleWithRect:r colour:_ctrl];
+	[painter lineAtX:path.c1.x y:path.c1.y toX:path.p1.x y:path.p1.y];
+
+	[painter bezier:path steps:20 colour:_fg fill:NO];
 	}
 
 /*****************************************************************************\
@@ -91,7 +122,6 @@ typedef enum
 - (BOOL) mouseDown:(AZEvent *)e
 	{
 	NSPoint p = [self convertPoint:e.locationInWindow fromView:nil];
-	NSLog(@"p:%@", NSStringFromPoint(p));
 
 	switch (_state)
 		{
@@ -104,16 +134,11 @@ typedef enum
 		case Pt_Control0:
 			_p1			= p;
 			_current 	= [AZBezierPath pathFrom:_p0 to:_p1];
-			NSLog(@"line   from %@ to %@", NSStringFromPoint(_p0),
-										   NSStringFromPoint(_p1));
 			break;
 		case Pt_Control1:
 			_c0			= _p1;
 			_p1 		= p;
 			_current 	= [AZBezierPath pathFrom:_p0 control:_c0 to:_p1];
-			NSLog(@"bezier from %@ [%@] to %@", NSStringFromPoint(_p0),
-										        NSStringFromPoint(_c0),
-										        NSStringFromPoint(_p1));
 			break;
 		case Pt_Point1:
 			_c1			= _p1;
@@ -122,10 +147,10 @@ typedef enum
 										control1:_c0
 										control2:_c1
 											  to:_p1];
-			NSLog(@"bezier from %@ [%@] to [%@] %@", NSStringFromPoint(_p0),
-										             NSStringFromPoint(_c0),
-										             NSStringFromPoint(_c1),
-										             NSStringFromPoint(_p1));
+			[_paths addObject:_current];
+			_current 	= nil;
+			_p0			= p;
+			_state		= Pt_Point0;
 			break;
 		}
 
