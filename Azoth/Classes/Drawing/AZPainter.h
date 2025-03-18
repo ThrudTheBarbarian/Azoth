@@ -10,6 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class AZBezierPath;
 @class AZColour;
 @class AZFont;
 @class AZImage;
@@ -262,6 +263,10 @@ struct SDL_Surface;
 		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
 		filled:(BOOL)fill;
 
+- (int) bezier:(AZBezierPath *)path
+		 steps:(int)steps
+		colour:(AZColour *)colour
+		  fill:(BOOL)fill;
 
 /*****************************************************************************\
 |* Draw text

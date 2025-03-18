@@ -551,6 +551,7 @@
 		F41BC6572D0A61BA00E61EDD /* Exceptions for "Azoth" folder in "Azoth" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Classes/View/Controls/OLDAZTextField.h,
 				Resources/ShaderSource/colour.frag,
 				Resources/ShaderSource/colour.frag.spv,
 				Resources/ShaderSource/linepoint.vert,
@@ -582,6 +583,10 @@
 				"Classes/Application/ZIB/NSDictionary+ZIB.h",
 				Classes/Drawing/AZColour.h,
 				Classes/Drawing/AZPainter.h,
+				Classes/Drawing/Bezier/AZBezierLine.h,
+				Classes/Drawing/Bezier/AZBezierPath.h,
+				"Classes/Drawing/Bezier/AZBezierPath+Offset.h",
+				Classes/Drawing/Bezier/AZBezierPoint.h,
 				Classes/Drawing/Image/AZImage.h,
 				Classes/Drawing/Render/2d/AZRenderer2d.h,
 				Classes/Drawing/Render/3d/AZ3dUtils.h,
@@ -662,6 +667,8 @@
 			membershipExceptions = (
 				AZBezier/AppDelegate.m,
 				AZBezier/Assets.xcassets,
+				AZBezier/BezierView.m,
+				AZBezier/Cursors.m,
 				AZBezier/main.m,
 				AZBezier/Resources/main.zib,
 			);
@@ -690,6 +697,7 @@
 				AZBezier/AppDelegate.h,
 				AZBezier/AppDelegate.m,
 				AZBezier/Assets.xcassets,
+				AZBezier/BezierView.h,
 				AZBezier/main.m,
 				AZBezier/Resources/main.zib,
 				AZCollectionView/AppDelegate.h,

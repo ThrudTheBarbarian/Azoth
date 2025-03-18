@@ -66,7 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(strong, nonatomic, readonly, nullable) AZBezierLine *		endTangent;
 
 // Return the number of segments
-@property(assign, nonatomic, readonly, nullable) NSInteger			segmentCount;
+@property(assign, nonatomic, readonly) NSInteger					segmentCount;
 
 
 @end

@@ -22,6 +22,10 @@ FOUNDATION_EXPORT const unsigned char AzothVersionString[];
 #import <Azoth/AZAlertView.h>
 #import <Azoth/AZApplication.h>
 #import <Azoth/AZAppDelegate.h>
+#import <Azoth/AZBezierLine.h>
+#import <Azoth/AZBezierPath.h>
+#import <Azoth/AZBezierPath+Offset.h>
+#import <Azoth/AZBezierPoint.h>
 #import <Azoth/AZButton.h>
 #import <Azoth/AZClipView.h>
 #import <Azoth/AZColour.h>

@@ -8,6 +8,8 @@
 #import <SDL3/SDL.h>
 
 #import "AZApplication.h"
+#import "AZBezierPath.h"
+#import "AZBezierPoint.h"
 #import "AZColour.h"
 #import "AZImage.h"
 #import "AZGeometry.h"
@@ -2326,6 +2328,48 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	SDL_free(y);
 
 	return (result);
+	}
+
+- (int) bezier:(AZBezierPath *)path
+		 steps:(int)steps
+		colour:(AZColour *)colour
+		  fill:(BOOL)fill
+	{
+	// Variable setup
+	float stepsize = 1.f/(float)steps;
+
+	// Set color
+	int result = 0;
+	if (colour.A != 255)
+		result |= [_renderer setBlendMode:SDL_BLENDMODE_BLEND];
+	[_renderer setDrawColour:colour];
+
+	NSPoint pts[steps+1];
+	double t 	= 0;
+	pts[0]		= [path pointAt:0.0].asPoint;
+	for (int i = 1; i < steps; i++)
+		{
+		t += stepsize;
+		pts[i] = [path pointAt:t].asPoint;
+		}
+
+	if (t < 1.0)
+		{
+		pts[steps] = [path pointAt:1.0].asPoint;
+		steps ++;
+		}
+
+	if (fill)
+		{
+		//[self polygonWith:idx x:px y:py filled:YES withR:r g:g b:b a:a];
+		}
+	else
+		{
+		for (int i=0; i<steps-1; i++)
+			result += [self lineAt:pts[i] to:pts[i+1]];
+		}
+
+	return result;
 	}
 
 

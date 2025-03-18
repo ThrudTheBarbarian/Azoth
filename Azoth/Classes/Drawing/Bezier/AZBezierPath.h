@@ -120,16 +120,16 @@ NS_ASSUME_NONNULL_BEGIN
 \*****************************************************************************/
 
 // starting point of the bezier curve
-@property(assign, nonatomic) AZBezierPoint *					p0;
+@property(strong, nonatomic) AZBezierPoint *					p0;
 
 // 1st control point of the bezier curve
-@property(assign, nonatomic) AZBezierPoint *					c0;
+@property(strong, nonatomic) AZBezierPoint *					c0;
 
 // 2nd control point of the bezier curve
-@property(assign, nonatomic) AZBezierPoint *					c1;
+@property(strong, nonatomic) AZBezierPoint *					c1;
 
 // ending point of the bezier curve
-@property(assign, nonatomic) AZBezierPoint *					p1;
+@property(strong, nonatomic) AZBezierPoint *					p1;
 
 // tolerance for point equality
 @property(assign, nonatomic) double								tolerance;
