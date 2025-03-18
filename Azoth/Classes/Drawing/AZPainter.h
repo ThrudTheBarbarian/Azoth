@@ -227,11 +227,11 @@ struct SDL_Surface;
 /*****************************************************************************\
 |* polygon routines (not filled)
 \*****************************************************************************/
-// Without alpha-blending
+// Using the default colour. Alpha blending will depend on 'a'
 - (int) polygonWith:(int)num points:(NSPoint*)pts;
 - (int) polygonWith:(int)num x:(int *)xc y:(int *)yc;
 
-// Alpha blending
+// Using the specified colour. Alpha blending will depend on 'a'
 - (int) polygonWith:(int)num x:(int *)xc y:(int *)y
 		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
 
@@ -241,6 +241,9 @@ struct SDL_Surface;
 \*****************************************************************************/
 
 // Coloured fill
+- (int) polygonWith:(int)num points:(NSPoint *)pts filled:(BOOL)yn;
+- (int) polygonWith:(int)num points:(NSPoint *)pts filled:(BOOL)yn
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
 - (int) polygonWith:(int)num x:(int *)xc y:(int *)y filled:(BOOL)yn
 		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a;
 

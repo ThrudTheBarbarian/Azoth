@@ -1966,6 +1966,31 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 /*****************************************************************************\
 |* Filled polygon drawing.
 \*****************************************************************************/
+- (int) polygonWith:(int)num points:(NSPoint *)pts filled:(BOOL)yn
+	{
+	uint8_t r,g,b,a;
+	[_renderer drawColourR:&r g:&g b:&b a:&a];
+	return [self polygonWith:num points:pts filled:yn withR:r g:g b:b a:a];
+	}
+
+/*****************************************************************************\
+|* Filled polygon drawing with a colour
+\*****************************************************************************/
+- (int) polygonWith:(int)num points:(NSPoint *)pts filled:(BOOL)yn
+		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
+	{
+	int vx[num], vy[num];
+	for (int i=0; i<num; i++)
+		{
+		vx[i] = pts[i].x;
+		vy[i] = pts[i].y;
+		}
+	return [self polygonWith:num x:vx y:vy filled:yn withR:r g:g b:b a:a];
+	}
+
+/*****************************************************************************\
+|* Filled polygon drawing.
+\*****************************************************************************/
 - (int) polygonWith:(int)num x:(int *)vx y:(int *)vy filled:(BOOL)yn
 		withR:(uint8_t)r g:(uint8_t)g b:(uint8_t)b a:(uint8_t)a
 	{
@@ -2330,6 +2355,9 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 	return (result);
 	}
 
+/*****************************************************************************\
+|* Bezier curve using the new AZBezierPath object
+\*****************************************************************************/
 - (int) bezier:(AZBezierPath *)path
 		 steps:(int)steps
 		colour:(AZColour *)colour
@@ -2360,14 +2388,10 @@ static int _polyIntsSize 	= 0;			// Size of polygon cache
 		}
 
 	if (fill)
-		{
-		//[self polygonWith:idx x:px y:py filled:YES withR:r g:g b:b a:a];
-		}
+		[self polygonWith:steps points:pts filled:fill];
 	else
-		{
 		for (int i=0; i<steps-1; i++)
 			result += [self lineAt:pts[i] to:pts[i+1]];
-		}
 
 	return result;
 	}
