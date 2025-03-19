@@ -82,12 +82,14 @@
 		_tolerance	= DBL_EPSILON;
 		_p0 		= [AZBezierPoint point:p0];
 		_p1 		= [AZBezierPoint point:p1];
-		_c0			= AZBezierPoint.new;
-		_c1			= AZBezierPoint.new;
-		_c0.x 		= p0.x + (2.0 / 3.0) * (c.x - p0.x);
-		_c0.y 		= p0.y + (2.0 / 3.0) * (c.y - p0.y);
-		_c1.x 		= c.x  + (1.0 / 3.0) * (p1.x - c.x);
-		_c1.y 		= c.y  + (1.0 / 3.0) * (p1.y - c.y);
+		_c0 		= [AZBezierPoint point:c];
+		[self reconfigureAsQuadratic];
+//		_c0			= AZBezierPoint.new;
+//		_c1			= AZBezierPoint.new;
+//		_c0.x 		= p0.x + (2.0 / 3.0) * (c.x - p0.x);
+//		_c0.y 		= p0.y + (2.0 / 3.0) * (c.y - p0.y);
+//		_c1.x 		= c.x  + (1.0 / 3.0) * (p1.x - c.x);
+//		_c1.y 		= c.y  + (1.0 / 3.0) * (p1.y - c.y);
 		_points 	= 4;
 		}
 	return self;
@@ -110,12 +112,13 @@
 		_tolerance	= DBL_EPSILON;
 		_p0 		= [AZBezierPoint point:p0];
 		_p1 		= [AZBezierPoint point:p1];
-		_c0			= AZBezierPoint.new;
-		_c1			= AZBezierPoint.new;
-		_c0.x 		= p0.x + (1.0 / 3.0) * (p1.x - p0.x);
-		_c0.y 		= p0.y + (1.0 / 3.0) * (p1.y - p0.y);
-		_c1.x 		= p0.x + (1.0 / 3.0) * (p1.x - p0.x);
-		_c1.y 		= p0.y + (1.0 / 3.0) * (p1.y - p0.y);
+		[self reconfigureAsLine];
+//		_c0			= AZBezierPoint.new;
+//		_c1			= AZBezierPoint.new;
+//		_c0.x 		= p0.x + (1.0 / 3.0) * (p1.x - p0.x);
+//		_c0.y 		= p0.y + (1.0 / 3.0) * (p1.y - p0.y);
+//		_c1.x 		= p0.x + (1.0 / 3.0) * (p1.x - p0.x);
+//		_c1.y 		= p0.y + (1.0 / 3.0) * (p1.y - p0.y);
 		_points 	= 4;
 		}
 	return self;
@@ -126,6 +129,36 @@
 	return [[AZBezierPath alloc] initFrom:p0 to:p1];
 	}
 
+
+// MARK: Mutation methods
+
+
+/*****************************************************************************\
+|* Reconfigure the points as a line between p0 and p1
+\*****************************************************************************/
+- (void) reconfigureAsLine
+	{
+	_c0					= AZBezierPoint.new;
+	_c1					= AZBezierPoint.new;
+	_c0.x 				= _p0.x + (1.0 / 3.0) * (_p1.x - _p0.x);
+	_c0.y 				= _p0.y + (1.0 / 3.0) * (_p1.y - _p0.y);
+	_c1.x 				= _p0.x + (2.0 / 3.0) * (_p1.x - _p0.x);
+	_c1.y 				= _p0.y + (2.0 / 3.0) * (_p1.y - _p0.y);
+	}
+
+/*****************************************************************************\
+|* Reconfigure the points as a quadratic between p0 and p1, control point c0
+\*****************************************************************************/
+- (void) reconfigureAsQuadratic;
+	{
+	AZBezierPoint *c 	= _c0.copy;
+	_c0					= AZBezierPoint.new;
+	_c1					= AZBezierPoint.new;
+	_c0.x 				= _p0.x + (2.0 / 3.0) * (c.x  - _p0.x);
+	_c0.y 				= _p0.y + (2.0 / 3.0) * (c.y  - _p0.y);
+	_c1.x 				= c.x   + (2.0 / 3.0) * (_p1.x - c.x);
+	_c1.y 				= c.y   + (2.0 / 3.0) * (_p1.y - c.y);
+	}
 
 
 // MARK: Property methods

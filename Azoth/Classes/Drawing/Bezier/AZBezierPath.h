@@ -49,6 +49,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 /*****************************************************************************\
+|* Reconfigure the points as a line between p0 and p1
+\*****************************************************************************/
+- (void) reconfigureAsLine;
+
+/*****************************************************************************\
+|* Reconfigure the points as a quadratic between p0 and p1, control point c0
+\*****************************************************************************/
+- (void) reconfigureAsQuadratic;
+
+/*****************************************************************************\
 |* Get the line representing the tangent at the start of the element
 \*****************************************************************************/
 - (AZBezierLine *) startTangentWithTolerance:(double)tolerance;

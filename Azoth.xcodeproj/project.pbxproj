@@ -670,7 +670,9 @@
 				AZBezier/BezierView.m,
 				AZBezier/Cursors.m,
 				AZBezier/main.m,
+				AZBezier/PointView.m,
 				AZBezier/Resources/main.zib,
+				AZBezier/Resources/point.zib,
 			);
 			target = F49D29B52D88E50600CA5459 /* AZBezier */;
 		};

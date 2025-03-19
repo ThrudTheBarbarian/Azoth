@@ -692,6 +692,11 @@
                     <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="PNc-Uq-Bx9" customClass="BezierView">
                         <rect key="frame" x="0.0" y="0.0" width="998" height="1008"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <connections>
+                            <outlet property="innerSize" destination="SAW-nQ-Gsl" id="5Ri-g2-3FT"/>
+                            <outlet property="outerSize" destination="UVL-Uu-8KU" id="NgZ-ZT-kC2"/>
+                            <outlet property="table" destination="bNm-7I-5XY" id="1Q0-8Y-nvm"/>
+                        </connections>
                     </customView>
                     <scrollView fixedFrame="YES" autohidesScrollers="YES" horizontalLineScroll="31" horizontalPageScroll="10" verticalLineScroll="31" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zHU-yz-IG8">
                         <rect key="frame" x="1000" y="0.0" width="312" height="907"/>
@@ -741,8 +746,8 @@
                                         </tableColumn>
                                     </tableColumns>
                                     <connections>
-                                        <outlet property="dataSource" destination="Sq1-GH-LCi" id="j3q-6Q-Wcu"/>
-                                        <outlet property="delegate" destination="Sq1-GH-LCi" id="KZ0-Uw-IwE"/>
+                                        <outlet property="dataSource" destination="PNc-Uq-Bx9" id="0OM-B5-y85"/>
+                                        <outlet property="delegate" destination="PNc-Uq-Bx9" id="et4-iV-26T"/>
                                     </connections>
                                 </tableView>
                             </subviews>
@@ -795,12 +800,5 @@
             </connections>
             <point key="canvasLocation" x="273.5" y="196"/>
         </window>
-        <customObject id="Sq1-GH-LCi" userLabel="BezierView" customClass="BezierView">
-            <connections>
-                <outlet property="innerSize" destination="SAW-nQ-Gsl" id="TUG-FG-NPW"/>
-                <outlet property="outerSize" destination="UVL-Uu-8KU" id="u7V-JX-2Qg"/>
-                <outlet property="table" destination="bNm-7I-5XY" id="cJK-kA-Pco"/>
-            </connections>
-        </customObject>
     </objects>
 </document>

@@ -7,8 +7,10 @@
 
 #import "BezierView.h"
 #import "Cursors.h"
+#import "PointView.h"
 
 #define STEP 100
+#define ROW_HEIGHT  (79.f)
 
 typedef enum
 	{
@@ -69,6 +71,7 @@ typedef enum
 	_fg						= AZColour.black;
 	_pt 					= AZColour.yellow;
 	_ctrl					= AZColour.red;
+	_table.rowHeight		= ROW_HEIGHT;
 	}
 
 /*****************************************************************************\
@@ -87,32 +90,43 @@ typedef enum
 	for (int i=0; i<H; i+= STEP)
 		[painter lineAtX:0 y:i toX:W y:i colour:line];
 
+	int idx = 0;
 	for (AZBezierPath *path in _paths)
-		[self draw:path withPainter:painter];
+		{
+		idx ++;
+		BOOL showHandles =  (idx == _paths.count)
+			&& (_state < Pt_Control1);
+
+		[self draw:path showHandles:showHandles withPainter:painter];
+		}
 	if (_current)
-		[self draw:_current withPainter:painter];
+		[self draw:_current showHandles:YES withPainter:painter];
 
 	}
 
 /*****************************************************************************\
 |* Draw a bezier curve with handles
 \*****************************************************************************/
-- (void) draw:(AZBezierPath *)path withPainter:(AZPainter *)painter
+- (void)        draw:(AZBezierPath *)path
+		 showHandles:(BOOL) handles
+		 withPainter:(AZPainter *)painter
 	{
-	NSRect r = NSMakeRect(path.p0.x - 5, path.p0.y - 5, 10, 10);
-	[painter rectangleWithRect:r colour:_pt];
+	if (handles)
+		{
+		NSRect r = NSMakeRect(path.p0.x - 5, path.p0.y - 5, 10, 10);
+		[painter rectangleWithRect:r colour:_pt];
 
-	r = NSMakeRect(path.p1.x - 5, path.p1.y - 5, 10, 10);
-	[painter rectangleWithRect:r colour:_pt];
+		r = NSMakeRect(path.p1.x - 5, path.p1.y - 5, 10, 10);
+		[painter rectangleWithRect:r colour:_pt];
 
-	r = NSMakeRect(path.c0.x - 5, path.c0.y - 5, 10, 10);
-	[painter rectangleWithRect:r colour:_ctrl];
-	[painter lineAtX:path.c0.x y:path.c0.y toX:path.p0.x y:path.p0.y];
+		r = NSMakeRect(path.c0.x - 5, path.c0.y - 5, 10, 10);
+		[painter rectangleWithRect:r colour:_ctrl];
+		[painter lineAtX:path.c0.x y:path.c0.y toX:path.p0.x y:path.p0.y];
 
-	r = NSMakeRect(path.c1.x - 5, path.c1.y - 5, 10, 10);
-	[painter rectangleWithRect:r colour:_ctrl];
-	[painter lineAtX:path.c1.x y:path.c1.y toX:path.p1.x y:path.p1.y];
-
+		r = NSMakeRect(path.c1.x - 5, path.c1.y - 5, 10, 10);
+		[painter rectangleWithRect:r colour:_ctrl];
+		[painter lineAtX:path.c1.x y:path.c1.y toX:path.p1.x y:path.p1.y];
+		}
 	[painter bezier:path steps:20 colour:_fg fill:NO];
 	}
 
@@ -148,6 +162,7 @@ typedef enum
 										control2:_c1
 											  to:_p1];
 			[_paths addObject:_current];
+			[_table reloadData];
 			_current 	= nil;
 			_p0			= p;
 			_state		= Pt_Point0;
@@ -169,7 +184,28 @@ typedef enum
    viewForTableColumn:(AZTableColumn *)tc
 				  row:(NSInteger)row
 	{
-	return AZView.new;
+	AZView *view = [tv dequeueViewWithIdentifier:@"point"];
+	if (view == nil)
+		{
+		AZViewController *vc;
+		NSBundle *bndl	= [NSBundle mainBundle];
+		vc				= [[AZViewController alloc] initWithNibName:@"point"
+															 bundle:bndl];
+		view			= vc.view;
+		view.identifier	= @"point";
+		}
+
+	PointView *pv 		= (PointView *)view;
+	AZBezierPath *path	= _paths[row];
+	NSString *info  	= [NSString stringWithFormat:@"(%.2f, %.2f) [%.2f,%.2f]",
+						   path.p0.x, path.p0.y, path.c0.x, path.c0.y];
+	pv.point1.stringValue = info;
+
+	info  				= [NSString stringWithFormat:@"(%.2f, %.2f) [%.2f,%.2f]",
+						   path.p1.x, path.p1.y, path.c1.x, path.c1.y];
+	pv.point2.stringValue = info;
+
+	return view;
 	}
 
 /*****************************************************************************\
@@ -177,8 +213,25 @@ typedef enum
 \*****************************************************************************/
 - (NSInteger)numberOfRowsInTableView:(AZTableView *)tableView
 	{
-	return 0;
+	return _paths.count;
 	}
+
+/*****************************************************************************\
+|* selection did change, called after the selection changed
+\*****************************************************************************/
+- (void)tableViewSelectionDidChange:(NSNotification *)note
+	{
+	AZTableView *tv 	= note.object;
+	NSInteger row		= tv.selectedRow;
+	AZBezierPath *path	= _paths[row];
+
+	_p0 = path.p0.asPoint;
+	_p1 = path.p1.asPoint;
+	_c0 = path.c0.asPoint;
+	_c1 = path.c1.asPoint;
+	[self setNeedsDisplay:YES];
+	}
+
 
 // MARK: Private methods
 
