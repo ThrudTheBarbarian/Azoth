@@ -33,16 +33,10 @@ typedef enum
 
 // The points we have made, and which state we're in
 @property(assign, nonatomic) NSPoint								p0;
-@property(assign, nonatomic) NSPoint								c0;
-@property(assign, nonatomic) NSPoint								c1;
-@property(assign, nonatomic) NSPoint								p1;
 @property(assign, nonatomic) PointState								state;
 
 // The system cursor
 @property(assign, nonatomic) SDL_Cursor *							arrow;
-
-// The current Bezier path
-@property(strong, nonatomic) AZBezierPath *							current;
 
 // The Bezier curves to draw
 @property(strong, nonatomic) NSMutableArray<AZBezierPath *> *		paths;
@@ -51,6 +45,9 @@ typedef enum
 @property(strong, nonatomic) AZColour *								fg;
 @property(strong, nonatomic) AZColour *								pt;
 @property(strong, nonatomic) AZColour *								ctrl;
+
+// The index of the curve we're editing (to show handles)
+@property(assign,nonatomic) NSInteger 								edit;
 @end
 
 
@@ -67,6 +64,8 @@ typedef enum
 	self.state 				= Pt_None;
 	_arrow 					= SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
 	[self _updateCursor];
+
+	_edit					= -1;
 
 	_fg						= AZColour.black;
 	_pt 					= AZColour.yellow;
@@ -93,14 +92,9 @@ typedef enum
 	int idx = 0;
 	for (AZBezierPath *path in _paths)
 		{
+		[self draw:path showHandles:(idx == _edit) withPainter:painter];
 		idx ++;
-		BOOL showHandles =  (idx == _paths.count)
-			&& (_state < Pt_Control1);
-
-		[self draw:path showHandles:showHandles withPainter:painter];
 		}
-	if (_current)
-		[self draw:_current showHandles:YES withPainter:painter];
 
 	}
 
@@ -135,35 +129,36 @@ typedef enum
 \*****************************************************************************/
 - (BOOL) mouseDown:(AZEvent *)e
 	{
-	NSPoint p = [self convertPoint:e.locationInWindow fromView:nil];
+	NSPoint p 			= [self convertPoint:e.locationInWindow fromView:nil];
+	AZBezierPath *path 	= nil;
+
+NSLog(@"state: %d, p0=%@, p=%@", _state, NSStringFromPoint(_p0), NSStringFromPoint(p));
 
 	switch (_state)
 		{
 		case Pt_None:
-			_current = nil;
 			break;
 		case Pt_Point0:
 			_p0			= p;
 			break;
+
 		case Pt_Control0:
-			_p1			= p;
-			_current 	= [AZBezierPath pathFrom:_p0 to:_p1];
+			_edit 	= _paths.count;
+			path	= [AZBezierPath pathFrom:_p0 to:p];
+			[_paths addObject:path];
+			[_table reloadData];
 			break;
 		case Pt_Control1:
-			_c0			= _p1;
-			_p1 		= p;
-			_current 	= [AZBezierPath pathFrom:_p0 control:_c0 to:_p1];
+			path 	= [_paths lastObject];
+			path.c0 = path.p1;
+			path.p1	= [AZBezierPoint point:p];
+			[path reconfigureAsQuadratic];
 			break;
+
 		case Pt_Point1:
-			_c1			= _p1;
-			_p1 		= p;
-			_current 	= [AZBezierPath pathFrom:_p0
-										control1:_c0
-										control2:_c1
-											  to:_p1];
-			[_paths addObject:_current];
-			[_table reloadData];
-			_current 	= nil;
+			path 	= [_paths lastObject];
+			path.c1 	= path.p1;
+			path.p1		= [AZBezierPoint point:p];
 			_p0			= p;
 			_state		= Pt_Point0;
 			break;
@@ -223,13 +218,11 @@ typedef enum
 	{
 	AZTableView *tv 	= note.object;
 	NSInteger row		= tv.selectedRow;
-	AZBezierPath *path	= _paths[row];
-
-	_p0 = path.p0.asPoint;
-	_p1 = path.p1.asPoint;
-	_c0 = path.c0.asPoint;
-	_c1 = path.c1.asPoint;
-	[self setNeedsDisplay:YES];
+	if (row >= 0)
+		{
+		_edit = row;
+		[self setNeedsDisplay:YES];
+		}
 	}
 
 
