@@ -239,10 +239,8 @@ typedef struct CurveTangentData
 - (AZBezierPoint *) firstPoint
 	{
 	if (self.segments.count == 0)
-		{
-		SDL_Log("Asked to return 1st point of empty path!");
-		return nil;
-		}
+		return self.p0;
+
 	return self.segments.firstObject.p0;
 	}
 
@@ -252,10 +250,8 @@ typedef struct CurveTangentData
 - (AZBezierPoint *) lastPoint
 	{
 	if (self.segments.count == 0)
-		{
-		SDL_Log("Asked to return last point of empty path!");
-		return nil;
-		}
+		return self.p1;
+
 	return self.segments.lastObject.p1;
 	}
 
@@ -265,10 +261,8 @@ typedef struct CurveTangentData
 - (AZBezierLine *) startTangent
 	{
 	if (self.segments.count == 0)
-		{
-		SDL_Log("Asked to return start tangent of empty path!");
-		return nil;
-		}
+		return [self startTangentWithTolerance:DBL_EPSILON];
+
 	return [self.segments.firstObject startTangentWithTolerance:DBL_EPSILON];
 	}
 
@@ -278,10 +272,8 @@ typedef struct CurveTangentData
 - (AZBezierLine *) endTangent
 	{
 	if (self.segments.count == 0)
-		{
-		SDL_Log("Asked to return end tangent of empty path!");
-		return nil;
-		}
+		return [self endTangentWithTolerance:DBL_EPSILON];
+
 	return [self.segments.firstObject endTangentWithTolerance:DBL_EPSILON];
 	}
 
@@ -508,10 +500,10 @@ static BOOL _acceptOffset(AZBezierPath *original,
 		return NO;
 
 	origCW = [AZBezierPoint triangleClockwise:original.p0
-										  and:original.c0
+										  and:original.c1
 										  and:original.p1];
 	prllCW = [AZBezierPoint triangleClockwise:parallel.p0
-										  and:parallel.c0
+										  and:parallel.c1
 										  and:parallel.p1];
 	if (origCW != prllCW)
 		return NO;
@@ -664,13 +656,13 @@ static BOOL _trySimpleCurveOffset(AZBezierPath *curve,
         return NO;
 
     // Start point.
-	AZBezierPoint *p0 	= [[[d->startTangent.p0.copy unitNormalVector]
+	AZBezierPoint *p0 	= [[[d->startTangent unitNormalVector]
 						   scaleXY:offset]
 						   add:d->startTangent.p0];
 
     // End point.
-	AZBezierPoint *p3 	= [[[d->endTangent.p0.copy unitNormalVector]
-						   scaleXY:offset]
+	AZBezierPoint *p3 	= [[[[d->endTangent unitNormalVector]
+						   scaleXY:offset] negate]
 						   add:d->endTangent.p0];
 
     // Middle point.
@@ -798,7 +790,7 @@ static BOOL _lineCircleIntersect(AZBezierLine *line,
 /*****************************************************************************\
 |* Linear interpolation
 \*****************************************************************************/
-double _lerp(double a, double b, double t)
+static double _lerp(double a, double b, double t)
 	{
 	return a + ((b-a) * t);
 	}
@@ -975,9 +967,9 @@ static BOOL _tryArcApproximation(AZBezierPath *curve,
         if (!_goodArc(C2.point, radius2, curve, maximumError, tG, 1))
             return NO;
 
-			BOOL isCW = [AZBezierPoint triangleClockwise:curve.p0
-													 and:V
-													 and:curve.p1];
+		BOOL isCW = [AZBezierPoint triangleClockwise:curve.p0
+												 and:V
+												 and:curve.p1];
 
         _arcOffset(builder, offset, C1.point, curve.p0, G, isCW);
         _arcOffset(builder, offset, C2.point, G, curve.p1, isCW);
@@ -1376,7 +1368,8 @@ static AZBezierPath * _fixRedundantTangents(AZBezierPath *curve)
 |* - lower maxError means better precision and more output segments, the
 |*   reverse is also true
 \*****************************************************************************/
-- (AZBezierPath *) curveWithOffset:(double)offset maxError:(double)maxError
+- (nullable AZBezierPath *) curveWithOffset:(double)offset
+								   maxError:(double)maxError
 	{
 	AZBezierPath *builder = AZBezierPath.new;
 
@@ -1390,11 +1383,7 @@ static AZBezierPath * _fixRedundantTangents(AZBezierPath *curve)
 
     if ((dx < _curvePointClumpTestEpsilon) && (dy < _curvePointClumpTestEpsilon))
 		{
-        [builder addCubicFrom:self.p0
-					 control0:self.c0
-					 control1:self.c1
-						   to:self.p1];
-        return builder;
+		return nil;
 		}
 
     // Select bigger of width and height.
@@ -1472,7 +1461,7 @@ static AZBezierPath * _fixRedundantTangents(AZBezierPath *curve)
         if (!_tryArcApproximation(c, &d, &b, so, maxError))
             _doApproximateBezier(c, &d, &b, so, maxError);
 		}
-		
+
 	return builder;
 	}
 

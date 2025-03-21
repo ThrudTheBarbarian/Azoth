@@ -47,7 +47,8 @@ NS_ASSUME_NONNULL_BEGIN
 |* - lower maxError means better precision and more output segments, the
 |*   reverse is also true
 \*****************************************************************************/
-- (AZBezierPath *) curveWithOffset:(double)offset maxError:(double)maxError;
+- (nullable AZBezierPath *) curveWithOffset:(double)offset
+								   maxError:(double)maxError;
 
 /*****************************************************************************\
 |* Properties

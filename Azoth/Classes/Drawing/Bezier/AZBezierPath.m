@@ -156,8 +156,8 @@
 	_c1					= AZBezierPoint.new;
 	_c0.x 				= _p0.x + (2.0 / 3.0) * (c.x  - _p0.x);
 	_c0.y 				= _p0.y + (2.0 / 3.0) * (c.y  - _p0.y);
-	_c1.x 				= c.x   + (2.0 / 3.0) * (_p1.x - c.x);
-	_c1.y 				= c.y   + (2.0 / 3.0) * (_p1.y - c.y);
+	_c1.x 				= c.x   + (1.0 / 3.0) * (_p1.x - c.x);
+	_c1.y 				= c.y   + (1.0 / 3.0) * (_p1.y - c.y);
 	}
 
 
@@ -276,7 +276,7 @@
 \*****************************************************************************/
 - (AZBezierPoint *) normalVector:(double)t
 	{
-	if ([AZBezierPoint isZero:t])
+	if (FUZZY_ZERO(t))
 		{
 		if ([_p0 isEqual:_c0])
 			{
@@ -286,7 +286,7 @@
 				return [AZBezierLine lineFrom:_p0 to:_c1].normalVector;
 			}
 		}
-	else if ([AZBezierPoint isZero:t-1.0])
+	else if (FUZZY_EQUAL(t, 1.0))
 		{
 		if ([_c1 isEqual:_p1])
 			{
@@ -358,7 +358,7 @@
 		}
 
 	// Corner case, t0 is coincident with t1
-	if ([AZBezierPoint isZero:t0-t1])
+	if (FUZZY_EQUAL(t0,t1))
 		{
 		NSPoint p = [self pointAt:t0].asPoint;
 		return [AZBezierPath pathFrom:p control1:p control2:p to:p];
@@ -508,7 +508,7 @@
 						 to:(AZBezierPoint *)p1
 					  roots:(double *)t;
 	{
-	AZBezierPoint *v = [AZBezierPoint subtract:p0 from:p1];
+	AZBezierPoint *v = [p1.copy subtract:p0];
 
     const double ax = (_p0.y - p0.y) * v.x - (_p0.x - p0.x) * v.y;
     const double bx = (_c0.y - p0.y) * v.x - (_c0.x - p0.x) * v.y;

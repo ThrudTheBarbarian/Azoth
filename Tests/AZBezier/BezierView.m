@@ -40,6 +40,8 @@ typedef enum
 
 // The Bezier curves to draw
 @property(strong, nonatomic) NSMutableArray<AZBezierPath *> *		paths;
+@property(strong, nonatomic) NSMutableArray<AZBezierPath *> *		inner;
+@property(strong, nonatomic) NSMutableArray<AZBezierPath *> *		outer;
 
 // Colours for drawing, saves re-creating
 @property(strong, nonatomic) AZColour *								fg;
@@ -48,6 +50,9 @@ typedef enum
 
 // The index of the curve we're editing (to show handles)
 @property(assign,nonatomic) NSInteger 								edit;
+
+// The handle of the curve we're dragging
+@property(assign,nonatomic) PointState 								handle;
 @end
 
 
@@ -61,6 +66,8 @@ typedef enum
 	self.backgroundColour 	= [AZColour colourNamed:@"olivedrab"];
 	self.isOpaque		  	= YES;
 	_paths					= NSMutableArray.new;
+	_inner					= NSMutableArray.new;
+	_outer					= NSMutableArray.new;
 	self.state 				= Pt_None;
 	_arrow 					= SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
 	[self _updateCursor];
@@ -96,6 +103,9 @@ typedef enum
 		idx ++;
 		}
 
+	for (AZBezierPath *path in _inner)
+		[self draw:path showHandles:NO withPainter:painter];
+
 	}
 
 /*****************************************************************************\
@@ -124,50 +134,121 @@ typedef enum
 	[painter bezier:path steps:20 colour:_fg fill:NO];
 	}
 
+
+// MARK: Events
+
 /*****************************************************************************\
-|* Get mouse input
+|* The mouse moved
+\*****************************************************************************/
+- (BOOL) mouseDragged:(AZEvent *)e
+	{
+	BOOL redraw 		= NO;
+	NSPoint p 			= [self convertPoint:e.locationInWindow fromView:nil];
+	if (_edit >= 0)
+		{
+		AZBezierPath *path 	= _paths[_edit];
+
+		switch (_handle)
+			{
+			case Pt_None:
+				break;
+			case Pt_Point0:
+				path.p0 = [AZBezierPoint point:p];
+				if (_edit > 0)
+					_paths[_edit-1].p1 = [AZBezierPoint point:p];
+				redraw  = YES;
+				break;
+			case Pt_Control0:
+				path.c0 = [AZBezierPoint point:p];
+				redraw  = YES;
+				break;
+			case Pt_Control1:
+				path.c1 = [AZBezierPoint point:p];
+				redraw  = YES;
+				break;
+			case Pt_Point1:
+				path.p1 = [AZBezierPoint point:p];
+				if (_edit < _paths.count-1)
+					_paths[_edit+1].p0 = [AZBezierPoint point:p];
+				redraw  = YES;
+				break;
+			}
+
+		if (redraw)
+			{
+			[self _updateOffsetCurves];
+			[self setNeedsDisplay:YES];
+			}
+		}
+	return YES;
+	}
+
+
+/*****************************************************************************\
+|* Get mouse clicks
 \*****************************************************************************/
 - (BOOL) mouseDown:(AZEvent *)e
 	{
 	NSPoint p 			= [self convertPoint:e.locationInWindow fromView:nil];
 	AZBezierPath *path 	= nil;
 
-NSLog(@"state: %d, p0=%@, p=%@", _state, NSStringFromPoint(_p0), NSStringFromPoint(p));
-
-	switch (_state)
+	PointState handle = [self _onHandle:p];
+	if (handle == Pt_None)
 		{
-		case Pt_None:
-			break;
-		case Pt_Point0:
-			_p0			= p;
-			break;
+		switch (_state)
+			{
+			case Pt_None:
+				break;
+			case Pt_Point0:
+				_p0			= p;
+				break;
 
-		case Pt_Control0:
-			_edit 	= _paths.count;
-			path	= [AZBezierPath pathFrom:_p0 to:p];
-			[_paths addObject:path];
-			[_table reloadData];
-			break;
-		case Pt_Control1:
-			path 	= [_paths lastObject];
-			path.c0 = path.p1;
-			path.p1	= [AZBezierPoint point:p];
-			[path reconfigureAsQuadratic];
-			break;
+			case Pt_Control0:
+				_edit 	= _paths.count;
+				path	= [AZBezierPath pathFrom:_p0 to:p];
+				[_paths addObject:path];
+				[self _updateOffsetCurves];
+				[_table reloadData];
+				break;
+			case Pt_Control1:
+				path 	= [_paths lastObject];
+				path.c0 = path.p1;
+				path.p1	= [AZBezierPoint point:p];
+				[path reconfigureAsQuadratic];
+				[self _updateOffsetCurves];
+				break;
 
-		case Pt_Point1:
-			path 	= [_paths lastObject];
-			path.c1 	= path.p1;
-			path.p1		= [AZBezierPoint point:p];
-			_p0			= p;
-			_state		= Pt_Point0;
-			break;
+			case Pt_Point1:
+				path 		= [_paths lastObject];
+				path.c1 	= path.p1;
+				path.p1		= [AZBezierPoint point:p];
+				_p0			= p;
+				_state		= Pt_Point0;
+				[self _updateOffsetCurves];
+				break;
+			}
+
+		[self _updateCursor];
+		[self setNeedsDisplay:YES];
+		}
+	else
+		{
+		_handle = handle;
 		}
 
-	[self _updateCursor];
-	[self setNeedsDisplay:YES];
 	return YES;
 	}
+
+
+/*****************************************************************************\
+|* Get mouse release
+\*****************************************************************************/
+- (BOOL) mouseUp:(AZEvent *)e
+	{
+	_handle = Pt_None;
+	return YES;
+	}
+
 
 
 // MARK: Table view
@@ -225,6 +306,35 @@ NSLog(@"state: %d, p0=%@, p=%@", _state, NSStringFromPoint(_p0), NSStringFromPoi
 		}
 	}
 
+/*****************************************************************************\
+|* See if the user pressed delete/backspace while a row was selected
+\*****************************************************************************/
+- (BOOL)tableView:(AZTableView *)tv keyDown:(AZEvent *)e
+	{
+	if ((e.keyCode == SDLK_DELETE) || (e.keyCode == SDLK_BACKSPACE))
+		{
+		if (_edit >= 0)
+			{
+			[_paths removeObjectAtIndex:_edit];
+			_edit --;
+			if (_paths.count > 0)
+				{
+				_state  = Pt_Point0;
+				_p0 	= _paths.lastObject.p1.asPoint;
+				}
+			else
+				_state 	= Pt_None;
+
+			[_table reloadData];
+			[self _updateOffsetCurves];
+			[self setNeedsDisplay:YES];
+			[self _updateCursor];
+			}
+		return YES;
+		}
+	return NO;
+	}
+
 
 // MARK: Private methods
 
@@ -259,6 +369,79 @@ NSLog(@"state: %d, p0=%@, p=%@", _state, NSStringFromPoint(_p0), NSStringFromPoi
 		}
 	SDL_SetCursor(self.mouseCursor);
 	}
+
+
+/*****************************************************************************\
+|* Figure out which handle a point is on, if any
+\*****************************************************************************/
+- (PointState) _onHandle:(NSPoint)p
+	{
+	PointState handle 	= Pt_None;
+	if (_edit >= 0)
+		{
+		AZBezierPath *path 	= _paths[_edit];
+		NSRect r;
+
+		if (path)
+			{
+			r = NSMakeRect(path.p0.x - 5, path.p0.y - 5, 10, 10);
+			if (NSPointInRect(p,r))
+				{
+				handle = Pt_Point0;
+				}
+			else
+				{
+				r = NSMakeRect(path.c0.x - 5, path.c0.y - 5, 10, 10);
+				if (NSPointInRect(p,r))
+					{
+					handle = Pt_Control0;
+					}
+				else
+					{
+					r = NSMakeRect(path.c1.x - 5, path.c1.y - 5, 10, 10);
+					if (NSPointInRect(p,r))
+						{
+						handle = Pt_Control1;
+						}
+					else
+						{
+						r = NSMakeRect(path.p1.x - 5, path.p1.y - 5, 10, 10);
+						if (NSPointInRect(p,r))
+							{
+							handle = Pt_Point1;
+							}
+						}
+					}
+				}
+			}
+		}
+	return handle;
+	}
+
+/*****************************************************************************\
+|* Get the bezier curves that are offset from all the drawn ones
+\*****************************************************************************/
+- (void) _updateOffsetCurves
+	{
+	float size = _innerSize.doubleValue;
+	[self _updateCurve:_inner with:size];
+	}
+
+/*****************************************************************************\
+|* Get the bezier curve that is offset from all the drawn ones
+\*****************************************************************************/
+- (void) _updateCurve:(NSMutableArray<AZBezierPath *>*)curve with:(float)size
+	{
+	[curve removeAllObjects];
+	for (AZBezierPath *path in _paths)
+		{
+		AZBezierPath *offset = [path curveWithOffset:size maxError:.15];
+		for (AZBezierPath *segment in offset.segments)
+			[curve addObject:segment];
+			NSLog(@"%d segments added", (int)curve.count);
+		}
+	}
+
 
 
 
