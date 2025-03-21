@@ -764,9 +764,12 @@
                     <slider verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="SAW-nQ-Gsl">
                         <rect key="frame" x="1134" y="962" width="159" height="28"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                        <sliderCell key="cell" state="on" alignment="left" maxValue="200" doubleValue="50" tickMarkPosition="above" sliderType="linear" id="rCw-pd-khZ">
+                        <sliderCell key="cell" continuous="YES" state="on" alignment="left" maxValue="200" doubleValue="50" tickMarkPosition="above" sliderType="linear" id="rCw-pd-khZ">
                             <font key="font" size="12" name="Helvetica"/>
                         </sliderCell>
+                        <connections>
+                            <action selector="innerSizeChanged:" target="PNc-Uq-Bx9" id="cB0-kV-eJI"/>
+                        </connections>
                     </slider>
                     <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UQf-5S-zzt">
                         <rect key="frame" x="1014" y="970" width="116" height="16"/>
@@ -780,7 +783,7 @@
                     <slider verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UVL-Uu-8KU">
                         <rect key="frame" x="1134" y="924" width="159" height="28"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                        <sliderCell key="cell" state="on" alignment="left" maxValue="200" doubleValue="50" tickMarkPosition="above" sliderType="linear" id="p21-vp-8qc">
+                        <sliderCell key="cell" continuous="YES" state="on" alignment="left" maxValue="200" doubleValue="50" tickMarkPosition="above" sliderType="linear" id="p21-vp-8qc">
                             <font key="font" size="12" name="Helvetica"/>
                         </sliderCell>
                     </slider>

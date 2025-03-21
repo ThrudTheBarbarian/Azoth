@@ -413,4 +413,14 @@
 	return p;
 	}
 
+// MARK: Debugging
+/*****************************************************************************\
+|* Description of this object
+\*****************************************************************************/
+- (NSString *)description
+	{
+	return [NSString stringWithFormat:@"{%.2f, %.2f}", _x, _y];
+	}
+
+
 @end

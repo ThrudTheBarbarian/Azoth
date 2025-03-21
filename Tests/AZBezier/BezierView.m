@@ -33,6 +33,7 @@ typedef enum
 
 // The points we have made, and which state we're in
 @property(assign, nonatomic) NSPoint								p0;
+@property(assign, nonatomic) NSPoint								c0;
 @property(assign, nonatomic) PointState								state;
 
 // The system cursor
@@ -72,6 +73,7 @@ typedef enum
 	_arrow 					= SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
 	[self _updateCursor];
 
+	_c0						= NSMakePoint(0,0);
 	_edit					= -1;
 
 	_fg						= AZColour.black;
@@ -155,21 +157,32 @@ typedef enum
 			case Pt_Point0:
 				path.p0 = [AZBezierPoint point:p];
 				if (_edit > 0)
+					{
 					_paths[_edit-1].p1 = [AZBezierPoint point:p];
+					_paths[_edit-1].c1 = [self _extend:path.c0 through:path.p0];
+					}
+
 				redraw  = YES;
 				break;
 			case Pt_Control0:
 				path.c0 = [AZBezierPoint point:p];
+				if (_edit > 0)
+					_paths[_edit-1].c1 = [self _extend:path.c0 through:path.p0];
 				redraw  = YES;
 				break;
 			case Pt_Control1:
 				path.c1 = [AZBezierPoint point:p];
+				if (_edit < _paths.count-1)
+					_paths[_edit+1].c0 = [self _extend:path.c1 through:path.p1];
 				redraw  = YES;
 				break;
 			case Pt_Point1:
 				path.p1 = [AZBezierPoint point:p];
 				if (_edit < _paths.count-1)
+					{
+					_paths[_edit+1].c0 = [self _extend:path.c1 through:path.p1];
 					_paths[_edit+1].p0 = [AZBezierPoint point:p];
+					}
 				redraw  = YES;
 				break;
 			}
@@ -189,10 +202,10 @@ typedef enum
 \*****************************************************************************/
 - (BOOL) mouseDown:(AZEvent *)e
 	{
-	NSPoint p 			= [self convertPoint:e.locationInWindow fromView:nil];
-	AZBezierPath *path 	= nil;
+	NSPoint p			= [self convertPoint:e.locationInWindow fromView:nil];
+	AZBezierPath *path	= nil;
+	PointState handle	= [self _onHandle:p];
 
-	PointState handle = [self _onHandle:p];
 	if (handle == Pt_None)
 		{
 		switch (_state)
@@ -211,10 +224,21 @@ typedef enum
 				[_table reloadData];
 				break;
 			case Pt_Control1:
-				path 	= [_paths lastObject];
-				path.c0 = path.p1;
-				path.p1	= [AZBezierPoint point:p];
-				[path reconfigureAsQuadratic];
+				if (FUZZY_ZERO(_c0.x) && FUZZY_ZERO(_c0.y))
+					{
+					// We're creating our first curve
+					path 	= [_paths lastObject];
+					path.c0 = path.p1;
+					path.p1	= [AZBezierPoint point:p];
+					[path reconfigureAsQuadratic];
+					}
+				else
+					{
+					_edit 	= _paths.count;
+					path	= [AZBezierPath pathFrom:_p0 control:_c0 to:p];
+					[_paths addObject:path];
+					[_table reloadData];
+					}
 				[self _updateOffsetCurves];
 				break;
 
@@ -223,7 +247,9 @@ typedef enum
 				path.c1 	= path.p1;
 				path.p1		= [AZBezierPoint point:p];
 				_p0			= p;
-				_state		= Pt_Point0;
+				_c0 		= [self _extend:path.c1 through:path.p1].asPoint;
+
+				_state		= Pt_Control0;
 				[self _updateOffsetCurves];
 				break;
 			}
@@ -241,12 +267,34 @@ typedef enum
 
 
 /*****************************************************************************\
+|* Reflect one point through another to get the next control
+\*****************************************************************************/
+- (AZBezierPoint *) _extend:(AZBezierPoint *)c1 through:(AZBezierPoint *)p3
+	{
+	AZBezierPoint *vec = [[p3.copy subtract:c1] add:p3];
+	return vec;
+	}
+
+/*****************************************************************************\
 |* Get mouse release
 \*****************************************************************************/
 - (BOOL) mouseUp:(AZEvent *)e
 	{
 	_handle = Pt_None;
 	return YES;
+	}
+
+
+
+// MARK: Actions
+
+/*****************************************************************************\
+|* Inner size changed
+\*****************************************************************************/
+- (IBAction)innerSizeChanged:(id)sender
+	{
+	[self _updateOffsetCurves];
+	[self setNeedsDisplay:YES];
 	}
 
 
@@ -424,6 +472,7 @@ typedef enum
 - (void) _updateOffsetCurves
 	{
 	float size = _innerSize.doubleValue;
+	NSLog(@"size: %.2f", size);
 	[self _updateCurve:_inner with:size];
 	}
 
@@ -438,7 +487,6 @@ typedef enum
 		AZBezierPath *offset = [path curveWithOffset:size maxError:.15];
 		for (AZBezierPath *segment in offset.segments)
 			[curve addObject:segment];
-			NSLog(@"%d segments added", (int)curve.count);
 		}
 	}
 
