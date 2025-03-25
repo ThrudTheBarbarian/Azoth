@@ -411,6 +411,16 @@ typedef enum
 
 
 /*****************************************************************************\
+|* Texture address modes
+\*****************************************************************************/
+typedef enum AZTextureAddressMode
+	{
+    AZTextureAddressAuto,
+    AZTextureAddressClamp,
+    AZTextureAddressWrap,
+	} AZTextureAddressMode;
+
+/*****************************************************************************\
 |* Helper structures for notification management
 \*****************************************************************************/
 typedef struct

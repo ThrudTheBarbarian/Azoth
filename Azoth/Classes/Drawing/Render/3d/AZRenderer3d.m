@@ -388,6 +388,11 @@ static SDL_SpinLock 	_textureLock;
 		_vertexData			= NULL;
 		_vertexDataSize		= 0;
 		_vertexDataInUse	= 0;
+
+		/*********************************************************************\
+		|* Default texture-addressing mode is to clamp at the edges
+		\*********************************************************************/
+		_addressMode 		= AZTextureAddressClamp;
 		}
 	return self;
 	}
@@ -1214,6 +1219,155 @@ static SDL_SpinLock 	_textureLock;
 									   scaleY:sy
 								  addressMode:AZTextureAddressClamp];
 	}
+
+
+/*****************************************************************************\
+|* blit a texture using provided geometry - convenience method
+\*****************************************************************************/
+- (BOOL) blit:(NSInteger)textureId
+		 with:(int)numVertices
+	 vertices:(SDL_Vertex *)vertices
+	      and:(int)numIndices
+	  indices:(nullable const int *)indices
+	{
+	if (vertices)
+		{
+        const float *xy			= &(vertices->position.x);
+        int xyStride 			= sizeof(SDL_Vertex);
+
+        SDL_FColor *colours 	= &vertices->color;
+        int colourStride 		= sizeof(SDL_Vertex);
+
+        const float *uv 		= &vertices->tex_coord.x;
+        int uvStride 			= sizeof(SDL_Vertex);
+        int sizeIndices 		= 4;
+
+		return [self blit:textureId
+					 with:numVertices
+					   xy:xy
+				   stride:xyStride
+				  colours:colours
+				   stride:colourStride
+					   uv:uv
+				   stride:uvStride
+					  and:numIndices
+				  indices:indices
+				   ofSize:sizeIndices];
+		}
+	return SDL_InvalidParamError("vertices");
+	}
+
+/*****************************************************************************\
+|* blit a texture using provided geometry - real method
+\*****************************************************************************/
+- (BOOL) blit:(NSInteger)textureId
+		 with:(int)numVertices
+		   xy:(const float *)xy
+	   stride:(int)xyStride
+	  colours:(SDL_FColor *)colours
+	   stride:(int)colourStride
+		   uv:(const float *)uv
+	   stride:(int)uvStride
+		  and:(int)numIndices
+	  indices:(nullable const int *)indices
+	   ofSize:(int)sizeIndices
+	{
+    AZTextureAddressMode textureAddressMode;
+
+	int count 		= indices ? numIndices : numVertices;
+	AZTexture *azt 	= [self textureForId:textureId];
+
+	/*************************************************************************\
+	|* Do some tests on the input parameters
+	\*************************************************************************/
+    if (!xy)
+        return SDL_InvalidParamError("xy");
+
+    if (!colours)
+        return SDL_InvalidParamError("color");
+
+    if (azt && (!uv))
+        return SDL_InvalidParamError("uv");
+
+    if (count % 3 != 0)
+        return SDL_InvalidParamError(indices ? "numIndices" : "numVertices");
+
+	if (indices)
+		{
+		switch (sizeIndices)
+			{
+			case 1:
+			case 2:
+			case 4:
+				break;
+			default:
+				return SDL_InvalidParamError("sizeIndices");
+			}
+		}
+	else
+		sizeIndices = 0;
+
+    if (numVertices < 3)
+        return YES;
+
+	/*************************************************************************\
+	|* If texture-address mode is auto, figure out which one we want via uv's
+	\*************************************************************************/
+    textureAddressMode = self.addressMode;
+    if ((textureAddressMode == AZTextureAddressAuto) && azt)
+		{
+        textureAddressMode = AZTextureAddressClamp;
+        for (int i = 0; i < numVertices; ++i)
+			{
+            const float *uv_ = (const float *)((const char *)uv + i * uvStride);
+            float u 		 = uv_[0];
+            float v 		 = uv_[1];
+            if (u < 0.0f || v < 0.0f || u > 1.0f || v > 1.0f)
+				{
+                textureAddressMode = AZTextureAddressWrap;
+                break;
+				}
+			}
+		}
+
+	/*************************************************************************\
+	|* Make sure that indices make sense
+	\*************************************************************************/
+    if (indices)
+		{
+        for (int i = 0; i < numIndices; ++i)
+			{
+			int j = (sizeIndices == 4) ? ((const Uint32 *)indices)[i]
+				  : (sizeIndices == 2) ? ((const Uint16 *)indices)[i]
+				  : 					 ((const Uint8 *)indices)[i];
+
+            if ((j < 0) || (j >= numVertices))
+                return SDL_SetError("Values of 'indices' out of bounds");
+			}
+		}
+
+	/*************************************************************************\
+	|* Match texture and renderer generations
+	\*************************************************************************/
+    if (azt)
+        azt.lastCommandGen = _cmdGeneration;
+
+	return [self _queueCmdGeometryWithTexture:azt
+	                                       xy:xy
+									 xyStride:xyStride
+									   colour:colours
+								 colourStride:colourStride
+										   uv:uv
+									 uvStride:uvStride
+								  numVertices:numVertices
+									  indices:indices
+								   numIndices:numIndices
+								  sizeIndices:sizeIndices
+									   scaleX:_view->currentScale.x
+									   scaleY:_view->currentScale.y
+								  addressMode:textureAddressMode];
+	}
+
 
 /*****************************************************************************\
 |* Return the bounds of a given texture

@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import <SDL3/SDL.h>
+#import <Azoth/AZTypes.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,13 +27,6 @@ typedef enum
     AZRenderCmdCopyExtended,
     AZRenderCmdGeometry
 	} AZRenderCommandType;
-
-typedef enum AZTextureAddressMode
-	{
-    AZTextureAddressAuto,
-    AZTextureAddressClamp,
-    AZTextureAddressWrap,
-	} AZTextureAddressMode;
 
 
 @interface AZRenderCommand : NSObject

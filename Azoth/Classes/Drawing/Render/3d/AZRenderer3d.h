@@ -73,6 +73,30 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable AZTexture *) textureForId:(NSInteger)refId;
 
 /*****************************************************************************\
+|* blit a texture using provided geometry. The first calls the second (which
+|* is the actual method) but is more convenient. Note that a texture of 0
+|* can be applied which will not texture the quad, you'll just get colour
+|* blending
+\*****************************************************************************/
+- (BOOL) blit:(NSInteger)textureId
+		 with:(int)numVertices
+	 vertices:(SDL_Vertex *)vertices
+	      and:(int)numIndices
+	  indices:(nullable const int *)indices;
+
+- (BOOL) blit:(NSInteger)textureId
+		 with:(int)numVertices
+		   xy:(const float *)xy
+	   stride:(int)xyStride
+	  colours:(SDL_FColor *)colours
+	   stride:(int)colourStride
+		   uv:(const float *)uv
+	   stride:(int)uvStride
+		  and:(int)numIndices
+	  indices:(nullable const int *)indices
+	   ofSize:(int)sizeIndices;
+
+/*****************************************************************************\
 |* Properties
 \*****************************************************************************/
 
@@ -92,6 +116,9 @@ SDL_GPUTextureFormat 										swapchainFormat;
 
 // The colourspace used for screen display
 @property(assign, nonatomic) SDL_Colorspace					outputColourspace;
+
+// The way we address textures in renderGeometry
+@property(assign, nonatomic) AZTextureAddressMode			addressMode;
 @end
 
 NS_ASSUME_NONNULL_END
