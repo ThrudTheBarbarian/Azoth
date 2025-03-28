@@ -693,20 +693,23 @@
                         <rect key="frame" x="0.0" y="0.0" width="998" height="1008"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <connections>
+                            <outlet property="img" destination="23z-IR-SBs" id="SFU-cq-18C"/>
                             <outlet property="innerSize" destination="SAW-nQ-Gsl" id="5Ri-g2-3FT"/>
+                            <outlet property="loadButton" destination="ogY-NH-2fS" id="vCp-bN-aWu"/>
                             <outlet property="outerSize" destination="UVL-Uu-8KU" id="NgZ-ZT-kC2"/>
+                            <outlet property="steps" destination="s15-QA-AB3" id="o71-Og-X3j"/>
                             <outlet property="table" destination="bNm-7I-5XY" id="1Q0-8Y-nvm"/>
                         </connections>
                     </customView>
                     <scrollView fixedFrame="YES" autohidesScrollers="YES" horizontalLineScroll="31" horizontalPageScroll="10" verticalLineScroll="31" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zHU-yz-IG8">
-                        <rect key="frame" x="1000" y="0.0" width="312" height="907"/>
+                        <rect key="frame" x="1000" y="0.0" width="312" height="700"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <clipView key="contentView" id="LEY-C0-WaI">
-                            <rect key="frame" x="1" y="1" width="310" height="905"/>
+                            <rect key="frame" x="1" y="1" width="310" height="698"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" rowHeight="31" rowSizeStyle="automatic" viewBased="YES" id="bNm-7I-5XY">
-                                    <rect key="frame" x="0.0" y="0.0" width="310" height="905"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="310" height="698"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <size key="intercellSpacing" width="17" height="0.0"/>
                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -796,6 +799,50 @@
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
+                    <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="N9F-Q7-o0w">
+                        <rect key="frame" x="1014" y="852" width="116" height="16"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Texture :" id="JNm-U2-Xr6">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <slider verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="s15-QA-AB3">
+                        <rect key="frame" x="1134" y="885" width="159" height="28"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                        <sliderCell key="cell" continuous="YES" state="on" alignment="left" maxValue="200" doubleValue="50" tickMarkPosition="above" sliderType="linear" id="7Cw-Lq-RjS">
+                            <font key="font" size="12" name="Helvetica"/>
+                        </sliderCell>
+                        <connections>
+                            <action selector="stepsChanged:" target="PNc-Uq-Bx9" id="qdV-2M-JNF"/>
+                        </connections>
+                    </slider>
+                    <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5hC-93-Omy">
+                        <rect key="frame" x="1014" y="893" width="116" height="16"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Texture steps :" id="yLq-mp-bFG">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="23z-IR-SBs">
+                        <rect key="frame" x="1133" y="710" width="161" height="161"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES"/>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" imageFrameStyle="photo" id="sXo-01-eqx"/>
+                    </imageView>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ogY-NH-2fS">
+                        <rect key="frame" x="1033" y="706" width="91" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="push" title="Load..." bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="49n-wD-jpa">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="loadTexturePressed:" target="PNc-Uq-Bx9" id="pwD-FH-Odb"/>
+                        </connections>
+                    </button>
                 </subviews>
             </view>
             <connections>

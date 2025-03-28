@@ -30,6 +30,9 @@ typedef enum
 @property(strong) IBOutlet AZTableView *							table;
 @property(strong) IBOutlet AZSlider *								innerSize;
 @property(strong) IBOutlet AZSlider *								outerSize;
+@property(strong) IBOutlet AZSlider *								steps;
+@property(strong) IBOutlet AZImageView *							img;
+@property(strong) IBOutlet AZButton *								loadButton;
 
 // The points we have made, and which state we're in
 @property(assign, nonatomic) NSPoint								p0;
@@ -54,6 +57,14 @@ typedef enum
 
 // The handle of the curve we're dragging
 @property(assign,nonatomic) PointState 								handle;
+
+// The Texture to texture-map onto the curve
+@property(strong,nonatomic) AZImage *								texture;
+
+// The data for the vertices
+@property(assign,nonatomic) SDL_Vertex *							vertices;
+@property(assign,nonatomic) int 									numVertices;
+@property(assign,nonatomic) int 									maxVertices;
 @end
 
 
@@ -80,6 +91,10 @@ typedef enum
 	_pt 					= AZColour.yellow;
 	_ctrl					= AZColour.red;
 	_table.rowHeight		= ROW_HEIGHT;
+
+	_vertices				= NULL;
+	_numVertices			= 0;
+	_maxVertices			= 0;
 	}
 
 /*****************************************************************************\
@@ -88,6 +103,16 @@ typedef enum
 - (void) drawInRect:(NSRect)dirtyRect withPainter:(AZPainter *)painter
 	{
 	[super drawInRect:dirtyRect withPainter:painter];
+
+	if (_numVertices)
+		{
+		NSInteger texId 	= (_texture != nil)
+							? _texture.asTexture.index.integerValue
+							: 0;
+		AZRenderer3d *azr 	= AZRenderer.renderer;
+		azr.addressMode		= AZTextureAddressWrap;
+		[azr blit:texId with:_numVertices vertices:_vertices];
+		}
 
 	int W 			= self.bounds.size.width;
 	int H 			= self.bounds.size.height;
@@ -298,6 +323,62 @@ typedef enum
 	}
 
 
+/*****************************************************************************\
+|* Steps value changed
+\*****************************************************************************/
+- (IBAction)stepsChanged:(id)sender
+	{
+	}
+
+/*****************************************************************************\
+|* Load texture called
+\*****************************************************************************/
+- (IBAction)loadTexturePressed:(id)sender
+	{
+	char *path 			= NULL;
+	NSUserDefaults *ud 	= NSUserDefaults.standardUserDefaults;
+	NSString *at 		= [ud stringForKey:@"texturePath"];
+	if (at)
+		path 			= (char *) at.UTF8String;
+
+	SDL_ShowOpenFileDialog(openCallback,			// Called on completion
+						   (__bridge void *)(self), // Passed to callback
+						   self.window.window, 		// Modal for this window
+						   NULL, 				// The filter above
+						   0, 						// Number of filters
+						   path, 					// Default location
+						   NO);						// Allow many files
+	}
+
+static void openCallback(void *userData, const char * const *files, int filter)
+    {
+	BezierView *bv = (__bridge BezierView *)userData;
+
+	if (files == NULL)
+		SDL_Log("Cannot read file: %s", SDL_GetError());
+	else if (files[0] == NULL)
+		{
+		// User cancelled the op. Just ignore
+		}
+	else
+		{
+		NSString *path 	= [NSString stringWithUTF8String:files[0]];
+		bv.texture 		= [AZImage imageWithContentsOfFile:path];
+		if (bv.texture)
+			{
+			[bv.img setImage:bv.texture];
+
+			NSUserDefaults *ud 	= NSUserDefaults.standardUserDefaults;
+			path = [path stringByDeletingLastPathComponent];
+			[ud setObject:path forKey:@"texturePath"];
+			}
+		}
+
+	bv.loadButton.state = AZControlStateNormal;
+	[bv setNeedsDisplay:YES];
+	}
+
+
 
 // MARK: Table view
 
@@ -467,13 +548,214 @@ typedef enum
 	}
 
 /*****************************************************************************\
-|* Get the bezier curves that are offset from all the drawn ones
+|* Get the bezier curves that are offset from all the drawn ones. Once the
+|* offset curve is created, tesselate a bunch of triangles over the area
+|* defined by the two bezier curves, connecting adjacent ends with lines
 \*****************************************************************************/
 - (void) _updateOffsetCurves
 	{
+	if (_paths.count == 0)
+		return;
+
+	/*************************************************************************\
+	|* Calculate the offset curve
+	\*************************************************************************/
 	float size = _innerSize.doubleValue;
-	NSLog(@"size: %.2f", size);
 	[self _updateCurve:_inner with:size];
+
+	/*************************************************************************\
+	|* figure out the total length of each bezier curve from constituents. We
+	|* force an odd number of steps here, so we get back an even number of
+	|* points after taking into account both end-points. That means we can
+	|* always make quadrilaterals out of the point series
+	\*************************************************************************/
+	int steps  = _steps.intValue | 1;
+	int max    = (int)(MAX(_inner.count, _paths.count));
+
+	double lengths[2];			// The overall lengths of each extended curve
+	double segment[2][max];		// The lengths of each constituent curve
+
+	lengths[0] = [self _calculateLengthsFor:_paths
+								 usingSteps:steps
+									lengths:segment[0]];
+	lengths[1] = [self _calculateLengthsFor:_inner
+								 usingSteps:steps
+									lengths:segment[1]];
+
+
+	/*************************************************************************\
+	|* divide each to get 'steps' points on each extended curve
+	\*************************************************************************/
+	int numPoints[2];			// Number of segments in each extended curve
+	NSPoint points[2][steps+2];	// The points along the curves
+
+	numPoints[0] = [self _generatePoints:points[0]
+								 forPath:_paths
+							  usingSteps:steps
+							   forLength:lengths[0]
+						  segmentLengths:segment[0]];
+
+	numPoints[1] = [self _generatePoints:points[1]
+								 forPath:_inner
+							  usingSteps:steps
+							   forLength:lengths[1]
+						  segmentLengths:segment[1]];
+
+	int count = numPoints[0];
+	if (numPoints[0] != numPoints[1])
+		{
+		SDL_Log("Points don't match, using smaller of two!");
+		count = MIN(numPoints[0], numPoints[1]);
+		}
+	count &= (~1);
+
+	/*************************************************************************\
+	|* Make sure we have enough space to allocate the vertices
+	\*************************************************************************/
+	_numVertices = count * 6;
+	if (_maxVertices < _numVertices)
+		{
+		SAFELY_FREE(_vertices);
+		_maxVertices = _numVertices;
+		_vertices = calloc(_numVertices, sizeof(SDL_Vertex));
+		}
+	;
+
+	/*************************************************************************\
+	|* create triangles from points A,B,C and B,C,D to cover quadrilateral.
+	|* For every 2 points along the curve, we will need 6 vertices
+	\*************************************************************************/
+	int vertex 		= 0;
+	double tWidth	= _texture ? _texture.asTexture.size.width : 1.0;
+	double stepSize	= _texture ? tWidth / count * 2 : 0.0;
+
+	for (int i=0; i<count-1; i ++)
+		{
+		NSPoint A = points[0][i];
+		NSPoint B = points[1][i];
+		NSPoint C = points[0][i+1];
+		NSPoint D = points[1][i+1];
+
+		_vertices[vertex  ].tex_coord.x	= (i * stepSize)/tWidth;
+		_vertices[vertex  ].tex_coord.y	= 0;
+		_vertices[vertex  ].color		= (SDL_FColor){1,1,1,1};
+		_vertices[vertex  ].position.x 	= A.x;
+		_vertices[vertex++].position.y 	= A.y;
+
+		_vertices[vertex  ].tex_coord.x	= i * stepSize/tWidth;
+		_vertices[vertex  ].tex_coord.y	= 1;
+		_vertices[vertex  ].color		= (SDL_FColor){1,1,1,1};
+		_vertices[vertex  ].position.x 	= B.x;
+		_vertices[vertex++].position.y 	= B.y;
+
+		_vertices[vertex  ].tex_coord.x	= (i+1) * stepSize/tWidth;
+		_vertices[vertex  ].tex_coord.y	= 0;
+		_vertices[vertex  ].color		= (SDL_FColor){1,1,1,1};
+		_vertices[vertex  ].position.x 	= C.x;
+		_vertices[vertex++].position.y 	= C.y;
+
+		_vertices[vertex  ].tex_coord.x	= (i+1) * stepSize/tWidth;
+		_vertices[vertex  ].tex_coord.y	= 0;
+		_vertices[vertex  ].color		= (SDL_FColor){1,1,1,1};
+		_vertices[vertex  ].position.x 	= C.x;
+		_vertices[vertex++].position.y 	= C.y;
+
+		_vertices[vertex  ].tex_coord.x	= (i+1) * stepSize/tWidth;
+		_vertices[vertex  ].tex_coord.y	= 1;
+		_vertices[vertex  ].color		= (SDL_FColor){1,1,1,1};
+		_vertices[vertex  ].position.x 	= D.x;
+		_vertices[vertex++].position.y 	= D.y;
+
+		_vertices[vertex  ].tex_coord.x	= i * stepSize/tWidth;
+		_vertices[vertex  ].tex_coord.y	= 1;
+		_vertices[vertex  ].color		= (SDL_FColor){1,1,1,1};
+		_vertices[vertex  ].position.x 	= B.x;
+		_vertices[vertex++].position.y 	= B.y;
+		}
+	}
+
+
+/*****************************************************************************\
+|* Work out the length/s of a given set of bezier curves
+\*****************************************************************************/
+- (double) _calculateLengthsFor:(NSArray<AZBezierPath*> *)paths
+				     usingSteps:(int)step
+					    lengths:(double *)lengths
+	{
+	double totalLength	= 0;
+	double stepSize		= 1.0/step;
+	int curve			= 0;
+
+	for (AZBezierPath *path in paths)
+		{
+		double at 			= stepSize;
+		AZBezierPoint *p0 	= [path pointAt:0.0];
+		lengths[curve]		= 0.0;
+
+		for (int i=1; i<=step; i++)
+			{
+			AZBezierPoint *p1 	= [path pointAt:at];
+			AZBezierPoint *vec	= [p1.copy subtract:p0];
+			p0 					= p1;
+			lengths[curve]	   += vec.length;
+			at 				   += stepSize;
+			}
+		totalLength += lengths[curve];
+		curve ++;
+		}
+		
+	return totalLength;
+	}
+
+/*****************************************************************************\
+|* Position points along a bezier curve so they're equally distributed
+\*****************************************************************************/
+- (int) _generatePoints:(NSPoint *)points
+			    forPath:(NSArray<AZBezierPath *> *)paths
+			 usingSteps:(int)steps
+			  forLength:(double)length
+		 segmentLengths:(double *)lengths
+	{
+	int num 			= 0;
+	int curve			= 0;
+	double stepSize 	= length / steps;
+	double cumulative	= 0.0;
+	BOOL finished		= NO;
+
+	AZBezierPath *path	= paths[0];
+
+	for (int i=0; i<=steps; i++)
+		{
+		double at 			= cumulative / lengths[curve];
+		AZBezierPoint *p 	= [paths[curve] pointAt:at];
+		points[num++] 	 	= p.asPoint;
+
+		cumulative		   += stepSize;
+		while (cumulative > lengths[curve])
+			{
+			cumulative -= lengths[curve];
+			curve ++;
+
+			// Should never happen twice
+			if (curve >= paths.count)
+				{
+				if (!finished)
+					{
+					finished = YES;
+					curve --;
+					cumulative = lengths[curve];
+					}
+				else
+					break;
+				}
+			}
+		}
+
+//	for (int i=0; i<num; i++)
+//		printf("%4d: %.2f,%.2f\n", i, points[i].x, points[i].y);
+//	printf("%d points\n\n", num);
+
+	return num;
 	}
 
 /*****************************************************************************\
