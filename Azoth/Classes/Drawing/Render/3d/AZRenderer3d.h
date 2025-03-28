@@ -73,11 +73,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable AZTexture *) textureForId:(NSInteger)refId;
 
 /*****************************************************************************\
-|* blit a texture using provided geometry. The first calls the second (which
-|* is the actual method) but is more convenient. Note that a texture of 0
+|* blit a texture using provided geometry. The first two call the last (which
+|* is the actual method) but are more convenient. Note that a texture of 0
 |* can be applied which will not texture the quad, you'll just get colour
 |* blending
 \*****************************************************************************/
+- (BOOL) blit:(NSInteger)textureId
+		 with:(int)numVertices
+	 vertices:(SDL_Vertex *)vertices;
+
 - (BOOL) blit:(NSInteger)textureId
 		 with:(int)numVertices
 	 vertices:(SDL_Vertex *)vertices

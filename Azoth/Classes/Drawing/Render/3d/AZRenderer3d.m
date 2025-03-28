@@ -1227,6 +1227,20 @@ static SDL_SpinLock 	_textureLock;
 - (BOOL) blit:(NSInteger)textureId
 		 with:(int)numVertices
 	 vertices:(SDL_Vertex *)vertices
+	{
+	return [self blit:textureId
+				 with:numVertices
+			 vertices:vertices
+				  and:0
+			  indices:NULL];
+	}
+
+/*****************************************************************************\
+|* blit a texture using provided geometry - convenience method
+\*****************************************************************************/
+- (BOOL) blit:(NSInteger)textureId
+		 with:(int)numVertices
+	 vertices:(SDL_Vertex *)vertices
 	      and:(int)numIndices
 	  indices:(nullable const int *)indices
 	{
