@@ -36,6 +36,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
 Note the setting of the "rendererType" property on AZApp. 
 
-The application runs as below
+The application loads in a texutre and then runs a noise filter over it, allowing the user to alter the noise parameters as below
 
 <img src=AZCompute.gif width=816>

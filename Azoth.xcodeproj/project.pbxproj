@@ -871,6 +871,8 @@
 				AZCompute/README.md,
 				AZDemo/AZDemo.gif,
 				AZDemo/README.md,
+				AZDragAndDrop/AZDragAndDrop.gif,
+				AZDragAndDrop/README.md,
 				genRsrc/README.md,
 				"glsl-to-hlsl.md",
 				Sources/BCCollectionView.md,

@@ -26,6 +26,8 @@ There are a bunch of test-applications (I generally wrote these while creating t
 
 - [AZDemo](Documentation/AZDemo/README.md) shows off some of the UI components available in the framework. This was actually one of the earliest demo apps written, so it's a bit raw in places in the source code.
 
+- [AZDragAndDrop](Documentation/AZDragAndDrop/README.md) is a simple app to show drag-and-drop using Azoth
+
 
 ### Sources:
 I wouldn't have been able to put Azoth together in anywhere near the timescale I did without referring to the projects in [Sources](Documentation/Sources/). I thank the authors of these projects from the bottom of my heart.
