@@ -85,6 +85,14 @@
 		F481CE842D80FB5B00667EB9 /* SDL3_ttf.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */; };
 		F481CE852D80FB5B00667EB9 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
 		F481CE862D80FB5B00667EB9 /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
+		F486BB782DF0E027004BF4BD /* SDL3.xcframework in Embed frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F486BB792DF0E055004BF4BD /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
+		F486BB7A2DF0E072004BF4BD /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
+		F486BB7B2DF0E089004BF4BD /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
+		F486BB7C2DF0E09A004BF4BD /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
+		F486BB7D2DF0E0A0004BF4BD /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
+		F486BB7E2DF0E0A3004BF4BD /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
+		F486BB7F2DF0E0B0004BF4BD /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F495337E2D1F840800D6B8A6 /* SDL3.xcframework */; };
 		F49528402D1F4B3100D6B8A6 /* avif.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9252D1145B900CE8B28 /* avif.xcframework */; };
 		F49528412D1F4B3100D6B8A6 /* jxl.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9242D1145B900CE8B28 /* jxl.xcframework */; };
 		F49528442D1F4B3100D6B8A6 /* webp.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F45ED9232D1145B900CE8B28 /* webp.xcframework */; };
@@ -439,6 +447,7 @@
 				F4953EDD2D20EFD000D6B8A6 /* SDL3_image.xcframework in Embed frameworks */,
 				F4953EDF2D20EFD400D6B8A6 /* avif.xcframework in Embed frameworks */,
 				F4953EE02D20EFD500D6B8A6 /* jxl.xcframework in Embed frameworks */,
+				F486BB782DF0E027004BF4BD /* SDL3.xcframework in Embed frameworks */,
 				F4953EE12D20EFD600D6B8A6 /* webp.xcframework in Embed frameworks */,
 			);
 			name = "Embed frameworks";
@@ -525,15 +534,15 @@
 		F41BC6522D0A61BA00E61EDD /* Azoth.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Azoth.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F41BC69C2D0A71FD00E61EDD /* AZDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F454E1FD2D24D1DA002D2DAB /* AZOutline.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZOutline.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		F45ED9232D1145B900CE8B28 /* webp.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = webp.xcframework; path = ../../../../opt/SDL3/webp.xcframework; sourceTree = "<group>"; };
-		F45ED9242D1145B900CE8B28 /* jxl.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = jxl.xcframework; path = ../../../../opt/SDL3/jxl.xcframework; sourceTree = "<group>"; };
-		F45ED9252D1145B900CE8B28 /* avif.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = avif.xcframework; path = ../../../../opt/SDL3/avif.xcframework; sourceTree = "<group>"; };
-		F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3_image.xcframework; path = ../../../../opt/SDL3/SDL3_image.xcframework; sourceTree = "<group>"; };
+		F45ED9232D1145B900CE8B28 /* webp.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = webp.xcframework; path = /opt/SDL3/webp.xcframework; sourceTree = "<absolute>"; };
+		F45ED9242D1145B900CE8B28 /* jxl.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = jxl.xcframework; path = /opt/SDL3/jxl.xcframework; sourceTree = "<absolute>"; };
+		F45ED9252D1145B900CE8B28 /* avif.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = avif.xcframework; path = /opt/SDL3/avif.xcframework; sourceTree = "<absolute>"; };
+		F45ED9372D11471000CE8B28 /* SDL3_image.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3_image.xcframework; path = /opt/SDL3/SDL3_image.xcframework; sourceTree = "<absolute>"; };
 		F47AB7392D381F2A00501720 /* GpuTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GpuTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F481CE3E2D80FA6100667EB9 /* AZFullscreen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZFullscreen.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F495282B2D1F496200D6B8A6 /* AZTable.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZTable.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		F495337E2D1F840800D6B8A6 /* SDL3.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3.xcframework; path = ../../../../opt/SDL3/SDL3.xcframework; sourceTree = "<group>"; };
-		F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3_ttf.xcframework; path = ../../../../opt/SDL3/SDL3_ttf.xcframework; sourceTree = "<group>"; };
+		F495337E2D1F840800D6B8A6 /* SDL3.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3.xcframework; path = /opt/SDL3/SDL3.xcframework; sourceTree = "<absolute>"; };
+		F49533802D1F841200D6B8A6 /* SDL3_ttf.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3_ttf.xcframework; path = /opt/SDL3/SDL3_ttf.xcframework; sourceTree = "<absolute>"; };
 		F49557082D231A2A00D6B8A6 /* AZImageView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZImageView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F49D29B62D88E50600CA5459 /* AZBezier.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZBezier.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F49D29EA2D88E87700CA5459 /* AZBasic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AZBasic.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1007,6 +1016,7 @@
 			files = (
 				F49533882D1F8DCD00D6B8A6 /* SDL3_ttf.xcframework in Frameworks */,
 				F45ED92A2D1145BA00CE8B28 /* webp.xcframework in Frameworks */,
+				F486BB7C2DF0E09A004BF4BD /* SDL3.xcframework in Frameworks */,
 				F45ED92B2D1145BA00CE8B28 /* jxl.xcframework in Frameworks */,
 				F45ED92C2D1145BA00CE8B28 /* avif.xcframework in Frameworks */,
 				F45ED9392D1147EB00CE8B28 /* SDL3_image.xcframework in Frameworks */,
@@ -1021,6 +1031,7 @@
 				F454E2162D24DFA6002D2DAB /* Azoth.framework in Frameworks */,
 				F454E2102D24DFA1002D2DAB /* SDL3_ttf.xcframework in Frameworks */,
 				F454E2122D24DFA1002D2DAB /* SDL3_image.xcframework in Frameworks */,
+				F486BB7B2DF0E089004BF4BD /* SDL3.xcframework in Frameworks */,
 				F454E2132D24DFA1002D2DAB /* avif.xcframework in Frameworks */,
 				F454E2142D24DFA1002D2DAB /* jxl.xcframework in Frameworks */,
 				F454E2152D24DFA1002D2DAB /* webp.xcframework in Frameworks */,
@@ -1061,6 +1072,7 @@
 			files = (
 				F49528442D1F4B3100D6B8A6 /* webp.xcframework in Frameworks */,
 				F49533812D1F841200D6B8A6 /* SDL3_ttf.xcframework in Frameworks */,
+				F486BB7D2DF0E0A0004BF4BD /* SDL3.xcframework in Frameworks */,
 				F49533862D1F8DAB00D6B8A6 /* SDL3_image.xcframework in Frameworks */,
 				F49528412D1F4B3100D6B8A6 /* jxl.xcframework in Frameworks */,
 				F49528402D1F4B3100D6B8A6 /* avif.xcframework in Frameworks */,
@@ -1075,6 +1087,7 @@
 				F49557262D231CD100D6B8A6 /* Azoth.framework in Frameworks */,
 				F49557202D231CC800D6B8A6 /* SDL3_ttf.xcframework in Frameworks */,
 				F49557222D231CC800D6B8A6 /* SDL3_image.xcframework in Frameworks */,
+				F486BB7E2DF0E0A3004BF4BD /* SDL3.xcframework in Frameworks */,
 				F49557232D231CC800D6B8A6 /* avif.xcframework in Frameworks */,
 				F49557242D231CC800D6B8A6 /* jxl.xcframework in Frameworks */,
 				F49557252D231CC800D6B8A6 /* webp.xcframework in Frameworks */,
@@ -1116,6 +1129,7 @@
 				F4953EDB2D20EFC400D6B8A6 /* jxl.xcframework in Frameworks */,
 				F4953EDA2D20EFC300D6B8A6 /* avif.xcframework in Frameworks */,
 				F4953EDC2D20EFC600D6B8A6 /* webp.xcframework in Frameworks */,
+				F486BB792DF0E055004BF4BD /* SDL3.xcframework in Frameworks */,
 				F4953ED92D20EFC000D6B8A6 /* SDL3_image.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1127,6 +1141,7 @@
 				F4BD7F032D2654F50041034B /* Azoth.framework in Frameworks */,
 				F4BD7EFD2D2654F10041034B /* SDL3_ttf.xcframework in Frameworks */,
 				F4BD7EFF2D2654F10041034B /* SDL3_image.xcframework in Frameworks */,
+				F486BB7A2DF0E072004BF4BD /* SDL3.xcframework in Frameworks */,
 				F4BD7F002D2654F10041034B /* avif.xcframework in Frameworks */,
 				F4BD7F012D2654F10041034B /* jxl.xcframework in Frameworks */,
 				F4BD7F022D2654F10041034B /* webp.xcframework in Frameworks */,
@@ -1148,6 +1163,7 @@
 				F4BD82CD2D2F25400041034B /* Azoth.framework in Frameworks */,
 				F4BD82CE2D2F25400041034B /* jxl.xcframework in Frameworks */,
 				F4BD82CF2D2F25400041034B /* SDL3_image.xcframework in Frameworks */,
+				F486BB7F2DF0E0B0004BF4BD /* SDL3.xcframework in Frameworks */,
 				F4BD82D02D2F25400041034B /* SDL3_ttf.xcframework in Frameworks */,
 				F4BD82D22D2F25400041034B /* webp.xcframework in Frameworks */,
 			);
