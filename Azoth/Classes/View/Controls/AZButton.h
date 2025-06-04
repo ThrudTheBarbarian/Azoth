@@ -2,7 +2,7 @@
 //  AZButton.h
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 12/15/24.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <Azoth/AZControl.h>

@@ -2,7 +2,7 @@
 //  AppDelegate.m
 //  NibTest
 //
-//  Created by ThrudTheBarbarian on 1/1/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import "AppDelegate.h"

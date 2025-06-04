@@ -2,7 +2,7 @@
 //  AZTableColumn+Private.h
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 12/25/24.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #ifndef AZTableColumn_Private_h

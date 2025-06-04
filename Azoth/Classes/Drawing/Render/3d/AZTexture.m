@@ -2,7 +2,7 @@
 //  AZTexture.m
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 1/14/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <SDL3/SDL.h>

@@ -2,7 +2,7 @@
 //  AZTableView.h
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 12/27/24.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <Azoth/AZView.h>

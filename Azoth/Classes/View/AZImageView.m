@@ -2,7 +2,7 @@
 //  AZImageView.m
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 12/29/24.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import "AZColour.h"

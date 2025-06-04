@@ -2,7 +2,7 @@
 //  Cursors.h
 //  Azoth
 //
-//  Created by Simon Gornall on 3/17/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <Foundation/Foundation.h>

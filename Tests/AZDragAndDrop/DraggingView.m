@@ -2,7 +2,7 @@
 //  DraggingView.m
 //  AZDragAndDrop
 //
-//  Created by ThrudTheBarbarian on 1/10/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import "DraggingView.h"

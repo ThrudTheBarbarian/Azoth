@@ -2,7 +2,7 @@
 //  ArgParser.h
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 1/2/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <Foundation/Foundation.h>

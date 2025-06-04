@@ -2,7 +2,7 @@
 //  AZTableView+Private.h
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 1/23/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #ifndef __Tableview_private__

@@ -2,7 +2,7 @@
 //  AZTextPainter.h
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 12/14/24.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <Foundation/Foundation.h>

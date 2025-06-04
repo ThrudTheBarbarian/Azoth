@@ -2,7 +2,7 @@
 //  main.m
 //  AZOutline
 //
-//  Created by ThrudTheBarbarian on 12/31/24.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #define SDL_MAIN_USE_CALLBACKS 1

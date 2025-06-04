@@ -2,7 +2,7 @@
 //  AZView+Internal.m
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 12/12/24.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <Foundation/Foundation.h>

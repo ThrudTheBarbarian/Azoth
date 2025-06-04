@@ -2,7 +2,7 @@
 //  AppDelegate.m
 //  AZImageView
 //
-//  Created by ThrudTheBarbarian on 12/30/24.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import "AppDelegate.h"

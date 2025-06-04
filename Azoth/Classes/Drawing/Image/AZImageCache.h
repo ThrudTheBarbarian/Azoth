@@ -2,7 +2,7 @@
 //  AZImageCache.h
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 12/28/24.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <Foundation/Foundation.h>

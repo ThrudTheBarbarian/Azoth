@@ -2,7 +2,7 @@
 //  AZCVGroup.m
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 1/7/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import "AZCVGroup.h"

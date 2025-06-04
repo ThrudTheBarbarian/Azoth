@@ -2,7 +2,7 @@
 //  AZClipView.m
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 12/22/24.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 #import <SDL3/SDL.h>
 

@@ -2,7 +2,7 @@
 //  AZViewController.m
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 1/1/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <SDL3/SDL.h>

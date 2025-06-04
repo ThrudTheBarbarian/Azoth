@@ -2,7 +2,7 @@
 //  AZRenderer2d.h
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 12/17/24.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <Foundation/Foundation.h>

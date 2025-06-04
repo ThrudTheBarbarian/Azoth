@@ -2,7 +2,7 @@
 //  AppDelegate.m
 //  AZOutline
 //
-//  Created by ThrudTheBarbarian on 12/31/24.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import "AppDelegate.h"

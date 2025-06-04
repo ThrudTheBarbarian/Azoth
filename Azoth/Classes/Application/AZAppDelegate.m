@@ -2,7 +2,7 @@
 //  AZAppDelegate.m
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 1/4/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import "AZAppDelegate.h"

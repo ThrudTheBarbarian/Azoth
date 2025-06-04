@@ -1,6 +1,12 @@
+# AZBasic
+
+This is the simplest demo code, and is really intended as a starting template to show how to go about creating code. It's also what I typically start from when creating a new app
+
+The entirety of AppDelegate.m is:
+```
 //
 //  AppDelegate.m
-//  AZBezier
+//  AZBasic
 //
 //  Created by ThrudTheBarbarian for Azoth.
 //
@@ -34,3 +40,10 @@
 
 
 @end
+```
+
+... which ought to look pretty familiar to someone coming from AppKit...
+
+It produces the expected result 
+![Screenshot of AZBasic running](screenshot.png)
+

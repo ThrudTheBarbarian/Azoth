@@ -2,7 +2,7 @@
 //  AZOutlineItemView.h
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 12/31/24.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 // The AZOutlineItemView expects to move the supplied view around inside

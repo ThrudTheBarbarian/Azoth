@@ -2,7 +2,7 @@
 //  AZCVLayoutItem.h
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 1/7/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <Foundation/Foundation.h>

@@ -2,7 +2,7 @@
 //  AZBezierPath.m
 //  Azoth
 //
-//  Created by Simon Gornall on 3/15/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //  Based on git@github.com:aurimasg/cubic-bezier-offsetter.git
 //
 

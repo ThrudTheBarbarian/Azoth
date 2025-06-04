@@ -2,7 +2,7 @@
 //  AZTypes.h
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 12/14/24.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 #ifndef __AZTypes_header__
 #define __AZTypes_header__

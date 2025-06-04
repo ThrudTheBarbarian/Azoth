@@ -2,7 +2,7 @@
 //  AZRenderer3d.h
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 1/13/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <SDL3/SDL.h>

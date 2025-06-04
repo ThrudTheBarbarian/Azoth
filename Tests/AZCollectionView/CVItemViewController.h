@@ -2,7 +2,7 @@
 //  CVItemViewController.h
 //  AZCollectionView
 //
-//  Created by ThrudTheBarbarian on 1/8/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <Azoth/Azoth.h>

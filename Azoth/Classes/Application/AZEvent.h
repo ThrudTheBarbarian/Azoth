@@ -2,7 +2,7 @@
 //  AZEvent.h
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 12/25/24.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 // Note: It is expected that AZEvent objects are very ephemeral. They take a
 // weak reference to the SDL_Event that defines them and therefore only have

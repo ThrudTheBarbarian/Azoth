@@ -2,7 +2,7 @@
 //  main.m
 //  AZImageView
 //
-//  Created by ThrudTheBarbarian on 12/30/24.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #define SDL_MAIN_USE_CALLBACKS 1

@@ -2,7 +2,7 @@
 //  AZRenderer.h
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 1/13/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <Azoth/AZTypes.h>

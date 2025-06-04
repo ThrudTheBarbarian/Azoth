@@ -2,7 +2,7 @@
 //  AZDraggingItem.h
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 1/9/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <Foundation/Foundation.h>

@@ -2,7 +2,7 @@
 //  AZComputePipeline.m
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 1/14/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import "AZComputePipeline.h"

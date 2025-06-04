@@ -2,7 +2,7 @@
 //  AZModalShieldView.h
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 1/22/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <Azoth/Azoth.h>

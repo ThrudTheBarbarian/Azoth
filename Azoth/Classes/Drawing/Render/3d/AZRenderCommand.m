@@ -2,7 +2,7 @@
 //  AZRenderCommand.m
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 1/15/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import "AZRenderCommand.h"

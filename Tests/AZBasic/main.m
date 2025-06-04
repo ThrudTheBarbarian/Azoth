@@ -2,7 +2,7 @@
 //  main.m
 //  AZBasic
 //
-//  Created by Simon Gornall on 3/17/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #define SDL_MAIN_USE_CALLBACKS 1

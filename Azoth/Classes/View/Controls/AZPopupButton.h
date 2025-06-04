@@ -2,7 +2,7 @@
 //  AZPopupButton.h
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 12/20/24.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <AZoth/AZControl.h>

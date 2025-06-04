@@ -2,7 +2,7 @@
 //  AZShader.h
 //  sdl3_gpu
 //
-//  Created by ThrudTheBarbarian on 1/13/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 // Shader interface to Azoth.
 

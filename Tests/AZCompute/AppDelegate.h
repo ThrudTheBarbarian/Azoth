@@ -2,7 +2,7 @@
 //  AppDelegate.h
 //  AZCompute
 //
-//  Created by ThrudTheBarbarian on 3/1/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <Azoth/Azoth.h>

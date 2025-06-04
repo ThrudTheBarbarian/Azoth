@@ -2,7 +2,7 @@
 //  AppDelegate.m
 //  AZFullscreen
 //
-//  Created by Simon Gornall on 3/11/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <Azoth/Azoth.h>

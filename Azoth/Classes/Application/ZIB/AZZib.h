@@ -2,7 +2,7 @@
 //  AZZib.h
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 1/3/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <Foundation/Foundation.h>

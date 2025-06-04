@@ -2,7 +2,7 @@
 //  main.m
 //  NibTest
 //
-//  Created by ThrudTheBarbarian on 1/1/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #define SDL_MAIN_USE_CALLBACKS 1

@@ -2,7 +2,7 @@
 //  AZObject.m
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 12/13/24.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import "AZObject.h"

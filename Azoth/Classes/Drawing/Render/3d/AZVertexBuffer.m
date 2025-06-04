@@ -2,7 +2,7 @@
 //  AZVertexBuffer.m
 //  sdl3_gpu
 //
-//  Created by ThrudTheBarbarian on 1/13/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import "AZVertexBuffer.h"

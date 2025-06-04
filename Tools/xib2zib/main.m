@@ -2,7 +2,7 @@
 //  main.m
 //  xib2zib
 //
-//  Created by ThrudTheBarbarian on 1/2/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import <Foundation/Foundation.h>

@@ -2,7 +2,7 @@
 //  DroppingView.m
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 1/11/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #import "DroppingView.h"

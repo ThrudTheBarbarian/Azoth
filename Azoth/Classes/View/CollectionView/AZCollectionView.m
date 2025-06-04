@@ -2,7 +2,7 @@
 //  AZCollectionView.m
 //  Azoth
 //
-//  Created by ThrudTheBarbarian on 1/7/25.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #include <SDL3/SDL.h>

@@ -2,7 +2,7 @@
 //  main.m
 //  AZTable
 //
-//  Created by ThrudTheBarbarian on 12/27/24.
+//  Created by ThrudTheBarbarian for Azoth.
 //
 
 #define SDL_MAIN_USE_CALLBACKS 1
