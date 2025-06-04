@@ -34,6 +34,8 @@ There are a bunch of test-applications (I generally wrote these while creating t
 
 - [AZOutline](Documentation/AZOutline/README.md) is a simple demo of the AZOutlineView using the datasource and delegate to provide data to the view
 
+- [AZTable](Documentation/AZTable/README.md) is a simple demo of the AZAZTableView using the datasource and delegate to provide data to the view
+
 ### Sources:
 I wouldn't have been able to put Azoth together in anywhere near the timescale I did without referring to the projects in [Sources](Documentation/Sources/). I thank the authors of these projects from the bottom of my heart.
 

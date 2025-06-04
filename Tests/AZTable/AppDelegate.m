@@ -113,7 +113,7 @@
 //		b.autoresizingMask = AZViewWidthSizable;
 		AZTextField *tf = (AZTextField *)view;
 		tf.stringValue = [NSString stringWithFormat:@"hola! %d", (int)row];
-		tf.enabled = NO;
+		tf.enabled = YES;
 		tf.autoresizingMask = AZViewWidthSizable;
 		}
 	return view;
