@@ -1,5 +1,5 @@
 # Azoth
-Objective-C UI library for SDL3
+## Objective-C UI library for SDL3
 
 ### About
 Based on AppKit, tries to present pretty much the same interface as AppKit does, except the namespace is AZ not NS. You get things like AZCollectionView, AZTableView, AZOutlineView, AZSplitView, AZScrollView AZImageView, AZButton, AZLabel (a read-only version of AZTextField), AZPopupButton, AZSlider, AZScroller, AZTextfield as well as things like AZWindow, AZEvent and the AZView hierarchy (including AZResponder, AZControl etc.)

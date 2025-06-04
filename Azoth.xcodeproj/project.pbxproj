@@ -860,6 +860,11 @@
 		F4B3BF462D264E46000C343A /* Exceptions for "Documentation" folder in "Azoth" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				AZBasic/README.md,
+				AZBasic/screenshot.png,
+				AZDemo/AZDemo.gif,
+				AZDemo/README.md,
+				genRsrc/README.md,
 				"glsl-to-hlsl.md",
 				Sources/BCCollectionView.md,
 				Sources/Cocotron.md,
@@ -2297,6 +2302,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = S9DMW7WK55;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"/opt/SDL3/**",
@@ -2331,6 +2337,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = S9DMW7WK55;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"/opt/SDL3/**",

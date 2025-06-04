@@ -259,9 +259,10 @@
 					   "behaviour, I mean the dog still lives and the fox is "
 					   "happy too so ... Maybe it's all for the best";
 
-	NSRect r = NSMakeRect(35, 15, 250, 190);
+	NSRect r = NSMakeRect(35, 15, 500, 200);
 	[painter rectangleWithRect:r colour:[AZColour red]];
-	[painter textInBox:r text:text];
+	r  = NSInsetRect(r, 2, 2);
+	[painter textColumnsInBox:r text:text];
 	}
 
 
