@@ -8,7 +8,14 @@ You also get AZViewController, which can read .zib files (which themselves can b
 
 There are a bunch of test-applications (I generally wrote these while creating the functionality they demonstrate, so some of the earlier ones don't take full advantage of what is available in the framework, be warned).
 
-The simplest demo is [AZBasic](Documentation/AZBasic/README.md) which just opens a window and responds (by doing nothing) to events and can serve as a starting template. The others try to demonstrate some piece of functionality, generally they're named after what they're showing off.
+### Helper Tools
+
+- [genRsrc](Documentation/genRsrc) for taking a directory full of images and converting them into a single texture map with identified rectangles. Used to create the symbols font from Google's iconography amongst other things
+ 
+
+### Demonstration apps
+
+- [AZBasic](Documentation/AZBasic/README.md) is the simplest demo app, which just opens a window and responds (by doing nothing) to events and can serve as a starting template. The others try to demonstrate some piece of functionality, generally they're named after what they're showing off.
 
 
 ### Sources:
