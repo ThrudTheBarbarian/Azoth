@@ -1,4 +1,4 @@
-#genRsrc
+# genRsrc
 
 ```
 Usage: genRsrc <options> where options are from:
@@ -10,4 +10,6 @@ Usage: genRsrc <options> where options are from:
   -h|--help              : This wonderful help
 ```
 
-Used to create an atlas image of all the files in a given directory (or the current directory if not specified). An atlas is used to generate the cursors, symbols font, and UI components (thus making it skinnable, though at the moment some work might need to be done to make the UI truly portable) 
+This tool is used by the framework build process to create an atlas image of all the files in a given directory (or the current directory if not specified). 
+
+An atlas is used to generate the cursors, symbols font, and UI components (thus making it skinnable, though at the moment some work might need to be done to make the UI truly portable) 
