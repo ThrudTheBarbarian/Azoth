@@ -21,17 +21,28 @@ DX_FILES	= $(addprefix $(DST_DX), $(SPIRV:.spv=.dxil))
 SHADERCROSS = $(HOME)/bin/shadercross
 GLSLC 		= /usr/local/bin/glslc
 
-all: vulcan metal directx
+all: prepare vulcan metal directx
+
+prepare:
+	$(MKDIR) $(DST_METAL) $(DST_DX) $(DST_VULCAN)
 
 metal: $(SPIRV) $(METAL_FILES)
 
 vulcan: $(SPIRV) 
-	@ cp $(SPIRV) $(DST_VULCAN)
+	@ $(CP) $(SPIRV) $(DST_VULCAN)
 	
 directx: $(SPIRV) $(DX_FILES)
 
 clean:
-	rm -f $(SPIRV)
+	$(RM) $(SPIRV)
+
+
+# ----------------------------------------------------------------------------
+# Tool definitions
+
+MKDIR		= /bin/mkdir -p
+CP			= /bin/cp
+RM			= /bin/rm -f
 
 
 # ----------------------------------------------------------------------------
