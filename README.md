@@ -20,6 +20,8 @@ There are a bunch of test-applications (I generally wrote these while creating t
 
 - [AZBezier](Documentation/AZBezier/README.md) is an app I wrote while trying to get offset beziers (and bezier paths in general) working in Azoth. 
 
+- [AZCollectionView](Documentation/AZCollectionView/README.md) is an app designed to show off the collection view support, complete with delegate and datasource similar to (if not identical to) AppKit's version
+
 - [AZDemo](Documentation/AZDemo/README.md) shows off some of the UI components available in the framework. This was actually one of the earliest demo apps written, so it's a bit raw in places in the source code.
 
 
