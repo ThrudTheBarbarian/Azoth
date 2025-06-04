@@ -18,7 +18,9 @@ There are a bunch of test-applications (I generally wrote these while creating t
 
 - [AZBasic](Documentation/AZBasic/README.md) is the simplest demo app, which just opens a window and responds (by doing nothing) to events and can serve as a starting template. The others try to demonstrate some piece of functionality, generally they're named after what they're showing off.
 
-- [AZDemo](Documentation/AZDemo/README.md)shows off some of the UI components available in the framework. This was actually one of the earliest demo apps written, so it's a bit raw in places in the source code.
+- [AZBezier](Documentation/AZBezier/README.md) is an app I wrote while trying to get offset beziers (and bezier paths in general) working in Azoth. 
+
+- [AZDemo](Documentation/AZDemo/README.md) shows off some of the UI components available in the framework. This was actually one of the earliest demo apps written, so it's a bit raw in places in the source code.
 
 
 ### Sources:

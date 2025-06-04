@@ -862,11 +862,13 @@
 			membershipExceptions = (
 				AZBasic/README.md,
 				AZBasic/screenshot.png,
+				AZBezier/AZBezier.gif,
 				AZDemo/AZDemo.gif,
 				AZDemo/README.md,
 				genRsrc/README.md,
 				"glsl-to-hlsl.md",
 				Sources/BCCollectionView.md,
+				Sources/Beziers.md,
 				Sources/Cocotron.md,
 				Sources/SDL2_gfxPrimitives.md,
 				"theory-of-operation.md",
