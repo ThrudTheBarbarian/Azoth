@@ -8,7 +8,11 @@ You also get AZViewController, which can read .zib files (which themselves can b
 
 There are a bunch of test-applications (I generally wrote these while creating the functionality they demonstrate, so some of the earlier ones don't take full advantage of what is available in the framework, be warned).
 
-The simplest demo is [AZBasic](AZBasic/) which just opens a window and responds (by doing nothing) to events and can serve as a starting template. The others try to demonstrate some piece of functionality, generally they're named after what they're showing off.
+The simplest demo is [AZBasic](Documentation/AZBasic/README.md) which just opens a window and responds (by doing nothing) to events and can serve as a starting template. The others try to demonstrate some piece of functionality, generally they're named after what they're showing off.
+
+
+### Sources:
+I wouldn't have been able to put Azoth together in anywhere near the timescale I did without referring to the projects in [Sources](Documentation/Sources/). I thank the authors of these projects from the bottom of my heart.
 
 
 ### Caveats:
