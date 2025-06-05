@@ -8,10 +8,22 @@ You also get AZViewController, which can read .zib files (which themselves can b
 
 There are a bunch of test-applications (I generally wrote these while creating the functionality they demonstrate, so some of the earlier ones don't take full advantage of what is available in the framework, be warned).
 
+If there is a file named 'main.zib' in the Resources/ folder of the application, it will be loaded and used as the main window/UI definition for the app. This file can be generated using the 'xibtozib' tool (included) on a .zib file created from within XCode.
+
+### Platforms
+
+The code is only (currently) set up to run on the Mac, but with the [windows MSVC toolchain](https://github.com/gnustep/tools-windows-msvc) I have had SDL3 up and running using Objective C. There still needs to be some porting done to make sure things compile, but I see no reason that this wouldn't work on Windows
+
+Linux has clang and the GNUstep runtime available from distribution repos, so again I can't see any reason why this wouldn't work on any Linux that supports ObjC. 
+
+Together, that covers pretty much everyone with an ObjC / AppKit-style UI, providing GPU acceleration and shader coding. 
+
 
 ### Helper Tools
 
 - [genRsrc](Documentation/genRsrc) for taking a directory full of images and converting them into a single texture map with identified rectangles. Used to create the symbols font from Google's iconography amongst other things
+ 
+- xib2zib is a tool for converting the XIB file worked on in Xcode to design UIs, and a (similar but different and simpler) ZIB file that Azoth understands. Simply run `xib2zib <file.xib> <file.zib>` to convert from the XIB to the ZIB, and place the resulting file into Resources/ for your app. If you put a `main.zib` file in there, the AZApplicationDelegate will load it at startup, defining your main window UI.
  
 
 ### Demonstration apps

@@ -509,7 +509,7 @@
 	}
 
 /*****************************************************************************\
-|* Called when this is a pop-up-button-class.
+|* Called when this is a segmented control class.
 \*****************************************************************************/
 - (void) _handleSegmentedControlWithInfo:(NSDictionary *)vi
 									 for:(NSMutableDictionary *)view

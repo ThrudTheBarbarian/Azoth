@@ -779,7 +779,6 @@
 				NibTest/NibView.h,
 				NibTest/NibView.m,
 				NibTest/Resources/main.zib,
-				NibTest/view.xib,
 			);
 			target = F41BC6512D0A61BA00E61EDD /* Azoth */;
 		};
@@ -881,6 +880,8 @@
 				AZTable/README.md,
 				genRsrc/README.md,
 				"glsl-to-hlsl.md",
+				GPUTest/GPUTest.png,
+				GPUTest/README.md,
 				Sources/BCCollectionView.md,
 				Sources/Beziers.md,
 				Sources/Cocotron.md,
