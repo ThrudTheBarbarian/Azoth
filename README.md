@@ -57,3 +57,6 @@ I wouldn't have been able to put Azoth together in anywhere near the timescale I
 ### Caveats:
 - Note that you need to create a static library for Azoth on Windows, and use the WHOLEARCHIVE linker option (e.g. /WHOLEARCHIVE:Azoth.lib), because categories will otherwise be stripped from the libraries.
 
+- The conversion from XIB to ZIB can sometimes go slightly awry, ZIBs are complex beasts, and there are occasional boundary cases not catered for until they're found. It's not as though this is a documented format...
+
+- There are almost certainly bugs :) 
