@@ -59,4 +59,8 @@ I wouldn't have been able to put Azoth together in anywhere near the timescale I
 
 - The conversion from XIB to ZIB can sometimes go slightly awry, ZIBs are complex beasts, and there are occasional boundary cases not catered for until they're found. It's not as though this is a documented format...
 
+- I install the SDL3 frameworks (SDL3, SDL3\_ttf, SDL3\_image, avif, jxl, webp) into /opt/SDL3. you will have to change the project file if you put them elsewhere.
+
+- You may have to allow access to go through the 'this isn't trusted, do you want to load it' dance for all the frameworks. This only happens once per project AFAICT. Still a pain.
+
 - There are almost certainly bugs :) 

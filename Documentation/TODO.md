@@ -14,7 +14,7 @@ In (sort of) order
 	  have to be a subclass of AZViewController, which needs to (or at
 	  least can) load its view from a NIB
 
-- SDL_GPU implementation of the renderer
+* SDL_GPU implementation of the renderer
 	- There are no references to SDL_Texture outside of the AZRenderer class
 	  any more, so we ought to be able to make a protocol id<Renderer> and 
 	  have both SDL_Render and SDL_GPU style rendering available, chosen at
